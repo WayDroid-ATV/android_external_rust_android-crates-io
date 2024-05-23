@@ -16,6 +16,24 @@
       "message": "I\u0027m not sure about this, some crates have a `Cargo.lock` checked in.",
       "revId": "b7a49587fd877f89406ff3d0024c26c754ea8f8a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a844e55b_aa7fa50b",
+        "filename": ".gitignore",
+        "patchSetId": 3
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-05-23T14:28:39Z",
+      "side": 1,
+      "message": "Hmm....when we update crates, we get them from crates.io. I guess I assumed that crates.io would remove Cargo.lock, just like it rewrites Cargo.toml\n\nActually, I think a better solution overall would be for cargo_embargo to write temporary files in a different directory, such as out/cargo_embargo. WDYT?",
+      "parentUuid": "2a61b4ce_4bb016ad",
+      "revId": "b7a49587fd877f89406ff3d0024c26c754ea8f8a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
