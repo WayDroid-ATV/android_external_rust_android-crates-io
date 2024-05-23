@@ -34,6 +34,24 @@
       "parentUuid": "2a61b4ce_4bb016ad",
       "revId": "b7a49587fd877f89406ff3d0024c26c754ea8f8a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "36774a81_c0625c35",
+        "filename": ".gitignore",
+        "patchSetId": 3
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-05-23T14:31:05Z",
+      "side": 1,
+      "message": "Good idea, please send a CL. It could even be something under `/tmp`.",
+      "parentUuid": "a844e55b_aa7fa50b",
+      "revId": "b7a49587fd877f89406ff3d0024c26c754ea8f8a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
