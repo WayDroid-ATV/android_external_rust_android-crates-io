@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2a61b4ce_4bb016ad",
+        "filename": ".gitignore",
+        "patchSetId": 3
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-05-23T11:32:12Z",
+      "side": 1,
+      "message": "I\u0027m not sure about this, some crates have a `Cargo.lock` checked in.",
+      "revId": "b7a49587fd877f89406ff3d0024c26c754ea8f8a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
