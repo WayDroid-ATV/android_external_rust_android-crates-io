@@ -1,0 +1,14 @@
+name: "external/rust/android-crates-io"
+description: "Third-party Rust crates. go/maintaining_rust_crates_at_scale"
+third_party: {
+  # type: GROUP is not supported by Android.
+  # type: GROUP
+  # group: {
+  #  approval: "b/303584371"
+  # }
+  url {
+    type: OTHER
+    value: "This is a GROUP. See child metadata files for proper metadata."
+  }
+  license_type: NOTICE
+}
