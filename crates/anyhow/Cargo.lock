@@ -15,7 +15,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "anyhow"
-version = "1.0.79"
+version = "1.0.86"
 dependencies = [
  "backtrace 0.3.72 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.3.30 (registry+https://github.com/rust-lang/crates.io-index)",
