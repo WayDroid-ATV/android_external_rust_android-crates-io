@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9372724a_5e5b1d3c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-08-07T14:54:37Z",
+      "side": 1,
+      "message": "ComplianceLint failure is due to a known limitation (b/315471035), and we intend to bypass the check.",
+      "revId": "5058d8fc86fc2a37e0abcd977d71f7e954704cff",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
