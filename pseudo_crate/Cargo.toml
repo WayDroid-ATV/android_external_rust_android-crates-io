@@ -7,3 +7,4 @@ license = "Apache-2.0"
 
 [dependencies]
 base64 = "=0.22.0"
+spdx = "0.10.6"
