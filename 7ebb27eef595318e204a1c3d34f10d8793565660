@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "39466ad0_824d5174",
+        "filename": "crates/anyhow/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-08-12T23:28:47Z",
+      "side": 1,
+      "message": "I realize this line is now incorrect for METADATA in the new model.",
+      "revId": "7ebb27eef595318e204a1c3d34f10d8793565660",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
