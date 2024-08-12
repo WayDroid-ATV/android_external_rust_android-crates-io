@@ -80,6 +80,30 @@
       },
       "revId": "0f5c7d90c645de34d94c689d75734a049eea1abc",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2a6f237d_d254e207",
+        "filename": "crates/spdx/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-08-12T21:09:27Z",
+      "side": 1,
+      "message": "Fixed in aosp/3216917",
+      "parentUuid": "349177cc_432b45c3",
+      "range": {
+        "startLine": 5,
+        "startChar": 0,
+        "endLine": 5,
+        "endChar": 21
+      },
+      "revId": "0f5c7d90c645de34d94c689d75734a049eea1abc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
