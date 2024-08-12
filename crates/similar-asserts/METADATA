@@ -1,0 +1,15 @@
+name: "similar-asserts"
+description: "provides assert_eq! like macros with colorized diff output"
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    month: 8
+    day: 2024
+  }
+  homepage: "https://crates.io/crates/similar-asserts"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/similar-asserts/similar-asserts-1.5.0.crate"
+    version: "1.5.0"
+  }
+}
