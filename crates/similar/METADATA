@@ -1,0 +1,15 @@
+name: "similar"
+description: "A diff library for Rust"
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    month: 8
+    day: 2024
+  }
+  homepage: "https://crates.io/crates/similar"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/similar/similar-2.6.0.crate"
+    version: "2.6.0"
+  }
+}
