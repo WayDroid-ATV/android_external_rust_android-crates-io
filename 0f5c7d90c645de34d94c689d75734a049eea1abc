@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6cd1f461_9de4b5e3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-08-12T20:02:05Z",
+      "side": 1,
+      "message": "Need to create a symlink from LICENSE-APACHE to LICENSE.",
+      "revId": "0f5c7d90c645de34d94c689d75734a049eea1abc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7b420772_fda1e198",
+        "filename": "crates/spdx/Cargo.lock",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-08-12T20:02:05Z",
+      "side": 1,
+      "message": "This probably shouldn\u0027t be here.",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 49
+      },
+      "revId": "0f5c7d90c645de34d94c689d75734a049eea1abc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "349177cc_432b45c3",
+        "filename": "crates/spdx/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-08-12T20:02:05Z",
+      "side": 1,
+      "message": "Not sure why the day field isn\u0027t being set.",
+      "range": {
+        "startLine": 5,
+        "startChar": 0,
+        "endLine": 5,
+        "endChar": 21
+      },
+      "revId": "0f5c7d90c645de34d94c689d75734a049eea1abc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
