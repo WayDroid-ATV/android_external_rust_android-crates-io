@@ -16,6 +16,24 @@
       "message": "I realize this line is now incorrect for METADATA in the new model.",
       "revId": "7ebb27eef595318e204a1c3d34f10d8793565660",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "888544b6_ad9a07d1",
+        "filename": "crates/anyhow/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-08-13T12:17:40Z",
+      "side": 1,
+      "message": "Correct, but I don\u0027t want to make fixing METADATA part of the migration.\n\nIt will get eliminated when we do an update, or otherwise regenerate the METADATA, which I have logic to do.\n\nI think once we make progress on the migration we can do a cleanup of all the METADATA, License files, and also hopefully fix the license expressions in Android.bp with cargo_embargo.",
+      "parentUuid": "39466ad0_824d5174",
+      "revId": "7ebb27eef595318e204a1c3d34f10d8793565660",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
