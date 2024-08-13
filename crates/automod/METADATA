@@ -1,0 +1,16 @@
+name: "automod"
+description: "Pull in every source file in a directory as a module."
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 13
+  }
+  homepage: "https://crates.io/crates/automod"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/automod/automod-1.0.14.crate"
+    version: "1.0.14"
+  }
+}

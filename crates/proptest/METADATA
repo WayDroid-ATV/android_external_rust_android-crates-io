@@ -1,0 +1,16 @@
+name: "proptest"
+description: "Hypothesis-like property-based testing and shrinking.\n"
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 13
+  }
+  homepage: "https://crates.io/crates/proptest"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/proptest/proptest-1.5.0.crate"
+    version: "1.5.0"
+  }
+}

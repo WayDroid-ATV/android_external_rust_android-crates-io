@@ -1,0 +1,16 @@
+name: "rusty-fork"
+description: "Cross-platform library for running Rust tests in sub-processes using a\nfork-like interface.\n"
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 13
+  }
+  homepage: "https://crates.io/crates/rusty-fork"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/rusty-fork/rusty-fork-0.3.0.crate"
+    version: "0.3.0"
+  }
+}

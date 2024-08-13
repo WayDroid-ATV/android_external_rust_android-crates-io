@@ -1,0 +1,16 @@
+name: "linux-raw-sys"
+description: "Generated bindings for Linux\'s userspace API"
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 13
+  }
+  homepage: "https://crates.io/crates/linux-raw-sys"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/linux-raw-sys/linux-raw-sys-0.6.4.crate"
+    version: "0.6.4"
+  }
+}

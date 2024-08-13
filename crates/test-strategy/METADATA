@@ -1,0 +1,16 @@
+name: "test-strategy"
+description: "Procedural macro to easily write higher-order strategies in proptest."
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 13
+  }
+  homepage: "https://crates.io/crates/test-strategy"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/test-strategy/test-strategy-0.4.0.crate"
+    version: "0.4.0"
+  }
+}

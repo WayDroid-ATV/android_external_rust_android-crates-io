@@ -1,0 +1,16 @@
+name: "wait-timeout"
+description: "A crate to wait on a child process with a timeout specified across Unix and\nWindows platforms.\n"
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 13
+  }
+  homepage: "https://crates.io/crates/wait-timeout"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/wait-timeout/wait-timeout-0.2.0.crate"
+    version: "0.2.0"
+  }
+}

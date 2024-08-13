@@ -1,0 +1,16 @@
+name: "structmeta"
+description: "Parse Rust\'s attribute arguments by defining a struct."
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 13
+  }
+  homepage: "https://crates.io/crates/structmeta"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/structmeta/structmeta-0.3.0.crate"
+    version: "0.3.0"
+  }
+}

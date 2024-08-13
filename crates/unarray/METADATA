@@ -1,0 +1,16 @@
+name: "unarray"
+description: "Utilities for working with uninitialized arrays"
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 13
+  }
+  homepage: "https://crates.io/crates/unarray"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/unarray/unarray-0.1.4.crate"
+    version: "0.1.4"
+  }
+}

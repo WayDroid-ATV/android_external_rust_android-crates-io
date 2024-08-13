@@ -1,0 +1,16 @@
+name: "structmeta-derive"
+description: "derive macro for structmeta crate."
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 13
+  }
+  homepage: "https://crates.io/crates/structmeta-derive"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/structmeta-derive/structmeta-derive-0.3.0.crate"
+    version: "0.3.0"
+  }
+}
