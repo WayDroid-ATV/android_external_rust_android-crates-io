@@ -34,6 +34,24 @@
       "parentUuid": "a05c177e_e0ff4bd6",
       "revId": "a56194a2f474e94c22c71575aa701077f03694a2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dafe65b7_120fcf46",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1962375
+      },
+      "writtenOn": "2024-08-14T01:05:16Z",
+      "side": 1,
+      "message": "It seems like `external/crates/android-crates-io` is not included in the [`master-art` branch repo manifest](https://googleplex-android.googlesource.com/platform/manifest/+/refs/heads/master-art/default.xml) and the [`master-art-host` branch repo manifest](https://googleplex-android.googlesource.com/platform/manifest/+/refs/heads/master-art-host/default.xml). My change is unrelated to this; I believe that the issue is an universal one that has not happened yet, but happened to occur earlier in my change.",
+      "parentUuid": "41fdd8a4_cd025a5b",
+      "revId": "a56194a2f474e94c22c71575aa701077f03694a2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
