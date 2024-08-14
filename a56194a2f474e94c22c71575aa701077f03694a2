@@ -52,6 +52,24 @@
       "parentUuid": "41fdd8a4_cd025a5b",
       "revId": "a56194a2f474e94c22c71575aa701077f03694a2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "838e682e_f99e6b0a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-08-14T03:36:43Z",
+      "side": 1,
+      "message": "https://android-review.googlesource.com/c/platform/manifest/+/3217122 adds this to `master-art`. I will need to do something similar for `master-art-host` internally.",
+      "parentUuid": "dafe65b7_120fcf46",
+      "revId": "a56194a2f474e94c22c71575aa701077f03694a2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
