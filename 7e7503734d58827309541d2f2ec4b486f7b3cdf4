@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8ae2a5d8_89d99929",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-08-14T18:03:47Z",
+      "side": 1,
+      "message": "🎉 It\u0027s great to see these crates rolling into the monorepo!",
+      "revId": "7e7503734d58827309541d2f2ec4b486f7b3cdf4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7b3ff457_5655b786",
+        "filename": "pseudo_crate/vendor/winapi-i686-pc-windows-gnu/Cargo.toml",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-08-14T18:03:47Z",
+      "side": 1,
+      "message": "Just adding a brief comment here (for any future archeologists). This is expected in the vendored crates, because cargo vendor automatically grabs \"all\" dependencies. We don\u0027t end up mirroring this in our actual visible crates, however, so this code is not actually used/built anywhere in Android.",
+      "revId": "7e7503734d58827309541d2f2ec4b486f7b3cdf4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
