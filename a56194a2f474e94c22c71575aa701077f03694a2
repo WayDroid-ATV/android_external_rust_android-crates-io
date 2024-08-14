@@ -16,6 +16,24 @@
       "message": "FYI, I believe that this change will break `git-master-art` and `git-master-art-host` branch targets. It\u0027s blocking the presubmit in [my change](https://android-review.git.corp.google.com/c/platform/build/blueprint/+/3218019?tab\u003dchecks). Not creating a revert at the moment given that the [post submit build](https://android-build.corp.google.com/build_explorer/branch_dashboard/git_master-art/build_id/12224784/?activeTarget\u003dart-cpplint) has not started yet.",
       "revId": "a56194a2f474e94c22c71575aa701077f03694a2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "41fdd8a4_cd025a5b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-08-14T00:56:53Z",
+      "side": 1,
+      "message": "Do you have external/crates/android-crates-io in your manifest?\n\nThat will probably fix your issue.",
+      "parentUuid": "a05c177e_e0ff4bd6",
+      "revId": "a56194a2f474e94c22c71575aa701077f03694a2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
