@@ -70,6 +70,24 @@
       "parentUuid": "dafe65b7_120fcf46",
       "revId": "a56194a2f474e94c22c71575aa701077f03694a2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "adad0a03_3891714a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-08-14T03:48:09Z",
+      "side": 1,
+      "message": "https://googleplex-android-review.git.corp.google.com/c/platform/manifest/+/28792359 is for `master-art-host`.",
+      "parentUuid": "838e682e_f99e6b0a",
+      "revId": "a56194a2f474e94c22c71575aa701077f03694a2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
