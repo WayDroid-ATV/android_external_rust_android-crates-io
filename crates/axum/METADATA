@@ -1,0 +1,20 @@
+name: "axum"
+description: "Web framework that focuses on ergonomics and modularity"
+third_party {
+  identifier {
+    type: "crates.io"
+    value: "axum"
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/axum/axum-0.6.20.crate"
+    primary_source: true
+  }
+  version: "0.6.20"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 6
+    day: 3
+  }
+}
