@@ -6,5 +6,15 @@ publish = false
 license = "Apache-2.0"
 
 [dependencies]
+ahash = "=0.8.11"
+aho-corasick = "=0.7.20"
+android_log-sys = "=0.3.1"
+android_logger = "=0.13.3"
+anes = "=0.2.0"
+annotate-snippets = "=0.9.2"
 anyhow = "=1.0.79"
+argh = "=0.1.12"
+argh_derive = "=0.1.12"
+argh_shared = "=0.1.12"
+ash = "=0.37.3"
 base64 = "=0.22.0"
