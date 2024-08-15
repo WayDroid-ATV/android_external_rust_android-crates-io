@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fd9bcf58_2d05d23a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-08-15T22:06:05Z",
+      "side": 1,
+      "message": "Ignore the changes to Cargo.lock. There is a bug I need to fix.",
+      "revId": "24dc39b23683aa37fccfc87942f4143b42946af7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
