@@ -1,0 +1,14 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index f1db3fc..40d3c91 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -105,6 +105,9 @@ use std::error;
+ #[cfg(test)]
+ mod test;
+ 
++#[cfg(android_dylib)]
++extern crate std;
++
+ /// Cast errors
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ pub enum Error {

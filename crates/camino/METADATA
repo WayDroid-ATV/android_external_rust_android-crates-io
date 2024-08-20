@@ -1,0 +1,21 @@
+name: "camino"
+description: "UTF-8 paths"
+third_party {
+  identifier {
+    type: "crates.io"
+    value: "camino"
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/camino/camino-1.1.6.crate"
+    primary_source: true
+  }
+  version: "1.1.6"
+  # Dual-licensed, using the least restrictive per go/thirdpartylicenses#same.
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 3
+    day: 21
+  }
+}
