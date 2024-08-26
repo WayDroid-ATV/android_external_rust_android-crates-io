@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "787a9cce_2bd76482",
+        "filename": "crates/der/cargo2android_viz.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-08-26T21:36:42Z",
+      "side": 1,
+      "message": "Checked",
+      "revId": "79054012cfc99034df425ad2378cb59feae8d849",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f520bac9_1fb713f4",
+        "filename": "crates/der/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-08-26T21:36:42Z",
+      "side": 1,
+      "message": "Checked",
+      "revId": "79054012cfc99034df425ad2378cb59feae8d849",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
