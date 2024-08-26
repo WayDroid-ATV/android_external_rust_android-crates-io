@@ -1,0 +1,16 @@
+name: "equivalent"
+description: "Traits for key comparison in maps."
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 26
+  }
+  homepage: "https://crates.io/crates/equivalent"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/equivalent/equivalent-1.0.1.crate"
+    version: "1.0.1"
+  }
+}
