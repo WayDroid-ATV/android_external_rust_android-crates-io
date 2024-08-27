@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "86568e17_c13181b9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-08-27T18:46:32Z",
+      "side": 1,
+      "message": "I\u0027m still trying to convince myself that this will apply even if there are Android.bp files in subdirectories.",
+      "revId": "642ea0e2e435e188a48c0a653f70bbab9047f026",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
