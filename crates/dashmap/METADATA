@@ -1,0 +1,20 @@
+name: "dashmap"
+description: "Blazing fast concurrent HashMap for Rust."
+third_party {
+  identifier {
+    type: "crates.io"
+    value: "dashmap"
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/dashmap/dashmap-5.5.3.crate"
+    primary_source: true
+  }
+  version: "5.5.3"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 3
+    day: 6
+  }
+}

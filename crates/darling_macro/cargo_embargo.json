@@ -1,0 +1,8 @@
+{
+    "run_cargo": false,
+    "package": {
+        "darling_macro": {
+            "device_supported": false
+        }
+    }
+}
