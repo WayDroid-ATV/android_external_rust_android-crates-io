@@ -1,0 +1,6 @@
+{
+  "run_cargo": false,
+  "module_name_overrides": {
+    "libdrm": "libdrm_rust"
+  }
+}
