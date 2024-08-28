@@ -16,6 +16,24 @@
       "message": "You should not be editing Android.bps directly. There should be a change to cargo_embargo.json, which is used to generate the Android.bp automatically.",
       "revId": "998dc31457397c5c254da2b009c52b20e33b0384",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c133ef7c_d05f8853",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1961535
+      },
+      "writtenOn": "2024-08-28T06:08:17Z",
+      "side": 1,
+      "message": "I see, thanks, I missed this part. I\u0027ve updated my CL with suggestion.",
+      "parentUuid": "e9e799bf_fd128bc8",
+      "revId": "998dc31457397c5c254da2b009c52b20e33b0384",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
