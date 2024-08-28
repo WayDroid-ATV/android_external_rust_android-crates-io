@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d6df1493_458fb766",
+        "filename": "crates/log/android_impl.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-08-28T07:29:39Z",
+      "side": 1,
+      "message": "Verified",
+      "revId": "2825f606c5363ce534267d3f7cf20f731485429c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
