@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "db609aab_f2e0fbd4",
+        "filename": "crates/num_cpus/patches/Android.bp.patch",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-08-28T21:45:09Z",
+      "side": 1,
+      "message": "Verified.",
+      "revId": "d88545482d881ba2b32fecec4ca55a067be572bc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
