@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b8222e96_b24d668c",
+        "filename": "crates/pkcs1/cargo2android_viz.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-08-29T15:45:59Z",
+      "side": 1,
+      "message": "Verified",
+      "revId": "98c73709cc694a76a4bef8b8e92e92cdb262faef",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
