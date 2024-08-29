@@ -1,0 +1,14 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 8196950..f77d0b1 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -22,6 +22,9 @@
+ #![no_std]
+ use core::ops::Range;
+ 
++#[cfg(android_dylib)]
++extern crate std;
++
+ /// A PRNG producing a 32-bit output.
+ ///
+ /// The current implementation is `PCG-XSH-RR`.

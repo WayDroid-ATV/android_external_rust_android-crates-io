@@ -1,0 +1,9 @@
+{
+  "package": {
+    "fallible-iterator": {
+      "license_text": "LICENSE"
+    }
+  },
+  "tests": true,
+  "run_cargo": false
+}

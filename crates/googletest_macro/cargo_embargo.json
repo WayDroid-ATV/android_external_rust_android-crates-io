@@ -1,0 +1,8 @@
+{
+  "package": {
+    "googletest_macro": {
+      "license_text": "LICENSE"
+    }
+  },
+  "tests": true
+}

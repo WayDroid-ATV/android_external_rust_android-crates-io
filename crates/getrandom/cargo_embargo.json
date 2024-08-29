@@ -1,0 +1,11 @@
+{
+  "package": {
+    "getrandom": {
+      "license_text": "LICENSE"
+    }
+  },
+  "features": [
+    "std"
+  ],
+  "tests": true
+}

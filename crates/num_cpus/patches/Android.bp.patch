@@ -1,0 +1,26 @@
+diff --git a/Android.bp b/Android.bp
+index c9b069a..26dd152 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -56,21 +56,20 @@ rust_library {
+         "com.android.uwb",
+         "com.android.virt",
+     ],
+     product_available: true,
+     vendor_available: true,
+     min_sdk_version: "29",
+ }
+ 
+ rust_test {
+     name: "num_cpus_test_src_lib",
+-    host_supported: true,
+     crate_name: "num_cpus",
+     cargo_env_compat: true,
+     cargo_pkg_version: "1.16.0",
+     crate_root: "src/lib.rs",
+     test_suites: ["general-tests"],
+     auto_gen_config: true,
+     test_options: {
+         unit_test: false,
+     },
+     edition: "2015",

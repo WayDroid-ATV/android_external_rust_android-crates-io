@@ -1,0 +1,25 @@
+diff --git a/rules.mk b/rules.mk.desired
+index f088ce8..89de36e 100644
+--- a/rules.mk
++++ b/rules.mk.desired
+@@ -11,5 +11,20 @@ MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
+ MODULE_RUST_EDITION := 2015
+ MODULE_LIBRARY_DEPS := \
+ 	
++ifeq ($(call TOBOOL,$(TRUSTY_USERSPACE)),false)
++
++# avoid cyclic dependence by adding dependencies manually
++MODULE_ADD_IMPLICIT_DEPS := false
++
++MODULE_RUSTFLAGS += \
++	--cfg 'feature="spin"' \
++	--cfg 'feature="spin_no_std"' \
++
++MODULE_DEPS := \
++	external/rust/crates/spin \
++	trusty/user/base/lib/libcompiler_builtins-rust \
++	trusty/user/base/lib/libcore-rust
++
++endif
+ 
+ include make/library.mk
