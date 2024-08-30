@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "04fd6c77_c976543a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-08-30T13:44:58Z",
+      "side": 1,
+      "message": "The crates in android-crates-io don\u0027t currently support *.mk files. You should copy this config back to external/rust/crates/ciborium-io and create the *.mk file there.",
+      "revId": "d2e6f9af80c2d379fab3114577723793ab2b1ea7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
