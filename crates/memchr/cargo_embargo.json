@@ -1,0 +1,7 @@
+{
+  "apex_available": [
+    "//apex_available:platform",
+    "//apex_available:anyapex"
+  ],
+  "min_sdk_version": "29"
+}

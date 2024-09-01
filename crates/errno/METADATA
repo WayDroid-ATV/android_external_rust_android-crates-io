@@ -1,0 +1,21 @@
+name: "errno"
+description: "Cross-platform interface to the `errno` variable."
+third_party {
+  identifier {
+    type: "crates.io"
+    value: "errno"
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/errno/errno-0.3.8.crate"
+    primary_source: true
+  }
+  version: "0.3.8"
+  # Dual-licensed, using the least restrictive per go/thirdpartylicenses#same.
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 3
+    day: 20
+  }
+}
