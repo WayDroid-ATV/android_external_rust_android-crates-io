@@ -1,0 +1,6 @@
+visibility: [
+     "//external/rust/android-crates-io/crates/pkcs1:__subpackages__",
+     "//external/rust/android-crates-io/crates/sec1:__subpackages__",
+     "//packages/modules/Virtualization:__subpackages__",
+     "//system/keymint:__subpackages__",
+]
