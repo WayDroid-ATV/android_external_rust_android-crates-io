@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "643837f8_86ed528e",
+        "filename": "crates/semver/Cargo.lock",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-09-04T18:31:02Z",
+      "side": 1,
+      "message": "Why did this change?",
+      "revId": "77bcf1c05deccdebeccafd4e3fa768dd427d9c5e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
