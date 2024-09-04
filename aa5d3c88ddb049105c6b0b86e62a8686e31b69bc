@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "950853c9_9c19351e",
+        "filename": "pseudo_crate/crate-list.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-09-04T17:58:43Z",
+      "side": 1,
+      "message": "Nit: A newline would make this easier to understand in the future (i.e. anything after this will show ~2 lines changed, rather than 1 line changed).",
+      "revId": "aa5d3c88ddb049105c6b0b86e62a8686e31b69bc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
