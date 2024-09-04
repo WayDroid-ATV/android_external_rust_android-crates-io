@@ -16,6 +16,24 @@
       "message": "Why did this change?",
       "revId": "77bcf1c05deccdebeccafd4e3fa768dd427d9c5e",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bdeeb84e_c35eff95",
+        "filename": "crates/semver/Cargo.lock",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-04T19:15:59Z",
+      "side": 1,
+      "message": "Probably because `cargo vendor` noticed a new version. It\u0027s innocuous, and I will fix it soon, probably by not checking in Cargo.lock files.",
+      "parentUuid": "643837f8_86ed528e",
+      "revId": "77bcf1c05deccdebeccafd4e3fa768dd427d9c5e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
