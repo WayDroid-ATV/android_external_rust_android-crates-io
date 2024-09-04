@@ -16,4 +16,9 @@ third_party {
     month: 6
     day: 21
   }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/rand_chacha/rand_chacha-0.3.1.crate"
+    version: "0.3.1"
+  }
 }

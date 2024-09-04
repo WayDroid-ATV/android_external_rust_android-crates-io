@@ -1,4 +1,4 @@
-name: "async_task"
+name: "async-task"
 description: "Task abstraction for building executors"
 third_party {
   license_type: NOTICE
@@ -10,7 +10,7 @@ third_party {
   homepage: "https://crates.io/crates/async-task"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/async_task/async_task-4.5.0.crate"
+    value: "https://static.crates.io/crates/async-task/async-task-4.5.0.crate"
     version: "4.5.0"
   }
 }

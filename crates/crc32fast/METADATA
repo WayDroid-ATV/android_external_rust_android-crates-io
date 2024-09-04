@@ -16,4 +16,9 @@ third_party {
     month: 3
     day: 1
   }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/crc32fast/crc32fast-1.3.2.crate"
+    version: "1.3.2"
+  }
 }

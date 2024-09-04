@@ -16,4 +16,9 @@ third_party {
     month: 7
     day: 30
   }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/cesu8/cesu8-1.1.0.crate"
+    version: "1.1.0"
+  }
 }

@@ -16,4 +16,9 @@ third_party {
     month: 7
     day: 25
   }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/hashbrown/hashbrown-0.12.3.crate"
+    version: "0.12.3"
+  }
 }

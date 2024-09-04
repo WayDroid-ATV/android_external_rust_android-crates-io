@@ -16,4 +16,9 @@ third_party {
     month: 3
     day: 31
   }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/rustc-hash/rustc-hash-1.1.0.crate"
+    version: "1.1.0"
+  }
 }

@@ -1,7 +1,3 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update external/rust/crates/either
-# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
-
 name: "either"
 description: "The enum `Either` with variants `Left` and `Right` is a general purpose sum type with two cases."
 third_party {

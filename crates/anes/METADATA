@@ -1,7 +1,3 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update rust/crates/anes
-# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
-
 name: "anes"
 description: "ANSI Escape Sequences provider & parser"
 third_party {

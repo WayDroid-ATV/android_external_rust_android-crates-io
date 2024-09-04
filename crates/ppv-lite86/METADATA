@@ -1,7 +1,3 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update rust/crates/ppv-lite86
-# For more info, check https://cs.android.com/android/platform/superproject/+/master:tools/external_updater/README.md
-
 name: "ppv-lite86"
 description: "Implementation of the crypto-simd API for x86"
 third_party {
@@ -19,5 +15,10 @@ third_party {
     year: 2022
     month: 12
     day: 19
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/ppv-lite86/ppv-lite86-0.2.17.crate"
+    version: "0.2.17"
   }
 }

@@ -16,4 +16,9 @@ third_party {
     month: 9
     day: 6
   }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/synstructure/synstructure-0.12.6.crate"
+    version: "0.12.6"
+  }
 }

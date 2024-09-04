@@ -16,4 +16,9 @@ third_party {
     month: 3
     day: 1
   }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/instant/instant-0.1.12.crate"
+    version: "0.1.12"
+  }
 }

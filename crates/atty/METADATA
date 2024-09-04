@@ -16,4 +16,9 @@ third_party {
     month: 12
     day: 21
   }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/atty/atty-0.2.14.crate"
+    version: "0.2.14"
+  }
 }

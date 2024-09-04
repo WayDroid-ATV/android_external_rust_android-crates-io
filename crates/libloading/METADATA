@@ -1,7 +1,3 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update external/rust/crates/libloading
-# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
-
 name: "libloading"
 description: "Bindings around the platform\'s dynamic library loading primitives with greatly improved memory safety."
 third_party {

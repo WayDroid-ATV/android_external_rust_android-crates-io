@@ -16,4 +16,9 @@ third_party {
     month: 3
     day: 1
   }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/rand/rand-0.8.5.crate"
+    version: "0.8.5"
+  }
 }

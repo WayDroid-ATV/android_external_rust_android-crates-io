@@ -16,4 +16,9 @@ third_party {
     month: 3
     day: 31
   }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/lazy_static/lazy_static-1.4.0.crate"
+    version: "1.4.0"
+  }
 }
