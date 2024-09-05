@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "326a07db_46b59337",
+        "filename": "crates/itertools/METADATA",
+        "patchSetId": 2
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-05T14:45:49Z",
+      "side": 1,
+      "message": "Yes, agreed. I\u0027m going to update the script to include it as an identifier.",
+      "parentUuid": "395ec775_5615ba63",
+      "revId": "2a83c9b03ae0a2516d49983d569e6cde13ae801a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "33127607_4313f511",
