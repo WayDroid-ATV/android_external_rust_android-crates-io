@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b4f83a3f_5c26536f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-05T22:44:09Z",
+      "side": 1,
+      "message": "You will need aosp/3255709 for this to stick",
+      "revId": "e81e01e6a1c3c243f936306b9893cc8313b3a4aa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
