@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "libsemver",
+    host_supported: true,
     crate_name: "semver",
     cargo_env_compat: true,
     cargo_pkg_version: "1.0.21",

@@ -10,7 +10,7 @@
   ],
   "package": {
     "semver": {
-      "host_supported": false
+      "host_supported": true
     }
   },
   "run_cargo": false
