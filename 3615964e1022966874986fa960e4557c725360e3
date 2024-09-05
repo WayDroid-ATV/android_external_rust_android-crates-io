@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "18f4c4eb_e5848bf3",
+        "filename": "crates/log/CleanSpec.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-05T22:29:13Z",
+      "side": 1,
+      "message": "I have no idea, but since I don\u0027t know, I\u0027m going to submit as-is. @per, can you delete this if unneeded?",
+      "parentUuid": "83991181_c93a7623",
+      "revId": "3615964e1022966874986fa960e4557c725360e3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "703ece12_223de817",
@@ -31,6 +49,24 @@
       "writtenOn": "2024-09-05T20:26:27Z",
       "side": 1,
       "message": "Nit: I assume that each of these right-hand side files are identical to what is in external/rust/crates/... today. I did verify some of them, but it is interesting that there is such a mix of having this line vs. not having it.",
+      "revId": "3615964e1022966874986fa960e4557c725360e3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3c72c877_f51d5468",
+        "filename": "crates/smccc/rules.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-05T22:29:13Z",
+      "side": 1,
+      "message": "I just copied them verbatim from external/rust/crates. No changes.",
+      "parentUuid": "703ece12_223de817",
       "revId": "3615964e1022966874986fa960e4557c725360e3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
