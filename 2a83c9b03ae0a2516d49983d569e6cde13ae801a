@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "d2c1b8ad_4f364bf8",
+        "filename": "crates/itertools/METADATA",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-05T14:37:30Z",
+      "side": 1,
+      "message": "Because my code doesn\u0027t know about or handle this field. The METADATA files are an inconsistent mess, and I have a TODO to fix them and make them consistent, but I haven\u0027t gotten to it yet.\n\nPer depot/google3/third_party/metadata.proto, the URL field is deprecated, and identifier should be used instead. Not setting the version field is a bug in the tool that I\u0027ll address shortly, and for now I fixed here manually.",
+      "parentUuid": "33127607_4313f511",
+      "revId": "2a83c9b03ae0a2516d49983d569e6cde13ae801a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "84d440fd_b4abc498",
@@ -31,6 +49,24 @@
       "writtenOn": "2024-09-05T09:26:36Z",
       "side": 1,
       "message": "Why is the old version still being used here?",
+      "revId": "2a83c9b03ae0a2516d49983d569e6cde13ae801a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c1545d4a_48ba2414",
+        "filename": "pseudo_crate/Cargo.lock",
+        "patchSetId": 2
+      },
+      "lineNbr": 793,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-05T14:37:30Z",
+      "side": 1,
+      "message": "Not sure, but it should be innocuous.",
+      "parentUuid": "84d440fd_b4abc498",
       "revId": "2a83c9b03ae0a2516d49983d569e6cde13ae801a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
