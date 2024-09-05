@@ -1,10 +1,7 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update external/rust/crates/command-fds
-# For more info, check https://cs.android.com/android/platform/superproject/main/+/main:tools/external_updater/README.md
-
 name: "command-fds"
 description: "A library for passing arbitrary file descriptors when spawning child processes."
 third_party {
+  version: "0.3.0"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024

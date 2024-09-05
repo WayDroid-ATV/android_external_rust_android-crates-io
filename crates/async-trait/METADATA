@@ -1,6 +1,7 @@
 name: "async-trait"
 description: "Type erasure for async trait methods"
 third_party {
+  version: "0.1.74"
   license_type: NOTICE
   last_upgrade_date {
     year: 2023

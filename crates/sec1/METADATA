@@ -1,10 +1,7 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update rust/crates/sec1
-# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
-
 name: "sec1"
 description: "Pure Rust implementation of SEC1: Elliptic Curve Cryptography encoding formats including ASN.1 DER-serialized private keys (also described in RFC5915) as well as the Elliptic-Curve-Point-to-Octet-String and Octet-String-to-Elliptic Curve-Point encoding algorithms."
 third_party {
+  version: "0.7.3"
   license_type: NOTICE
   last_upgrade_date {
     year: 2023
