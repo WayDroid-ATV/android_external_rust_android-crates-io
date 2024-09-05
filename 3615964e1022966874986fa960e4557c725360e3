@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "83991181_c93a7623",
+        "filename": "crates/log/CleanSpec.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-09-05T20:26:27Z",
+      "side": 1,
+      "message": "I\u0027m not sure we need this file.",
+      "revId": "3615964e1022966874986fa960e4557c725360e3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "703ece12_223de817",
+        "filename": "crates/smccc/rules.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-09-05T20:26:27Z",
+      "side": 1,
+      "message": "Nit: I assume that each of these right-hand side files are identical to what is in external/rust/crates/... today. I did verify some of them, but it is interesting that there is such a mix of having this line vs. not having it.",
+      "revId": "3615964e1022966874986fa960e4557c725360e3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
