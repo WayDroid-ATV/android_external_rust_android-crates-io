@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "33127607_4313f511",
+        "filename": "crates/itertools/METADATA",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-09-05T09:26:36Z",
+      "side": 1,
+      "message": "Why is this old archive URL still here?",
+      "revId": "2a83c9b03ae0a2516d49983d569e6cde13ae801a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "84d440fd_b4abc498",
+        "filename": "pseudo_crate/Cargo.lock",
+        "patchSetId": 2
+      },
+      "lineNbr": 793,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-09-05T09:26:36Z",
+      "side": 1,
+      "message": "Why is the old version still being used here?",
+      "revId": "2a83c9b03ae0a2516d49983d569e6cde13ae801a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
