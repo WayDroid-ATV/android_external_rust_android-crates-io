@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "baee0863_bf31ebff",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-05T14:20:17Z",
+      "side": 1,
+      "message": "The rules.mk file is probably going to get overwritten next time someone runs \"regenerate\".\n\nI will have a fix for this shortly.",
+      "revId": "368081d1f21f5ba62b320678c1cea956d9975b92",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
