@@ -36,6 +36,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "a13d31fb_7d3461ee",
+        "filename": "crates/log/CleanSpec.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-09-05T22:31:29Z",
+      "side": 1,
+      "message": "It isn\u0027t needed for Trusty support but it appears to have other users. I\u0027ll put up a CL and tag @chriswailes@google.com who added this file if that sounds good to everyone.",
+      "parentUuid": "83991181_c93a7623",
+      "revId": "3615964e1022966874986fa960e4557c725360e3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "703ece12_223de817",
