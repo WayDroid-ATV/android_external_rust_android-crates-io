@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "08ec0511_cb911860",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-09-07T00:37:49Z",
+      "side": 1,
+      "message": "context https://android-review.git.corp.google.com/c/platform/external/rust/android-crates-io/+/3254930/comment/83991181_c93a7623/",
+      "revId": "3c200164a44d76661806e2abc5c89c11ff1cc3b3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
