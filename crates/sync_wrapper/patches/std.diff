@@ -1,0 +1,15 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 2800d9a..ccd8454 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -20,6 +20,10 @@
+ #![doc(html_favicon_url = "https://developer.actyx.com/img/favicon.ico")]
+ #![no_std]
+ 
++// ANDROID: Use std to allow building as a dylib.
++#[cfg(android_dylib)]
++extern crate std;
++
+ use core::{
+     fmt::{self, Debug, Formatter},
+     pin::Pin,
