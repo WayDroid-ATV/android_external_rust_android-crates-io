@@ -1,23 +1,17 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update rust/crates/itertools
-# For more info, check https://cs.android.com/android/platform/superproject/+/master:tools/external_updater/README.md
-
 name: "itertools"
 description: "Extra iterator adaptors, iterator methods, free functions, and macros."
 third_party {
-  url {
-    type: HOMEPAGE
-    value: "https://crates.io/crates/itertools"
-  }
-  url {
-    type: ARCHIVE
-    value: "https://static.crates.io/crates/itertools/itertools-0.10.5.crate"
-  }
-  version: "0.10.5"
+  version: "0.13.0"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2022
-    month: 12
-    day: 12
+    year: 2024
+    month: 9
+    day: 4
+  }
+  homepage: "https://crates.io/crates/itertools"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/itertools/itertools-0.13.0.crate"
+    version: "0.13.0"
   }
 }

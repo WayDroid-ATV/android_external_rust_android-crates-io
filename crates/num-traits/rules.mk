@@ -2,7 +2,7 @@
 # Do not modify this file after the LOCAL_DIR line
 # because the changes will be overridden on upgrade.
 # Content before the first line starting with LOCAL_DIR is preserved.
-// DO NOT SUBMIT: Add license before submitting.
+
 LOCAL_DIR := $(GET_LOCAL_DIR)
 MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := num_traits
