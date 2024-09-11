@@ -33,6 +33,24 @@
       "message": "This likely also needs to be 30 based on rustix needing 30 too.",
       "revId": "c49314f0d9e81f699d1d40847e5bf68e9c68a2db",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4acfeb9f_bff4b2cc",
+        "filename": "crates/tempfile/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-09-11T12:32:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d741a4d1_86c87a17",
+      "revId": "c49314f0d9e81f699d1d40847e5bf68e9c68a2db",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
