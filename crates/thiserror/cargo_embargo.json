@@ -1,8 +1,0 @@
-{
-  "apex_available": [
-    "//apex_available:anyapex",
-    "//apex_available:platform"
-  ],
-  "min_sdk_version": "29",
-  "run_cargo": false
-}

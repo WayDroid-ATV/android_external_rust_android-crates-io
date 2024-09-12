@@ -33,8 +33,8 @@ rust_library {
     product_available: true,
     vendor_available: true,
     visibility: [
-        "//external/rust/android-crates-io/crates/pkcs1:__subpackages__",
-        "//external/rust/android-crates-io/crates/sec1:__subpackages__",
+        "//external/rust/crates/pkcs1:__subpackages__",
+        "//external/rust/crates/sec1:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
         "//system/keymint:__subpackages__",
     ],
@@ -66,8 +66,8 @@ rust_library_rlib {
     product_available: true,
     vendor_available: true,
     visibility: [
-        "//external/rust/android-crates-io/crates/pkcs1:__subpackages__",
-        "//external/rust/android-crates-io/crates/sec1:__subpackages__",
+        "//external/rust/crates/pkcs1:__subpackages__",
+        "//external/rust/crates/sec1:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
         "//system/keymint:__subpackages__",
     ],
