@@ -1,10 +1,7 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update external/rust/crates/anyhow
-# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
-
 name: "anyhow"
 description: "Flexible concrete Error type built on std::error::Error"
 third_party {
+  version: "1.0.79"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024

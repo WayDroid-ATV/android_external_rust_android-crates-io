@@ -2,7 +2,7 @@
 # Do not modify this file after the LOCAL_DIR line
 # because the changes will be overridden on upgrade.
 # Content before the first line starting with LOCAL_DIR is preserved.
-// DO NOT SUBMIT: Add license before submitting.
+
 LOCAL_DIR := $(GET_LOCAL_DIR)
 MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := spin
@@ -10,6 +10,11 @@ MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_ADD_IMPLICIT_DEPS := false
 MODULE_RUST_EDITION := 2015
+MODULE_RUSTFLAGS += \
+	--cfg 'feature="mutex"' \
+	--cfg 'feature="once"' \
+	--cfg 'feature="spin_mutex"'
+
 MODULE_LIBRARY_DEPS := \
 	trusty/user/base/lib/libcompiler_builtins-rust \
 	trusty/user/base/lib/libcore-rust

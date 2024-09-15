@@ -1,20 +1,17 @@
 name: "drm"
 description: "Safe, low-level bindings to the Direct Rendering Manager API"
 third_party {
-  identifier {
-    type: "crates.io"
-    value: "drm"
-  }
-  identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/drm/drm-0.11.1.crate"
-    primary_source: true
-  }
   version: "0.11.1"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024
     month: 3
     day: 13
+  }
+  homepage: "https://crates.io/crates/drm"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/drm/drm-0.11.1.crate"
+    version: "0.11.1"
   }
 }
