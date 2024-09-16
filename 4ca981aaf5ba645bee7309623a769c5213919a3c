@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "397f532a_508f07a6",
+        "filename": "crates/serde_derive/cargo_embargo.json",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-16T17:13:23Z",
+      "side": 1,
+      "message": "shouldn\u0027t this be true? We want both Android.bp and rules.mk, right?",
+      "range": {
+        "startLine": 12,
+        "startChar": 28,
+        "endLine": 12,
+        "endChar": 33
+      },
+      "revId": "4ca981aaf5ba645bee7309623a769c5213919a3c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
