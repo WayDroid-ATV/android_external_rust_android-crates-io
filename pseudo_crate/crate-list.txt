@@ -185,5 +185,6 @@ thiserror
 thread_local
 tinytemplate
 tokio-macros
+tokio-test
 zeroize
 zeroize_derive
