@@ -187,3 +187,4 @@ tinytemplate
 tokio-macros
 zeroize
 zeroize_derive
+tokio-test
