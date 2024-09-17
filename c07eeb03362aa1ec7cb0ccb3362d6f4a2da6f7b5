@@ -16,6 +16,24 @@
       "message": "See comment in aosp/3250624",
       "revId": "c07eeb03362aa1ec7cb0ccb3362d6f4a2da6f7b5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9f007704_f1384296",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-09-17T00:02:04Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "ff4eae5d_b9514614",
+      "revId": "c07eeb03362aa1ec7cb0ccb3362d6f4a2da6f7b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
