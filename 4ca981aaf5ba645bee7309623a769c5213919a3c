@@ -22,6 +22,30 @@
       },
       "revId": "4ca981aaf5ba645bee7309623a769c5213919a3c",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "af932f14_f08fd27c",
+        "filename": "crates/serde_derive/cargo_embargo.json",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-09-17T20:35:13Z",
+      "side": 1,
+      "message": "Good catch, thanks! I think having two variants is the way to fix the issue. We want tests true for Android.bp but false for rules.mk since we get a warning otherwise.\n\nSetting \"generate_androidbp\" and \"tests\" true works if we don\u0027t care about warnings.",
+      "parentUuid": "397f532a_508f07a6",
+      "range": {
+        "startLine": 12,
+        "startChar": 28,
+        "endLine": 12,
+        "endChar": 33
+      },
+      "revId": "4ca981aaf5ba645bee7309623a769c5213919a3c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
