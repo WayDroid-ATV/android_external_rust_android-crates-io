@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5c7ff723_c3020be9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-09-17T18:01:34Z",
+      "side": 1,
+      "message": "Bypassing lint since these tests are already being run elsewhere.",
+      "revId": "2cd26a4114d38f39f36638a630183da7c6039c4e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
