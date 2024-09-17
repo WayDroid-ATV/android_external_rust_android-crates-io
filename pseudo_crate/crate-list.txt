@@ -185,3 +185,5 @@ thiserror
 thread_local
 tinytemplate
 tokio-macros
+zeroize
+zeroize_derive
