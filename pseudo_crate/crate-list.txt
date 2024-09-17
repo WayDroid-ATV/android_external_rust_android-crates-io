@@ -185,3 +185,4 @@ thiserror
 thread_local
 tinytemplate
 tokio-macros
+zip
