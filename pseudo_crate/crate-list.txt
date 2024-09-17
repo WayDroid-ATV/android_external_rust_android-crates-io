@@ -186,6 +186,7 @@ thread_local
 tinytemplate
 tokio-macros
 tokio-stream
+tokio-test
 url
 zeroize
 zeroize_derive
