@@ -185,3 +185,7 @@ thiserror
 thread_local
 tinytemplate
 tokio-macros
+tokio-stream
+zeroize
+zeroize_derive
+zip
