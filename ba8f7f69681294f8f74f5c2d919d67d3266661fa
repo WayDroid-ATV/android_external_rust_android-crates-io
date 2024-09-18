@@ -16,6 +16,24 @@
       "message": "I think this will be ok, but it took me a second to realize that this is just adding two new libraries with those restrictions.",
       "revId": "ba8f7f69681294f8f74f5c2d919d67d3266661fa",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "505f3e23_e9ae90a3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-18T12:10:25Z",
+      "side": 1,
+      "message": "Yes, adding variants is fine.",
+      "parentUuid": "ff034924_6860e8c6",
+      "revId": "ba8f7f69681294f8f74f5c2d919d67d3266661fa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
