@@ -204,6 +204,9 @@ unicode-segmentation
 unicode-width
 unsafe-libyaml
 url
+<<<<<<< PATCH SET (de336d Migrate want to monorepo.)
+want
+=======
 userfaultfd
 utf-8
 uuid
@@ -213,6 +216,7 @@ which
 winnow
 x509-cert
 xml-rs
+>>>>>>> BASE      (63fd73 Migrate 26 crates to monorepo)
 zeroize
 zeroize_derive
 zip

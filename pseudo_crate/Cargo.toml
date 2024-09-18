@@ -212,6 +212,9 @@ unicode-segmentation = "=1.10.1"
 unicode-width = "=0.1.11"
 unsafe-libyaml = "=0.2.10"
 url = "=2.3.1"
+<<<<<<< PATCH SET (de336d Migrate want to monorepo.)
+want = "=0.3.1"
+=======
 userfaultfd = "=0.7.0"
 utf-8 = "=0.7.6"
 uuid = "=1.7.0"
@@ -221,6 +224,7 @@ which = "=4.4.0"
 winnow = "=0.5.37"
 x509-cert = "=0.2.4"
 xml-rs = "=0.8.19"
+>>>>>>> BASE      (63fd73 Migrate 26 crates to monorepo)
 zeroize = "=1.6.0"
 zeroize_derive = "=1.4.2"
 zip = "=0.6.6"
