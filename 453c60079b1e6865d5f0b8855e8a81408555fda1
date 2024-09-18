@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9414a829_85c6a86c",
+        "filename": "crates/serde_derive/cargo_embargo.json",
+        "patchSetId": 5
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-18T12:12:46Z",
+      "side": 1,
+      "message": "This seems weird. I assume this means \"use the defaults at top-level without any changes\". It seems like it would be clearer if you moved some of those, as appropriate, into this variant.",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 7
+      },
+      "revId": "453c60079b1e6865d5f0b8855e8a81408555fda1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
