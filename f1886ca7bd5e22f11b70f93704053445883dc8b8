@@ -16,6 +16,24 @@
       "message": "http://b/367707312 is another bug number you can add (which was requesting this update essentially).",
       "revId": "f1886ca7bd5e22f11b70f93704053445883dc8b8",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1dcbbe9e_65592e69",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-18T18:44:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "23d4e4c5_6f5fb545",
+      "revId": "f1886ca7bd5e22f11b70f93704053445883dc8b8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
