@@ -187,6 +187,7 @@ tinytemplate
 tokio-macros
 tokio-stream
 url
+want
 zeroize
 zeroize_derive
 zip
