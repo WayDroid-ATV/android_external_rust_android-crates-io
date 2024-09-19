@@ -16,6 +16,24 @@
       "message": "Rerunning presubmit-ready for James tomorrow, but I am leaving this comment open, since there\u0027s an unexpected breakage in progress from another update (and a missing git repository).",
       "revId": "8a9025868eb039a866babfb189abf3e33155c62f",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1e020b05_42b121d7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-19T11:58:27Z",
+      "side": 1,
+      "message": "Are you referring to the revert of arrayvec?",
+      "parentUuid": "b87ed5b0_524d2f55",
+      "revId": "8a9025868eb039a866babfb189abf3e33155c62f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
