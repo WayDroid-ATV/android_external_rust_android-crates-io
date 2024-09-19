@@ -163,7 +163,7 @@ dependencies = [
  "http-body",
  "httparse",
  "httpdate",
- "idna 0.5.0",
+ "idna",
  "instant",
  "intrusive-collections",
  "itertools 0.13.0",
@@ -259,7 +259,6 @@ dependencies = [
  "tinytemplate",
  "tokio-macros",
  "tokio-stream",
- "url",
  "zeroize",
  "zeroize_derive",
  "zip",
@@ -1646,16 +1645,6 @@ name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
-
-[[package]]
-name = "idna"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e14ddfc70884202db2244c223200c204c2bda1bc6e0998d11b5e024d657209e6"
-dependencies = [
- "unicode-bidi",
- "unicode-normalization",
-]
 
 [[package]]
 name = "idna"
@@ -3427,17 +3416,6 @@ name = "unwind_safe"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0976c77def3f1f75c4ef892a292c31c0bbe9e3d0702c63044d7c76db298171a3"
-
-[[package]]
-name = "url"
-version = "2.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d68c799ae75762b8c3fe375feb6600ef5602c883c5d21eb51c09f22b83c4643"
-dependencies = [
- "form_urlencoded",
- "idna 0.3.0",
- "percent-encoding",
-]
 
 [[package]]
 name = "vcpkg"
