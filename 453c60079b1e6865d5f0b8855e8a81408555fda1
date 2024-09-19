@@ -22,6 +22,30 @@
       },
       "revId": "453c60079b1e6865d5f0b8855e8a81408555fda1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "971ae83d_16647f93",
+        "filename": "crates/serde_derive/cargo_embargo.json",
+        "patchSetId": 5
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-09-19T22:33:11Z",
+      "side": 1,
+      "message": "Yeah, that\u0027s my understanding too. I patterned this off other `cargo_embargo.json` files (see below) so I assumed it was an accepted way of doing things. Maybe @qwandor@google.com can weigh in? (To be clear, I\u0027m happy to avoid this pattern if it is not recommended.)\n\n```\n$ rg --glob \"cargo_embargo.json\" -A2 variants | rg --fixed-strings \"{}\"\ntracing/cargo_embargo.json-    {},\nhex/cargo_embargo.json-    {},\nvirtio-drivers/cargo_embargo.json-    {},\nhalf/cargo_embargo.json-    {},\n```",
+      "parentUuid": "9414a829_85c6a86c",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 7
+      },
+      "revId": "453c60079b1e6865d5f0b8855e8a81408555fda1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
