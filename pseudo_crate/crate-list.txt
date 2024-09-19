@@ -8,6 +8,7 @@ anyhow
 argh
 argh_derive
 argh_shared
+arrayvec
 ash
 async-stream
 async-stream-impl
@@ -185,5 +186,8 @@ thiserror
 thread_local
 tinytemplate
 tokio-macros
+tokio-stream
+url
 zeroize
 zeroize_derive
+zip

@@ -15,6 +15,36 @@
       }
     },
     {
+      "features": [
+        "std",
+        "max_level_info",
+        "release_max_level_info"
+      ],
+      "module_name_overrides": {
+        "liblog": "liblog_rust_max_level_info"
+      },
+      "package": {
+        "log": {
+          "add_module_block": "android_impl.bp"
+        }
+      }
+    },
+    {
+      "features": [
+        "std",
+        "max_level_off",
+        "release_max_level_off"
+      ],
+      "module_name_overrides": {
+        "liblog": "liblog_rust_max_level_off"
+      },
+      "package": {
+        "log": {
+          "add_module_block": "android_impl.bp"
+        }
+      }
+    },
+    {
       "module_name_overrides": {
         "liblog": "liblog_rust_nostd"
       },
