@@ -16,8 +16,7 @@ use crate::__private::Slice;
 /// ## Declaration
 ///
 /// A static distributed slice may be declared by writing `#[distributed_slice]`
-/// on a static item whose type is `[T]` for some type `T`. The initializer
-/// expression must be `[..]` to indicate that elements come from elsewhere.
+/// on a static item whose type is `[T]` for some type `T`.
 ///
 /// ```
 /// # #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
@@ -27,7 +26,7 @@ use crate::__private::Slice;
 /// use linkme::distributed_slice;
 ///
 /// #[distributed_slice]
-/// pub static BENCHMARKS: [fn(&mut Bencher)] = [..];
+/// pub static BENCHMARKS: [fn(&mut Bencher)];
 /// ```
 ///
 /// The attribute rewrites the `[T]` type of the static into
@@ -54,7 +53,7 @@ use crate::__private::Slice;
 /// #     pub struct Bencher;
 /// #
 /// #     #[distributed_slice]
-/// #     pub static BENCHMARKS: [fn(&mut Bencher)] = [..];
+/// #     pub static BENCHMARKS: [fn(&mut Bencher)];
 /// # }
 /// #
 /// # use other_crate::Bencher;
@@ -81,7 +80,7 @@ use crate::__private::Slice;
 /// #     pub struct Bencher;
 /// #
 /// #     #[distributed_slice]
-/// #     pub static BENCHMARKS: [fn(&mut Bencher)] = [..];
+/// #     pub static BENCHMARKS: [fn(&mut Bencher)];
 /// # }
 /// #
 /// # use linkme::distributed_slice;
@@ -117,7 +116,7 @@ use crate::__private::Slice;
 /// use linkme::distributed_slice;
 ///
 /// #[distributed_slice]
-/// pub static BENCHMARKS: [fn(&mut Bencher)] = [..];
+/// pub static BENCHMARKS: [fn(&mut Bencher)];
 ///
 /// // Equivalent to:
 /// //
@@ -162,8 +161,11 @@ impl<T> DistributedSlice<[T]> {
         target_os = "ios",
         target_os = "tvos",
         target_os = "android",
+        target_os = "fuchsia",
         target_os = "illumos",
-        target_os = "freebsd"
+        target_os = "freebsd",
+        target_os = "openbsd",
+        target_os = "psp",
     ))]
     pub const unsafe fn private_new(
         name: &'static str,
@@ -211,8 +213,8 @@ impl<T> DistributedSlice<[T]> {
 
     #[doc(hidden)]
     #[inline]
-    pub unsafe fn private_typecheck(self, element: T) {
-        mem::forget(element);
+    pub unsafe fn private_typecheck(self, get: fn() -> &'static T) {
+        let _ = get;
     }
 }
 
@@ -234,7 +236,7 @@ impl<T> DistributedSlice<[T]> {
     /// use linkme::distributed_slice;
     ///
     /// #[distributed_slice]
-    /// static BENCHMARKS: [fn(&mut Bencher)] = [..];
+    /// static BENCHMARKS: [fn(&mut Bencher)];
     ///
     /// fn main() {
     ///     // Iterate the elements.
@@ -267,6 +269,14 @@ impl<T> DistributedSlice<[T]> {
             // using the unsafe `private_new`.
             None => unsafe { hint::unreachable_unchecked() },
         };
+
+        // On Windows, the implementation involves growing a &[T; 0] to
+        // encompass elements that we have asked the linker to place immediately
+        // after that location. The compiler sees this as going "out of bounds"
+        // based on provenance, so we must conceal what is going on.
+        #[cfg(target_os = "windows")]
+        let start = hint::black_box(start);
+
         unsafe { slice::from_raw_parts(start, len) }
     }
 }

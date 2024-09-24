@@ -30,12 +30,12 @@ impl Arbitrary for Utf8PathBuf {
             prop::collection::vec(any_with::<String>(args), 0..8),
         )
             .prop_map(|(is_relative, components)| {
-                let initial_component =
-                    is_relative.then(|| format!("{}", std::path::MAIN_SEPARATOR));
-                initial_component
-                    .into_iter()
-                    .chain(components.into_iter())
-                    .collect()
+                let initial_component = if is_relative {
+                    Some(format!("{}", std::path::MAIN_SEPARATOR))
+                } else {
+                    None
+                };
+                initial_component.into_iter().chain(components).collect()
             })
             .boxed()
     }
