@@ -10,6 +10,7 @@ use std::{ffi::OsStr, path::Path};
 
 use memchr::{memchr, memmem, memrchr};
 
+use crate::escape_bytes::EscapeBytes;
 #[cfg(feature = "alloc")]
 use crate::ext_vec::ByteVec;
 #[cfg(feature = "unicode")]
@@ -2765,6 +2766,47 @@ pub trait ByteSlice: private::Sealed {
         self.as_bytes_mut().make_ascii_uppercase();
     }
 
+    /// Escapes this byte string into a sequence of `char` values.
+    ///
+    /// When the sequence of `char` values is concatenated into a string, the
+    /// result is always valid UTF-8. Any unprintable or invalid UTF-8 in this
+    /// byte string are escaped using using `\xNN` notation. Moreover, the
+    /// characters `\0`, `\r`, `\n`, `\t` and `\` are escaped as well.
+    ///
+    /// This is useful when one wants to get a human readable view of the raw
+    /// bytes that is also valid UTF-8.
+    ///
+    /// The iterator returned implements the `Display` trait. So one can do
+    /// `b"foo\xFFbar".escape_bytes().to_string()` to get a `String` with its
+    /// bytes escaped.
+    ///
+    /// The dual of this function is [`ByteVec::unescape_bytes`].
+    ///
+    /// Note that this is similar to, but not equivalent to the `Debug`
+    /// implementation on [`BStr`] and [`BString`]. The `Debug` implementations
+    /// also use the debug representation for all Unicode codepoints. However,
+    /// this escaping routine only escapes individual bytes. All Unicode
+    /// codepoints above `U+007F` are passed through unchanged without any
+    /// escaping.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # #[cfg(feature = "alloc")] {
+    /// use bstr::{B, ByteSlice};
+    ///
+    /// assert_eq!(r"foo\xFFbar", b"foo\xFFbar".escape_bytes().to_string());
+    /// assert_eq!(r"foo\nbar", b"foo\nbar".escape_bytes().to_string());
+    /// assert_eq!(r"foo\tbar", b"foo\tbar".escape_bytes().to_string());
+    /// assert_eq!(r"foo\\bar", b"foo\\bar".escape_bytes().to_string());
+    /// assert_eq!(r"foo☃bar", B("foo☃bar").escape_bytes().to_string());
+    /// # }
+    /// ```
+    #[inline]
+    fn escape_bytes(&self) -> EscapeBytes<'_> {
+        EscapeBytes::new(self.as_bytes())
+    }
+
     /// Reverse the bytes in this string, in place.
     ///
     /// This is not necessarily a well formed operation! For example, if this
@@ -3064,8 +3106,8 @@ impl<'a> Finder<'a> {
     /// If this is already an owned finder, then this is a no-op. Otherwise,
     /// this copies the needle.
     ///
-    /// This is only available when the `std` feature is enabled.
-    #[cfg(feature = "std")]
+    /// This is only available when the `alloc` feature is enabled.
+    #[cfg(feature = "alloc")]
     #[inline]
     pub fn into_owned(self) -> Finder<'static> {
         Finder(self.0.into_owned())
@@ -3147,8 +3189,8 @@ impl<'a> FinderReverse<'a> {
     /// If this is already an owned finder, then this is a no-op. Otherwise,
     /// this copies the needle.
     ///
-    /// This is only available when the `std` feature is enabled.
-    #[cfg(feature = "std")]
+    /// This is only available when the `alloc` feature is enabled.
+    #[cfg(feature = "alloc")]
     #[inline]
     pub fn into_owned(self) -> FinderReverse<'static> {
         FinderReverse(self.0.into_owned())
@@ -3204,7 +3246,7 @@ impl<'a> FinderReverse<'a> {
 ///
 /// `'h` is the lifetime of the haystack while `'n` is the lifetime of the
 /// needle.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Find<'h, 'n> {
     it: memmem::FindIter<'h, 'n>,
     haystack: &'h [u8],
@@ -3232,7 +3274,7 @@ impl<'h, 'n> Iterator for Find<'h, 'n> {
 ///
 /// `'h` is the lifetime of the haystack while `'n` is the lifetime of the
 /// needle.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct FindReverse<'h, 'n> {
     it: memmem::FindRevIter<'h, 'n>,
     haystack: &'h [u8],
@@ -3324,7 +3366,7 @@ impl<'a> iter::FusedIterator for Bytes<'a> {}
 ///
 /// `'a` is the lifetime of the byte string being split.
 #[cfg(feature = "unicode")]
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Fields<'a> {
     it: FieldsWith<'a, fn(char) -> bool>,
 }
@@ -3355,7 +3397,7 @@ impl<'a> Iterator for Fields<'a> {
 ///
 /// `'a` is the lifetime of the byte string being split, while `F` is the type
 /// of the predicate, i.e., `FnMut(char) -> bool`.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct FieldsWith<'a, F> {
     f: F,
     bytes: &'a [u8],
@@ -3400,7 +3442,7 @@ impl<'a, F: FnMut(char) -> bool> Iterator for FieldsWith<'a, F> {
 ///
 /// `'h` is the lifetime of the byte string being split (the haystack), while
 /// `'s` is the lifetime of the byte string doing the splitting.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Split<'h, 's> {
     finder: Find<'h, 's>,
     /// The end position of the previous match of our splitter. The element
@@ -3456,7 +3498,7 @@ impl<'h, 's> Iterator for Split<'h, 's> {
 ///
 /// `'h` is the lifetime of the byte string being split (the haystack), while
 /// `'s` is the lifetime of the byte string doing the splitting.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SplitReverse<'h, 's> {
     finder: FindReverse<'h, 's>,
     /// The end position of the previous match of our splitter. The element
@@ -3513,7 +3555,7 @@ impl<'h, 's> Iterator for SplitReverse<'h, 's> {
 ///
 /// `'h` is the lifetime of the byte string being split (the haystack), while
 /// `'s` is the lifetime of the byte string doing the splitting.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SplitN<'h, 's> {
     split: Split<'h, 's>,
     limit: usize,
@@ -3552,7 +3594,7 @@ impl<'h, 's> Iterator for SplitN<'h, 's> {
 ///
 /// `'h` is the lifetime of the byte string being split (the haystack), while
 /// `'s` is the lifetime of the byte string doing the splitting.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SplitNReverse<'h, 's> {
     split: SplitReverse<'h, 's>,
     limit: usize,
@@ -3743,6 +3785,8 @@ fn trim_last_terminator(mut s: &[u8]) -> &[u8] {
 
 #[cfg(all(test, feature = "std"))]
 mod tests {
+    use alloc::{string::String, vec::Vec};
+
     use crate::{
         ext_slice::{ByteSlice, Lines, LinesWithTerminator, B},
         tests::LOSSY_TESTS,

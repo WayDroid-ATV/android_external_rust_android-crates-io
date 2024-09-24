@@ -61,12 +61,10 @@ macro_rules! impl_partial_ord {
 
 #[cfg(feature = "alloc")]
 mod bstring {
-    use core::{
-        cmp::Ordering, convert::TryFrom, fmt, iter::FromIterator, ops,
-    };
+    use core::{cmp::Ordering, fmt, ops, str::FromStr};
 
     use alloc::{
-        borrow::{Borrow, Cow, ToOwned},
+        borrow::{Borrow, BorrowMut, Cow, ToOwned},
         string::String,
         vec,
         vec::Vec,
@@ -87,6 +85,15 @@ mod bstring {
         #[inline]
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             fmt::Debug::fmt(self.as_bstr(), f)
+        }
+    }
+
+    impl FromStr for BString {
+        type Err = crate::Utf8Error;
+
+        #[inline]
+        fn from_str(s: &str) -> Result<BString, crate::Utf8Error> {
+            Ok(BString::from(s))
         }
     }
 
@@ -134,10 +141,52 @@ mod bstring {
         }
     }
 
+    impl Borrow<[u8]> for BString {
+        #[inline]
+        fn borrow(&self) -> &[u8] {
+            self.as_bytes()
+        }
+    }
+
     impl Borrow<BStr> for BString {
         #[inline]
         fn borrow(&self) -> &BStr {
             self.as_bstr()
+        }
+    }
+
+    impl Borrow<BStr> for Vec<u8> {
+        #[inline]
+        fn borrow(&self) -> &BStr {
+            self.as_slice().as_bstr()
+        }
+    }
+
+    impl Borrow<BStr> for String {
+        #[inline]
+        fn borrow(&self) -> &BStr {
+            self.as_bytes().as_bstr()
+        }
+    }
+
+    impl BorrowMut<[u8]> for BString {
+        #[inline]
+        fn borrow_mut(&mut self) -> &mut [u8] {
+            self.as_bytes_mut()
+        }
+    }
+
+    impl BorrowMut<BStr> for BString {
+        #[inline]
+        fn borrow_mut(&mut self) -> &mut BStr {
+            self.as_mut_bstr()
+        }
+    }
+
+    impl BorrowMut<BStr> for Vec<u8> {
+        #[inline]
+        fn borrow_mut(&mut self) -> &mut BStr {
+            BStr::new_mut(self.as_mut_slice())
         }
     }
 
@@ -153,6 +202,20 @@ mod bstring {
     impl Default for BString {
         fn default() -> BString {
             BString::from(vec![])
+        }
+    }
+
+    impl<'a, const N: usize> From<&'a [u8; N]> for BString {
+        #[inline]
+        fn from(s: &'a [u8; N]) -> BString {
+            BString::from(&s[..])
+        }
+    }
+
+    impl<const N: usize> From<[u8; N]> for BString {
+        #[inline]
+        fn from(s: [u8; N]) -> BString {
+            BString::from(&s[..])
         }
     }
 
@@ -202,6 +265,13 @@ mod bstring {
         #[inline]
         fn from(s: BString) -> Cow<'a, BStr> {
             Cow::Owned(s)
+        }
+    }
+
+    impl<'a> From<&'a BString> for Cow<'a, BStr> {
+        #[inline]
+        fn from(s: &'a BString) -> Cow<'a, BStr> {
+            Cow::Borrowed(s.as_bstr())
         }
     }
 
@@ -324,7 +394,11 @@ mod bstring {
 }
 
 mod bstr {
-    use core::{cmp::Ordering, convert::TryFrom, fmt, ops};
+    use core::{
+        borrow::{Borrow, BorrowMut},
+        cmp::Ordering,
+        fmt, ops,
+    };
 
     #[cfg(feature = "alloc")]
     use alloc::{borrow::Cow, boxed::Box, string::String, vec::Vec};
@@ -598,6 +672,41 @@ mod bstr {
         }
     }
 
+    impl Borrow<BStr> for [u8] {
+        #[inline]
+        fn borrow(&self) -> &BStr {
+            self.as_bstr()
+        }
+    }
+
+    impl Borrow<BStr> for str {
+        #[inline]
+        fn borrow(&self) -> &BStr {
+            self.as_bytes().as_bstr()
+        }
+    }
+
+    impl Borrow<[u8]> for BStr {
+        #[inline]
+        fn borrow(&self) -> &[u8] {
+            self.as_bytes()
+        }
+    }
+
+    impl BorrowMut<BStr> for [u8] {
+        #[inline]
+        fn borrow_mut(&mut self) -> &mut BStr {
+            BStr::new_mut(self)
+        }
+    }
+
+    impl BorrowMut<[u8]> for BStr {
+        #[inline]
+        fn borrow_mut(&mut self) -> &mut [u8] {
+            self.as_bytes_mut()
+        }
+    }
+
     impl<'a> Default for &'a BStr {
         fn default() -> &'a BStr {
             BStr::from_bytes(b"")
@@ -607,6 +716,13 @@ mod bstr {
     impl<'a> Default for &'a mut BStr {
         fn default() -> &'a mut BStr {
             BStr::from_bytes_mut(&mut [])
+        }
+    }
+
+    impl<'a, const N: usize> From<&'a [u8; N]> for &'a BStr {
+        #[inline]
+        fn from(s: &'a [u8; N]) -> &'a BStr {
+            BStr::from_bytes(s)
         }
     }
 
@@ -960,6 +1076,8 @@ mod bstring_serde {
 
 #[cfg(all(test, feature = "std"))]
 mod display {
+    use alloc::format;
+
     #[cfg(not(miri))]
     use crate::bstring::BString;
     use crate::ByteSlice;
@@ -968,6 +1086,12 @@ mod display {
     fn clean() {
         assert_eq!(&format!("{}", &b"abc".as_bstr()), "abc");
         assert_eq!(&format!("{}", &b"\xf0\x28\x8c\xbc".as_bstr()), "�(��");
+    }
+
+    #[test]
+    fn from_str() {
+        let s: BString = "abc".parse().unwrap();
+        assert_eq!(s, BString::new(b"abc".to_vec()));
     }
 
     #[test]
@@ -1071,6 +1195,8 @@ mod display {
 
 #[cfg(all(test, feature = "alloc"))]
 mod bstring_arbitrary {
+    use alloc::{boxed::Box, vec::Vec};
+
     use crate::bstring::BString;
 
     use quickcheck::{Arbitrary, Gen};
@@ -1089,6 +1215,8 @@ mod bstring_arbitrary {
 #[test]
 #[cfg(feature = "std")]
 fn test_debug() {
+    use alloc::format;
+
     use crate::{ByteSlice, B};
 
     assert_eq!(

@@ -1,17 +1,17 @@
 name: "instant"
 description: "A partial replacement for std::time::Instant that works on WASM too."
 third_party {
-  version: "0.1.12"
+  version: "0.1.13"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2022
-    month: 3
-    day: 1
+    year: 2024
+    month: 9
+    day: 24
   }
   homepage: "https://crates.io/crates/instant"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/instant/instant-0.1.12.crate"
-    version: "0.1.12"
+    value: "https://static.crates.io/crates/instant/instant-0.1.13.crate"
+    version: "0.1.13"
   }
 }
