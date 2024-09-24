@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "url",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.3.1",
+    cargo_pkg_version: "2.5.2",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: ["default"],
@@ -37,12 +37,12 @@ rust_library {
 }
 
 rust_test {
-    name: "url_test_tests_data",
+    name: "url_test_src_lib",
     host_supported: true,
-    crate_name: "data",
+    crate_name: "url",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.3.1",
-    crate_root: "tests/data.rs",
+    cargo_pkg_version: "2.5.2",
+    crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -55,8 +55,8 @@ rust_test {
         "libform_urlencoded",
         "libidna",
         "libpercent_encoding",
+        "libserde",
         "libserde_json",
-        "liburl",
     ],
 }
 
@@ -65,7 +65,7 @@ rust_test {
     host_supported: true,
     crate_name: "unit",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.3.1",
+    cargo_pkg_version: "2.5.2",
     crate_root: "tests/unit.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -79,6 +79,7 @@ rust_test {
         "libform_urlencoded",
         "libidna",
         "libpercent_encoding",
+        "libserde",
         "libserde_json",
         "liburl",
     ],

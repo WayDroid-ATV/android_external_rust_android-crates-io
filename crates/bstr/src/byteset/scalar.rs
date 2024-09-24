@@ -4,11 +4,7 @@
 
 use core::{cmp, usize};
 
-#[cfg(target_pointer_width = "32")]
-const USIZE_BYTES: usize = 4;
-
-#[cfg(target_pointer_width = "64")]
-const USIZE_BYTES: usize = 8;
+const USIZE_BYTES: usize = core::mem::size_of::<usize>();
 
 // The number of bytes to loop at in one iteration of memchr/memrchr.
 const LOOP_SIZE: usize = 2 * USIZE_BYTES;
@@ -177,6 +173,8 @@ pub(crate) fn reverse_search_bytes<F: Fn(u8) -> bool>(
 
 #[cfg(all(test, feature = "std"))]
 mod tests {
+    use alloc::{vec, vec::Vec};
+
     use super::{inv_memchr, inv_memrchr};
 
     // search string, search byte, inv_memchr result, inv_memrchr result.

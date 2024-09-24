@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "mio",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.6",
+    cargo_pkg_version: "0.8.11",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
@@ -26,10 +26,7 @@ rust_library {
         "os-ext",
         "os-poll",
     ],
-    rustlibs: [
-        "liblibc",
-        "liblog_rust",
-    ],
+    rustlibs: ["liblibc"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -44,7 +41,7 @@ rust_test {
     host_supported: true,
     crate_name: "mio",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.6",
+    cargo_pkg_version: "0.8.11",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -60,7 +57,6 @@ rust_test {
     rustlibs: [
         "libenv_logger",
         "liblibc",
-        "liblog_rust",
         "librand",
     ],
 }
