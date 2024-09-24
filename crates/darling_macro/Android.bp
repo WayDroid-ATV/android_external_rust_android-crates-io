@@ -17,9 +17,9 @@ rust_proc_macro {
     name: "libdarling_macro",
     crate_name: "darling_macro",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.20.8",
+    cargo_pkg_version: "0.20.10",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     rustlibs: [
         "libdarling_core",
         "libquote",

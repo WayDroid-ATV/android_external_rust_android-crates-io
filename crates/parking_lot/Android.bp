@@ -18,9 +18,9 @@ rust_library {
     host_supported: true,
     crate_name: "parking_lot",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.1",
+    cargo_pkg_version: "0.12.3",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     features: ["default"],
     rustlibs: [
         "liblock_api",
@@ -40,14 +40,14 @@ rust_test {
     host_supported: true,
     crate_name: "parking_lot",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.1",
+    cargo_pkg_version: "0.12.3",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: ["default"],
     rustlibs: [
         "libbincode",
@@ -62,14 +62,37 @@ rust_test {
     host_supported: true,
     crate_name: "issue_203",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.1",
+    cargo_pkg_version: "0.12.3",
     crate_root: "tests/issue_203.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
+    features: ["default"],
+    rustlibs: [
+        "libbincode",
+        "liblock_api",
+        "libparking_lot",
+        "libparking_lot_core",
+        "librand",
+    ],
+}
+
+rust_test {
+    name: "parking_lot_test_tests_issue_392",
+    host_supported: true,
+    crate_name: "issue_392",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.12.3",
+    crate_root: "tests/issue_392.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
     features: ["default"],
     rustlibs: [
         "libbincode",

@@ -18,9 +18,9 @@ rust_library {
     host_supported: true,
     crate_name: "flagset",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.3",
+    cargo_pkg_version: "0.4.6",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     apex_available: [
         "//apex_available:platform",
         "com.android.virt",
@@ -39,9 +39,9 @@ rust_library_rlib {
     name: "libflagset_nostd",
     crate_name: "flagset",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.3",
+    cargo_pkg_version: "0.4.6",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     apex_available: [
         "//apex_available:platform",
         "com.android.virt",

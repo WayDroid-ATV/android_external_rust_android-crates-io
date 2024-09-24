@@ -10,7 +10,9 @@ extern crate spin;
 
 extern crate alloc;
 
-use core::alloc::{GlobalAlloc, Layout};
+#[cfg(feature = "use_spin")]
+use core::alloc::GlobalAlloc;
+use core::alloc::Layout;
 use core::cmp::{max, min};
 use core::fmt;
 use core::mem::size_of;
@@ -76,7 +78,7 @@ impl<const ORDER: usize> Heap<ORDER> {
     pub unsafe fn add_to_heap(&mut self, mut start: usize, mut end: usize) {
         // avoid unaligned access on some platforms
         start = (start + size_of::<usize>() - 1) & (!size_of::<usize>() + 1);
-        end = end & (!size_of::<usize>() + 1);
+        end &= !size_of::<usize>() + 1;
         assert!(start <= end);
 
         let mut total = 0;
@@ -155,7 +157,8 @@ impl<const ORDER: usize> Heap<ORDER> {
             // Merge free buddy lists
             let mut current_ptr = ptr.as_ptr() as usize;
             let mut current_class = class;
-            while current_class < self.free_list.len() {
+
+            while current_class < self.free_list.len() - 1 {
                 let buddy = current_ptr ^ (1 << current_class);
                 let mut flag = false;
                 for block in self.free_list[current_class].iter_mut() {
@@ -259,7 +262,7 @@ unsafe impl<const ORDER: usize> GlobalAlloc for LockedHeap<ORDER> {
             .lock()
             .alloc(layout)
             .ok()
-            .map_or(0 as *mut u8, |allocation| allocation.as_ptr())
+            .map_or(core::ptr::null_mut(), |allocation| allocation.as_ptr())
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
@@ -325,7 +328,7 @@ unsafe impl<const ORDER: usize> GlobalAlloc for LockedHeapWithRescue<ORDER> {
                 inner
                     .alloc(layout)
                     .ok()
-                    .map_or(0 as *mut u8, |allocation| allocation.as_ptr())
+                    .map_or(core::ptr::null_mut(), |allocation| allocation.as_ptr())
             }
         }
     }
@@ -338,5 +341,5 @@ unsafe impl<const ORDER: usize> GlobalAlloc for LockedHeapWithRescue<ORDER> {
 }
 
 pub(crate) fn prev_power_of_two(num: usize) -> usize {
-    1 << (8 * (size_of::<usize>()) - num.leading_zeros() as usize - 1)
+    1 << (usize::BITS as usize - num.leading_zeros() as usize - 1)
 }

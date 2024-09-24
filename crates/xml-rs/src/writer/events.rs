@@ -154,11 +154,12 @@ impl<'a> XmlEvent<'a> {
 
 impl<'a> From<&'a str> for XmlEvent<'a> {
     #[inline]
-    fn from(s: &'a str) -> XmlEvent<'a> {
+    fn from(s: &'a str) -> Self {
         XmlEvent::Characters(s)
     }
 }
 
+/// A builder for a closing element event.
 pub struct EndElementBuilder<'a> {
     name: Option<Name<'a>>,
 }
@@ -172,14 +173,15 @@ impl<'a> EndElementBuilder<'a> {
     /// It is possible, however, to disable such behavior; then the user must ensure that
     /// closing element name is correct manually.
     #[inline]
-    pub fn name<N>(mut self, name: N) -> EndElementBuilder<'a> where N: Into<Name<'a>> {
+    #[must_use]
+    pub fn name<N>(mut self, name: N) -> Self where N: Into<Name<'a>> {
         self.name = Some(name.into());
         self
     }
 }
 
 impl<'a> From<EndElementBuilder<'a>> for XmlEvent<'a> {
-    fn from(b: EndElementBuilder<'a>) -> XmlEvent<'a> {
+    fn from(b: EndElementBuilder<'a>) -> Self {
         XmlEvent::EndElement { name: b.name }
     }
 }
@@ -203,9 +205,9 @@ impl<'a> StartElementBuilder<'a> {
     ///
     /// The writer checks that you don't specify reserved prefix names, for example `xmlns`.
     #[inline]
-    pub fn attr<N>(mut self, name: N, value: &'a str) -> StartElementBuilder<'a>
-        where N: Into<Name<'a>>
-    {
+    #[must_use]
+    pub fn attr<N>(mut self, name: N, value: &'a str) -> Self
+    where N: Into<Name<'a>> {
         self.attributes.push(Attribute::new(name.into(), value));
         self
     }
@@ -224,7 +226,7 @@ impl<'a> StartElementBuilder<'a> {
     /// the outer binding.
     #[inline]
     #[must_use]
-    pub fn ns<S1, S2>(mut self, prefix: S1, uri: S2) -> StartElementBuilder<'a>
+    pub fn ns<S1, S2>(mut self, prefix: S1, uri: S2) -> Self
         where S1: Into<String>, S2: Into<String>
     {
         self.namespace.put(prefix, uri);
@@ -236,9 +238,8 @@ impl<'a> StartElementBuilder<'a> {
     /// Same rules as for `ns()` are also valid for the default namespace mapping.
     #[inline]
     #[must_use]
-    pub fn default_ns<S>(mut self, uri: S) -> StartElementBuilder<'a>
-        where S: Into<String>
-    {
+    pub fn default_ns<S>(mut self, uri: S) -> Self
+    where S: Into<String> {
         self.namespace.put(NS_NO_PREFIX, uri);
         self
     }
@@ -246,7 +247,7 @@ impl<'a> StartElementBuilder<'a> {
 
 impl<'a> From<StartElementBuilder<'a>> for XmlEvent<'a> {
     #[inline]
-    fn from(b: StartElementBuilder<'a>) -> XmlEvent<'a> {
+    fn from(b: StartElementBuilder<'a>) -> Self {
         XmlEvent::StartElement {
             name: b.name,
             attributes: Cow::Owned(b.attributes),
