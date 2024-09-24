@@ -15,6 +15,7 @@ use syn::{
 impl Printer {
     pub fn item(&mut self, item: &Item) {
         match item {
+            #![cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
             Item::Const(item) => self.item_const(item),
             Item::Enum(item) => self.item_enum(item),
             Item::ExternCrate(item) => self.item_extern_crate(item),
@@ -31,7 +32,6 @@ impl Printer {
             Item::Union(item) => self.item_union(item),
             Item::Use(item) => self.item_use(item),
             Item::Verbatim(item) => self.item_verbatim(item),
-            #[cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
             _ => unimplemented!("unknown Item"),
         }
     }
@@ -374,6 +374,7 @@ impl Printer {
 
         enum ItemVerbatim {
             Empty,
+            Ellipsis,
             ConstFlexible(FlexibleItemConst),
             FnFlexible(FlexibleItemFn),
             ImplFlexible(ImplFlexible),
@@ -447,6 +448,9 @@ impl Printer {
             fn parse(input: ParseStream) -> Result<Self> {
                 if input.is_empty() {
                     return Ok(ItemVerbatim::Empty);
+                } else if input.peek(Token![...]) {
+                    input.parse::<Token![...]>()?;
+                    return Ok(ItemVerbatim::Ellipsis);
                 }
 
                 let mut attrs = input.call(Attribute::parse_outer)?;
@@ -570,6 +574,10 @@ impl Printer {
 
         match item {
             ItemVerbatim::Empty => {
+                self.hardbreak();
+            }
+            ItemVerbatim::Ellipsis => {
+                self.word("...");
                 self.hardbreak();
             }
             ItemVerbatim::ConstFlexible(item) => {
@@ -735,7 +743,12 @@ impl Printer {
     fn use_group(&mut self, use_group: &UseGroup) {
         if use_group.items.is_empty() {
             self.word("{}");
-        } else if use_group.items.len() == 1 {
+        } else if use_group.items.len() == 1
+            && match &use_group.items[0] {
+                UseTree::Rename(use_rename) => use_rename.ident != "self",
+                _ => true,
+            }
+        {
             self.use_tree(&use_group.items[0]);
         } else {
             self.cbox(INDENT);
@@ -767,12 +780,12 @@ impl Printer {
 
     fn foreign_item(&mut self, foreign_item: &ForeignItem) {
         match foreign_item {
+            #![cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
             ForeignItem::Fn(item) => self.foreign_item_fn(item),
             ForeignItem::Static(item) => self.foreign_item_static(item),
             ForeignItem::Type(item) => self.foreign_item_type(item),
             ForeignItem::Macro(item) => self.foreign_item_macro(item),
             ForeignItem::Verbatim(item) => self.foreign_item_verbatim(item),
-            #[cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
             _ => unimplemented!("unknown ForeignItem"),
         }
     }
@@ -836,6 +849,7 @@ impl Printer {
 
         enum ForeignItemVerbatim {
             Empty,
+            Ellipsis,
             FnFlexible(FlexibleItemFn),
             StaticFlexible(FlexibleItemStatic),
             TypeFlexible(FlexibleItemType),
@@ -845,6 +859,9 @@ impl Printer {
             fn parse(input: ParseStream) -> Result<Self> {
                 if input.is_empty() {
                     return Ok(ForeignItemVerbatim::Empty);
+                } else if input.peek(Token![...]) {
+                    input.parse::<Token![...]>()?;
+                    return Ok(ForeignItemVerbatim::Ellipsis);
                 }
 
                 let attrs = input.call(Attribute::parse_outer)?;
@@ -887,6 +904,10 @@ impl Printer {
             ForeignItemVerbatim::Empty => {
                 self.hardbreak();
             }
+            ForeignItemVerbatim::Ellipsis => {
+                self.word("...");
+                self.hardbreak();
+            }
             ForeignItemVerbatim::FnFlexible(foreign_item) => {
                 self.flexible_item_fn(&foreign_item);
             }
@@ -901,12 +922,12 @@ impl Printer {
 
     fn trait_item(&mut self, trait_item: &TraitItem) {
         match trait_item {
+            #![cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
             TraitItem::Const(item) => self.trait_item_const(item),
             TraitItem::Fn(item) => self.trait_item_fn(item),
             TraitItem::Type(item) => self.trait_item_type(item),
             TraitItem::Macro(item) => self.trait_item_macro(item),
             TraitItem::Verbatim(item) => self.trait_item_verbatim(item),
-            #[cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
             _ => unimplemented!("unknown TraitItem"),
         }
     }
@@ -996,11 +1017,13 @@ impl Printer {
     #[cfg(feature = "verbatim")]
     fn trait_item_verbatim(&mut self, tokens: &TokenStream) {
         use syn::parse::{Parse, ParseStream, Result};
-        use syn::{Attribute, Token, Visibility};
-        use verbatim::{FlexibleItemType, WhereClauseLocation};
+        use syn::{Attribute, Ident, Token, Visibility};
+        use verbatim::{FlexibleItemConst, FlexibleItemType, WhereClauseLocation};
 
         enum TraitItemVerbatim {
             Empty,
+            Ellipsis,
+            ConstFlexible(FlexibleItemConst),
             TypeFlexible(FlexibleItemType),
             PubOrDefault(PubOrDefaultTraitItem),
         }
@@ -1016,6 +1039,9 @@ impl Printer {
             fn parse(input: ParseStream) -> Result<Self> {
                 if input.is_empty() {
                     return Ok(TraitItemVerbatim::Empty);
+                } else if input.peek(Token![...]) {
+                    input.parse::<Token![...]>()?;
+                    return Ok(TraitItemVerbatim::Ellipsis);
                 }
 
                 let attrs = input.call(Attribute::parse_outer)?;
@@ -1023,7 +1049,10 @@ impl Printer {
                 let defaultness = input.parse::<Option<Token![default]>>()?.is_some();
 
                 let lookahead = input.lookahead1();
-                if lookahead.peek(Token![type]) {
+                if lookahead.peek(Token![const]) && (input.peek2(Ident) || input.peek2(Token![_])) {
+                    let flexible_item = FlexibleItemConst::parse(attrs, vis, defaultness, input)?;
+                    Ok(TraitItemVerbatim::ConstFlexible(flexible_item))
+                } else if lookahead.peek(Token![type]) {
                     let flexible_item = FlexibleItemType::parse(
                         attrs,
                         vis,
@@ -1032,7 +1061,7 @@ impl Printer {
                         WhereClauseLocation::AfterEq,
                     )?;
                     Ok(TraitItemVerbatim::TypeFlexible(flexible_item))
-                } else if (lookahead.peek(Token![const])
+                } else if (input.peek(Token![const])
                     || lookahead.peek(Token![async])
                     || lookahead.peek(Token![unsafe])
                     || lookahead.peek(Token![extern])
@@ -1060,6 +1089,13 @@ impl Printer {
             TraitItemVerbatim::Empty => {
                 self.hardbreak();
             }
+            TraitItemVerbatim::Ellipsis => {
+                self.word("...");
+                self.hardbreak();
+            }
+            TraitItemVerbatim::ConstFlexible(trait_item) => {
+                self.flexible_item_const(&trait_item);
+            }
             TraitItemVerbatim::TypeFlexible(trait_item) => {
                 self.flexible_item_type(&trait_item);
             }
@@ -1076,12 +1112,12 @@ impl Printer {
 
     fn impl_item(&mut self, impl_item: &ImplItem) {
         match impl_item {
+            #![cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
             ImplItem::Const(item) => self.impl_item_const(item),
             ImplItem::Fn(item) => self.impl_item_fn(item),
             ImplItem::Type(item) => self.impl_item_type(item),
             ImplItem::Macro(item) => self.impl_item_macro(item),
             ImplItem::Verbatim(item) => self.impl_item_verbatim(item),
-            #[cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
             _ => unimplemented!("unknown ImplItem"),
         }
     }
@@ -1170,6 +1206,7 @@ impl Printer {
 
         enum ImplItemVerbatim {
             Empty,
+            Ellipsis,
             ConstFlexible(FlexibleItemConst),
             FnFlexible(FlexibleItemFn),
             TypeFlexible(FlexibleItemType),
@@ -1179,6 +1216,9 @@ impl Printer {
             fn parse(input: ParseStream) -> Result<Self> {
                 if input.is_empty() {
                     return Ok(ImplItemVerbatim::Empty);
+                } else if input.peek(Token![...]) {
+                    input.parse::<Token![...]>()?;
+                    return Ok(ImplItemVerbatim::Ellipsis);
                 }
 
                 let attrs = input.call(Attribute::parse_outer)?;
@@ -1219,6 +1259,10 @@ impl Printer {
 
         match impl_item {
             ImplItemVerbatim::Empty => {
+                self.hardbreak();
+            }
+            ImplItemVerbatim::Ellipsis => {
+                self.word("...");
                 self.hardbreak();
             }
             ImplItemVerbatim::ConstFlexible(impl_item) => {
@@ -1323,9 +1367,9 @@ impl Printer {
 
     fn static_mutability(&mut self, mutability: &StaticMutability) {
         match mutability {
+            #![cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
             StaticMutability::Mut(_) => self.word("mut "),
             StaticMutability::None => {}
-            #[cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
             _ => unimplemented!("unknown StaticMutability"),
         }
     }
@@ -1348,7 +1392,9 @@ mod verbatim {
         pub vis: Visibility,
         pub defaultness: bool,
         pub ident: Ident,
+        pub generics: Generics,
         pub ty: Type,
+        pub value: Option<Expr>,
     }
 
     pub struct FlexibleItemFn {
@@ -1397,8 +1443,16 @@ mod verbatim {
         ) -> Result<Self> {
             input.parse::<Token![const]>()?;
             let ident = input.call(Ident::parse_any)?;
+            let mut generics: Generics = input.parse()?;
             input.parse::<Token![:]>()?;
             let ty: Type = input.parse()?;
+            let value = if input.parse::<Option<Token![=]>>()?.is_some() {
+                let expr: Expr = input.parse()?;
+                Some(expr)
+            } else {
+                None
+            };
+            generics.where_clause = input.parse()?;
             input.parse::<Token![;]>()?;
 
             Ok(FlexibleItemConst {
@@ -1406,7 +1460,9 @@ mod verbatim {
                 vis,
                 defaultness,
                 ident,
+                generics,
                 ty,
+                value,
             })
         }
     }
@@ -1548,16 +1604,26 @@ mod verbatim {
     impl Printer {
         pub fn flexible_item_const(&mut self, item: &FlexibleItemConst) {
             self.outer_attrs(&item.attrs);
-            self.cbox(0);
+            self.cbox(INDENT);
             self.visibility(&item.vis);
             if item.defaultness {
                 self.word("default ");
             }
             self.word("const ");
             self.ident(&item.ident);
+            self.generics(&item.generics);
             self.word(": ");
+            self.cbox(-INDENT);
             self.ty(&item.ty);
-            self.word(";");
+            self.end();
+            if let Some(value) = &item.value {
+                self.word(" = ");
+                self.neverbreak();
+                self.ibox(-INDENT);
+                self.expr(value);
+                self.end();
+            }
+            self.where_clause_oneline_semi(&item.generics.where_clause);
             self.end();
             self.hardbreak();
         }

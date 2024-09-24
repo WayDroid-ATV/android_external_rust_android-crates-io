@@ -1,5 +1,5 @@
-use crate::reader::error::SyntaxError;
 use crate::common::is_whitespace_char;
+use crate::reader::error::SyntaxError;
 use crate::reader::events::XmlEvent;
 use crate::reader::lexer::Token;
 
@@ -132,6 +132,7 @@ impl PullParser {
                         if let Some(e) = self.set_encountered(Encountered::Doctype) {
                             next_event = Some(e);
                         }
+                        self.data.doctype = Some(Token::DoctypeStart.to_string());
 
                         // We don't have a doctype event so skip this position
                         // FIXME: update when we have a doctype event
@@ -146,9 +147,9 @@ impl PullParser {
                         self.into_state(State::InsideCData, next_event)
                     },
 
-                    _ => Some(self.error(SyntaxError::UnexpectedToken(t)))
+                    _ => Some(self.error(SyntaxError::UnexpectedToken(t))),
                 }
-            }
+            },
         }
     }
 
@@ -178,7 +179,7 @@ impl PullParser {
             Token::CommentStart => {
                 let next_event = self.set_encountered(Encountered::Comment);
                 self.into_state(State::InsideComment, next_event)
-            }
+            },
 
             Token::OpeningTagStart => {
                 let next_event = self.set_encountered(Encountered::Element);
@@ -188,6 +189,8 @@ impl PullParser {
 
             Token::DoctypeStart => {
                 let next_event = self.set_encountered(Encountered::Doctype);
+                self.data.doctype = Some(Token::DoctypeStart.to_string());
+
                 // We don't have a doctype event so skip this position
                 // FIXME: update when we have a doctype event
                 self.next_pos();

@@ -89,6 +89,8 @@ impl<const ORDER: usize> FrameAllocator<ORDER> {
 
     /// Allocate a range of frames with the given size and alignment from the allocator, returning
     /// the first frame of the allocated range.
+    /// The allocated size is the maximum of the next power of two of the given size and the
+    /// alignment.
     pub fn alloc_aligned(&mut self, layout: Layout) -> Option<usize> {
         let size = max(layout.size().next_power_of_two(), layout.align());
         self.alloc_power_of_two(size)
@@ -113,7 +115,7 @@ impl<const ORDER: usize> FrameAllocator<ORDER> {
                     }
                 }
 
-                let result = self.free_list[class].iter().next().clone();
+                let result = self.free_list[class].iter().next();
                 if let Some(result_ref) = result {
                     let result = *result_ref;
                     self.free_list[class].remove(&result);
@@ -153,7 +155,7 @@ impl<const ORDER: usize> FrameAllocator<ORDER> {
         let mut current_class = class;
         while current_class < self.free_list.len() {
             let buddy = current_ptr ^ (1 << current_class);
-            if self.free_list[current_class].remove(&buddy) == true {
+            if self.free_list[current_class].remove(&buddy) {
                 // Free buddy found
                 current_ptr = min(current_ptr, buddy);
                 current_class += 1;

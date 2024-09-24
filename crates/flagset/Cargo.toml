@@ -10,25 +10,41 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
+edition = "2021"
+rust-version = "1.65"
 name = "flagset"
-version = "0.4.3"
+version = "0.4.6"
 authors = ["Nathaniel McCallum <nathaniel@profian.com>"]
 description = "Data types and a macro for generating enumeration-based bit flags"
 homepage = "https://github.com/enarx/flagset"
 documentation = "https://docs.rs/flagset"
 readme = "README.md"
-keywords = ["flags", "bitflags", "enum", "enumflags"]
+keywords = [
+    "flags",
+    "bitflags",
+    "enum",
+    "enumflags",
+]
 license = "Apache-2.0"
 repository = "https://github.com/enarx/flagset"
+
 [package.metadata.docs.rs]
 all-features = true
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
+]
+
 [dependencies.serde]
 version = "1.0"
 features = ["serde_derive"]
 optional = true
+
 [dev-dependencies.serde_json]
 version = "1.0"
 
 [dev-dependencies.serde_repr]
 version = "0.1"
+
+[features]
+std = []

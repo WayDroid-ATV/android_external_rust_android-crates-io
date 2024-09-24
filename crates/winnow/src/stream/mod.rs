@@ -427,49 +427,56 @@ impl<S: SliceLen> SliceLen for AsciiCaseless<S> {
 }
 
 impl<'a, T> SliceLen for &'a [T] {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<T, const LEN: usize> SliceLen for [T; LEN] {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<'a, T, const LEN: usize> SliceLen for &'a [T; LEN] {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<'a> SliceLen for &'a str {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
+impl SliceLen for u8 {
+    #[inline(always)]
+    fn slice_len(&self) -> usize {
+        1
+    }
+}
+
 impl SliceLen for char {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len_utf8()
     }
 }
 
 impl<'a> SliceLen for &'a Bytes {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<'a> SliceLen for &'a BStr {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
@@ -2188,6 +2195,38 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a [u8] {
     }
 }
 
+impl<'a> Compare<u8> for &'a [u8] {
+    #[inline]
+    fn compare(&self, t: u8) -> CompareResult {
+        match self.first().copied() {
+            Some(c) if t == c => CompareResult::Ok,
+            Some(_) => CompareResult::Error,
+            None => CompareResult::Incomplete,
+        }
+    }
+    #[inline(always)]
+    #[allow(deprecated)]
+    fn compare_no_case(&self, t: u8) -> CompareResult {
+        self.compare(AsciiCaseless(t))
+    }
+}
+
+impl<'a> Compare<AsciiCaseless<u8>> for &'a [u8] {
+    #[inline]
+    fn compare(&self, t: AsciiCaseless<u8>) -> CompareResult {
+        match self.first() {
+            Some(c) if t.0.eq_ignore_ascii_case(c) => CompareResult::Ok,
+            Some(_) => CompareResult::Error,
+            None => CompareResult::Incomplete,
+        }
+    }
+    #[inline(always)]
+    #[allow(deprecated)]
+    fn compare_no_case(&self, t: AsciiCaseless<u8>) -> CompareResult {
+        self.compare(t)
+    }
+}
+
 impl<'a> Compare<char> for &'a [u8] {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
@@ -2202,7 +2241,7 @@ impl<'a> Compare<char> for &'a [u8] {
 }
 
 impl<'a> Compare<AsciiCaseless<char>> for &'a [u8] {
-    #[inline]
+    #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
         self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
     }
@@ -2240,10 +2279,34 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
     }
 }
 
+impl<'a> Compare<u8> for &'a str {
+    #[inline(always)]
+    fn compare(&self, t: u8) -> CompareResult {
+        self.as_bytes().compare(t)
+    }
+    #[inline(always)]
+    #[allow(deprecated)]
+    fn compare_no_case(&self, t: u8) -> CompareResult {
+        self.compare(AsciiCaseless(t))
+    }
+}
+
+impl<'a> Compare<AsciiCaseless<u8>> for &'a str {
+    #[inline(always)]
+    fn compare(&self, t: AsciiCaseless<u8>) -> CompareResult {
+        self.as_bytes().compare(t)
+    }
+    #[inline(always)]
+    #[allow(deprecated)]
+    fn compare_no_case(&self, t: AsciiCaseless<u8>) -> CompareResult {
+        self.compare(t)
+    }
+}
+
 impl<'a> Compare<char> for &'a str {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
-        self.compare(t.encode_utf8(&mut [0; 4]).as_bytes())
+        self.as_bytes().compare(t)
     }
 
     #[inline(always)]
@@ -2254,9 +2317,9 @@ impl<'a> Compare<char> for &'a str {
 }
 
 impl<'a> Compare<AsciiCaseless<char>> for &'a str {
-    #[inline]
+    #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
-        self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
+        self.as_bytes().compare(t)
     }
 
     #[inline(always)]
@@ -2269,7 +2332,7 @@ impl<'a> Compare<AsciiCaseless<char>> for &'a str {
 impl<'a, 'b> Compare<&'b [u8]> for &'a str {
     #[inline(always)]
     fn compare(&self, t: &'b [u8]) -> CompareResult {
-        AsBStr::as_bstr(self).compare(t)
+        self.as_bytes().compare(t)
     }
     #[inline(always)]
     #[allow(deprecated)]
@@ -2281,7 +2344,7 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a str {
 impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b [u8]>) -> CompareResult {
-        AsBStr::as_bstr(self).compare(t)
+        self.as_bytes().compare(t)
     }
     #[inline(always)]
     #[allow(deprecated)]
@@ -2426,6 +2489,48 @@ impl<'i, 's> FindSlice<(&'s [u8], &'s [u8], &'s [u8])> for &'i [u8] {
     }
 }
 
+impl<'i> FindSlice<char> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: char) -> Option<usize> {
+        let mut b = [0; 4];
+        let substr = substr.encode_utf8(&mut b);
+        self.find_slice(&*substr)
+    }
+}
+
+impl<'i> FindSlice<(char,)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (char,)) -> Option<usize> {
+        let mut b = [0; 4];
+        let substr0 = substr.0.encode_utf8(&mut b);
+        self.find_slice((&*substr0,))
+    }
+}
+
+impl<'i> FindSlice<(char, char)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (char, char)) -> Option<usize> {
+        let mut b = [0; 4];
+        let substr0 = substr.0.encode_utf8(&mut b);
+        let mut b = [0; 4];
+        let substr1 = substr.1.encode_utf8(&mut b);
+        self.find_slice((&*substr0, &*substr1))
+    }
+}
+
+impl<'i> FindSlice<(char, char, char)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (char, char, char)) -> Option<usize> {
+        let mut b = [0; 4];
+        let substr0 = substr.0.encode_utf8(&mut b);
+        let mut b = [0; 4];
+        let substr1 = substr.1.encode_utf8(&mut b);
+        let mut b = [0; 4];
+        let substr2 = substr.2.encode_utf8(&mut b);
+        self.find_slice((&*substr0, &*substr1, &*substr2))
+    }
+}
+
 impl<'i> FindSlice<u8> for &'i [u8] {
     #[inline(always)]
     fn find_slice(&self, substr: u8) -> Option<usize> {
@@ -2492,7 +2597,7 @@ impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i [u8] {
 impl<'i, 's> FindSlice<&'s str> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: &'s str) -> Option<usize> {
-        self.as_bytes().find_slice(substr.as_bytes())
+        self.as_bytes().find_slice(substr)
     }
 }
 
@@ -2520,70 +2625,56 @@ impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i str {
 impl<'i> FindSlice<char> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: char) -> Option<usize> {
-        let mut b = [0; 4];
-        let substr = substr.encode_utf8(&mut b);
-        self.find_slice(&*substr)
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(char,)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (char,)) -> Option<usize> {
-        let mut b = [0; 4];
-        let substr0 = substr.0.encode_utf8(&mut b);
-        self.find_slice((&*substr0,))
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(char, char)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (char, char)) -> Option<usize> {
-        let mut b = [0; 4];
-        let substr0 = substr.0.encode_utf8(&mut b);
-        let mut b = [0; 4];
-        let substr1 = substr.1.encode_utf8(&mut b);
-        self.find_slice((&*substr0, &*substr1))
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(char, char, char)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (char, char, char)) -> Option<usize> {
-        let mut b = [0; 4];
-        let substr0 = substr.0.encode_utf8(&mut b);
-        let mut b = [0; 4];
-        let substr1 = substr.1.encode_utf8(&mut b);
-        let mut b = [0; 4];
-        let substr2 = substr.2.encode_utf8(&mut b);
-        self.find_slice((&*substr0, &*substr1, &*substr2))
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<u8> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: u8) -> Option<usize> {
-        self.find_slice(substr.as_char())
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(u8,)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (u8,)) -> Option<usize> {
-        self.find_slice((substr.0.as_char(),))
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(u8, u8)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (u8, u8)) -> Option<usize> {
-        self.find_slice((substr.0.as_char(), substr.1.as_char()))
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(u8, u8, u8)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (u8, u8, u8)) -> Option<usize> {
-        self.find_slice((substr.0.as_char(), substr.1.as_char(), substr.2.as_char()))
+        self.as_bytes().find_slice(substr)
     }
 }
 
