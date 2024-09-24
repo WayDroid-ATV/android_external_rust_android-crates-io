@@ -1,8 +1,6 @@
 use std::error::Error;
-use std::fmt;
-use std::io;
 use std::io::prelude::*;
-use std::result;
+use std::{fmt, io, result};
 
 use crate::attribute::Attribute;
 use crate::common;
@@ -36,8 +34,8 @@ pub enum EmitterError {
 
 impl From<io::Error> for EmitterError {
     #[cold]
-    fn from(err: io::Error) -> EmitterError {
-        EmitterError::Io(err)
+    fn from(err: io::Error) -> Self {
+        Self::Io(err)
     }
 }
 
@@ -46,11 +44,11 @@ impl fmt::Display for EmitterError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("emitter error: ")?;
         match self {
-            EmitterError::Io(e) => write!(f, "I/O error: {e}"),
-            EmitterError::DocumentStartAlreadyEmitted => f.write_str("document start event has already been emitted"),
-            EmitterError::LastElementNameNotAvailable => f.write_str("last element name is not available"),
-            EmitterError::EndElementNameIsNotEqualToLastStartElementName => f.write_str("end element name is not equal to last start element name"),
-            EmitterError::EndElementNameIsNotSpecified => f.write_str("end element name is not specified and can't be inferred"),
+            Self::Io(e) => write!(f, "I/O error: {e}"),
+            Self::DocumentStartAlreadyEmitted => f.write_str("document start event has already been emitted"),
+            Self::LastElementNameNotAvailable => f.write_str("last element name is not available"),
+            Self::EndElementNameIsNotEqualToLastStartElementName => f.write_str("end element name is not equal to last start element name"),
+            Self::EndElementNameIsNotSpecified => f.write_str("end element name is not specified and can't be inferred"),
         }
     }
 }
@@ -78,11 +76,11 @@ pub struct Emitter {
 }
 
 impl Emitter {
-    pub fn new(config: EmitterConfig) -> Emitter {
+    pub fn new(config: EmitterConfig) -> Self {
         let mut indent_stack = Vec::with_capacity(16);
         indent_stack.push(IndentFlags::WroteNothing);
 
-        Emitter {
+        Self {
             config,
 
             nst: NamespaceStack::empty(),
@@ -268,6 +266,7 @@ impl Emitter {
         result
     }
 
+    #[track_caller]
     fn emit_start_element_initial<W>(&mut self, target: &mut W,
                                      name: Name<'_>,
                                      attributes: &[Attribute<'_>]) -> Result<()>
@@ -283,6 +282,7 @@ impl Emitter {
         Ok(())
     }
 
+    #[track_caller]
     pub fn emit_start_element<W>(&mut self, target: &mut W,
                                  name: Name<'_>,
                                  attributes: &[Attribute<'_>]) -> Result<()>
@@ -302,6 +302,7 @@ impl Emitter {
         Ok(())
     }
 
+    #[track_caller]
     pub fn emit_current_namespace_attributes<W>(&mut self, target: &mut W) -> Result<()>
         where W: Write
     {
@@ -316,7 +317,7 @@ impl Emitter {
                     write!(target, " xmlns=\"{uri}\"")
                 } else { Ok(()) },
                 // everything else
-                prefix => write!(target, " xmlns:{prefix}=\"{uri}\"")
+                prefix => write!(target, " xmlns:{prefix}=\"{uri}\""),
             }?;
         }
         Ok(())
@@ -324,7 +325,7 @@ impl Emitter {
 
     pub fn emit_attributes<W: Write>(&mut self, target: &mut W,
                                       attributes: &[Attribute<'_>]) -> Result<()> {
-        for attr in attributes.iter() {            
+        for attr in attributes {            
             write!(target, " {}=\"", attr.name.repr_display())?;
             if self.config.perform_escaping {
                 write!(target, "{}", Escaped::<AttributeEscapes>::new(attr.value))?;

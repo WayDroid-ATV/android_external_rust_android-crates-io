@@ -4,9 +4,9 @@ third_party {
   version: "1.7.3"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2023
-    month: 4
-    day: 3
+    year: 2024
+    month: 9
+    day: 25
   }
   homepage: "https://crates.io/crates/regex"
   identifier {

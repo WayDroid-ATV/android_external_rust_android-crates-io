@@ -1,6 +1,23 @@
 
 ## `bytemuck_derive` changelog
 
+## 1.7.1
+
+* Adds the `bytemuck` attribute to the `NoUninit` derive, allowing it to be used when re-exported.
+
+## 1.7.0
+
+* Allow generics in `derive(ByteEq, ByteHash)` https://github.com/Lokathor/bytemuck/pull/219
+
+## 1.6.0
+
+* This allows `CheckedBitPattern` to be derived for enums with fields.
+  The repr must be one of the following:
+  * `#[repr(C)]`
+  * `#[repr(C, int)]`
+  * `#[repr(int)]`
+  * `#[repr(transparent)]`
+
 ## 1.5.0
 
 * The `Zeroable` derive now allows custom bounds. See the rustdoc for an explanation.

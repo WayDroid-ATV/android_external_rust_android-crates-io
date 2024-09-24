@@ -1,6 +1,6 @@
-#![deny(unsafe_code)]
+#![deny(unsafe_code,rustdoc::bare_urls)]
 #![cfg_attr(not(feature = "std"), no_std)]
-//! [![Build status](https://img.shields.io/github/workflow/status/marcianx/downcast-rs/CI/master)](https://github.com/marcianx/downcast-rs/actions)
+//! [![Build status](https://img.shields.io/github/actions/workflow/status/marcianx/downcast-rs/main.yml?branch=master)](https://github.com/marcianx/downcast-rs/actions)
 //! [![Latest version](https://img.shields.io/crates/v/downcast-rs.svg)](https://crates.io/crates/downcast-rs)
 //! [![Documentation](https://docs.rs/downcast-rs/badge.svg)](https://docs.rs/downcast-rs)
 //!
@@ -19,7 +19,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! downcast-rs = "1.2.0"
+//! downcast-rs = "1.2.1"
 //! ```
 //!
 //! This crate is `no_std` compatible. To use it without `std`:
@@ -33,8 +33,7 @@
 //! `downcast::DowncastSync` and invoke `impl_downcast!` on it as in the examples
 //! below.
 //!
-//! Since 1.1.0, the minimum supported Rust version is 1.33 to support `Rc` and `Arc`
-//! in the receiver position.
+//! Since 1.2.0, the minimum supported Rust version is 1.36 due to needing stable access to alloc.
 //!
 //! ```
 //! # #[macro_use]
@@ -208,7 +207,7 @@ impl<T: Any + Send + Sync> DowncastSync for T {
 /// Adds downcasting support to traits that extend `downcast::Downcast` by defining forwarding
 /// methods to the corresponding implementations on `std::any::Any` in the standard library.
 ///
-/// See https://users.rust-lang.org/t/how-to-create-a-macro-to-impl-a-provided-type-parametrized-trait/5289
+/// See <https://users.rust-lang.org/t/how-to-create-a-macro-to-impl-a-provided-type-parametrized-trait/5289>
 /// for why this is implemented this way to support templatized traits.
 #[macro_export(local_inner_macros)]
 macro_rules! impl_downcast {
@@ -293,10 +292,9 @@ macro_rules! impl_downcast {
         /// Returns an `Arc`-ed object from an `Arc`-ed trait object if the underlying object is of
         /// type `__T`. Returns the original `Arc`-ed trait if it isn't.
         #[inline]
-        pub fn downcast_arc<__T: $trait_<$($types)*>>(
+        pub fn downcast_arc<__T: $trait_<$($types)*> + $crate::__std::any::Any + $crate::__std::marker::Send + $crate::__std::marker::Sync>(
             self: $crate::__alloc::sync::Arc<Self>,
         ) -> $crate::__std::result::Result<$crate::__alloc::sync::Arc<__T>, $crate::__alloc::sync::Arc<Self>>
-            where __T: $crate::__std::any::Any + $crate::__std::marker::Send + $crate::__std::marker::Sync
         {
             if self.is::<__T>() {
                 Ok($crate::DowncastSync::into_any_arc(self).downcast::<__T>().unwrap())

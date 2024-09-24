@@ -11,15 +11,15 @@ pub enum CharReadError {
 
 impl From<str::Utf8Error> for CharReadError {
     #[cold]
-    fn from(e: str::Utf8Error) -> CharReadError {
-        CharReadError::Utf8(e)
+    fn from(e: str::Utf8Error) -> Self {
+        Self::Utf8(e)
     }
 }
 
 impl From<io::Error> for CharReadError {
     #[cold]
-    fn from(e: io::Error) -> CharReadError {
-        CharReadError::Io(e)
+    fn from(e: io::Error) -> Self {
+        Self::Io(e)
     }
 }
 
@@ -68,13 +68,13 @@ impl FromStr for Encoding {
 
     fn from_str(val: &str) -> Result<Self, Self::Err> {
         if ["utf-8", "utf8"].into_iter().any(move |label| icmp(label, val)) {
-            Ok(Encoding::Utf8)
+            Ok(Self::Utf8)
         } else if ["iso-8859-1", "latin1"].into_iter().any(move |label| icmp(label, val)) {
-            Ok(Encoding::Latin1)
+            Ok(Self::Latin1)
         } else if ["utf-16", "utf16"].into_iter().any(move |label| icmp(label, val)) {
-            Ok(Encoding::Utf16)
+            Ok(Self::Utf16)
         } else if ["ascii", "us-ascii"].into_iter().any(move |label| icmp(label, val)) {
-            Ok(Encoding::Ascii)
+            Ok(Self::Ascii)
         } else {
             Err("unknown encoding name")
         }
@@ -85,14 +85,14 @@ impl fmt::Display for Encoding {
     #[cold]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(match self {
-            Encoding::Utf8 => "UTF-8",
-            Encoding::Default => "UTF-8",
-            Encoding::Latin1 => "ISO-8859-1",
-            Encoding::Ascii => "US-ASCII",
-            Encoding::Utf16Be => "UTF-16",
-            Encoding::Utf16Le => "UTF-16",
-            Encoding::Utf16 => "UTF-16",
-            Encoding::Unknown => "(unknown)",
+            Self::Utf8 |
+            Self::Default => "UTF-8",
+            Self::Latin1 => "ISO-8859-1",
+            Self::Ascii => "US-ASCII",
+            Self::Utf16Be |
+            Self::Utf16Le |
+            Self::Utf16 => "UTF-16",
+            Self::Unknown => "(unknown)",
         })
     }
 }
@@ -102,10 +102,8 @@ pub(crate) struct CharReader {
 }
 
 impl CharReader {
-    pub fn new() -> Self {
-        Self {
-            encoding: Encoding::Unknown,
-        }
+    pub const fn new() -> Self {
+        Self { encoding: Encoding::Unknown }
     }
 
     pub fn next_char_from<R: Read>(&mut self, source: &mut R) -> Result<Option<char>, CharReadError> {
@@ -142,11 +140,11 @@ impl CharReader {
                     return Ok(Some(next.into()));
                 },
                 Encoding::Ascii => {
-                    if next.is_ascii() {
-                        return Ok(Some(next.into()));
+                    return if next.is_ascii() {
+                        Ok(Some(next.into()))
                     } else {
-                        return Err(CharReadError::Io(io::Error::new(io::ErrorKind::InvalidData, "char is not ASCII")));
-                    }
+                        Err(CharReadError::Io(io::Error::new(io::ErrorKind::InvalidData, "char is not ASCII")))
+                    };
                 },
                 Encoding::Unknown | Encoding::Utf16 => {
                     buf[pos] = next;
@@ -218,7 +216,7 @@ mod tests {
     fn test_next_char_from() {
         use std::io;
 
-        let mut bytes: &[u8] = "correct".as_bytes();    // correct ASCII
+        let mut bytes: &[u8] = b"correct";    // correct ASCII
         assert_eq!(CharReader::new().next_char_from(&mut bytes).unwrap(), Some('c'));
 
         let mut bytes: &[u8] = b"\xEF\xBB\xBF\xE2\x80\xA2!";  // BOM
@@ -234,7 +232,7 @@ mod tests {
         assert!(matches!(CharReader::new().next_char_from(&mut bytes), Err(CharReadError::UnexpectedEof)));
 
         let mut bytes: &[u8] = b"\xEF\xBB\x42";  // Nothing after BO
-        assert!(matches!(CharReader::new().next_char_from(&mut bytes), Err(_)));
+        assert!(CharReader::new().next_char_from(&mut bytes).is_err());
 
         let mut bytes: &[u8] = b"\xFE\xFF\x00\x42";  // UTF-16
         assert_eq!(CharReader::new().next_char_from(&mut bytes).unwrap(), Some('B'));
@@ -258,7 +256,7 @@ mod tests {
         assert_eq!(CharReader { encoding: Encoding::Utf16Le }.next_char_from(&mut bytes).unwrap(), Some('뿐'));
 
         let mut bytes: &[u8] = b"\xD8\xD8\x80";
-        assert!(matches!(CharReader { encoding: Encoding::Utf16 }.next_char_from(&mut bytes), Err(_)));
+        assert!(CharReader { encoding: Encoding::Utf16 }.next_char_from(&mut bytes).is_err());
 
         let mut bytes: &[u8] = b"\x00\x42";
         assert_eq!(CharReader { encoding: Encoding::Utf16 }.next_char_from(&mut bytes).unwrap(), Some('B'));
@@ -267,7 +265,7 @@ mod tests {
         assert_eq!(CharReader { encoding: Encoding::Utf16 }.next_char_from(&mut bytes).unwrap(), Some('B'));
 
         let mut bytes: &[u8] = b"\x00";
-        assert!(matches!(CharReader { encoding: Encoding::Utf16Be }.next_char_from(&mut bytes), Err(_)));
+        assert!(CharReader { encoding: Encoding::Utf16Be }.next_char_from(&mut bytes).is_err());
 
         let mut bytes: &[u8] = "😊".as_bytes();          // correct non-BMP
         assert_eq!(CharReader::new().next_char_from(&mut bytes).unwrap(), Some('😊'));

@@ -1,11 +1,20 @@
-use crate::reader::error::SyntaxError;
+use std::fmt::Write;
+
 use crate::common::{is_name_char, is_name_start_char, is_whitespace_char};
+use crate::reader::error::SyntaxError;
 use crate::reader::lexer::Token;
 
 use super::{DoctypeSubstate, PullParser, QuoteToken, Result, State};
 
 impl PullParser {
     pub fn inside_doctype(&mut self, t: Token, substate: DoctypeSubstate) -> Option<Result> {
+        if let Some(ref mut doctype) = self.data.doctype {
+            write!(doctype, "{t}").ok()?;
+            if doctype.len() > self.config.max_data_length {
+                return Some(self.error(SyntaxError::ExceededConfiguredLimit));
+            }
+        }
+
         match substate {
             DoctypeSubstate::Outside => match t {
                 Token::TagEnd => self.into_state_continue(State::OutsideTag),
@@ -23,7 +32,7 @@ impl PullParser {
                 },
                 Token::SingleQuote | Token::DoubleQuote => {
                     // just discard string literals
-                    self.data.quote = Some(super::QuoteToken::from_token(&t));
+                    self.data.quote = super::QuoteToken::from_token(t);
                     self.into_state_continue(State::InsideDoctype(DoctypeSubstate::String))
                 },
                 Token::CDataEnd | Token::CDataStart => Some(self.error(SyntaxError::UnexpectedToken(t))),
@@ -98,12 +107,12 @@ impl PullParser {
                     // SYSTEM/PUBLIC not supported
                     Token::Character('S' | 'P') => {
                         let name = self.data.take_name();
-                        self.entities.entry(name).or_insert_with(String::new); // Dummy value, but at least the name is recognized
+                        self.entities.entry(name).or_default(); // Dummy value, but at least the name is recognized
 
                         self.into_state_continue(State::InsideDoctype(DoctypeSubstate::SkipDeclaration))
                     },
                     Token::SingleQuote | Token::DoubleQuote => {
-                        self.data.quote = Some(super::QuoteToken::from_token(&t));
+                        self.data.quote = super::QuoteToken::from_token(t);
                         self.into_state_continue(State::InsideDoctype(DoctypeSubstate::EntityValue))
                     },
                     _ => Some(self.error(SyntaxError::UnexpectedTokenInEntity(t))),
@@ -138,9 +147,7 @@ impl PullParser {
                 _ => Some(self.error(SyntaxError::UnexpectedTokenInEntity(t))),
             },
             DoctypeSubstate::PEReferenceDefinitionStart => match t {
-                Token::Character(c) if is_whitespace_char(c) => {
-                    None
-                },
+                Token::Character(c) if is_whitespace_char(c) => None,
                 Token::Character(c) if is_name_start_char(c) => {
                     debug_assert_eq!(self.data.name, "%");
                     self.data.name.push(c);
@@ -220,7 +227,7 @@ impl PullParser {
                         Ok(c) => {
                             self.buf.push(c);
                             self.into_state_continue(State::InsideDoctype(DoctypeSubstate::EntityValue))
-                        }
+                        },
                         Err(e) => Some(self.error(e)),
                     }
                 },

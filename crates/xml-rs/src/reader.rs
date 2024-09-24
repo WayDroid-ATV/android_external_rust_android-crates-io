@@ -9,20 +9,18 @@ use std::result;
 
 use crate::common::{Position, TextPosition};
 
-pub use self::config::ParserConfig;
-pub use self::config::ParserConfig2;
+pub use self::config::{ParserConfig, ParserConfig2};
 pub use self::error::{Error, ErrorKind};
 pub use self::events::XmlEvent;
 
 use self::parser::PullParser;
 
 mod config;
+mod error;
 mod events;
+mod indexset;
 mod lexer;
 mod parser;
-mod indexset;
-mod error;
-
 
 /// A result type yielded by `XmlReader`.
 pub type Result<T, E = Error> = result::Result<T, E>;
@@ -36,14 +34,14 @@ pub struct EventReader<R: Read> {
 impl<R: Read> EventReader<R> {
     /// Creates a new reader, consuming the given stream.
     #[inline]
-    pub fn new(source: R) -> EventReader<R> {
-        EventReader::new_with_config(source, ParserConfig2::new())
+    pub fn new(source: R) -> Self {
+        Self::new_with_config(source, ParserConfig2::new())
     }
 
     /// Creates a new reader with the provded configuration, consuming the given stream.
     #[inline]
-    pub fn new_with_config(source: R, config: impl Into<ParserConfig2>) -> EventReader<R> {
-        EventReader { source, parser: PullParser::new(config) }
+    pub fn new_with_config(source: R, config: impl Into<ParserConfig2>) -> Self {
+        Self { source, parser: PullParser::new(config) }
     }
 
     /// Pulls and returns next XML event from the stream.
@@ -68,15 +66,25 @@ impl<R: Read> EventReader<R> {
             match self.next()? {
                 XmlEvent::StartElement { .. } => depth += 1,
                 XmlEvent::EndElement { .. } => depth -= 1,
-                XmlEvent::EndDocument => unreachable!(),
-                _ => {}
+                XmlEvent::EndDocument => return Err(Error {
+                    kind: ErrorKind::UnexpectedEof,
+                    pos: self.parser.position(),
+                }),
+                _ => {},
             }
         }
 
         Ok(())
     }
 
+    /// Access underlying reader
+    ///
+    /// Using it directly while the event reader is parsing is not recommended
     pub fn source(&self) -> &R { &self.source }
+
+    /// Access underlying reader
+    ///
+    /// Using it directly while the event reader is parsing is not recommended
     pub fn source_mut(&mut self) -> &mut R { &mut self.source }
 
     /// Unwraps this `EventReader`, returning the underlying reader.
@@ -86,6 +94,14 @@ impl<R: Read> EventReader<R> {
     /// to parse an XML document from the beginning.
     pub fn into_inner(self) -> R {
         self.source
+    }
+
+    /// Returns the DOCTYPE of the document if it has already been seen
+    ///
+    /// Available only after the root `StartElement` event
+    #[inline]
+    pub fn doctype(&self) -> Option<&str> {
+        self.parser.doctype()
     }
 }
 
@@ -98,8 +114,8 @@ impl<B: Read> Position for EventReader<B> {
 }
 
 impl<R: Read> IntoIterator for EventReader<R> {
-    type Item = Result<XmlEvent>;
     type IntoIter = Events<R>;
+    type Item = Result<XmlEvent>;
 
     fn into_iter(self) -> Events<R> {
         Events { reader: self, finished: false }
@@ -122,9 +138,15 @@ impl<R: Read> Events<R> {
         self.reader
     }
 
+    /// Access the underlying reader
+    ///
+    /// It's not recommended to use it while the events are still being parsed
     pub fn source(&self) -> &R { &self.reader.source }
-    pub fn source_mut(&mut self) -> &mut R { &mut self.reader.source }
 
+    /// Access the underlying reader
+    ///
+    /// It's not recommended to use it while the events are still being parsed
+    pub fn source_mut(&mut self) -> &mut R { &mut self.reader.source }
 }
 
 impl<R: Read> FusedIterator for Events<R> {
@@ -151,7 +173,7 @@ impl<'r> EventReader<&'r [u8]> {
     /// A convenience method to create an `XmlReader` from a string slice.
     #[inline]
     #[must_use]
-    pub fn from_str(source: &'r str) -> EventReader<&'r [u8]> {
+    pub fn from_str(source: &'r str) -> Self {
         EventReader::new(source.as_bytes())
     }
 }
