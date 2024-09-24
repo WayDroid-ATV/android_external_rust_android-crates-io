@@ -1,5 +1,4 @@
 //! Contains XML qualified names manipulation types and functions.
-//!
 
 use std::fmt;
 use std::str::FromStr;
@@ -57,18 +56,17 @@ pub struct Name<'a> {
 }
 
 impl<'a> From<&'a str> for Name<'a> {
-    fn from(s: &'a str) -> Name<'a> {
-        let mut parts = s.splitn(2, ':').fuse();
-        match (parts.next(), parts.next()) {
-            (Some(name), None) => Name::local(name),
-            (Some(prefix), Some(name)) => Name::prefixed(name, prefix),
-            _ => unreachable!(),
+    fn from(s: &'a str) -> Self {
+        if let Some((prefix, name)) = s.split_once(':') {
+            Name::prefixed(name, prefix)
+        } else {
+            Name::local(s)
         }
     }
 }
 
 impl<'a> From<(&'a str, &'a str)> for Name<'a> {
-    fn from((prefix, name): (&'a str, &'a str)) -> Name<'a> {
+    fn from((prefix, name): (&'a str, &'a str)) -> Self {
         Name::prefixed(name, prefix)
     }
 }
@@ -220,10 +218,10 @@ impl OwnedName {
     /// Returns a new `OwnedName` instance representing a qualified name with or without
     /// a prefix and with a namespace URI.
     #[inline]
-    pub fn qualified<S1, S2, S3>(local_name: S1, namespace: S2, prefix: Option<S3>) -> OwnedName
+    pub fn qualified<S1, S2, S3>(local_name: S1, namespace: S2, prefix: Option<S3>) -> Self
         where S1: Into<String>, S2: Into<String>, S3: Into<String>
     {
-        OwnedName {
+        Self {
             local_name: local_name.into(),
             namespace: Some(namespace.into()),
             prefix: prefix.map(std::convert::Into::into),
@@ -249,7 +247,7 @@ impl OwnedName {
 
 impl<'a> From<Name<'a>> for OwnedName {
     #[inline]
-    fn from(n: Name<'a>) -> OwnedName {
+    fn from(n: Name<'a>) -> Self {
         n.to_owned()
     }
 }
@@ -266,7 +264,7 @@ impl FromStr for OwnedName {
     /// It is supposed that all characters in the argument string are correct
     /// as defined by the XML specification. No additional checks except a check
     /// for emptiness are done.
-    fn from_str(s: &str) -> Result<OwnedName, ()> {
+    fn from_str(s: &str) -> Result<Self, ()> {
         let mut it = s.split(':');
 
         let r = match (it.next(), it.next(), it.next()) {
@@ -277,7 +275,7 @@ impl FromStr for OwnedName {
                 Some((local_name.into(), None)),
             (_, _, _) => None
         };
-        r.map(|(local_name, prefix)| OwnedName {
+        r.map(|(local_name, prefix)| Self {
             local_name,
             namespace: None,
             prefix

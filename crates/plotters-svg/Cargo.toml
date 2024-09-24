@@ -12,13 +12,22 @@
 [package]
 edition = "2018"
 name = "plotters-svg"
-version = "0.3.5"
+version = "0.3.7"
 authors = ["Hao Hou <haohou302@gmail.com>"]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Plotters SVG backend"
 homepage = "https://plotters-rs.github.io"
 readme = "README.md"
 license = "MIT"
 repository = "https://github.com/plotters-rs/plotters.git"
+
+[lib]
+name = "plotters_svg"
+path = "src/lib.rs"
 
 [dependencies.image]
 version = "0.24.2"
@@ -31,7 +40,7 @@ optional = true
 default-features = false
 
 [dependencies.plotters-backend]
-version = "0.3.5"
+version = "0.3.6"
 
 [dev-dependencies]
 

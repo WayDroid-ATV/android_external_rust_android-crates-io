@@ -10,6 +10,17 @@ use std::{env, process::Command, str};
 // opening a GitHub issue if your build environment requires some way to enable
 // these cfgs other than by executing our build script.
 fn main() {
+    println!("cargo:rerun-if-changed=build.rs");
+
+    // Required by Rust 1.79+.
+    println!("cargo:rustc-check-cfg=cfg(doc_cfg)");
+    println!("cargo:rustc-check-cfg=cfg(path_buf_deref_mut)");
+    println!("cargo:rustc-check-cfg=cfg(path_buf_capacity)");
+    println!("cargo:rustc-check-cfg=cfg(shrink_to)");
+    println!("cargo:rustc-check-cfg=cfg(try_reserve_2)");
+    println!("cargo:rustc-check-cfg=cfg(os_str_bytes)");
+    println!("cargo:rustc-check-cfg=cfg(absolute_path)");
+
     let compiler = match rustc_version() {
         Some(compiler) => compiler,
         None => return,
@@ -39,6 +50,31 @@ fn main() {
         || compiler.minor >= 69
     {
         println!("cargo:rustc-cfg=path_buf_deref_mut");
+    }
+    // os_str_bytes was added in 1.74.
+    if (compiler.minor >= 74 && compiler.channel == ReleaseChannel::Stable) || compiler.minor >= 75
+    {
+        println!("cargo:rustc-cfg=os_str_bytes");
+    }
+    // absolute_path was added in 1.79.
+    if (compiler.minor >= 79 && compiler.channel == ReleaseChannel::Stable) || compiler.minor >= 80
+    {
+        println!("cargo:rustc-cfg=absolute_path");
+    }
+
+    // Catch situations where the actual features aren't enabled. Currently, they're only shown with
+    // `-vv` output, but maybe that will be noticed.
+    #[cfg(all(feature = "proptest", not(feature = "proptest1")))]
+    {
+        println!(
+            "cargo:warning=proptest feature is enabled, but proptest1 isn't -- this won't do anything"
+        );
+    }
+    #[cfg(all(feature = "serde", not(feature = "serde1")))]
+    {
+        println!(
+            "cargo:warning=serde feature is enabled, but serde1 isn't -- this won't do anything"
+        );
     }
 }
 

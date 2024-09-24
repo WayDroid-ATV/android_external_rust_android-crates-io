@@ -5,9 +5,9 @@
 [<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-linkme-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/linkme)
 [<img alt="build status" src="https://img.shields.io/github/actions/workflow/status/dtolnay/linkme/ci.yml?branch=master&style=for-the-badge" height="20">](https://github.com/dtolnay/linkme/actions?query=branch%3Amaster)
 
-| Component | Linux | macOS | Windows | FreeBSD | illumos | Other...<sup>†</sup> |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| [Distributed slice] | 💚 | 💚 | 💚 | 💚 | 💚 | |
+| Component | Linux | macOS | Windows | FreeBSD | OpenBSD | illumos | Other...<sup>†</sup> |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| [Distributed slice] | 💚 | 💚 | 💚 | 💚 | 💚 | 💚 | |
 
 <b><sup>†</sup></b> We welcome PRs adding support for any platforms not listed
 here.
@@ -37,14 +37,13 @@ operates entirely during compilation and linking.
 ### Declaration
 
 A static distributed slice is declared by writing `#[distributed_slice]` on a
-static item whose type is `[T]` for some type `T`. The initializer expression
-must be `[..]` to indicate that elements come from elsewhere.
+static item whose type is `[T]` for some type `T`.
 
 ```rust
 use linkme::distributed_slice;
 
 #[distributed_slice]
-pub static BENCHMARKS: [fn(&mut Bencher)] = [..];
+pub static BENCHMARKS: [fn(&mut Bencher)];
 ```
 
 ### Elements
@@ -120,7 +119,7 @@ definition to place a pointer to that function into a distributed slice.
 use linkme::distributed_slice;
 
 #[distributed_slice]
-pub static BENCHMARKS: [fn(&mut Bencher)] = [..];
+pub static BENCHMARKS: [fn(&mut Bencher)];
 
 // Equivalent to:
 //

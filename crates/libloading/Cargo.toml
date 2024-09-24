@@ -12,7 +12,7 @@
 [package]
 rust-version = "1.56.0"
 name = "libloading"
-version = "0.8.3"
+version = "0.8.5"
 authors = ["Simonas Kazlauskas <libloading@kazlauskas.me>"]
 description = "Bindings around the platform's dynamic library loading primitives with greatly improved memory safety."
 documentation = "https://docs.rs/libloading/"
@@ -49,3 +49,7 @@ version = ">=0.48, <0.53"
 [target."cfg(windows)".dev-dependencies.windows-sys]
 version = "0.52"
 features = ["Win32_Foundation"]
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0

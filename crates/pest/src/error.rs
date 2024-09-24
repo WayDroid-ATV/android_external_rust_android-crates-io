@@ -9,11 +9,15 @@
 
 //! Types for different kinds of parsing failures.
 
+use crate::parser_state::{ParseAttempts, ParsingToken, RulesCallStack};
 use alloc::borrow::Cow;
 use alloc::borrow::ToOwned;
+use alloc::boxed::Box;
+use alloc::collections::{BTreeMap, BTreeSet};
 use alloc::format;
 use alloc::string::String;
 use alloc::string::ToString;
+use alloc::vec;
 use alloc::vec::Vec;
 use core::cmp;
 use core::fmt;
@@ -36,6 +40,7 @@ pub struct Error<R> {
     path: Option<String>,
     line: String,
     continued_line: Option<String>,
+    parse_attempts: Option<ParseAttempts<R>>,
 }
 
 /// Different kinds of parsing errors.
@@ -87,6 +92,74 @@ impl From<Span<'_>> for LineColLocation {
     }
 }
 
+/// Function mapping rule to its helper message defined by user.
+pub type RuleToMessageFn<R> = Box<dyn Fn(&R) -> Option<String>>;
+/// Function mapping string element to bool denoting whether it's a whitespace defined by user.
+pub type IsWhitespaceFn = Box<dyn Fn(String) -> bool>;
+
+impl ParsingToken {
+    pub fn is_whitespace(&self, is_whitespace: &IsWhitespaceFn) -> bool {
+        match self {
+            ParsingToken::Sensitive { token } => is_whitespace(token.clone()),
+            ParsingToken::Insensitive { token } => is_whitespace(token.clone()),
+            ParsingToken::Range { .. } => false,
+            ParsingToken::BuiltInRule => false,
+        }
+    }
+}
+
+impl<R: RuleType> ParseAttempts<R> {
+    /// Helper formatting function to get message informing about tokens we've
+    /// (un)expected to see.
+    /// Used as a part of `parse_attempts_error`.
+    fn tokens_helper_messages(
+        &self,
+        is_whitespace_fn: &IsWhitespaceFn,
+        spacing: &str,
+    ) -> Vec<String> {
+        let mut helper_messages = Vec::new();
+        let tokens_header_pairs = vec![
+            (self.expected_tokens(), "expected"),
+            (self.unexpected_tokens(), "unexpected"),
+        ];
+
+        for (tokens, header) in &tokens_header_pairs {
+            if tokens.is_empty() {
+                continue;
+            }
+
+            let mut helper_tokens_message = format!("{spacing}note: {header} ");
+            helper_tokens_message.push_str(if tokens.len() == 1 {
+                "token: "
+            } else {
+                "one of tokens: "
+            });
+
+            let expected_tokens_set: BTreeSet<String> = tokens
+                .iter()
+                .map(|token| {
+                    if token.is_whitespace(is_whitespace_fn) {
+                        String::from("WHITESPACE")
+                    } else {
+                        format!("`{}`", token)
+                    }
+                })
+                .collect();
+
+            helper_tokens_message.push_str(
+                &expected_tokens_set
+                    .iter()
+                    .cloned()
+                    .collect::<Vec<String>>()
+                    .join(", "),
+            );
+            helper_messages.push(helper_tokens_message);
+        }
+
+        helper_messages
+    }
+}
+
 impl<R: RuleType> Error<R> {
     /// Creates `Error` from `ErrorVariant` and `Position`.
     ///
@@ -107,7 +180,7 @@ impl<R: RuleType> Error<R> {
     /// let error = Error::new_from_pos(
     ///     ErrorVariant::ParsingError {
     ///         positives: vec![Rule::open_paren],
-    ///         negatives: vec![Rule::closed_paren]
+    ///         negatives: vec![Rule::closed_paren],
     ///     },
     ///     pos
     /// );
@@ -129,7 +202,20 @@ impl<R: RuleType> Error<R> {
             line,
             continued_line: None,
             line_col: LineColLocation::Pos(pos.line_col()),
+            parse_attempts: None,
         }
+    }
+
+    /// Wrapper function to track `parse_attempts` as a result
+    /// of `state` function call in `parser_state.rs`.
+    pub(crate) fn new_from_pos_with_parsing_attempts(
+        variant: ErrorVariant<R>,
+        pos: Position<'_>,
+        parse_attempts: ParseAttempts<R>,
+    ) -> Error<R> {
+        let mut error = Self::new_from_pos(variant, pos);
+        error.parse_attempts = Some(parse_attempts);
+        error
     }
 
     /// Creates `Error` from `ErrorVariant` and `Span`.
@@ -153,7 +239,7 @@ impl<R: RuleType> Error<R> {
     /// let error = Error::new_from_span(
     ///     ErrorVariant::ParsingError {
     ///         positives: vec![Rule::open_paren],
-    ///         negatives: vec![Rule::closed_paren]
+    ///         negatives: vec![Rule::closed_paren],
     ///     },
     ///     span
     /// );
@@ -195,6 +281,7 @@ impl<R: RuleType> Error<R> {
             line: start_line,
             continued_line,
             line_col: LineColLocation::Span(span.start_pos().line_col(), end_line_col),
+            parse_attempts: None,
         }
     }
 
@@ -217,7 +304,7 @@ impl<R: RuleType> Error<R> {
     /// Error::new_from_pos(
     ///     ErrorVariant::ParsingError {
     ///         positives: vec![Rule::open_paren],
-    ///         negatives: vec![Rule::closed_paren]
+    ///         negatives: vec![Rule::closed_paren],
     ///     },
     ///     pos
     /// ).with_path("file.rs");
@@ -247,7 +334,7 @@ impl<R: RuleType> Error<R> {
     /// # let error = Error::new_from_pos(
     /// #     ErrorVariant::ParsingError {
     /// #         positives: vec![Rule::open_paren],
-    /// #         negatives: vec![Rule::closed_paren]
+    /// #         negatives: vec![Rule::closed_paren],
     /// #     },
     /// #     pos);
     /// let error = error.with_path("file.rs");
@@ -287,7 +374,7 @@ impl<R: RuleType> Error<R> {
     /// Error::new_from_pos(
     ///     ErrorVariant::ParsingError {
     ///         positives: vec![Rule::open_paren],
-    ///         negatives: vec![Rule::closed_paren]
+    ///         negatives: vec![Rule::closed_paren],
     ///     },
     ///     pos
     /// ).renamed_rules(|rule| {
@@ -315,6 +402,97 @@ impl<R: RuleType> Error<R> {
         self.variant = variant;
 
         self
+    }
+
+    /// Get detailed information about errored rules sequence.
+    /// Returns `Some(results)` only for `ParsingError`.
+    pub fn parse_attempts(&self) -> Option<ParseAttempts<R>> {
+        self.parse_attempts.clone()
+    }
+
+    /// Get error message based on parsing attempts.
+    /// Returns `None` in case self `parse_attempts` is `None`.
+    pub fn parse_attempts_error(
+        &self,
+        input: &str,
+        rule_to_message: &RuleToMessageFn<R>,
+        is_whitespace: &IsWhitespaceFn,
+    ) -> Option<Error<R>> {
+        let attempts = if let Some(ref parse_attempts) = self.parse_attempts {
+            parse_attempts.clone()
+        } else {
+            return None;
+        };
+
+        let spacing = self.spacing() + "   ";
+        let error_position = attempts.max_position;
+        let message = {
+            let mut help_lines: Vec<String> = Vec::new();
+            help_lines.push(String::from("error: parsing error occurred."));
+
+            // Note: at least one of `(un)expected_tokens` must not be empty.
+            for tokens_helper_message in attempts.tokens_helper_messages(is_whitespace, &spacing) {
+                help_lines.push(tokens_helper_message);
+            }
+
+            let call_stacks = attempts.call_stacks();
+            // Group call stacks by their parents so that we can print common header and
+            // several sub helper messages.
+            let mut call_stacks_parents_groups: BTreeMap<Option<R>, Vec<RulesCallStack<R>>> =
+                BTreeMap::new();
+            for call_stack in call_stacks {
+                call_stacks_parents_groups
+                    .entry(call_stack.parent)
+                    .or_default()
+                    .push(call_stack);
+            }
+
+            for (group_parent, group) in call_stacks_parents_groups {
+                if let Some(parent_rule) = group_parent {
+                    let mut contains_meaningful_info = false;
+                    help_lines.push(format!(
+                        "{spacing}help: {}",
+                        if let Some(message) = rule_to_message(&parent_rule) {
+                            contains_meaningful_info = true;
+                            message
+                        } else {
+                            String::from("[Unknown parent rule]")
+                        }
+                    ));
+                    for call_stack in group {
+                        if let Some(r) = call_stack.deepest.get_rule() {
+                            if let Some(message) = rule_to_message(r) {
+                                contains_meaningful_info = true;
+                                help_lines.push(format!("{spacing}      - {message}"));
+                            }
+                        }
+                    }
+                    if !contains_meaningful_info {
+                        // Have to remove useless line for unknown parent rule.
+                        help_lines.pop();
+                    }
+                } else {
+                    for call_stack in group {
+                        // Note that `deepest` rule may be `None`. E.g. in case it corresponds
+                        // to WHITESPACE expected token which has no parent rule (on the top level
+                        // parsing).
+                        if let Some(r) = call_stack.deepest.get_rule() {
+                            let helper_message = rule_to_message(r);
+                            if let Some(helper_message) = helper_message {
+                                help_lines.push(format!("{spacing}help: {helper_message}"));
+                            }
+                        }
+                    }
+                }
+            }
+
+            help_lines.join("\n")
+        };
+        let error = Error::new_from_pos(
+            ErrorVariant::CustomError { message },
+            Position::new_internal(input, error_position),
+        );
+        Some(error)
     }
 
     fn start(&self) -> (usize, usize) {
@@ -493,6 +671,12 @@ impl<R: RuleType> Error<R> {
             )
         }
     }
+
+    #[cfg(feature = "miette-error")]
+    /// Turns an error into a [miette](crates.io/miette) Diagnostic.
+    pub fn into_miette(self) -> impl ::miette::Diagnostic {
+        miette_adapter::MietteAdapter(self)
+    }
 }
 
 impl<R: RuleType> ErrorVariant<R> {
@@ -550,16 +734,56 @@ fn visualize_whitespace(input: &str) -> String {
     input.to_owned().replace('\r', "␍").replace('\n', "␊")
 }
 
+#[cfg(feature = "miette-error")]
+mod miette_adapter {
+    use alloc::string::ToString;
+    use std::boxed::Box;
+
+    use crate::error::LineColLocation;
+
+    use super::{Error, RuleType};
+
+    use miette::{Diagnostic, LabeledSpan, SourceCode};
+
+    #[derive(thiserror::Error, Debug)]
+    #[error("Failure to parse at {:?}", self.0.line_col)]
+    pub(crate) struct MietteAdapter<R: RuleType>(pub(crate) Error<R>);
+
+    impl<R: RuleType> Diagnostic for MietteAdapter<R> {
+        fn source_code(&self) -> Option<&dyn SourceCode> {
+            Some(&self.0.line)
+        }
+
+        fn labels(&self) -> Option<Box<dyn Iterator<Item = LabeledSpan>>> {
+            let message = self.0.variant.message().to_string();
+
+            let (offset, length) = match self.0.line_col {
+                LineColLocation::Pos((_, c)) => (c - 1, 1),
+                LineColLocation::Span((_, start_c), (_, end_c)) => {
+                    (start_c - 1, end_c - start_c + 1)
+                }
+            };
+
+            let span = LabeledSpan::new(Some(message), offset, length);
+
+            Some(Box::new(std::iter::once(span)))
+        }
+
+        fn help<'a>(&'a self) -> Option<Box<dyn core::fmt::Display + 'a>> {
+            Some(Box::new(self.0.message()))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::super::position;
     use super::*;
     use alloc::vec;
 
     #[test]
     fn display_parsing_error_mixed() {
         let input = "ab\ncd\nef";
-        let pos = position::Position::new(input, 4).unwrap();
+        let pos = Position::new(input, 4).unwrap();
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![1, 2, 3],
@@ -585,7 +809,7 @@ mod tests {
     #[test]
     fn display_parsing_error_positives() {
         let input = "ab\ncd\nef";
-        let pos = position::Position::new(input, 4).unwrap();
+        let pos = Position::new(input, 4).unwrap();
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![1, 2],
@@ -611,7 +835,7 @@ mod tests {
     #[test]
     fn display_parsing_error_negatives() {
         let input = "ab\ncd\nef";
-        let pos = position::Position::new(input, 4).unwrap();
+        let pos = Position::new(input, 4).unwrap();
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![],
@@ -637,7 +861,7 @@ mod tests {
     #[test]
     fn display_parsing_error_unknown() {
         let input = "ab\ncd\nef";
-        let pos = position::Position::new(input, 4).unwrap();
+        let pos = Position::new(input, 4).unwrap();
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![],
@@ -663,7 +887,7 @@ mod tests {
     #[test]
     fn display_custom_pos() {
         let input = "ab\ncd\nef";
-        let pos = position::Position::new(input, 4).unwrap();
+        let pos = Position::new(input, 4).unwrap();
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::CustomError {
                 message: "error: big one".to_owned(),
@@ -688,8 +912,8 @@ mod tests {
     #[test]
     fn display_custom_span_two_lines() {
         let input = "ab\ncd\nefgh";
-        let start = position::Position::new(input, 4).unwrap();
-        let end = position::Position::new(input, 9).unwrap();
+        let start = Position::new(input, 4).unwrap();
+        let end = Position::new(input, 9).unwrap();
         let error: Error<u32> = Error::new_from_span(
             ErrorVariant::CustomError {
                 message: "error: big one".to_owned(),
@@ -715,8 +939,8 @@ mod tests {
     #[test]
     fn display_custom_span_three_lines() {
         let input = "ab\ncd\nefgh";
-        let start = position::Position::new(input, 1).unwrap();
-        let end = position::Position::new(input, 9).unwrap();
+        let start = Position::new(input, 1).unwrap();
+        let end = Position::new(input, 9).unwrap();
         let error: Error<u32> = Error::new_from_span(
             ErrorVariant::CustomError {
                 message: "error: big one".to_owned(),
@@ -743,8 +967,8 @@ mod tests {
     #[test]
     fn display_custom_span_two_lines_inverted_cols() {
         let input = "abcdef\ngh";
-        let start = position::Position::new(input, 5).unwrap();
-        let end = position::Position::new(input, 8).unwrap();
+        let start = Position::new(input, 5).unwrap();
+        let end = Position::new(input, 8).unwrap();
         let error: Error<u32> = Error::new_from_span(
             ErrorVariant::CustomError {
                 message: "error: big one".to_owned(),
@@ -770,8 +994,8 @@ mod tests {
     #[test]
     fn display_custom_span_end_after_newline() {
         let input = "abcdef\n";
-        let start = position::Position::new(input, 0).unwrap();
-        let end = position::Position::new(input, 7).unwrap();
+        let start = Position::new(input, 0).unwrap();
+        let end = Position::new(input, 7).unwrap();
         assert!(start.at_start());
         assert!(end.at_end());
 
@@ -799,8 +1023,8 @@ mod tests {
     #[test]
     fn display_custom_span_empty() {
         let input = "";
-        let start = position::Position::new(input, 0).unwrap();
-        let end = position::Position::new(input, 0).unwrap();
+        let start = Position::new(input, 0).unwrap();
+        let end = Position::new(input, 0).unwrap();
         assert!(start.at_start());
         assert!(end.at_end());
 
@@ -828,7 +1052,7 @@ mod tests {
     #[test]
     fn mapped_parsing_error() {
         let input = "ab\ncd\nef";
-        let pos = position::Position::new(input, 4).unwrap();
+        let pos = Position::new(input, 4).unwrap();
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![1, 2, 3],
@@ -855,7 +1079,7 @@ mod tests {
     #[test]
     fn error_with_path() {
         let input = "ab\ncd\nef";
-        let pos = position::Position::new(input, 4).unwrap();
+        let pos = Position::new(input, 4).unwrap();
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![1, 2, 3],
@@ -882,7 +1106,7 @@ mod tests {
     #[test]
     fn underline_with_tabs() {
         let input = "a\txbc";
-        let pos = position::Position::new(input, 2).unwrap();
+        let pos = Position::new(input, 2).unwrap();
         let error: Error<u32> = Error::new_from_pos(
             ErrorVariant::ParsingError {
                 positives: vec![1, 2, 3],
@@ -925,6 +1149,36 @@ mod tests {
         assert_eq!(
             LineColLocation::Span(start.line_col(), end.line_col()),
             span.into()
+        );
+    }
+
+    #[cfg(feature = "miette-error")]
+    #[test]
+    fn miette_error() {
+        let input = "abc\ndef";
+        let pos = Position::new(input, 4).unwrap();
+        let error: Error<u32> = Error::new_from_pos(
+            ErrorVariant::ParsingError {
+                positives: vec![1, 2, 3],
+                negatives: vec![4, 5, 6],
+            },
+            pos,
+        );
+
+        let miette_error = miette::Error::new(error.into_miette());
+
+        assert_eq!(
+            format!("{:?}", miette_error),
+            [
+                "  \u{1b}[31m×\u{1b}[0m Failure to parse at Pos((2, 1))",
+                "   ╭────",
+                " \u{1b}[2m1\u{1b}[0m │ def",
+                "   · \u{1b}[35;1m┬\u{1b}[0m",
+                "   · \u{1b}[35;1m╰── \u{1b}[35;1munexpected 4, 5, or 6; expected 1, 2, or 3\u{1b}[0m\u{1b}[0m",
+                "   ╰────",
+                "\u{1b}[36m  help: \u{1b}[0munexpected 4, 5, or 6; expected 1, 2, or 3\n"
+            ]
+            .join("\n")
         );
     }
 }

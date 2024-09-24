@@ -6,7 +6,7 @@ third_party {
   last_upgrade_date {
     year: 2024
     month: 9
-    day: 6
+    day: 25
   }
   homepage: "https://crates.io/crates/tempfile"
   identifier {

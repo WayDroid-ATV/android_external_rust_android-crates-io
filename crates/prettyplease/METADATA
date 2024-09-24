@@ -4,9 +4,9 @@ third_party {
   version: "0.2.6"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2023
-    month: 5
-    day: 23
+    year: 2024
+    month: 9
+    day: 25
   }
   homepage: "https://crates.io/crates/prettyplease"
   identifier {
