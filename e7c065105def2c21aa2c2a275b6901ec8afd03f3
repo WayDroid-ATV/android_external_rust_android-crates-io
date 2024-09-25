@@ -16,6 +16,24 @@
       "message": "This and the other files are part of the package on crates.io, why are they being deleted here?",
       "revId": "e7c065105def2c21aa2c2a275b6901ec8afd03f3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bcb172f8_6309506c",
+        "filename": "crates/tempfile/Cargo.toml.orig",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-25T15:49:31Z",
+      "side": 1,
+      "message": "That\u0027s interesting. The crate management tool runs \"cargo vendor\", and uses that to regenerate the contents of external/rust/crates/android-crates-io/crates/tempfile.\n\nYou are absolutely correct that those files are in the downloaded crate. They are not present in pseudo_crate/vendor/tempfile, though. I\u0027m not sure why \"cargo vendor\" is removing them.",
+      "parentUuid": "0b81fe51_f8ad5837",
+      "revId": "e7c065105def2c21aa2c2a275b6901ec8afd03f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
