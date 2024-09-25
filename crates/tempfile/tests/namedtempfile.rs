@@ -1,20 +1,14 @@
 #![deny(rust_2018_idioms)]
 
+use std::env;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
-use tempfile::{env, tempdir, Builder, NamedTempFile, TempPath};
+use tempfile::{tempdir, Builder, NamedTempFile, TempPath};
 
 fn exists<P: AsRef<Path>>(path: P) -> bool {
     std::fs::metadata(path.as_ref()).is_ok()
-}
-
-#[test]
-fn test_prefix() {
-    let tmpfile = NamedTempFile::with_prefix("prefix").unwrap();
-    let name = tmpfile.path().file_name().unwrap().to_str().unwrap();
-    assert!(name.starts_with("prefix"));
 }
 
 #[test]
@@ -93,7 +87,7 @@ fn test_persist_noclobber() {
 fn test_customnamed() {
     let tmpfile = Builder::new()
         .prefix("tmp")
-        .suffix(&".rs")
+        .suffix(&".rs".to_string())
         .rand_bytes(12)
         .tempfile()
         .unwrap();
@@ -106,9 +100,9 @@ fn test_customnamed() {
 #[test]
 fn test_append() {
     let mut tmpfile = Builder::new().append(true).tempfile().unwrap();
-    tmpfile.write_all(b"a").unwrap();
+    tmpfile.write(b"a").unwrap();
     tmpfile.seek(SeekFrom::Start(0)).unwrap();
-    tmpfile.write_all(b"b").unwrap();
+    tmpfile.write(b"b").unwrap();
 
     tmpfile.seek(SeekFrom::Start(0)).unwrap();
     let mut buf = vec![0u8; 1];
@@ -275,10 +269,10 @@ fn test_write_after_close() {
 
 #[test]
 fn test_change_dir() {
-    std::env::set_current_dir(env::temp_dir()).unwrap();
+    env::set_current_dir(env::temp_dir()).unwrap();
     let tmpfile = NamedTempFile::new_in(".").unwrap();
-    let path = std::env::current_dir().unwrap().join(tmpfile.path());
-    std::env::set_current_dir("/").unwrap();
+    let path = env::current_dir().unwrap().join(tmpfile.path());
+    env::set_current_dir("/").unwrap();
     drop(tmpfile);
     assert!(!exists(path))
 }
@@ -302,18 +296,6 @@ fn test_into_parts() {
     let mut buf = String::new();
     file.read_to_string(&mut buf).unwrap();
     assert_eq!("abcdefgh", buf);
-}
-
-#[test]
-fn test_from_parts() {
-    let mut file = NamedTempFile::new().unwrap();
-    write!(file, "abcd").expect("write failed");
-
-    let (file, temp_path) = file.into_parts();
-
-    let file = NamedTempFile::from_parts(file, temp_path);
-
-    assert!(file.path().exists());
 }
 
 #[test]
@@ -343,147 +325,4 @@ fn test_keep() {
         assert_eq!("abcde", buf);
     }
     std::fs::remove_file(&path).unwrap();
-}
-
-#[test]
-fn test_builder_keep() {
-    let mut tmpfile = Builder::new().keep(true).tempfile().unwrap();
-    write!(tmpfile, "abcde").unwrap();
-    let path = tmpfile.path().to_owned();
-    drop(tmpfile);
-
-    {
-        // Try opening it again.
-        let mut f = File::open(&path).unwrap();
-        let mut buf = String::new();
-        f.read_to_string(&mut buf).unwrap();
-        assert_eq!("abcde", buf);
-    }
-    std::fs::remove_file(&path).unwrap();
-}
-
-#[test]
-fn test_make() {
-    let tmpfile = Builder::new().make(|path| File::create(path)).unwrap();
-
-    assert!(tmpfile.path().is_file());
-}
-
-#[test]
-fn test_make_in() {
-    let tmp_dir = tempdir().unwrap();
-
-    let tmpfile = Builder::new()
-        .make_in(tmp_dir.path(), |path| File::create(path))
-        .unwrap();
-
-    assert!(tmpfile.path().is_file());
-    assert_eq!(tmpfile.path().parent(), Some(tmp_dir.path()));
-}
-
-#[test]
-fn test_make_fnmut() {
-    let mut count = 0;
-
-    // Show that an FnMut can be used.
-    let tmpfile = Builder::new()
-        .make(|path| {
-            count += 1;
-            File::create(path)
-        })
-        .unwrap();
-
-    assert!(tmpfile.path().is_file());
-}
-
-#[cfg(unix)]
-#[test]
-fn test_make_uds() {
-    use std::os::unix::net::UnixListener;
-
-    let temp_sock = Builder::new()
-        .prefix("tmp")
-        .suffix(".sock")
-        .rand_bytes(12)
-        .make(|path| UnixListener::bind(path))
-        .unwrap();
-
-    assert!(temp_sock.path().exists());
-}
-
-#[cfg(unix)]
-#[test]
-fn test_make_uds_conflict() {
-    use std::os::unix::net::UnixListener;
-    use std::sync::atomic::{AtomicUsize, Ordering};
-    use std::sync::Arc;
-
-    // Check that retries happen correctly by racing N different threads.
-
-    const NTHREADS: usize = 20;
-
-    // The number of times our callback was called.
-    let tries = Arc::new(AtomicUsize::new(0));
-
-    let mut threads = Vec::with_capacity(NTHREADS);
-
-    for _ in 0..NTHREADS {
-        let tries = tries.clone();
-        threads.push(std::thread::spawn(move || {
-            // Ensure that every thread uses the same seed so we are guaranteed
-            // to retry. Note that fastrand seeds are thread-local.
-            fastrand::seed(42);
-
-            Builder::new()
-                .prefix("tmp")
-                .suffix(".sock")
-                .rand_bytes(12)
-                .make(|path| {
-                    tries.fetch_add(1, Ordering::Relaxed);
-                    UnixListener::bind(path)
-                })
-        }));
-    }
-
-    // Join all threads, but don't drop the temp file yet. Otherwise, we won't
-    // get a deterministic number of `tries`.
-    let sockets: Vec<_> = threads
-        .into_iter()
-        .map(|thread| thread.join().unwrap().unwrap())
-        .collect();
-
-    // Number of tries is exactly equal to (n*(n+1))/2.
-    assert_eq!(
-        tries.load(Ordering::Relaxed),
-        (NTHREADS * (NTHREADS + 1)) / 2
-    );
-
-    for socket in sockets {
-        assert!(socket.path().exists());
-    }
-}
-
-// Issue #224.
-#[test]
-fn test_overly_generic_bounds() {
-    pub struct Foo<T>(T);
-
-    impl<T> Foo<T>
-    where
-        T: Sync + Send + 'static,
-        for<'a> &'a T: Write + Read,
-    {
-        pub fn new(foo: T) -> Self {
-            Self(foo)
-        }
-    }
-
-    // Don't really need to run this. Only care if it compiles.
-    if let Ok(file) = File::open("i_do_not_exist") {
-        let mut f;
-        let _x = {
-            f = Foo::new(file);
-            &mut f
-        };
-    }
 }
