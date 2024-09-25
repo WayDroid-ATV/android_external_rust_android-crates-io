@@ -1,3 +1,4 @@
+use fastrand;
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::{io, iter::repeat_with};
@@ -5,11 +6,7 @@ use std::{io, iter::repeat_with};
 use crate::error::IoResultExt;
 
 fn tmpname(prefix: &OsStr, suffix: &OsStr, rand_len: usize) -> OsString {
-    let capacity = prefix
-        .len()
-        .saturating_add(suffix.len())
-        .saturating_add(rand_len);
-    let mut buf = OsString::with_capacity(capacity);
+    let mut buf = OsString::with_capacity(prefix.len() + suffix.len() + rand_len);
     buf.push(prefix);
     let mut char_buf = [0u8; 4];
     for c in repeat_with(fastrand::alphanumeric).take(rand_len) {
@@ -19,13 +16,16 @@ fn tmpname(prefix: &OsStr, suffix: &OsStr, rand_len: usize) -> OsString {
     buf
 }
 
-pub fn create_helper<R>(
+pub fn create_helper<F, R>(
     base: &Path,
     prefix: &OsStr,
     suffix: &OsStr,
     random_len: usize,
-    mut f: impl FnMut(PathBuf) -> io::Result<R>,
-) -> io::Result<R> {
+    f: F,
+) -> io::Result<R>
+where
+    F: Fn(PathBuf) -> io::Result<R>,
+{
     let num_retries = if random_len != 0 {
         crate::NUM_RETRIES
     } else {
@@ -35,10 +35,7 @@ pub fn create_helper<R>(
     for _ in 0..num_retries {
         let path = base.join(tmpname(prefix, suffix, random_len));
         return match f(path) {
-            Err(ref e) if e.kind() == io::ErrorKind::AlreadyExists && num_retries > 1 => continue,
-            // AddrInUse can happen if we're creating a UNIX domain socket and
-            // the path already exists.
-            Err(ref e) if e.kind() == io::ErrorKind::AddrInUse && num_retries > 1 => continue,
+            Err(ref e) if e.kind() == io::ErrorKind::AlreadyExists => continue,
             res => res,
         };
     }
