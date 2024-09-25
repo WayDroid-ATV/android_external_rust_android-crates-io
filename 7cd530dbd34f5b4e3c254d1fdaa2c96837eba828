@@ -16,6 +16,24 @@
       "message": "This should have also had a change to pseudo_crate/Cargo.toml to set the version to 3.12.0",
       "revId": "7cd530dbd34f5b4e3c254d1fdaa2c96837eba828",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6677c488_79521f90",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-09-25T15:17:04Z",
+      "side": 1,
+      "message": "`external_updater` doesn\u0027t seem to do that, can you send a patch to make it do what you want it to do?",
+      "parentUuid": "d6fe07eb_ef44b988",
+      "revId": "7cd530dbd34f5b4e3c254d1fdaa2c96837eba828",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
