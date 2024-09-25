@@ -1,5 +1,23 @@
 {
-  "comments": [],
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d6fe07eb_ef44b988",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-25T15:10:12Z",
+      "side": 1,
+      "message": "This should have also had a change to pseudo_crate/Cargo.toml to set the version to 3.12.0",
+      "revId": "7cd530dbd34f5b4e3c254d1fdaa2c96837eba828",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ],
   "submitRequirementResults": [
     {
       "submitRequirement": {
