@@ -34,6 +34,24 @@
       "parentUuid": "d6fe07eb_ef44b988",
       "revId": "7cd530dbd34f5b4e3c254d1fdaa2c96837eba828",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "69e41748_968fbeac",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-09-25T16:09:32Z",
+      "side": 1,
+      "message": "For the time being, don\u0027t use external updater to update crates. Instructions for updating are at https://docs.google.com/document/d/1RGe3V9DJygl6RavyWFvZhZxLoqHJuH6HN7_iIUKHaOM/edit?usp\u003dsharing (I have a TODO to add a README.md)\n\nThe eventual plan is for external updater to just call out to the crate tool, but not sure when. I discussed this last week with Sadaf and Nathan and Stephen, but no precise details yet.",
+      "parentUuid": "6677c488_79521f90",
+      "revId": "7cd530dbd34f5b4e3c254d1fdaa2c96837eba828",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
