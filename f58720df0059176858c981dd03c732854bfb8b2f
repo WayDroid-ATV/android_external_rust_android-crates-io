@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e289469c_a2f9d252",
+        "filename": "crates/h2/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-09-25T07:03:45Z",
+      "side": 1,
+      "message": "This looks like a new dependency.",
+      "revId": "f58720df0059176858c981dd03c732854bfb8b2f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
