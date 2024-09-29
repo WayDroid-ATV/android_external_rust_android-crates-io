@@ -1,0 +1,20 @@
+name: "try-lock"
+description: "A lightweight atomic lock."
+third_party {
+  identifier {
+    type: "crates.io"
+    value: "try-lock"
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/try-lock/try-lock-0.2.5.crate"
+    primary_source: true
+  }
+  version: "0.2.5"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 5
+    day: 27
+  }
+}

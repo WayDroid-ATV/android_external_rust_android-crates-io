@@ -3,6 +3,6 @@
     "//apex_available:anyapex",
     "//apex_available:platform"
   ],
-  "min_sdk_version": "29",
+  "min_sdk_version": "30",
   "run_cargo": false
 }
