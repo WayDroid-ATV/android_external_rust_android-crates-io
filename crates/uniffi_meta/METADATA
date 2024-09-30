@@ -1,0 +1,20 @@
+name: "uniffi_meta"
+description: "uniffi_meta"
+third_party {
+  identifier {
+    type: "crates.io"
+    value: "uniffi_meta"
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/uniffi_meta/uniffi_meta-0.27.1.crate"
+    primary_source: true
+  }
+  version: "0.27.1"
+  license_type: RECIPROCAL
+  last_upgrade_date {
+    year: 2024
+    month: 5
+    day: 6
+  }
+}
