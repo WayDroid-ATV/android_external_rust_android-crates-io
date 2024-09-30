@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "361af7d5_3c1b8154",
+        "filename": "crates/log/patches/0001-Enable-default-initializing-liblog_rust-to-write-to-.patch",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-09-30T23:21:07Z",
+      "side": 0,
+      "message": "Is this intentionally being dropped?",
+      "range": {
+        "startLine": 35,
+        "startChar": 0,
+        "endLine": 55,
+        "endChar": 20
+      },
+      "revId": "e7c065105def2c21aa2c2a275b6901ec8afd03f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
