@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d544b8c5_e054d652",
+        "filename": "crates/spin/rules.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-09-30T23:41:40Z",
+      "side": 0,
+      "message": "I suspect that these lines might be needed, and are just missing from the configuration file.",
+      "revId": "e7c065105def2c21aa2c2a275b6901ec8afd03f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
