@@ -1,0 +1,8 @@
+{
+  "run_cargo": false,
+  "module_visibility": {
+    "libvsprintf": [
+      "//external/rust/crates/libbpf-rs"
+    ]
+  }
+}
