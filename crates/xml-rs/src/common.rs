@@ -15,8 +15,8 @@ impl TextPosition {
     /// Creates a new position initialized to the beginning of the document
     #[inline]
     #[must_use]
-    pub fn new() -> TextPosition {
-        TextPosition { row: 0, column: 0 }
+    pub const fn new() -> Self {
+        Self { row: 0, column: 0 }
     }
 
     /// Advances the position in a line
@@ -82,8 +82,8 @@ pub enum XmlVersion {
 impl fmt::Display for XmlVersion {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            XmlVersion::Version10 => "1.0",
-            XmlVersion::Version11 => "1.1",
+            Self::Version10 => "1.0",
+            Self::Version11 => "1.1",
         }.fmt(f)
     }
 }
@@ -101,7 +101,7 @@ impl fmt::Debug for XmlVersion {
 /// [1]: http://www.w3.org/TR/2006/REC-xml11-20060816/#sec-common-syn
 #[must_use]
 #[inline]
-pub fn is_whitespace_char(c: char) -> bool {
+pub const fn is_whitespace_char(c: char) -> bool {
     matches!(c, '\x20' | '\x0a' | '\x09' | '\x0d')
 }
 
@@ -112,16 +112,23 @@ pub fn is_whitespace_str(s: &str) -> bool {
     s.chars().all(is_whitespace_char)
 }
 
-#[must_use] pub fn is_xml10_char(c: char) -> bool {
+/// Is it a valid character in XML 1.0
+#[must_use]
+pub const fn is_xml10_char(c: char) -> bool {
     matches!(c, '\u{09}' | '\u{0A}' | '\u{0D}' | '\u{20}'..='\u{D7FF}' | '\u{E000}'..='\u{FFFD}' | '\u{10000}'..)
 }
 
-#[must_use] pub fn is_xml11_char(c: char) -> bool {
+/// Is it a valid character in XML 1.1
+#[must_use]
+pub const fn is_xml11_char(c: char) -> bool {
     matches!(c, '\u{01}'..='\u{D7FF}' | '\u{E000}'..='\u{FFFD}' | '\u{10000}'..)
 }
 
-#[must_use] pub fn is_xml11_char_not_restricted(c: char) -> bool {
-    is_xml11_char(c) && !matches!(c, '\u{01}'..='\u{08}' | '\u{0B}'..='\u{0C}' | '\u{0E}'..='\u{1F}' | '\u{7F}'..='\u{84}' | '\u{86}'..='\u{9F}')
+/// Is it a valid character in XML 1.1 but not part of the restricted character set
+#[must_use]
+pub const fn is_xml11_char_not_restricted(c: char) -> bool {
+    is_xml11_char(c) &&
+        !matches!(c, '\u{01}'..='\u{08}' | '\u{0B}'..='\u{0C}' | '\u{0E}'..='\u{1F}' | '\u{7F}'..='\u{84}' | '\u{86}'..='\u{9F}')
 }
 
 /// Checks whether the given character is a name start character (`NameStartChar`)
@@ -129,17 +136,16 @@ pub fn is_whitespace_str(s: &str) -> bool {
 ///
 /// [1]: http://www.w3.org/TR/2006/REC-xml11-20060816/#sec-common-syn
 #[must_use]
-pub fn is_name_start_char(c: char) -> bool {
-    match c {
+pub const fn is_name_start_char(c: char) -> bool {
+    matches!(c,
         ':' | 'A'..='Z' | '_' | 'a'..='z' |
         '\u{C0}'..='\u{D6}' | '\u{D8}'..='\u{F6}' | '\u{F8}'..='\u{2FF}' |
         '\u{370}'..='\u{37D}' | '\u{37F}'..='\u{1FFF}' |
         '\u{200C}'..='\u{200D}' | '\u{2070}'..='\u{218F}' |
         '\u{2C00}'..='\u{2FEF}' | '\u{3001}'..='\u{D7FF}' |
         '\u{F900}'..='\u{FDCF}' | '\u{FDF0}'..='\u{FFFD}' |
-        '\u{10000}'..='\u{EFFFF}' => true,
-        _ => false
-    }
+        '\u{10000}'..='\u{EFFFF}'
+    )
 }
 
 /// Checks whether the given character is a name character (`NameChar`)
@@ -147,11 +153,12 @@ pub fn is_name_start_char(c: char) -> bool {
 ///
 /// [1]: http://www.w3.org/TR/2006/REC-xml11-20060816/#sec-common-syn
 #[must_use]
-pub fn is_name_char(c: char) -> bool {
-    match c {
-        _ if is_name_start_char(c) => true,
-        '-' | '.' | '0'..='9' | '\u{B7}' |
-        '\u{300}'..='\u{36F}' | '\u{203F}'..='\u{2040}' => true,
-        _ => false
+pub const fn is_name_char(c: char) -> bool {
+    if is_name_start_char(c) {
+        return true;
     }
+    matches!(c,
+        '-' | '.' | '0'..='9' | '\u{B7}' |
+        '\u{300}'..='\u{36F}' | '\u{203F}'..='\u{2040}'
+    )
 }
