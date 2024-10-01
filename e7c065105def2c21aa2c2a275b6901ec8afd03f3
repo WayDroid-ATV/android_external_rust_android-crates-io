@@ -16,6 +16,24 @@
       "message": "Ugh, we lost a bunch of METADATA. Something is definitely wrong here. Perhaps we need to make sure that the crate has the latest METADATA schema?",
       "revId": "e7c065105def2c21aa2c2a275b6901ec8afd03f3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b1d8e065_3adfa8e2",
+        "filename": "crates/zeroize_derive/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-01T13:14:54Z",
+      "side": 0,
+      "message": "Fixed.",
+      "parentUuid": "07b2d2c1_b2805996",
+      "revId": "e7c065105def2c21aa2c2a275b6901ec8afd03f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
