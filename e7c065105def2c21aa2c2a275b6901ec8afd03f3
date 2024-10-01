@@ -22,6 +22,30 @@
       },
       "revId": "e7c065105def2c21aa2c2a275b6901ec8afd03f3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1f790f74_708f6d48",
+        "filename": "crates/log/patches/0001-Enable-default-initializing-liblog_rust-to-write-to-.patch",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-01T13:02:34Z",
+      "side": 0,
+      "message": "Yes. It\u0027s now in https://android.googlesource.com/platform/external/rust/android-crates-io/+/refs/heads/main/crates/log/android_impl.bp and handled by cargo_embargo.",
+      "parentUuid": "361af7d5_3c1b8154",
+      "range": {
+        "startLine": 35,
+        "startChar": 0,
+        "endLine": 55,
+        "endChar": 20
+      },
+      "revId": "e7c065105def2c21aa2c2a275b6901ec8afd03f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
