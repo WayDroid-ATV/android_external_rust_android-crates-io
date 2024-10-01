@@ -1,0 +1,14 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 2a89800..e8d83dd 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -14,6 +14,9 @@ mod tests;
+ #[cfg(test)]
+ mod tests128;
+ 
++#[cfg(android_dylib)]
++extern crate std;
++
+ #[cfg(any(feature = "serde", feature = "serde_std", feature = "serde_no_std"))]
+ pub mod reexports {
+     pub use serde;

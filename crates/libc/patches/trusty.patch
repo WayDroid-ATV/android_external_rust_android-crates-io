@@ -1,3 +1,9 @@
+
+---
+ src/lib.rs    |  6 ++++
+ src/trusty.rs | 98 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 104 insertions(+)
+
 diff --git b/src/lib.rs a/src/lib.rs
 index dd9b9df1..a0a0372d 100644
 --- b/src/lib.rs
@@ -17,7 +23,7 @@ index dd9b9df1..a0a0372d 100644
          pub use fixed_width_ints::*;
 diff --git b/src/trusty.rs a/src/trusty.rs
 new file mode 100644
-index 00000000..7f1c6399
+index 00000000..fcb5894a
 --- /dev/null
 +++ a/src/trusty.rs
 @@ -0,0 +1,98 @@

@@ -1,13 +1,18 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index c887e19..0594e8c 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
-@@ -19,5 +19,7 @@
+
+---
+ src/lib.rs | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index fef5b704..0318af79 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -18,6 +18,8 @@
+ #![deny(missing_docs)]
  #![deny(clippy::all)]
  #![deny(clippy::cargo)]
--
 +#[cfg(android_dylib)]
 +extern crate std;
-+
+ 
  #[cfg(feature = "alloc")]
  extern crate alloc;

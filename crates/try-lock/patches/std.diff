@@ -1,7 +1,12 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index 2811996..4faa975 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
+
+---
+ src/lib.rs | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index 28119967..4faa975b 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
 @@ -1,7 +1,8 @@
  #![deny(missing_docs)]
  #![deny(missing_debug_implementations)]

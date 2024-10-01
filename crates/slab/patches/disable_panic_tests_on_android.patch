@@ -1,8 +1,13 @@
-diff --git a/tests/slab.rs b/tests/slab.rs
-index c1570fa..8ba3064 100644
---- a/tests/slab.rs
-+++ b/tests/slab.rs
-@@ -580,6 +580,8 @@ fn compact_doesnt_move_if_closure_errors() {
+
+---
+ tests/slab.rs | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git b/tests/slab.rs a/tests/slab.rs
+index 4799c1dd..e18b40eb 100644
+--- b/tests/slab.rs
++++ a/tests/slab.rs
+@@ -614,6 +614,8 @@ fn compact_doesnt_move_if_closure_errors() {
  }
  
  #[test]

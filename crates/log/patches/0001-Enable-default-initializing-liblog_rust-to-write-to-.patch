@@ -24,47 +24,22 @@ Test: observe all logs on non-FFI call without initializing the logger
 Test: observe set log filter applying only to non-FFI call
 Change-Id: I04dd334c66e5a2be8cfb19e87be3afb9146e5aa6
 ---
- Android.bp            | 12 ++++++++++++
  src/android_logger.rs |  1 +
  src/lib.rs            | 23 +++++++++++++++++++++++
- 3 files changed, 36 insertions(+)
- create mode 120000 src/android_logger.rs
+ 2 files changed, 24 insertions(+)
 
-diff --git a/Android.bp b/Android.bp
-index e6ff3cf..81c9175 100644
---- a/Android.bp
-+++ b/Android.bp
-@@ -60,6 +60,18 @@ rust_library {
-     product_available: true,
-     vendor_available: true,
-     min_sdk_version: "29",
-+    target: {
-+      android: {
-+        cfgs: ["default_log_impl"],
-+        rustlibs: [
-+          "libandroid_log_sys",
-+          "libonce_cell",
-+        ],
-+        shared_libs: [
-+          "liblog",
-+        ],
-+      }
-+    }
- }
- 
- rust_library_rlib {
-diff --git a/src/android_logger.rs b/src/android_logger.rs
+diff --git b/src/android_logger.rs a/src/android_logger.rs
 new file mode 120000
-index 0000000..84b8625
+index 00000000..84b8625c
 --- /dev/null
-+++ b/src/android_logger.rs
++++ a/src/android_logger.rs
 @@ -0,0 +1 @@
 +../../android_logger/src/lib.rs
 \ No newline at end of file
-diff --git a/src/lib.rs b/src/lib.rs
-index 4ead826..8eb1c50 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
+diff --git b/src/lib.rs a/src/lib.rs
+index 4ead8262..8eb1c507 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
 @@ -344,6 +344,11 @@ mod serde;
  #[cfg(feature = "kv_unstable")]
  pub mod kv;
