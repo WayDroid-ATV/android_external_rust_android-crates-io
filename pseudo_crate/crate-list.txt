@@ -138,6 +138,7 @@ num-integer
 num-traits
 num_cpus
 octets
+once_cell
 oorandom
 openssl-macros
 os_str_bytes
