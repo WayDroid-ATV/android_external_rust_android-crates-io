@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "95ac82d8_6e4979b7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-02T21:36:15Z",
+      "side": 1,
+      "message": "I think the rest looks fine.",
+      "revId": "9fb102306648c9e0580c03428146bbbfe760c674",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7d8ea889_7d2574cc",
+        "filename": "crates/once_cell/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-02T21:36:15Z",
+      "side": 1,
+      "message": "Missing the crates.io metadata.",
+      "revId": "9fb102306648c9e0580c03428146bbbfe760c674",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
