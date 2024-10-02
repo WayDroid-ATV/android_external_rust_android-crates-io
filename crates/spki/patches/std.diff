@@ -1,8 +1,13 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index f466756..995f3bd 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
-@@ -48,6 +48,10 @@ pub use crate::{
+
+---
+ src/lib.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index 6c0caa72..a8b76532 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -54,6 +54,10 @@ pub use crate::{
  };
  pub use der::{self, asn1::ObjectIdentifier};
  
@@ -11,4 +16,5 @@ index f466756..995f3bd 100644
 +extern crate std;
 +
  #[cfg(feature = "alloc")]
- pub use {crate::traits::EncodePublicKey, der::Document};
+ pub use {
+     crate::{

@@ -17,10 +17,10 @@ Change-Id: I7ea8bcded841558d845f0cba4a92a2339a6db3f5
  tests/test_fmt.rs | 20 ++++++++++----------
  1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/tests/test_fmt.rs b/tests/test_fmt.rs
-index 9766d36..016b4b8 100644
---- a/tests/test_fmt.rs
-+++ b/tests/test_fmt.rs
+diff --git b/tests/test_fmt.rs a/tests/test_fmt.rs
+index 9766d366..016b4b8c 100644
+--- b/tests/test_fmt.rs
++++ a/tests/test_fmt.rs
 @@ -68,27 +68,27 @@ Error {
  
  #[test]

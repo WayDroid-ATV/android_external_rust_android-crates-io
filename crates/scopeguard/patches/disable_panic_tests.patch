@@ -1,8 +1,13 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index d33c2b6..39f5026 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
-@@ -500,6 +500,7 @@ mod tests {
+
+---
+ src/lib.rs | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index b5522c7b..d94129f6 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -517,6 +517,7 @@ mod tests {
  
      #[cfg(feature = "use_std")]
      #[test]
@@ -10,7 +15,7 @@ index d33c2b6..39f5026 100644
      fn test_defer_success_2() {
          let drops = Cell::new(0);
          let _ = catch_unwind(AssertUnwindSafe(|| {
-@@ -511,6 +512,7 @@ mod tests {
+@@ -528,6 +529,7 @@ mod tests {
  
      #[cfg(feature = "use_std")]
      #[test]

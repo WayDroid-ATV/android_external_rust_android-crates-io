@@ -1,7 +1,12 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index 6ec2021..7e46d02 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
+
+---
+ src/lib.rs | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index 6ec2021e..7e46d02c 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
 @@ -137,6 +137,9 @@ pin-project supports this.
      clippy::undocumented_unsafe_blocks,
  )]

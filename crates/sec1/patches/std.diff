@@ -1,8 +1,13 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index 8e01b1f..6b658b6 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
-@@ -17,6 +17,10 @@
+
+---
+ src/lib.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index f6b41908..6b44d3dc 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -23,6 +23,10 @@
  //! serializers/deserializers will autodetect if a "human friendly" textual
  //! encoding is being used, and if so encode the points as hexadecimal.
  

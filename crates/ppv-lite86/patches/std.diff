@@ -1,7 +1,12 @@
-Index: ppv-lite86/src/lib.rs
-===================================================================
---- ppv-lite86.orig/src/lib.rs
-+++ ppv-lite86/src/lib.rs
+
+---
+ src/lib.rs | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index 638552fc..1bc27e06 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
 @@ -5,6 +5,9 @@
  //   Machine (which is a ZST + Copy type), which can only by created unsafely or safely
  //   through feature detection (e.g. fn AVX2::try_get() -> Option<Machine>).

@@ -19,11 +19,11 @@ Change-Id: Ieaf4bcfde5664d0b5d845234d0c2139d89c4153c
  src/random_state.rs | 13 ++++++++++++-
  1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/src/random_state.rs b/src/random_state.rs
-index e885fa4..5b85726 100644
---- a/src/random_state.rs
-+++ b/src/random_state.rs
-@@ -48,6 +48,15 @@ pub(crate) const PI2: [u64; 4] = [
+diff --git b/src/random_state.rs a/src/random_state.rs
+index 46a39ab0..640d123c 100644
+--- b/src/random_state.rs
++++ a/src/random_state.rs
+@@ -49,6 +49,15 @@ pub(crate) const PI2: [u64; 4] = [
      0x3f84_d5b5_b547_0917,
  ];
  
@@ -39,7 +39,7 @@ index e885fa4..5b85726 100644
  cfg_if::cfg_if! {
      if #[cfg(all(feature = "compile-time-rng", any(test, fuzzing)))] {
          #[inline]
-@@ -78,7 +87,9 @@ cfg_if::cfg_if! {
+@@ -79,7 +88,9 @@ cfg_if::cfg_if! {
  
              SEEDS.get_or_init(|| {
                  let mut result: [u8; 64] = [0; 64];

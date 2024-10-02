@@ -1,7 +1,12 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index 220af6b..cd5cca0 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
+
+---
+ src/lib.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index 220af6ba..cd5cca0b 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
 @@ -247,6 +247,10 @@ appropriate `repr` attribute:
  #![warn(clippy::all)]
  #![no_std]
@@ -12,3 +17,4 @@ index 220af6b..cd5cca0 100644
 +
  use core::fmt::{Debug, Formatter, Result};
  use core::ops::*;
+ 
