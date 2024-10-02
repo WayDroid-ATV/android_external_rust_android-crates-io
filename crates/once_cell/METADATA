@@ -1,0 +1,11 @@
+name: "once_cell"
+description: "Single assignment cells and lazy values."
+third_party {
+  version: "1.17.1"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2023
+    month: 2
+    day: 16
+  }
+}

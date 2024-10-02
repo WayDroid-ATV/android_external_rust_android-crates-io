@@ -196,6 +196,7 @@ dependencies = [
  "num-integer",
  "num-traits",
  "num_cpus",
+ "once_cell",
  "oorandom",
  "os_str_bytes",
  "p9",
