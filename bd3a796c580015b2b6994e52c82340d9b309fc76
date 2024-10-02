@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "86e5b10b_c62a69ec",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-02T12:45:18Z",
+      "side": 1,
+      "message": "Thanks! I assume this renders aosp/3287045 unnecessary.",
+      "revId": "bd3a796c580015b2b6994e52c82340d9b309fc76",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
