@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "908e6baa_2112835d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-10-02T10:29:06Z",
+      "side": 1,
+      "message": "With this change, cargo_embargo should regenerate the expected rules.mk for the spin crate.",
+      "revId": "d28fecf659fc312eefaaeb67d4f57d5fafb1cbcb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
