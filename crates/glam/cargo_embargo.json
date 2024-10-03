@@ -1,0 +1,9 @@
+{
+  "package": {
+    "glam": {
+      "device_supported": false,
+      "license_text": "LICENSE"
+    }
+  },
+  "run_cargo": false
+}

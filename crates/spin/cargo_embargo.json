@@ -32,6 +32,9 @@
       "generate_androidbp": false,
       "generate_rulesmk": true,
       "features": [
+        "once",
+        "mutex",
+        "spin_mutex"
       ],
       "package": {
         "spin": {
