@@ -52,7 +52,9 @@ pub type c_int64_t = i64;
 pub type time_t = c_long;
 
 pub type clockid_t = c_int;
-pub const CLOCK_REALTIME: clockid_t = 0;
+
+// Trusty only supports CLOCK_BOOTTIME
+pub const CLOCK_BOOTTIME: clockid_t = 7;
 pub struct timespec {
     pub tv_sec: time_t,
     pub tv_nsec: c_long,
