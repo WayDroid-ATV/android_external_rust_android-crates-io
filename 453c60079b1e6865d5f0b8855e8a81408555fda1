@@ -70,6 +70,30 @@
       },
       "revId": "453c60079b1e6865d5f0b8855e8a81408555fda1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b43b771f_83a9bdd1",
+        "filename": "crates/serde_derive/cargo_embargo.json",
+        "patchSetId": 5
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-10-03T02:50:36Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "13207cea_2c023e8d",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 7
+      },
+      "revId": "453c60079b1e6865d5f0b8855e8a81408555fda1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
