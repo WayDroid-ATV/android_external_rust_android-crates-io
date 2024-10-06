@@ -18,9 +18,14 @@ rust_library {
     host_supported: true,
     crate_name: "fastrand",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.9.0",
+    cargo_pkg_version: "2.0.2",
     crate_root: "src/lib.rs",
     edition: "2018",
+    features: [
+        "alloc",
+        "default",
+        "std",
+    ],
     apex_available: [
         "//apex_available:anyapex",
         "//apex_available:platform",

@@ -1,7 +1,12 @@
-diff --git a/src/unix/linux_like/android/mod.rs b/src/unix/linux_like/android/mod.rs
+
+---
+ src/unix/linux_like/android/mod.rs | 283 +++++++++++++++++++------------------
+ 1 file changed, 149 insertions(+), 134 deletions(-)
+
+diff --git b/src/unix/linux_like/android/mod.rs a/src/unix/linux_like/android/mod.rs
 index 2c1c1e9b..8e5032aa 100644
---- a/src/unix/linux_like/android/mod.rs
-+++ b/src/unix/linux_like/android/mod.rs
+--- b/src/unix/linux_like/android/mod.rs
++++ a/src/unix/linux_like/android/mod.rs
 @@ -1182,140 +1182,155 @@ pub const _PC_SYNC_IO: ::c_int = 19;
  
  pub const FIONBIO: ::c_int = 0x5421;

@@ -1,7 +1,12 @@
-diff --git a/src/unix/linux_like/linux/musl/mod.rs b/src/unix/linux_like/linux/musl/mod.rs
-index 70710734..929108ce 100644
---- a/src/unix/linux_like/linux/musl/mod.rs
-+++ b/src/unix/linux_like/linux/musl/mod.rs
+
+---
+ src/unix/linux_like/linux/musl/mod.rs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git b/src/unix/linux_like/linux/musl/mod.rs a/src/unix/linux_like/linux/musl/mod.rs
+index a4c1f708..a2e44896 100644
+--- b/src/unix/linux_like/linux/musl/mod.rs
++++ a/src/unix/linux_like/linux/musl/mod.rs
 @@ -9,7 +9,7 @@ pub type clock_t = c_long;
                  See #1848 for more info."
      )

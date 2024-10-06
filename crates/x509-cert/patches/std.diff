@@ -1,8 +1,13 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index 49d888c..651bdc7 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
-@@ -13,6 +13,10 @@
+
+---
+ src/lib.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index 11ef03ca..dbf3d932 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -15,6 +15,10 @@
      unused_qualifications
  )]
  

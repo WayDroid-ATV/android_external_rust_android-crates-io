@@ -1,6 +1,13 @@
---- a/src/connection.rs	2020-12-21 14:55:17.022985801 +0100
-+++ b/src/connection.rs	2020-12-21 14:55:35.150841529 +0100
-@@ -84,9 +84,9 @@
+
+---
+ src/connection.rs | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git b/src/connection.rs a/src/connection.rs
+index 53706d60..84cb8fc0 100755
+--- b/src/connection.rs
++++ a/src/connection.rs
+@@ -99,9 +99,9 @@ impl InnerConnection {
          hello_buf[0..BENCHMARK_MAGIC_NUMBER.len()]
              .copy_from_slice(BENCHMARK_MAGIC_NUMBER.as_bytes());
          let mut i = BENCHMARK_MAGIC_NUMBER.len();

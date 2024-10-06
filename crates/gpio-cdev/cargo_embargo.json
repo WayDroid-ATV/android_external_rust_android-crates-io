@@ -1,0 +1,8 @@
+{
+  "package": {
+    "gpio-cdev": {
+      "license_text": "LICENSE"
+    }
+  },
+  "run_cargo": false
+}

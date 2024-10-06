@@ -1,7 +1,12 @@
-diff --git a/tests/test_bytes.rs b/tests/test_bytes.rs
-index f0cae99..402017b 100644
---- a/tests/test_bytes.rs
-+++ b/tests/test_bytes.rs
+
+---
+ tests/test_bytes.rs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git b/tests/test_bytes.rs a/tests/test_bytes.rs
+index 5ec60a5b..da1b0743 100644
+--- b/tests/test_bytes.rs
++++ a/tests/test_bytes.rs
 @@ -288,6 +288,7 @@ fn split_to_uninitialized() {
  }
  

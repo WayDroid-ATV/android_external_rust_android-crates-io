@@ -1,44 +1,52 @@
-diff --git a/src/mutex/spin.rs b/src/mutex/spin.rs
-index 60be1e8..36d65fd 100644
---- a/src/mutex/spin.rs
-+++ b/src/mutex/spin.rs
-@@ -432,6 +432,7 @@ mod tests {
+
+---
+ src/mutex/spin.rs   | 1 +
+ src/mutex/ticket.rs | 1 +
+ src/once.rs         | 1 +
+ src/rwlock.rs       | 1 +
+ 4 files changed, 4 insertions(+)
+
+diff --git b/src/mutex/spin.rs a/src/mutex/spin.rs
+index fc974727..561d7650 100644
+--- b/src/mutex/spin.rs
++++ a/src/mutex/spin.rs
+@@ -499,6 +499,7 @@ mod tests {
      }
  
      #[test]
 +    #[ignore = "Android uses panic_abort"]
      fn test_mutex_arc_access_in_unwind() {
-         let arc = Arc::new(SpinMutex::new(1));
+         let arc = Arc::new(SpinMutex::<_>::new(1));
          let arc2 = arc.clone();
-diff --git a/src/mutex/ticket.rs b/src/mutex/ticket.rs
-index df36e95..4186fb8 100644
---- a/src/mutex/ticket.rs
-+++ b/src/mutex/ticket.rs
-@@ -428,6 +428,7 @@ mod tests {
+diff --git b/src/mutex/ticket.rs a/src/mutex/ticket.rs
+index c14869ef..01b905ef 100644
+--- b/src/mutex/ticket.rs
++++ a/src/mutex/ticket.rs
+@@ -493,6 +493,7 @@ mod tests {
      }
  
      #[test]
 +    #[ignore = "Android uses panic_abort"]
      fn test_mutex_arc_access_in_unwind() {
-         let arc = Arc::new(TicketMutex::new(1));
+         let arc = Arc::new(TicketMutex::<_>::new(1));
          let arc2 = arc.clone();
-diff --git a/src/once.rs b/src/once.rs
-index 5d4b451..ad60405 100644
---- a/src/once.rs
-+++ b/src/once.rs
-@@ -384,6 +384,7 @@ mod tests {
+diff --git b/src/once.rs a/src/once.rs
+index 31700dce..b4202d42 100644
+--- b/src/once.rs
++++ a/src/once.rs
+@@ -647,6 +647,7 @@ mod tests {
      }
  
      #[test]
 +    #[ignore = "Android uses panic_abort"]
      fn panic() {
-         use ::std::panic;
+         use std::panic;
  
-diff --git a/src/rwlock.rs b/src/rwlock.rs
-index 5c009cf..ed50407 100644
---- a/src/rwlock.rs
-+++ b/src/rwlock.rs
-@@ -932,6 +932,7 @@ mod tests {
+diff --git b/src/rwlock.rs a/src/rwlock.rs
+index 5dd35441..beae5c10 100644
+--- b/src/rwlock.rs
++++ a/src/rwlock.rs
+@@ -1025,6 +1025,7 @@ mod tests {
      }
  
      #[test]

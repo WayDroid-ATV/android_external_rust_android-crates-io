@@ -1,7 +1,12 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index 396057c..d460938 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
+
+---
+ src/lib.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index b51331a5..1a290b01 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
 @@ -117,6 +117,10 @@
      clippy::unused_self
  )]

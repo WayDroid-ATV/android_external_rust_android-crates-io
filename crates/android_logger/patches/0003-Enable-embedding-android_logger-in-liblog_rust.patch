@@ -27,10 +27,10 @@ Change-Id: I324f77d840101391299e2693acc6f814d062c659
  src/lib.rs | 26 ++++++++++++++++++++++++--
  1 file changed, 24 insertions(+), 2 deletions(-)
 
-diff --git a/src/lib.rs b/src/lib.rs
-index c22f07e..c2a3c08 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
+diff --git b/src/lib.rs a/src/lib.rs
+index faf2779b..cfd2bb99 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
 @@ -67,20 +67,35 @@
  extern crate android_log_sys as log_ffi;
  extern crate once_cell;
@@ -69,7 +69,7 @@ index c22f07e..c2a3c08 100644
  pub use env_logger::fmt::Formatter;
  
  pub(crate) type FormatFn = Box<dyn Fn(&mut dyn fmt::Write, &Record) -> fmt::Result + Sync + Send>;
-@@ -499,6 +514,12 @@ pub fn init_once(config: Config) {
+@@ -542,6 +557,12 @@ pub fn init_once(config: Config) {
      } else if let Some(level) = log_level {
          log::set_max_level(level);
      }
@@ -82,7 +82,7 @@ index c22f07e..c2a3c08 100644
  }
  
  // FIXME: When `maybe_uninit_uninit_array ` is stabilized, use it instead of this helper
-@@ -553,6 +574,7 @@ mod tests {
+@@ -596,6 +617,7 @@ mod tests {
  
      // Test whether the filter gets called correctly. Not meant to be exhaustive for all filter
      // options, as these are handled directly by the filter itself.

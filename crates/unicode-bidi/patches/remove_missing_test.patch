@@ -1,7 +1,12 @@
-diff --git a/Cargo.toml b/Cargo.toml
-index 02ea8fa..73aff86 100644
---- a/Cargo.toml
-+++ b/Cargo.toml
+
+---
+ Cargo.toml | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git b/Cargo.toml a/Cargo.toml
+index 29be4e5a..80f71ff6 100644
+--- b/Cargo.toml
++++ a/Cargo.toml
 @@ -42,11 +42,6 @@ repository = "https://github.com/servo/unicode-bidi"
  [lib]
  name = "unicode_bidi"

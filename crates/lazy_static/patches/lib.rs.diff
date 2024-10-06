@@ -1,7 +1,12 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index cada0dc..0d9d46e 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
+
+---
+ src/lib.rs | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index cada0dc6..0d9d46e0 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
 @@ -104,12 +104,13 @@ This crate provides one cargo feature:
  #[doc(hidden)]
  pub mod lazy;

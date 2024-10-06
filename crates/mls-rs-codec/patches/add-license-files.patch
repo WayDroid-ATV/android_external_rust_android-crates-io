@@ -5,11 +5,17 @@ The Apache-2.0 and MIT licenses found here are from:
 https://github.com/awslabs/mls-rs/blob/main/LICENSE-apache
 https://github.com/awslabs/mls-rs/blob/main/LICENSE-mit
 
-diff --git a/LICENSE-apache b/LICENSE-apache
+
+---
+ LICENSE-apache | 176 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ LICENSE-mit    |   9 +++
+ 2 files changed, 185 insertions(+)
+
+diff --git b/LICENSE-apache a/LICENSE-apache
 new file mode 100644
-index 0000000..831fbc5
+index 00000000..831fbc53
 --- /dev/null
-+++ b/LICENSE-apache
++++ a/LICENSE-apache
 @@ -0,0 +1,176 @@
 +                                 Apache License
 +                           Version 2.0, January 2004
@@ -187,11 +193,11 @@ index 0000000..831fbc5
 +      of your accepting any such warranty or additional liability.
 +
 +   END OF TERMS AND CONDITIONS
-diff --git a/LICENSE-mit b/LICENSE-mit
+diff --git b/LICENSE-mit a/LICENSE-mit
 new file mode 100644
-index 0000000..e547c4a
+index 00000000..e547c4ae
 --- /dev/null
-+++ b/LICENSE-mit
++++ a/LICENSE-mit
 @@ -0,0 +1,9 @@
 +MIT License
 +

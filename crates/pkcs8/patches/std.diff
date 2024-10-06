@@ -1,8 +1,13 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index 1d2dfa2..9fcae3a 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
-@@ -64,6 +64,10 @@
+
+---
+ src/lib.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index 33ceef8e..53730d4c 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -70,6 +70,10 @@
  //! [PKCS#5v2 Password Based Encryption Scheme 2 (RFC 8018)]: https://tools.ietf.org/html/rfc8018#section-6.2
  //! [scrypt]: https://en.wikipedia.org/wiki/Scrypt
  

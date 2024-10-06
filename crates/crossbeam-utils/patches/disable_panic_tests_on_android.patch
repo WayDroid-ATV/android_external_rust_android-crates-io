@@ -1,6 +1,14 @@
---- a/tests/sharded_lock.rs
-+++ b/tests/sharded_lock.rs
-@@ -46,6 +46,8 @@ fn frob() {
+
+---
+ tests/sharded_lock.rs | 14 ++++++++++++++
+ tests/thread.rs       |  8 ++++++++
+ 2 files changed, 22 insertions(+)
+
+diff --git b/tests/sharded_lock.rs a/tests/sharded_lock.rs
+index 002f7f5e..8b0ae8e1 100644
+--- b/tests/sharded_lock.rs
++++ a/tests/sharded_lock.rs
+@@ -49,6 +49,8 @@ fn frob() {
  }
  
  #[test]
@@ -9,7 +17,7 @@
  fn arc_poison_wr() {
      let arc = Arc::new(ShardedLock::new(1));
      let arc2 = arc.clone();
-@@ -58,6 +60,8 @@ fn arc_poison_wr() {
+@@ -61,6 +63,8 @@ fn arc_poison_wr() {
  }
  
  #[test]
@@ -18,7 +26,7 @@
  fn arc_poison_ww() {
      let arc = Arc::new(ShardedLock::new(1));
      assert!(!arc.is_poisoned());
-@@ -72,6 +76,8 @@ fn arc_poison_ww() {
+@@ -75,6 +79,8 @@ fn arc_poison_ww() {
  }
  
  #[test]
@@ -27,7 +35,7 @@
  fn arc_no_poison_rr() {
      let arc = Arc::new(ShardedLock::new(1));
      let arc2 = arc.clone();
-@@ -84,6 +90,8 @@ fn arc_no_poison_rr() {
+@@ -87,6 +93,8 @@ fn arc_no_poison_rr() {
      assert_eq!(*lock, 1);
  }
  #[test]
@@ -36,7 +44,7 @@
  fn arc_no_poison_sl() {
      let arc = Arc::new(ShardedLock::new(1));
      let arc2 = arc.clone();
-@@ -135,6 +143,8 @@ fn arc() {
+@@ -138,6 +146,8 @@ fn arc() {
  }
  
  #[test]
@@ -63,8 +71,10 @@
  fn test_get_mut_poison() {
      let m = Arc::new(ShardedLock::new(NonCopy(10)));
      let m2 = m.clone();
---- a/tests/thread.rs
-+++ b/tests/thread.rs
+diff --git b/tests/thread.rs a/tests/thread.rs
+index 0dfad90b..280b73f0 100644
+--- b/tests/thread.rs
++++ a/tests/thread.rs
 @@ -9,6 +9,8 @@ const THREADS: usize = 10;
  const SMALL_STACK_SIZE: usize = 20;
  
