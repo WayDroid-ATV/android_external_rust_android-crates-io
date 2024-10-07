@@ -1,17 +1,17 @@
 name: "enumn"
 description: "Convert number to enum"
 third_party {
-  version: "0.1.8"
+  version: "0.1.12"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2023
-    month: 3
-    day: 23
+    year: 2024
+    month: 10
+    day: 2
   }
   homepage: "https://crates.io/crates/enumn"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/enumn/enumn-0.1.8.crate"
-    version: "0.1.8"
+    value: "https://static.crates.io/crates/enumn/enumn-0.1.12.crate"
+    version: "0.1.12"
   }
 }

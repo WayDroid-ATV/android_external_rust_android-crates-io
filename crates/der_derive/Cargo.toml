@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.65"
 name = "der_derive"
-version = "0.7.2"
+version = "0.7.3"
 authors = ["RustCrypto Developers"]
 description = "Custom derive support for the `der` crate's `Choice` and `Sequence` traits"
 documentation = "https://docs.rs/der"
