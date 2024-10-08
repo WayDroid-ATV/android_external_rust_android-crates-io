@@ -1,0 +1,15 @@
+diff --git b/src/untrusted.rs a/src/untrusted.rs
+index 010b001..47c281e 100644
+--- b/src/untrusted.rs
++++ a/src/untrusted.rs
+@@ -105,6 +105,10 @@
+ #![allow(rustdoc::bare_urls)]
+ #![no_std]
+ 
++// ANDROID: use std to allow building as a dylib.
++#[cfg(android_dylib)]
++extern crate std;
++
+ /// A wrapper around `&'a [u8]` that helps in writing panic-free code.
+ ///
+ /// No methods of `Input` will ever panic.

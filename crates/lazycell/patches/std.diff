@@ -1,0 +1,16 @@
+diff --git b/src/lib.rs a/src/lib.rs
+index 53bee07..923d672 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -45,9 +45,10 @@
+ //! is that after it is initialized, it can't be modified.
+
+
++// ANDROID: Unconditionally use std to allow building as a dylib.
+ #[cfg(not(test))]
+ #[macro_use]
+-extern crate core as std;
++extern crate std;
+ #[cfg(feature = "serde")]
+ extern crate serde;
+

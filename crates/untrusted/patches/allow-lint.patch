@@ -1,0 +1,14 @@
+diff --git b/src/untrusted.rs a/src/untrusted.rs
+index 657634a..47c281e 100644
+--- b/src/untrusted.rs
++++ a/src/untrusted.rs
+@@ -100,6 +100,9 @@
+     variant_size_differences,
+     warnings
+ )]
++// ANDROID: This lint is included in warnings and thus forbidden, but this version of the library
++// is not compatible with it.
++#![allow(rustdoc::bare_urls)]
+ #![no_std]
+ 
+ // ANDROID: use std to allow building as a dylib.

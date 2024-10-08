@@ -1,0 +1,11 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 9da787a..9214798 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -27,3 +27,6 @@ lto = true
+ [lib]
+ name = "untrusted"
+ path = "src/untrusted.rs"
++
++[lints.rust]
++unexpected_cfgs = { level = "warn", check-cfg = ['cfg(android_dylib)'] }
