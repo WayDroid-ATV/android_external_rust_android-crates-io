@@ -12,11 +12,16 @@
 [package]
 edition = "2018"
 name = "coset"
-version = "0.3.7"
+version = "0.3.8"
 authors = [
     "David Drysdale <drysdale@google.com>",
     "Paul Crowley <paulcrowley@google.com>",
 ]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Set of types for supporting COSE"
 readme = "README.md"
 keywords = [
@@ -26,6 +31,18 @@ keywords = [
 categories = ["cryptography"]
 license = "Apache-2.0"
 repository = "https://github.com/google/coset"
+
+[lib]
+name = "coset"
+path = "src/lib.rs"
+
+[[example]]
+name = "signature"
+path = "examples/signature.rs"
+
+[[example]]
+name = "cwt"
+path = "examples/cwt.rs"
 
 [dependencies.ciborium]
 version = "^0.2.1"

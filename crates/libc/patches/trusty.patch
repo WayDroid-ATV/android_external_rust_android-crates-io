@@ -1,15 +1,9 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 1b6f0c07..71139385 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -141,6 +141,12 @@ cfg_if! {
 
----
- src/lib.rs    |  6 ++++
- src/trusty.rs | 98 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 104 insertions(+)
-
-diff --git b/src/lib.rs a/src/lib.rs
-index dd9b9df1..a0a0372d 100644
---- b/src/lib.rs
-+++ a/src/lib.rs
-@@ -145,6 +145,12 @@ cfg_if! {
- 
          mod teeos;
          pub use teeos::*;
 +    } else if #[cfg(target_os = "trusty")] {
@@ -21,12 +15,12 @@ index dd9b9df1..a0a0372d 100644
      } else if #[cfg(all(target_env = "sgx", target_vendor = "fortanix"))] {
          mod fixed_width_ints;
          pub use fixed_width_ints::*;
-diff --git b/src/trusty.rs a/src/trusty.rs
+diff --git a/src/trusty.rs b/src/trusty.rs
 new file mode 100644
-index 00000000..fcb5894a
+index 00000000..5429380e
 --- /dev/null
-+++ a/src/trusty.rs
-@@ -0,0 +1,98 @@
++++ b/src/trusty.rs
+@@ -0,0 +1,100 @@
 +#[cfg(feature = "trusty_sys")]
 +extern crate trusty_sys;
 +
@@ -81,7 +75,9 @@ index 00000000..fcb5894a
 +pub type time_t = c_long;
 +
 +pub type clockid_t = c_int;
-+pub const CLOCK_REALTIME: clockid_t = 0;
++
++// Trusty only supports CLOCK_BOOTTIME
++pub const CLOCK_BOOTTIME: clockid_t = 7;
 +pub struct timespec {
 +    pub tv_sec: time_t,
 +    pub tv_nsec: c_long,

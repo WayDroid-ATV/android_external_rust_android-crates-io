@@ -6,5 +6,13 @@
     }
   },
   "run_cargo": false,
-  "tests": true
+  "tests": true,
+  "variants": [
+    {},
+    {
+      "generate_androidbp": false,
+      "generate_rulesmk": true,
+      "tests": false
+    }
+  ]
 }
