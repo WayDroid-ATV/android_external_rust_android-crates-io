@@ -1,0 +1,83 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "168b193b_75719319",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-09T22:16:23Z",
+      "side": 1,
+      "message": "I don\u0027t think this works with markdown. You need newlines for it to show up correctly.",
+      "revId": "0e362186692310478ba13506b9100dc5cfee57d7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3197d26f_b15cfe77",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-09T22:16:23Z",
+      "side": 1,
+      "message": "Same comment about splitting this onto multiple lines",
+      "fixSuggestions": [
+        {
+          "fixId": "2af46037_a19c58c8",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "README.md",
+              "range": {
+                "startLine": 64,
+                "startChar": 0,
+                "endLine": 65,
+                "endChar": 0
+              },
+              "replacement": "```\n./crate_tool suggest-updates\n```\n"
+            },
+            {
+              "path": "README.md",
+              "range": {
+                "startLine": 68,
+                "startChar": 0,
+                "endLine": 69,
+                "endChar": 0
+              },
+              "replacement": "```\n./crate_tool try-updates | tee crate-updates\n```\n"
+            }
+          ]
+        }
+      ],
+      "revId": "0e362186692310478ba13506b9100dc5cfee57d7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f5c38a33_de078787",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-09T22:16:23Z",
+      "side": 1,
+      "message": "Needs a newline please.",
+      "revId": "0e362186692310478ba13506b9100dc5cfee57d7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
