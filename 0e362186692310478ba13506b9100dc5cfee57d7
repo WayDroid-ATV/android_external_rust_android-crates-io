@@ -132,6 +132,24 @@
       "parentUuid": "f5c38a33_de078787",
       "revId": "0e362186692310478ba13506b9100dc5cfee57d7",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "69073738_c6598569",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-09T23:17:03Z",
+      "side": 1,
+      "message": "Still missing an end-of-file newline (which prevents extra diffs if you add new sections below). This is a minor concern though.",
+      "parentUuid": "5f78f513_42d7cb0d",
+      "revId": "0e362186692310478ba13506b9100dc5cfee57d7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
