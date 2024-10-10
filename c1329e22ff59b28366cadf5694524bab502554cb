@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "038ab6db_f6be2b5d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-10T13:07:16Z",
+      "side": 1,
+      "message": "Please do not edit Android.bp files directly. Edit cargo_embargo.json and run \u0027./crate_tool regenerate \u003ccrate name\u003e\u0027\n\nI recently added a README: https://android.googlesource.com/platform/external/rust/android-crates-io/+/refs/heads/main/README.md\n\nThe instructions for build rules are brief, so let me know if there\u0027s anything you\u0027d like me to expand on. Most of the detail is in the cargo_embargo documentation, though.",
+      "revId": "c1329e22ff59b28366cadf5694524bab502554cb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
