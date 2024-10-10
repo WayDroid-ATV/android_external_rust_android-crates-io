@@ -1,1 +1,3 @@
-/pseudo_crate/vendor
+/pseudo_crate/Cargo.lock
+/pseudo_crate/target/
+/pseudo_crate/vendor/
