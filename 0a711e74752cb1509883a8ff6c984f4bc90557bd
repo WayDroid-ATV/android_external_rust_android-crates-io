@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c310c7a5_b1859d3e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-10T17:53:41Z",
+      "side": 1,
+      "message": "This was a proof of concept for direct import, but the underlying crates are now in the regular crates directory. Either abandon this or add CLs to disable the non-monorepo projects too.",
+      "revId": "0a711e74752cb1509883a8ff6c984f4bc90557bd",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
