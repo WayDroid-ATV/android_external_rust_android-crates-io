@@ -1,12 +1,5 @@
 //! Utilities to make testing [`Future`s](futures_core::future::Future) easier
 
-#![warn(
-    missing_debug_implementations,
-    missing_docs,
-    rust_2018_idioms,
-    single_use_lifetimes,
-    unreachable_pub
-)]
 #![doc(test(
     no_crate_inject,
     attr(
@@ -14,6 +7,8 @@
         allow(dead_code, unused_assignments, unused_variables)
     )
 ))]
+#![warn(missing_docs, unsafe_op_in_unsafe_fn)]
+#![allow(clippy::test_attr_in_doctest)]
 
 #[cfg(not(feature = "std"))]
 compile_error!(
