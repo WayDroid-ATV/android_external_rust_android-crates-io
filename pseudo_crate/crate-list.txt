@@ -219,6 +219,7 @@ spki
 strsim
 strum
 strum_macros
+syn
 syn-mid
 sync_wrapper
 synstructure

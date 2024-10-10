@@ -292,6 +292,7 @@ dependencies = [
  "strsim",
  "strum",
  "strum_macros",
+ "syn 2.0.58",
  "syn-mid",
  "sync_wrapper 1.0.1",
  "synstructure",
