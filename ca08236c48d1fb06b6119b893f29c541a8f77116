@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cbdded3c_7c4044ce",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-10T16:36:36Z",
+      "side": 1,
+      "message": "This may not be a good idea, because Cargo.lock may help us avoid getting excessively screwed by yanked versions.",
+      "revId": "ca08236c48d1fb06b6119b893f29c541a8f77116",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
