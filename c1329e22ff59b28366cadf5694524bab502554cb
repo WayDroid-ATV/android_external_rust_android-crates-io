@@ -69,6 +69,24 @@
       "parentUuid": "8d552f51_861adedf",
       "revId": "c1329e22ff59b28366cadf5694524bab502554cb",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "49e3e42d_664c1930",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-11T12:58:12Z",
+      "side": 1,
+      "message": "I think I didn\u0027t properly read your change, so I didn\u0027t realize you are adding a top-level Android.bp, not modifying something for a crate. (I\u0027ve just seen a lot of reviews with changes to an Android.bp without cargo_embargo.json.)\n\nI guess what you are doing is OK. Would it make more sense to put it in the crates/ directory rather than at the root of the repo?",
+      "parentUuid": "cc877db2_e8289eda",
+      "revId": "c1329e22ff59b28366cadf5694524bab502554cb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
