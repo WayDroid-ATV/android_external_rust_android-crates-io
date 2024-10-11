@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a45c4750_1b2f694e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-11T20:58:45Z",
+      "side": 1,
+      "message": "I would just try to fix this particular missing visibility instance, but I think it\u0027s probably easier for you to upload that fix and regenerate all these projects next week.",
+      "revId": "11eb3fcdd9db5bbc63aae4ddb0a44018f41b4cf2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
