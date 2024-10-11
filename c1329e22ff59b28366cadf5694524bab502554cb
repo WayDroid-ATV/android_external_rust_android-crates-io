@@ -51,6 +51,24 @@
       "parentUuid": "038ab6db_f6be2b5d",
       "revId": "c1329e22ff59b28366cadf5694524bab502554cb",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cc877db2_e8289eda",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1291338
+      },
+      "writtenOn": "2024-10-11T01:05:09Z",
+      "side": 1,
+      "message": "\u003e Edit cargo_embargo.json and run \u0027./crate_tool regenerate \u003ccrate name\u003e\u0027\n\nLet me explain the context here. We\u0027re now trying to use nsjail to build Trusty. To use nsjail, we need to bind-mount directories and `external/rust/android-crates-io` is one of them.\n\nI understand that it\u0027s expected to edit `cargo_embargo.json` for `Android.bp` integration, but I\u0027m not sure if it\u0027s what we really want here.\n\n* I think mounting only one directory `external/rust/android-crates-io` is much more efficient than mounting subdirectories one by one. That will easily bloat the command line of nsjail and affect performance negatively.\n* This is a one-time change and we won\u0027t need to maintain further, contrast to `cargo_embargo.json` approach.\n\nCan we land this as-is?",
+      "parentUuid": "8d552f51_861adedf",
+      "revId": "c1329e22ff59b28366cadf5694524bab502554cb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
