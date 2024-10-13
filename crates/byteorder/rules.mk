@@ -8,7 +8,7 @@ MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := byteorder
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
-MODULE_RUST_EDITION := 2018
+MODULE_RUST_EDITION := 2021
 MODULE_RUSTFLAGS += \
 	--cfg 'feature="default"' \
 

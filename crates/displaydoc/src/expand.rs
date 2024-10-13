@@ -19,10 +19,9 @@ pub(crate) fn derive(input: &DeriveInput) -> Result<TokenStream> {
     }?;
 
     let helpers = specialization();
-    let dummy_const = format_ident!("_DERIVE_Display_FOR_{}", input.ident);
     Ok(quote! {
         #[allow(non_upper_case_globals, unused_attributes, unused_qualifications)]
-        const #dummy_const: () = {
+        const _: () = {
             #helpers
             #impls
         };
@@ -36,7 +35,7 @@ fn specialization() -> TokenStream {
             fn __displaydoc_display(&self) -> Self;
         }
 
-        impl<T: core::fmt::Display> DisplayToDisplayDoc for &T {
+        impl<T: ::core::fmt::Display> DisplayToDisplayDoc for &T {
             fn __displaydoc_display(&self) -> Self {
                 self
             }
@@ -91,8 +90,8 @@ fn impl_struct(input: &DeriveInput, data: &DataStruct) -> Result<TokenStream> {
             Fields::Unit => quote!(_),
         };
         quote! {
-            impl #impl_generics core::fmt::Display for #ty #ty_generics #where_clause {
-                fn fmt(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
+            impl #impl_generics ::core::fmt::Display for #ty #ty_generics #where_clause {
+                fn fmt(&self, formatter: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                     // NB: This destructures the fields of `self` into named variables (for unnamed
                     // fields, it uses _0, _1, etc as above). The `#[allow(unused_variables)]`
                     // section means it doesn't have to parse the individual field references out of
@@ -366,8 +365,8 @@ fn impl_enum(input: &DeriveInput, data: &DataEnum) -> Result<TokenStream> {
 
     if data.variants.is_empty() {
         Ok(quote! {
-            impl #impl_generics core::fmt::Display for #ty #ty_generics #where_clause {
-                fn fmt(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
+            impl #impl_generics ::core::fmt::Display for #ty #ty_generics #where_clause {
+                fn fmt(&self, formatter: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                     unreachable!("empty enums cannot be instantiated and thus cannot be printed")
                 }
             }
@@ -395,8 +394,8 @@ fn impl_enum(input: &DeriveInput, data: &DataEnum) -> Result<TokenStream> {
             })
             .collect::<Result<Vec<_>>>()?;
         Ok(quote! {
-            impl #impl_generics core::fmt::Display for #ty #ty_generics #where_clause {
-                fn fmt(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
+            impl #impl_generics ::core::fmt::Display for #ty #ty_generics #where_clause {
+                fn fmt(&self, formatter: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
                     #[allow(unused_variables)]
                     match self {
                         #(#arms,)*
