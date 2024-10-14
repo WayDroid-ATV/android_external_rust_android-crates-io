@@ -299,8 +299,11 @@ unicode-bidi
 unicode-normalization
 unicode-segmentation
 unicode-width
+unicode-xid
 uniffi
 uniffi_checksum_derive
+uniffi_core
+uniffi_macros
 uniffi_meta
 unsafe-libyaml
 untrusted
@@ -308,9 +311,13 @@ url
 userfaultfd
 utf-8
 uuid
+vhost
+vhost-user-backend
 virtio-bindings
 virtio-queue
 virtio-vsock
+vm-memory
+vmm-sys-util
 vsock
 vsprintf
 want
@@ -320,6 +327,7 @@ which
 winnow
 x509-cert
 xml-rs
+yaml-rust
 zerocopy-derive
 zeroize
 zeroize_derive
