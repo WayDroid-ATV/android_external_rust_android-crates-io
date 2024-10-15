@@ -1,0 +1,8 @@
+{
+  "package": {
+    "foreign-types": {
+      "force_rlib": true
+    }
+  },
+  "run_cargo": false
+}

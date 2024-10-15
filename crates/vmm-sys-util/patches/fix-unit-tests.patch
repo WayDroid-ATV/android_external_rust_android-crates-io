@@ -1,0 +1,65 @@
+From d7a5ccfa9ef25f476deb4e5dac58d164e3c4e0fb Mon Sep 17 00:00:00 2001
+From: Martin Geisler <mgeisler@google.com>
+Date: Wed, 17 Apr 2024 13:02:31 +0200
+Subject: [PATCH] fix: use random temporary directory in test
+
+While trying to enable the unit tests in Android (see
+https://r.android.com/3044134), I noticed test failures saying:
+
+    thread 'errno::tests::test_errno' panicked at
+    external/rust/crates/vmm-sys-util/src/errno.rs:156:14:
+    called `Result::unwrap()` on an `Err` value: Os { code: 21, kind:
+    IsADirectory, message: "Is a directory" }
+
+I believe this is because of the hard-coded name for the temporary
+file in the `test_errno` unit test.
+
+Using a randomized path should fix this.
+
+Signed-off-by: Martin Geisler <mgeisler@google.com>
+---
+ src/errno.rs | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/src/errno.rs b/src/errno.rs
+index 27b9bcf..3478b7c 100644
+--- a/src/errno.rs
++++ b/src/errno.rs
+@@ -132,7 +132,7 @@ pub fn errno_result<T>() -> Result<T> {
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-    use std::env::temp_dir;
++    use crate::tempfile::TempFile;
+     use std::error::Error as _;
+     use std::fs::OpenOptions;
+     use std::io::{self, Read};
+@@ -145,14 +145,16 @@ mod tests {
+         let expected_errno = libc::EIO;
+ 
+         // try to read from a file without read permissions
+-        let mut path = temp_dir();
+-        path.push("test");
++        let temp_file = TempFile::new().unwrap();
++        let path = temp_file.as_path().to_owned();
++        // Drop temp_file so we can cleanly reuse path below.
++        std::mem::drop(temp_file);
+         let mut file = OpenOptions::new()
+             .read(false)
+             .write(true)
+             .create(true)
+             .truncate(true)
+-            .open(path)
++            .open(&path)
+             .unwrap();
+         let mut buf: Vec<u8> = Vec::new();
+         assert!(file.read_to_end(&mut buf).is_err());
+@@ -174,6 +176,8 @@ mod tests {
+         let last_err: io::Error = last_err.into();
+         // Test creating a `std::io::Error` from an `Error`
+         assert_eq!(io::Error::last_os_error().kind(), last_err.kind());
++
++        assert!(std::fs::remove_file(&path).is_ok());
+     }
+ 
+     #[test]

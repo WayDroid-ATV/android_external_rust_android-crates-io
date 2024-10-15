@@ -1,0 +1,13 @@
+diff --git b/Android.bp a/Android.bp
+index dabff6d..9f54e56 100644
+--- b/Android.bp
++++ a/Android.bp
+@@ -24,7 +24,7 @@ license {
+ rust_library {
+     name: "liboneshot_uniffi",
+     host_supported: true,
+-    crate_name: "oneshot_uniffi",
++    crate_name: "oneshot",
+     cargo_env_compat: true,
+     cargo_pkg_version: "0.1.6",
+     crate_root: "src/lib.rs",

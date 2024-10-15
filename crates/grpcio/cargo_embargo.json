@@ -1,0 +1,8 @@
+{
+  "features": [
+    "_secure",
+    "boringssl",
+    "protobufv3-codec"
+  ],
+  "min_sdk_version": "29"
+}

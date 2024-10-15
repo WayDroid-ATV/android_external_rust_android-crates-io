@@ -1,0 +1,28 @@
+diff --git a/src/util.rs b/src/util.rs
+index 3019c40..49a9651 100644
+--- a/src/util.rs
++++ b/src/util.rs
+@@ -18,7 +18,13 @@ pub fn manifest_path() -> Result<PathBuf, String> {
+     Ok(StdPath::new(&manifest_dir).join("Cargo.toml"))
+ }
+ 
+-#[cfg(not(feature = "nightly"))]
++#[cfg(soong)]
++pub fn mod_path() -> syn::Result<String> {
++    Ok(std::env::var("CARGO_CRATE_NAME")
++        .expect("`CARGO_CRATE_NAME` should be set when building with Soong"))
++}
++
++#[cfg(all(not(soong), not(feature = "nightly")))]
+ pub fn mod_path() -> syn::Result<String> {
+     // Without the nightly feature and TokenStream::expand_expr, just return the crate name
+ 
+@@ -64,7 +70,7 @@ pub fn mod_path() -> syn::Result<String> {
+         .map_err(|e| syn::Error::new(Span::call_site(), e))
+ }
+ 
+-#[cfg(feature = "nightly")]
++#[cfg(all(not(soong), feature = "nightly"))]
+ pub fn mod_path() -> syn::Result<String> {
+     use proc_macro::TokenStream;
+ 
