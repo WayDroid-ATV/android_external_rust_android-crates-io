@@ -1,6 +1,0 @@
-enabled: false,
-arch: {
-    arm64: {
-        enabled: true,
-    },
-}
