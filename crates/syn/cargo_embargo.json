@@ -4,7 +4,8 @@
     "full",
     "visit",
     "visit-mut",
-    "extra-traits"
+    "extra-traits",
+    "fold"
   ],
   "package": {
     "syn": {
