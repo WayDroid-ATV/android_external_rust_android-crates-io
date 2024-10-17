@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d43c73a2_ca378777",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-17T00:45:24Z",
+      "side": 1,
+      "message": "I\u0027m not sure how much difference this will make, because I\u0027m pretty sure most of the time is spent running cargo_embargo.",
+      "revId": "f7d50922e8e081c6fdb2aedb441c7eb13ee725fa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
