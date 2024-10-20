@@ -1,0 +1,12 @@
+{
+  "run_cargo": false,
+  "tests": false,
+  "features": [],
+  "package": {
+    "num_enum_derive": {
+      "dep_blocklist": [
+        "libproc_macro_crate"
+      ]
+    }
+  }
+}

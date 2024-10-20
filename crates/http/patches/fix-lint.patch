@@ -1,0 +1,31 @@
+From 7b3c5062cbcdf5194ae70d5f23ceadb68a6bcf34 Mon Sep 17 00:00:00 2001
+From: Sean McArthur <sean@seanmonstar.com>
+Date: Mon, 15 May 2023 12:44:43 -0400
+Subject: [PATCH] chore: fix lint about dropping Copy values
+
+---
+ src/header/map.rs | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/header/map.rs b/src/header/map.rs
+index 13cbc3a3..ed049dbc 100644
+--- a/src/header/map.rs
++++ b/src/header/map.rs
+@@ -1152,7 +1152,7 @@ impl<T> HeaderMap<T> {
+             danger,
+             // Vacant
+             {
+-                drop(danger); // Make lint happy
++                let _ = danger; // Make lint happy
+                 let index = self.entries.len();
+                 self.insert_entry(hash, key.into(), value);
+                 self.indices[probe] = Pos::new(index, hash);
+@@ -1255,7 +1255,7 @@ impl<T> HeaderMap<T> {
+             danger,
+             // Vacant
+             {
+-                drop(danger);
++                let _ = danger;
+                 let index = self.entries.len();
+                 self.insert_entry(hash, key.into(), value);
+                 self.indices[probe] = Pos::new(index, hash);
