@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "17338a9e_4fef1687",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-21T20:33:55Z",
+      "side": 1,
+      "message": "+James as reviewer too",
+      "revId": "0c6d77ebcdd82f8b8b6e888109d11a3446affe5e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "05379ec6_b7f89419",
+        "filename": "crates/foreign-types-shared/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-21T20:33:55Z",
+      "side": 1,
+      "message": "You can\u0027t just modify the Android.bp files. This has to be specified in the `cargo_embargo.json` file for this project as well. https://cs.android.com/search?q\u003dfile:cargo_embargo.json%20file:external%2Frust%2Fandroid-crates-io%20min_sdk_version\u0026sq\u003d should show you what this looks like.",
+      "revId": "0c6d77ebcdd82f8b8b6e888109d11a3446affe5e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
