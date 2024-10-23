@@ -50,6 +50,23 @@
       "message": "Or, even better, can we update the libc crate?",
       "revId": "9a403e4ed61edaa28f1e9bfcaaeee4e357c47d7b",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0f1eda5b_fb423349",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-23T17:59:46Z",
+      "side": 1,
+      "message": "Sent you aosp/3316593 to update libc to 0.2.161.",
+      "revId": "9a403e4ed61edaa28f1e9bfcaaeee4e357c47d7b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
