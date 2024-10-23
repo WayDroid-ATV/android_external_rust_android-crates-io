@@ -23,10 +23,9 @@ rust_library_host {
     features: [
         "default",
         "vhost-user",
-        "vhost-user-slave",
+        "vhost-user-backend",
     ],
     rustlibs: [
-        "libbitflags-1.3.2",
         "liblibc",
         "libvm_memory_android",
         "libvmm_sys_util",
