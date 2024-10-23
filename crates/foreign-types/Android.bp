@@ -22,6 +22,7 @@ rust_library_rlib {
     crate_root: "src/lib.rs",
     edition: "2015",
     rustlibs: ["libforeign_types_shared"],
+    min_sdk_version: "29",
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
