@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "1af7cb6d_a3f23f78",
+        "filename": "extra_versions/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-23T18:05:14Z",
+      "side": 1,
+      "message": "I don\u0027t think so. It\u0027s a name, not a path.",
+      "parentUuid": "14469fb3_534462b4",
+      "revId": "dfbf58ffbd237161332b6d96eb63e64aa6c8f444",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "72eb4d2e_787d6dca",
@@ -35,6 +53,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "03b97578_8bbb8aa3",
+        "filename": "extra_versions/crates/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-23T18:05:14Z",
+      "side": 1,
+      "message": "I don\u0027t think so. It\u0027s a name, not a path.",
+      "parentUuid": "72eb4d2e_787d6dca",
+      "revId": "dfbf58ffbd237161332b6d96eb63e64aa6c8f444",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "9dda15da_38ece465",
@@ -48,6 +84,30 @@
       "writtenOn": "2024-10-23T17:53:45Z",
       "side": 1,
       "message": "extra_versions/pseudo_crate ?",
+      "range": {
+        "startLine": 1,
+        "startChar": 39,
+        "endLine": 1,
+        "endChar": 51
+      },
+      "revId": "dfbf58ffbd237161332b6d96eb63e64aa6c8f444",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2ef7880c_b7d548cc",
+        "filename": "extra_versions/pseudo_crate/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-23T18:05:14Z",
+      "side": 1,
+      "message": "Ditto.",
+      "parentUuid": "9dda15da_38ece465",
       "range": {
         "startLine": 1,
         "startChar": 39,
