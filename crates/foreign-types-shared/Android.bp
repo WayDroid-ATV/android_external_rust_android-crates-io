@@ -21,6 +21,7 @@ rust_library_rlib {
     cargo_pkg_version: "0.1.0",
     crate_root: "src/lib.rs",
     edition: "2015",
+    min_sdk_version: "29",
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
