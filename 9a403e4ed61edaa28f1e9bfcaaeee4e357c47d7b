@@ -33,6 +33,23 @@
       "message": "You need to add a patch for this.",
       "revId": "9a403e4ed61edaa28f1e9bfcaaeee4e357c47d7b",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e23aa4cd_8b0a8a35",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-23T17:49:23Z",
+      "side": 1,
+      "message": "Or, even better, can we update the libc crate?",
+      "revId": "9a403e4ed61edaa28f1e9bfcaaeee4e357c47d7b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
