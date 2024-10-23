@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ce804d1f_3c994b83",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-23T19:10:18Z",
+      "side": 1,
+      "message": "OK, so it looks like you can\u0027t remove this feature without also making other changes at the same time.",
+      "revId": "cd9090c410e8383f7c92fc764095bf42bad3b9d4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
