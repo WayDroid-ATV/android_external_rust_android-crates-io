@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "14469fb3_534462b4",
+        "filename": "extra_versions/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-23T17:53:45Z",
+      "side": 1,
+      "message": "Does this need a different path here too?",
+      "revId": "dfbf58ffbd237161332b6d96eb63e64aa6c8f444",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "72eb4d2e_787d6dca",
+        "filename": "extra_versions/crates/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-23T17:53:45Z",
+      "side": 1,
+      "message": "Doesn\u0027t this need an extra path on the name?",
+      "revId": "dfbf58ffbd237161332b6d96eb63e64aa6c8f444",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9dda15da_38ece465",
+        "filename": "extra_versions/pseudo_crate/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-23T17:53:45Z",
+      "side": 1,
+      "message": "extra_versions/pseudo_crate ?",
+      "range": {
+        "startLine": 1,
+        "startChar": 39,
+        "endLine": 1,
+        "endChar": 51
+      },
+      "revId": "dfbf58ffbd237161332b6d96eb63e64aa6c8f444",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
