@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "998589ff_aad532ee",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-23T18:03:20Z",
+      "side": 1,
+      "message": "You need to run \"./crate_tool regenerate vhost\"",
+      "revId": "57a1c438306686373009ff561e8f332c6666f396",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
