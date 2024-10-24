@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9772b5ef_05134e57",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-24T08:23:16Z",
+      "side": 1,
+      "message": "Looks like there are some leftover conflict markers on this CL (plus maybe some patches that need to be rebased for the rest of the topic).",
+      "revId": "e8e07a7b63174fec2b4a5b2b5738100f20c4e95d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
