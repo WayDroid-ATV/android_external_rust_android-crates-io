@@ -54,3 +54,9 @@ rust_test {
         "libzerocopy_nostd",
     ],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_virtio-drivers",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}

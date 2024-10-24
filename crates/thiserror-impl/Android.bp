@@ -28,3 +28,9 @@ rust_proc_macro {
     product_available: true,
     vendor_available: true,
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_thiserror-impl",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}

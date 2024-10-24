@@ -28,6 +28,22 @@
           "no_std": true
         }
       }
+    },
+    {
+      "features": [
+        "alloc",
+        "race",
+        "std"
+      ],
+      "package": {
+        "once_cell": {
+          "alloc": true,
+          "force_rlib": true,
+          "host_supported": false
+        }
+      },
+      "generate_androidbp": false,
+      "generate_rulesmk": true
     }
   ]
 }
