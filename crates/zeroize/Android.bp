@@ -105,6 +105,37 @@ rust_library_rlib {
     min_sdk_version: "Tiramisu",
 }
 
+<<<<<<< HEAD
+=======
+rust_library_rlib {
+    name: "libzeroize",
+    crate_name: "zeroize",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.6.0",
+    crate_root: "src/lib.rs",
+    edition: "2021",
+    features: [
+        "alloc",
+        "zeroize_derive",
+    ],
+    proc_macros: ["libzeroize_derive"],
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    prefer_rlib: true,
+    no_stdlibs: true,
+    stdlibs: [
+        "liballoc.rust_sysroot",
+        "libcompiler_builtins.rust_sysroot",
+        "libcore.rust_sysroot",
+    ],
+    product_available: true,
+    vendor_available: true,
+    min_sdk_version: "Tiramisu",
+}
+
+>>>>>>> 4f0bde5e (Generate rules.mk for zeroize via cargo_embargo)
 dirgroup {
     name: "trusty_dirgroup_external_rust_crates_zeroize",
     visibility: ["//trusty/vendor/google/aosp/scripts"],
