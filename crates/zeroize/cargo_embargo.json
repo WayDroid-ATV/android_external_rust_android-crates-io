@@ -20,6 +20,17 @@
           "no_std": true
         }
       }
+    },
+    {
+      "package": {
+        "zeroize": {
+          "alloc": true,
+          "force_rlib": true,
+          "host_supported": false,
+          "no_std": true
+        }
+      },
+      "generate_rulesmk": true
     }
   ]
 }
