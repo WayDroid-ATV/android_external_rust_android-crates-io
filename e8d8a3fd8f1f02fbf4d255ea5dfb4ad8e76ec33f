@@ -22,6 +22,30 @@
       },
       "revId": "e8d8a3fd8f1f02fbf4d255ea5dfb4ad8e76ec33f",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b03ead56_3b4235bf",
+        "filename": "crates/once_cell/rules.mk",
+        "patchSetId": 6
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-10-24T08:56:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3ab0160b_182c66d7",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 33
+      },
+      "revId": "e8d8a3fd8f1f02fbf4d255ea5dfb4ad8e76ec33f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
