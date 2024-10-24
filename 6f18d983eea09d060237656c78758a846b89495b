@@ -16,6 +16,24 @@
       "message": "`Bug: 339424309` is the usual format for this.",
       "revId": "6f18d983eea09d060237656c78758a846b89495b",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2febdb49_5cebb1fa",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-24T16:14:30Z",
+      "side": 1,
+      "message": "Stephen suggested I do it like this for accessibility reasons.",
+      "parentUuid": "4613af53_c5abed64",
+      "revId": "6f18d983eea09d060237656c78758a846b89495b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
