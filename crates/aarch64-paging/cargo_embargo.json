@@ -10,8 +10,9 @@
       "no_std": true,
       "force_rlib": true,
       "add_module_block": "cargo2android_module.bp",
-      "license_text": "LICENSE-APACHE"
+      "license_text": ["LICENSE-APACHE"]
     }
   },
-  "run_cargo": false
+  "run_cargo": false,
+  "generate_rulesmk": true
 }
