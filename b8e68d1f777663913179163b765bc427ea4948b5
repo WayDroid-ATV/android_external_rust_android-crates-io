@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e4f19623_5b7fd63c",
+        "filename": "crates/foreign-types-shared/METADATA",
+        "patchSetId": 2
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-24T08:32:49Z",
+      "side": 0,
+      "message": "There are a few crates here that are dropping METADATA information. Can you figure out what\u0027s going on here? Were these just not updated to the new crates.io format for METADATA? Is there something else wrong with a script?",
+      "revId": "b8e68d1f777663913179163b765bc427ea4948b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
