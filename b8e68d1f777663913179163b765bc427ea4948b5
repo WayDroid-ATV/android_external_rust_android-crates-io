@@ -34,6 +34,24 @@
       "parentUuid": "e4f19623_5b7fd63c",
       "revId": "b8e68d1f777663913179163b765bc427ea4948b5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7e8f930c_a7404df9",
+        "filename": "crates/foreign-types-shared/METADATA",
+        "patchSetId": 2
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-24T08:43:22Z",
+      "side": 0,
+      "message": "I\u0027ll defer to @jamesfarrell@google.com then, as he will know if this is expected or not. I didn\u0027t notice that these blocks were getting dropped so directly now.",
+      "parentUuid": "48373ea5_9e8144c1",
+      "revId": "b8e68d1f777663913179163b765bc427ea4948b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
