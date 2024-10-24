@@ -4,6 +4,13 @@
       "force_rlib": true
     }
   },
+<<<<<<< PATCH SET (8c7a31 Set min_sdk_version=29 for foreign-types and foreign-types-s)
+  "min_sdk_version": "29",
+  "run_cargo": false
+||||||| BASE
+  "run_cargo": false
+=======
   "run_cargo": false,
   "generate_rulesmk": true
+>>>>>>> BASE      (4a309b Merge "Put license_text in []" into main)
 }
