@@ -26,7 +26,8 @@
           "host_supported": false,
           "no_std": true
         }
-      }
+      },
+      "generate_rulesmk": true
     }
   ]
 }
