@@ -52,6 +52,24 @@
       "parentUuid": "48373ea5_9e8144c1",
       "revId": "b8e68d1f777663913179163b765bc427ea4948b5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6f0d27e8_f8e298ab",
+        "filename": "crates/foreign-types-shared/METADATA",
+        "patchSetId": 2
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-24T15:13:46Z",
+      "side": 0,
+      "message": "This is OK, although not great. The removed fields are deprecated, and the information can easily be regenerated. I think there\u0027s a small bug in crate_tool which I haven\u0027t been able to track down.\n\nAn interim solution would be to run \"./crate_tool fix-metadata\"",
+      "parentUuid": "7e8f930c_a7404df9",
+      "revId": "b8e68d1f777663913179163b765bc427ea4948b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
