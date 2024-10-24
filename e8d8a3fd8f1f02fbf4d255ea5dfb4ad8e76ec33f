@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3ab0160b_182c66d7",
+        "filename": "crates/once_cell/rules.mk",
+        "patchSetId": 6
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1291338
+      },
+      "writtenOn": "2024-10-24T08:27:09Z",
+      "side": 1,
+      "message": "As we talked, this should be set only in kernel mode.",
+      "range": {
+        "startLine": 11,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 33
+      },
+      "revId": "e8d8a3fd8f1f02fbf4d255ea5dfb4ad8e76ec33f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
