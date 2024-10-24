@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8495db2b_56604518",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-24T15:10:26Z",
+      "side": 1,
+      "message": "I\u0027ve been taking a hands-off approach to rules.mk, but if you want I can make the presubmit checks verify that the contents match what\u0027s expected.\n\nI wonder how the extra stuff got added. Could there be a bug in cargo_embargo?",
+      "revId": "06604a3535444b01da1cdb563ff6274796d43a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
