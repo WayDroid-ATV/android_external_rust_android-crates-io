@@ -75,6 +75,24 @@
       "parentUuid": "161ba842_76524d61",
       "revId": "c27b45deab018c841096e817bad3309308d1b8b0",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ba3dff68_67b50570",
+        "filename": "crates/vhost/cargo_embargo.json",
+        "patchSetId": 7
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1944400
+      },
+      "writtenOn": "2024-10-25T19:10:45Z",
+      "side": 0,
+      "message": "agreed",
+      "parentUuid": "4dafcbc2_c1c4ef80",
+      "revId": "c27b45deab018c841096e817bad3309308d1b8b0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
