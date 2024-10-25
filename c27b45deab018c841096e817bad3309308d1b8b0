@@ -39,6 +39,24 @@
       "message": "All this does is change the name of the dependency. Removing it does not remove it from rustlibs, it just will use the default name of libbitflags instead of libbitflags-1.3.2",
       "revId": "c27b45deab018c841096e817bad3309308d1b8b0",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "161ba842_76524d61",
+        "filename": "crates/vhost/cargo_embargo.json",
+        "patchSetId": 7
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1944400
+      },
+      "writtenOn": "2024-10-25T00:27:43Z",
+      "side": 0,
+      "message": "`libbitflags` is (currently) 2.5.0 instead of 1.3.2. I think the intention is to update the dep, so this seems correct",
+      "parentUuid": "8ce9aeb7_44c67352",
+      "revId": "c27b45deab018c841096e817bad3309308d1b8b0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
