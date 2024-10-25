@@ -34,6 +34,24 @@
       "parentUuid": "8495db2b_56604518",
       "revId": "06604a3535444b01da1cdb563ff6274796d43a72",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "891783ca_c20fe9c8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1291338
+      },
+      "writtenOn": "2024-10-25T01:49:53Z",
+      "side": 1,
+      "message": "I also fixed `cargo_embargo.json` too. PTAL.",
+      "parentUuid": "c75e904b_317a2c5d",
+      "revId": "06604a3535444b01da1cdb563ff6274796d43a72",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
