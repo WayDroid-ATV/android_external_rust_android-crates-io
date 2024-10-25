@@ -57,6 +57,24 @@
       "parentUuid": "8ce9aeb7_44c67352",
       "revId": "c27b45deab018c841096e817bad3309308d1b8b0",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4dafcbc2_c1c4ef80",
+        "filename": "crates/vhost/cargo_embargo.json",
+        "patchSetId": 7
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-25T14:28:28Z",
+      "side": 0,
+      "message": "The Cargo.toml for vhost says:\n\n[dependencies.bitflags]\nversion \u003d \"1.0\"\n\nSo updating to 2.5.0 is probably not a good idea (not semver-compatible). It may work, but I wouldn\u0027t recommend it.\n\nThey way I would expect this to work is to update to a version of vhost that uses bitflags 2.x, and change the name override at the same time.",
+      "parentUuid": "161ba842_76524d61",
+      "revId": "c27b45deab018c841096e817bad3309308d1b8b0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
