@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4948a4dc_ff084d17",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-10-26T01:55:40Z",
+      "side": 1,
+      "message": "Sorry for the extra CL, we need to be able to use this crate from the Trusty kernel which is only possible if it is configured for `no_std` environments.",
+      "revId": "a992a01e04655e274cf6339b13b2e879bc018594",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
