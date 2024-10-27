@@ -1,0 +1,5 @@
+dirgroup {
+    name: "trusty_dirgroup_external_rust_android-crates-io",
+    dirs: ["."],
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+}

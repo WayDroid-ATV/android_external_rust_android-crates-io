@@ -110,6 +110,7 @@ dependencies = [
  "bitreader",
  "bstr",
  "buddy_system_allocator",
+ "bytemuck",
  "bytemuck_derive",
  "byteorder",
  "bytes",
@@ -143,6 +144,7 @@ dependencies = [
  "crossbeam-utils",
  "csv",
  "csv-core",
+ "darling",
  "darling_core",
  "darling_macro",
  "dashmap",
@@ -201,6 +203,7 @@ dependencies = [
  "half 2.2.1",
  "hashbrown 0.12.3",
  "hashlink",
+ "heck",
  "hex",
  "hound",
  "http 0.2.9",
@@ -276,6 +279,7 @@ dependencies = [
  "parking_lot_core",
  "paste",
  "pathdiff",
+ "pdl-compiler",
  "pdl-runtime",
  "percent-encoding",
  "percore",
@@ -360,6 +364,7 @@ dependencies = [
  "thread_local",
  "threadpool",
  "tikv-jemalloc-sys",
+ "tikv-jemallocator",
  "tinytemplate",
  "tinyvec",
  "tinyvec_macros",
@@ -410,6 +415,7 @@ dependencies = [
  "vmm-sys-util 0.12.1",
  "vsock",
  "vsprintf",
+ "walkdir",
  "want",
  "weak-table",
  "webpki",
@@ -923,9 +929,9 @@ checksum = "79296716171880943b8470b5f8d03aa55eb2e645a4874bdbb28adb49162e012c"
 
 [[package]]
 name = "bytemuck"
-version = "1.16.3"
+version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "102087e286b4677862ea56cf8fc58bb2cdfa8725c40ffb80fe3a008eb7f2fc83"
+checksum = "8334215b81e418a0a7bdb8ef0849474f40bb10c8b71f1c4ed315cff49f32494d"
 dependencies = [
  "bytemuck_derive",
 ]
@@ -2732,9 +2738,9 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "libc"
-version = "0.2.153"
+version = "0.2.161"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c198f91728a82281a64e1f4f9eeb25d82cb32a5de251c6bd1b5154d63a8e7bd"
+checksum = "8e9489c2807c139ffd9c1794f4af0ebe86a828db53ecdc7fea2111d0fed085d1"
 
 [[package]]
 name = "libloading"
@@ -3484,6 +3490,25 @@ dependencies = [
  "hmac",
  "password-hash",
  "sha2",
+]
+
+[[package]]
+name = "pdl-compiler"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb6114f8249f6d767f90884bfc4305b2e392b1bd70c2f1660a891959f3c8029f"
+dependencies = [
+ "argh",
+ "codespan-reporting",
+ "heck",
+ "pest",
+ "pest_derive",
+ "prettyplease 0.2.6",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn 2.0.58",
 ]
 
 [[package]]
@@ -4723,6 +4748,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tikv-jemallocator"
+version = "0.5.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "965fe0c26be5c56c94e38ba547249074803efd52adfb66de62107d95aab3eaca"
+dependencies = [
+ "libc",
+ "tikv-jemalloc-sys",
+]
+
+[[package]]
 name = "time"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5430,9 +5465,9 @@ dependencies = [
 
 [[package]]
 name = "walkdir"
-version = "2.5.0"
+version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29790946404f91d9c5d06f9874efddea1dc06c5efe94541a7d6863108e3a5e4b"
+checksum = "d71d857dc86794ca4c280d616f7da00d2dbfd8cd788846559a6813e6aa4b54ee"
 dependencies = [
  "same-file",
  "winapi-util",
