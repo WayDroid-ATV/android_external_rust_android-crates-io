@@ -1,0 +1,19 @@
+diff --git a/Android.bp b/Android.bp
+index 3cb50c1..535d89b 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -54,14 +54,12 @@ rust_test {
+     edition: "2018",
+     features: ["default"],
+     rustlibs: [
+-        "libassert_matches",
+         "libcesu8",
+         "libcfg_if",
+         "libcombine",
+         "libjni_sys",
+         "liblazy_static",
+         "liblog_rust",
+-        "librusty_fork",
+         "libthiserror",
+     ],
+ }
