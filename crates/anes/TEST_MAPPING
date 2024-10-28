@@ -1,0 +1,18 @@
+{
+  "presubmit": [
+    {
+      "name": "anes_test_src_lib"
+    },
+    {
+      "name": "anes_test_tests_tests"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "anes_test_src_lib"
+    },
+    {
+      "name": "anes_test_tests_tests"
+    }
+  ]
+}

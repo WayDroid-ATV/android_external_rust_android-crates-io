@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "tokio-io-timeout_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "tokio-io-timeout_test_src_lib"
+    }
+  ]
+}

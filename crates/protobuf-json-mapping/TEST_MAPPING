@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "protobuf-json-mapping_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "protobuf-json-mapping_test_src_lib"
+    }
+  ]
+}

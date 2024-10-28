@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "smccc_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "smccc_test_src_lib"
+    }
+  ]
+}

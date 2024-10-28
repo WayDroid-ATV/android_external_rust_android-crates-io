@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "dashmap_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "dashmap_test_src_lib"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "drm-fourcc_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "drm-fourcc_test_src_lib"
+    }
+  ]
+}

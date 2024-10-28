@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "strum_macros_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "strum_macros_test_src_lib"
+    }
+  ]
+}

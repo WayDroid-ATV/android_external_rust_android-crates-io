@@ -1,0 +1,30 @@
+{
+  "presubmit": [
+    {
+      "name": "pdl_generated_files_compile"
+    },
+    {
+      "name": "pdl_rust_generator_tests_be"
+    },
+    {
+      "name": "pdl_rust_generator_tests_le"
+    },
+    {
+      "name": "pdl_tests"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "pdl_generated_files_compile"
+    },
+    {
+      "name": "pdl_rust_generator_tests_be"
+    },
+    {
+      "name": "pdl_rust_generator_tests_le"
+    },
+    {
+      "name": "pdl_tests"
+    }
+  ]
+}

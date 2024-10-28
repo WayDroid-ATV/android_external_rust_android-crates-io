@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "aarch64-paging_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "aarch64-paging_test_src_lib"
+    }
+  ]
+}

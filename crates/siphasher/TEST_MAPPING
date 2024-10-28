@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "siphasher_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "siphasher_test_src_lib"
+    }
+  ]
+}

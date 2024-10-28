@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "vmm-sys-util_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "vmm-sys-util_test_src_lib"
+    }
+  ]
+}

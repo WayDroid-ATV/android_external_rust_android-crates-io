@@ -1,0 +1,18 @@
+{
+  "presubmit": [
+    {
+      "name": "httparse_test_src_lib"
+    },
+    {
+      "name": "httparse_test_tests_uri"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "httparse_test_src_lib"
+    },
+    {
+      "name": "httparse_test_tests_uri"
+    }
+  ]
+}

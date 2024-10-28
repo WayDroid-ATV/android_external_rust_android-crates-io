@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "grpcio-compiler_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "grpcio-compiler_test_src_lib"
+    }
+  ]
+}

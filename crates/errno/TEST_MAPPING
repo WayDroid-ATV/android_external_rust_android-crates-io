@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "errno_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "errno_test_src_lib"
+    }
+  ]
+}

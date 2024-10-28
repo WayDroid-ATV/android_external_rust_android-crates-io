@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "utf-8_test_tests_unit"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "utf-8_test_tests_unit"
+    }
+  ]
+}

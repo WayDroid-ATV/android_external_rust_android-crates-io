@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "fragile_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "fragile_test_src_lib"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "presubmit": [
+    {
+      "name": "http-body_test_src_lib"
+    },
+    {
+      "name": "http-body_test_tests_is_end_stream"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "http-body_test_src_lib"
+    },
+    {
+      "name": "http-body_test_tests_is_end_stream"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "cov-mark_test_tests_smoke"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "cov-mark_test_tests_smoke"
+    }
+  ]
+}

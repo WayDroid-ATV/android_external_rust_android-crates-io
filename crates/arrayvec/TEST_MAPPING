@@ -1,0 +1,18 @@
+{
+  "presubmit": [
+    {
+      "name": "arrayvec_test_src_lib"
+    },
+    {
+      "name": "arrayvec_test_tests_tests"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "arrayvec_test_src_lib"
+    },
+    {
+      "name": "arrayvec_test_tests_tests"
+    }
+  ]
+}

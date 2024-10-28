@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "uniffi_meta_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "uniffi_meta_test_src_lib"
+    }
+  ]
+}

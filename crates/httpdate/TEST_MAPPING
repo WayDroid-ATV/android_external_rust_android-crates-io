@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "httpdate_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "httpdate_test_src_lib"
+    }
+  ]
+}

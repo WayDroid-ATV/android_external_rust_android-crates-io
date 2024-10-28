@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "termtree_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "termtree_test_src_lib"
+    }
+  ]
+}

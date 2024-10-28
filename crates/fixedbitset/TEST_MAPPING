@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "fixedbitset_test_tests_tests"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "fixedbitset_test_tests_tests"
+    }
+  ]
+}

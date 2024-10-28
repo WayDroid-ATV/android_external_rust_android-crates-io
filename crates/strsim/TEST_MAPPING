@@ -1,0 +1,18 @@
+{
+  "presubmit": [
+    {
+      "name": "strsim_test_src_lib"
+    },
+    {
+      "name": "strsim_test_tests_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "strsim_test_src_lib"
+    },
+    {
+      "name": "strsim_test_tests_lib"
+    }
+  ]
+}

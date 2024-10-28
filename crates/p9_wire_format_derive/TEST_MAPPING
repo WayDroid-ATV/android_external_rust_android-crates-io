@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "p9_wire_format_derive_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "p9_wire_format_derive_test_src_lib"
+    }
+  ]
+}

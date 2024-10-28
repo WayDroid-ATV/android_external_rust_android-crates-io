@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "try-lock_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "try-lock_test_src_lib"
+    }
+  ]
+}

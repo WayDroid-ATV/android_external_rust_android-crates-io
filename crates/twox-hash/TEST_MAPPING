@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "twox-hash_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "twox-hash_test_src_lib"
+    }
+  ]
+}

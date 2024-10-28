@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "num-complex_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "num-complex_test_src_lib"
+    }
+  ]
+}

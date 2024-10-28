@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "ident_case_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "ident_case_test_src_lib"
+    }
+  ]
+}

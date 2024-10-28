@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "predicates_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "predicates_test_src_lib"
+    }
+  ]
+}

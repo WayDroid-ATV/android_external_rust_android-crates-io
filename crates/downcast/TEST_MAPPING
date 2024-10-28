@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "downcast_test_tests_tests"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "downcast_test_tests_tests"
+    }
+  ]
+}

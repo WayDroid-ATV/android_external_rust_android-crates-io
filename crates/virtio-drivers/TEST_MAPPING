@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "virtio-drivers_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "virtio-drivers_test_src_lib"
+    }
+  ]
+}

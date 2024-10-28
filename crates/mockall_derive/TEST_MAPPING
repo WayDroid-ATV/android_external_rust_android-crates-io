@@ -1,0 +1,12 @@
+{
+  "presubmit": [
+    {
+      "name": "mockall_derive_test_src_lib"
+    }
+  ],
+  "presubmit-rust": [
+    {
+      "name": "mockall_derive_test_src_lib"
+    }
+  ]
+}
