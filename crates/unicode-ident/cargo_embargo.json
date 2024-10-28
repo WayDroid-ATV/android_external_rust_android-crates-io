@@ -1,0 +1,11 @@
+{
+  "package": {
+    "unicode-ident": {
+      "device_supported": false,
+      "host_first_multilib": true,
+      "license_text": ["LICENSE-APACHE", "LICENSE-UNICODE"]
+    }
+  },
+  "run_cargo": false,
+  "generate_rulesmk": true
+}

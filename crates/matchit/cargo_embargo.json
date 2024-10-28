@@ -1,0 +1,8 @@
+{
+  "package": {
+    "matchit": {
+      "license_text": ["LICENSE", "LICENSE.httprouter"]
+    }
+  },
+  "run_cargo": false
+}
