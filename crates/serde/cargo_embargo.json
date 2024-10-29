@@ -4,6 +4,11 @@
   ],
   "min_sdk_version": "29",
   "run_cargo": false,
+  "package": {
+    "serde": {
+      "rulesmk_patch": "patches/rules.mk.diff"
+    }
+  },
   "variants": [
     {
       "features": [
@@ -29,6 +34,17 @@
           "no_std": true
         }
       }
+    },
+    {
+      "features": [
+        "alloc",
+        "default",
+        "derive",
+        "serde_derive",
+        "std"
+      ],
+      "generate_rulesmk": true,
+      "generate_androidbp": false
     }
   ]
 }

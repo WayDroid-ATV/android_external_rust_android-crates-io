@@ -1,0 +1,20 @@
+name: "uniffi_macros"
+description: "a multi-language bindings generator for rust (convenience macros)"
+third_party {
+  identifier {
+    type: "crates.io"
+    value: "uniffi_macros"
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/uniffi_macros/uniffi_macros-0.27.1.crate"
+    primary_source: true
+  }
+  version: "0.27.1"
+  license_type: RECIPROCAL
+  last_upgrade_date {
+    year: 2024
+    month: 5
+    day: 6
+  }
+}

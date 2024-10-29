@@ -18,7 +18,7 @@ rust_test {
     host_supported: true,
     crate_name: "httparse",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.8.0",
+    cargo_pkg_version: "1.9.5",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -30,7 +30,10 @@ rust_test {
         "default",
         "std",
     ],
-    cfgs: ["httparse_simd"],
+    cfgs: [
+        "httparse_simd",
+        "httparse_simd_neon_intrinsics",
+    ],
     rustlibs: ["libcriterion"],
 }
 
@@ -39,7 +42,7 @@ rust_test {
     host_supported: true,
     crate_name: "uri",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.8.0",
+    cargo_pkg_version: "1.9.5",
     crate_root: "tests/uri.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -51,7 +54,10 @@ rust_test {
         "default",
         "std",
     ],
-    cfgs: ["httparse_simd"],
+    cfgs: [
+        "httparse_simd",
+        "httparse_simd_neon_intrinsics",
+    ],
     rustlibs: [
         "libcriterion",
         "libhttparse",
@@ -63,18 +69,22 @@ rust_library {
     host_supported: true,
     crate_name: "httparse",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.8.0",
+    cargo_pkg_version: "1.9.5",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
         "default",
         "std",
     ],
-    cfgs: ["httparse_simd"],
+    cfgs: [
+        "httparse_simd",
+        "httparse_simd_neon_intrinsics",
+    ],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "34",
 }

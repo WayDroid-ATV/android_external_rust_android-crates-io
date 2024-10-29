@@ -1,0 +1,17 @@
+{
+    "run_cargo": false,
+    "tests": true,
+    "module_visibility": {
+        "liboneshot_uniffi": [
+            "//external/rust/android-crates-io/crates/uniffi_core"
+        ]
+    },
+    "package": {
+        "oneshot-uniffi": {
+            "patch": "patches/Android.bp.patch",
+            "dep_blocklist": [
+                "libasync_std"
+            ]
+        }
+    }
+}

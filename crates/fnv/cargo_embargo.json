@@ -1,0 +1,5 @@
+{
+  "tests": true,
+  "min_sdk_version": "34",
+  "run_cargo": false
+}

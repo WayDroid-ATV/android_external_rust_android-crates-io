@@ -3,5 +3,6 @@
     "ahash": {
       "patch": "patches/Android.bp.diff"
     }
-  }
+  },
+  "min_sdk_version": "34"
 }

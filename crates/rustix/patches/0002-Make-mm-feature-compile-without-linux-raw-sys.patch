@@ -1,0 +1,66 @@
+From 1b0c4fc87447429dba781e7424fd08e5cb9ec1f8 Mon Sep 17 00:00:00 2001
+From: Marcin Radomski <marcin@mradomski.pl>
+Date: Fri, 15 Mar 2024 23:08:48 +0100
+Subject: [PATCH 2/3] Make `mm` feature compile without linux-raw-sys
+
+See b/331344966 for status of the efforts to upstream this.
+
+This makes a handful of features unavailable:
+
+- MprotectFlags::{SEM,BTI,MTE,SAO,ADI}
+- MapFlags::hugetlb_with_size_log2
+
+Tested with:
+
+  cargo build --no-default-features --features \
+      use-libc,use-libc-auxv,std,event,mount,time,pipe,rand,stdio,mm
+---
+ src/backend/libc/mm/types.rs | 10 +++++-----
+ src/mm/mmap.rs               |  2 +-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/backend/libc/mm/types.rs b/src/backend/libc/mm/types.rs
+index a4aa3e23..afd9ec0c 100644
+--- a/src/backend/libc/mm/types.rs
++++ b/src/backend/libc/mm/types.rs
+@@ -44,19 +44,19 @@ bitflags! {
+         #[cfg(linux_kernel)]
+         const GROWSDOWN = bitcast!(c::PROT_GROWSDOWN);
+         /// `PROT_SEM`
+-        #[cfg(linux_kernel)]
++        #[cfg(feature = "linux-raw-sys")]
+         const SEM = linux_raw_sys::general::PROT_SEM;
+         /// `PROT_BTI`
+-        #[cfg(all(linux_kernel, target_arch = "aarch64"))]
++        #[cfg(all(feature = "linux-raw-sys", target_arch = "aarch64"))]
+         const BTI = linux_raw_sys::general::PROT_BTI;
+         /// `PROT_MTE`
+-        #[cfg(all(linux_kernel, target_arch = "aarch64"))]
++        #[cfg(all(feature = "linux-raw-sys", target_arch = "aarch64"))]
+         const MTE = linux_raw_sys::general::PROT_MTE;
+         /// `PROT_SAO`
+-        #[cfg(all(linux_kernel, any(target_arch = "powerpc", target_arch = "powerpc64")))]
++        #[cfg(all(feature = "linux-raw-sys", any(target_arch = "powerpc", target_arch = "powerpc64")))]
+         const SAO = linux_raw_sys::general::PROT_SAO;
+         /// `PROT_ADI`
+-        #[cfg(all(linux_kernel, any(target_arch = "sparc", target_arch = "sparc64")))]
++        #[cfg(all(feature = "linux-raw-sys", any(target_arch = "sparc", target_arch = "sparc64")))]
+         const ADI = linux_raw_sys::general::PROT_ADI;
+ 
+         /// <https://docs.rs/bitflags/*/bitflags/#externally-defined-flags>
+diff --git a/src/mm/mmap.rs b/src/mm/mmap.rs
+index 3f6523fd..9413340a 100644
+--- a/src/mm/mmap.rs
++++ b/src/mm/mmap.rs
+@@ -32,7 +32,7 @@ impl MapFlags {
+     /// let f = MapFlags::hugetlb_with_size_log2(30).unwrap();
+     /// assert_eq!(f, MapFlags::HUGETLB | MapFlags::HUGE_1GB);
+     /// ```
+-    #[cfg(linux_kernel)]
++    #[cfg(feature = "linux-raw-sys")]
+     pub const fn hugetlb_with_size_log2(huge_page_size_log2: u32) -> Option<Self> {
+         use linux_raw_sys::general::{MAP_HUGETLB, MAP_HUGE_SHIFT};
+         if 16 <= huge_page_size_log2 && huge_page_size_log2 <= 63 {
+-- 
+2.44.0.291.gc1ea87d7ee-goog
+

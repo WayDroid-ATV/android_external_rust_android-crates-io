@@ -1,0 +1,14 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 4a17d3a..5493509 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -12,6 +12,9 @@
+ #![allow(clippy::eq_op)]
+ #![allow(clippy::assign_op_pattern)]
+ 
++#[cfg(android_dylib)]
++extern crate std;
++
+ mod libm_helper;
+ mod math;
+ 

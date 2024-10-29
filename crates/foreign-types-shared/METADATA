@@ -1,0 +1,11 @@
+name: "foreign-types-shared"
+description: "An internal crate used by foreign-types"
+third_party {
+  version: "0.3.1"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2022
+    month: 4
+    day: 27
+  }
+}

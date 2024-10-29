@@ -1,0 +1,9 @@
+{
+  "features": [
+    "derive",
+    "extern_crate_alloc",
+    "extern_crate_std"
+  ],
+  "tests": true,
+  "min_sdk_version": "34"
+}

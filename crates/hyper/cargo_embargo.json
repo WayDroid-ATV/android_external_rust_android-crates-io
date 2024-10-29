@@ -1,0 +1,17 @@
+{
+  "features": [
+    "client",
+    "default",
+    "full",
+    "h2",
+    "http1",
+    "http2",
+    "runtime",
+    "server",
+    "socket2",
+    "stream",
+    "tcp"
+  ],
+  "run_cargo": false,
+  "min_sdk_version": "34"
+}

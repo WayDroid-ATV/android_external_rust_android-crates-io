@@ -18,9 +18,9 @@ rust_library {
     host_supported: true,
     crate_name: "serde",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.158",
+    cargo_pkg_version: "1.0.195",
     crate_root: "src/lib.rs",
-    edition: "2015",
+    edition: "2018",
     features: [
         "default",
         "derive",
@@ -43,14 +43,14 @@ rust_test {
     host_supported: true,
     crate_name: "serde",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.158",
+    cargo_pkg_version: "1.0.195",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2015",
+    edition: "2018",
     features: [
         "default",
         "derive",
@@ -65,9 +65,9 @@ rust_library_rlib {
     name: "libserde_nostd",
     crate_name: "serde",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.158",
+    cargo_pkg_version: "1.0.195",
     crate_root: "src/lib.rs",
-    edition: "2015",
+    edition: "2018",
     features: [
         "alloc",
         "derive",
@@ -88,4 +88,10 @@ rust_library_rlib {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+}
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_serde",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
 }

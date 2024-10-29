@@ -1,0 +1,20 @@
+# This project was upgraded with external_updater.
+# Usage: tools/external_updater/updater.sh update external/rust/crates/quote
+# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
+
+name: "quote"
+description: "Quasi-quoting macro quote!(...)"
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 5
+    day: 13
+  }
+  homepage: "https://crates.io/crates/quote"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/quote/quote-1.0.36.crate"
+    version: "1.0.36"
+  }
+}

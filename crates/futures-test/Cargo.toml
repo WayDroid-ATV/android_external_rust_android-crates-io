@@ -13,7 +13,12 @@
 edition = "2018"
 rust-version = "1.56"
 name = "futures-test"
-version = "0.3.30"
+version = "0.3.31"
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = """
 Common utilities for testing components built off futures-rs.
 """
@@ -25,40 +30,40 @@ repository = "https://github.com/rust-lang/futures-rs"
 [package.metadata.docs.rs]
 all-features = true
 
+[lib]
+name = "futures_test"
+path = "src/lib.rs"
+
 [dependencies.futures-core]
-version = "0.3.30"
+version = "0.3.31"
 default-features = false
 
 [dependencies.futures-executor]
-version = "0.3.30"
+version = "0.3.31"
 default-features = false
 
 [dependencies.futures-io]
-version = "0.3.30"
+version = "0.3.31"
 default-features = false
 
 [dependencies.futures-macro]
-version = "=0.3.30"
+version = "=0.3.31"
 default-features = false
 
 [dependencies.futures-sink]
-version = "0.3.30"
+version = "0.3.31"
 default-features = false
 
 [dependencies.futures-task]
-version = "0.3.30"
+version = "0.3.31"
 default-features = false
 
 [dependencies.futures-util]
-version = "0.3.30"
+version = "0.3.31"
 default-features = false
 
 [dependencies.pin-project]
 version = "1.0.11"
-
-[dependencies.pin-utils]
-version = "0.1.0"
-default-features = false
 
 [dev-dependencies]
 
@@ -72,3 +77,14 @@ std = [
     "futures-util/io",
     "futures-executor/std",
 ]
+
+[lints.rust]
+missing_debug_implementations = "warn"
+rust_2018_idioms = "warn"
+single_use_lifetimes = "warn"
+unreachable_pub = "warn"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = ["cfg(futures_sanitizer)"]

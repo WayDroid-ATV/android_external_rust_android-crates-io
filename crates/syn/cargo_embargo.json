@@ -1,0 +1,18 @@
+{
+  "features": [
+    "default",
+    "full",
+    "visit",
+    "visit-mut",
+    "extra-traits",
+    "fold"
+  ],
+  "package": {
+    "syn": {
+      "device_supported": false,
+      "host_first_multilib": true
+    }
+  },
+  "run_cargo": false,
+  "generate_rulesmk": true
+}

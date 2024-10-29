@@ -75,3 +75,9 @@ rust_test {
     cfgs: ["has_total_cmp"],
     rustlibs: ["libnum_traits"],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_num-traits",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}

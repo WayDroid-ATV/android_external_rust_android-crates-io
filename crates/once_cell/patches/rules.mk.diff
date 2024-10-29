@@ -1,14 +1,33 @@
-diff --git b/rules.mk a/rules.mk
-index abb2410..95c1743 100644
---- b/rules.mk
-+++ a/rules.mk
-@@ -13,9 +13,4 @@ MODULE_RUSTFLAGS += \
+diff --git a/rules.mk b/rules.mk
+index d9b6b71f..1bb39ffc 100644
+--- a/rules.mk
++++ b/rules.mk
+@@ -8,17 +8,26 @@ MODULE := $(LOCAL_DIR)
+ MODULE_CRATE_NAME := once_cell
+ MODULE_RUST_CRATE_TYPES := rlib
+ MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
+-MODULE_ADD_IMPLICIT_DEPS := false
+ MODULE_RUST_EDITION := 2021
+ MODULE_RUSTFLAGS += \
+ 	--cfg 'feature="alloc"' \
+ 	--cfg 'feature="default"' \
  	--cfg 'feature="race"' \
- 	--cfg 'feature="std"' \
- 
--MODULE_LIBRARY_DEPS := \
--	external/rust/crates/atomic_polyfill \
--	external/rust/crates/critical_section \
--	external/rust/crates/parking_lot_core \
--
+-	--cfg 'feature="std"'
++
++ifeq ($(call TOBOOL,$(TRUSTY_USERSPACE)),true)
++
++MODULE_RUSTFLAGS += \
++	--cfg 'feature="std"' \
++
++else
++
++MODULE_ADD_IMPLICIT_DEPS := false
+
+ MODULE_LIBRARY_DEPS := \
+ 	trusty/user/base/lib/liballoc-rust \
+ 	trusty/user/base/lib/libcompiler_builtins-rust \
+ 	trusty/user/base/lib/libcore-rust
+
++endif
++
  include make/library.mk

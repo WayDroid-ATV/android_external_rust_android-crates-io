@@ -1,0 +1,21 @@
+name: "num_enum"
+description: "Procedural macros to make inter-operation between primitives and enums easier."
+third_party {
+  identifier {
+    type: "crates.io"
+    value: "num_enum"
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/num_enum/num_enum-0.7.3.crate"
+    primary_source: true
+  }
+  version: "0.7.3"
+  # Dual-licensed, using the least restrictive per go/thirdpartylicenses#same.
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 22
+  }
+}
