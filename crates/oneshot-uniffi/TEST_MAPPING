@@ -1,0 +1,25 @@
+{
+  "postsubmit": [
+    {
+      "name": "oneshot-uniffi_test_src_lib"
+    },
+    {
+      "name": "oneshot-uniffi_test_tests_assert_mem"
+    },
+    {
+      "name": "oneshot-uniffi_test_tests_async"
+    },
+    {
+      "name": "oneshot-uniffi_test_tests_future"
+    },
+    {
+      "name": "oneshot-uniffi_test_tests_loom"
+    },
+    {
+      "name": "oneshot-uniffi_test_tests_raw"
+    },
+    {
+      "name": "oneshot-uniffi_test_tests_sync"
+    }
+  ]
+}

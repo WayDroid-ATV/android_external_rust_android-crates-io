@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "uniffi_core_test_src_lib"
+    }
+  ]
+}

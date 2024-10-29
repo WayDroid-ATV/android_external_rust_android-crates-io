@@ -1,7 +1,6 @@
 {
   "package": {
     "unsafe-libyaml": {
-      "device_supported": false,
       "force_rlib": true
     }
   },

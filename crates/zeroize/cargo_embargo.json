@@ -20,6 +20,17 @@
           "no_std": true
         }
       }
+    },
+    {
+      "package": {
+        "zeroize": {
+          "alloc": true,
+          "no_std": true
+        }
+      },
+      "tests": false,
+      "generate_androidbp": false,
+      "generate_rulesmk": true
     }
   ]
 }

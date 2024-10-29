@@ -70,3 +70,9 @@ rust_library_rlib {
     ],
 
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_spki",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}

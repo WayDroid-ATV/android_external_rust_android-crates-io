@@ -11,5 +11,6 @@
         "libtracing": "libtracing_max_level_off"
       }
     }
-  ]
+  ],
+  "min_sdk_version": "34"
 }

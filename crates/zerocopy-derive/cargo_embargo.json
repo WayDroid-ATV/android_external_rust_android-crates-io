@@ -1,3 +1,4 @@
 {
-  "run_cargo": false
+  "run_cargo": false,
+  "generate_rulesmk": true
 }

@@ -33,3 +33,9 @@ rust_library_host {
         "libthiserror",
     ],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_vm-memory",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}
