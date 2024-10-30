@@ -42,6 +42,7 @@ ciborium
 ciborium-io
 ciborium-ll
 clang-sys
+clap
 clap_complete
 clap_derive
 clap_lex

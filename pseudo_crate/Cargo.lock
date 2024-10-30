@@ -124,6 +124,7 @@ dependencies = [
  "ciborium-io",
  "ciborium-ll",
  "clang-sys",
+ "clap 4.5.2",
  "clap_complete",
  "clap_derive",
  "clap_lex 0.3.2",
