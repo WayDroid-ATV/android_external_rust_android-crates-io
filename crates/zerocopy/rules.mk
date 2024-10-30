@@ -9,15 +9,13 @@ MODULE_CRATE_NAME := zerocopy
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_ADD_IMPLICIT_DEPS := false
-MODULE_RUST_EDITION := 2018
+MODULE_RUST_EDITION := 2021
 MODULE_RUSTFLAGS += \
 	--cfg 'feature="alloc"' \
-	--cfg 'feature="byteorder"' \
 	--cfg 'feature="derive"' \
 	--cfg 'feature="zerocopy-derive"'
 
 MODULE_LIBRARY_DEPS := \
-	$(call FIND_CRATE,byteorder) \
 	$(call FIND_CRATE,zerocopy-derive) \
 	trusty/user/base/lib/liballoc-rust \
 	trusty/user/base/lib/libcompiler_builtins-rust \
