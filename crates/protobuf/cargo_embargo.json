@@ -1,0 +1,21 @@
+{
+  "features": [
+    "bytes"
+  ],
+  "min_sdk_version": "29",
+  "package": {
+    "protobuf": {
+      "copy_out": true
+    }
+  },
+  "variants": [
+    {},
+    {
+      "features": [
+        "default"
+      ],
+      "generate_rulesmk": true,
+      "generate_androidbp": false
+    }
+  ]
+}
