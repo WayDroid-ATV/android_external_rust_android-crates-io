@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0e4d849b_acfadf32",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-10-30T16:57:53Z",
+      "side": 1,
+      "message": "The presubmit failures are caused by the build system not picking up all the changes that were committed together with aosp/3323335",
+      "revId": "e2a2d6506cb56130a9e987db0207998c118fb4e9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
