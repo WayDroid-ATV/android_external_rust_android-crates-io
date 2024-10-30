@@ -2,19 +2,19 @@
 // Do not modify this file because the changes will be overridden on upgrade.
 
 package {
-    default_applicable_licenses: ["external_rust_crates_zerocopy_license"],
+    default_applicable_licenses: ["external_rust_crates_zerocopy-0.7.35_license"],
     default_team: "trendy_team_android_rust",
 }
 
 license {
-    name: "external_rust_crates_zerocopy_license",
+    name: "external_rust_crates_zerocopy-0.7.35_license",
     visibility: [":__subpackages__"],
     license_kinds: ["SPDX-license-identifier-Apache-2.0"],
     license_text: ["LICENSE"],
 }
 
 rust_library {
-    name: "libzerocopy",
+    name: "libzerocopy-0.7.35",
     host_supported: true,
     crate_name: "zerocopy",
     cargo_env_compat: true,
@@ -39,7 +39,7 @@ rust_library {
 }
 
 rust_library_rlib {
-    name: "libzerocopy_nostd",
+    name: "libzerocopy-0.7.35_nostd",
     crate_name: "zerocopy",
     cargo_env_compat: true,
     cargo_pkg_version: "0.7.35",
@@ -71,7 +71,7 @@ rust_library_rlib {
 }
 
 rust_library_rlib {
-    name: "libzerocopy_nostd_noalloc",
+    name: "libzerocopy-0.7.35_nostd_noalloc",
     crate_name: "zerocopy",
     cargo_env_compat: true,
     cargo_pkg_version: "0.7.35",
@@ -98,10 +98,4 @@ rust_library_rlib {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "34",
-}
-
-dirgroup {
-    name: "trusty_dirgroup_external_rust_crates_zerocopy",
-    visibility: ["//trusty/vendor/google/aosp/scripts"],
-    dirs: ["."],
 }

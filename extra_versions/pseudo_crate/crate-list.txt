@@ -3,3 +3,4 @@ clap
 jni
 protobuf
 protobuf-codegen
+zerocopy
