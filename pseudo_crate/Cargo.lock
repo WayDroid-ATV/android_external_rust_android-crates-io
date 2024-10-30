@@ -309,6 +309,8 @@ dependencies = [
  "predicates-tree",
  "prettyplease 0.2.17",
  "proc-macro2",
+ "protobuf 3.2.0",
+ "protobuf-codegen",
  "protobuf-json-mapping",
  "protobuf-parse",
  "protobuf-support",
@@ -3968,6 +3970,21 @@ checksum = "b55bad9126f378a853655831eb7363b7b01b81d19f8cb1218861086ca4a1a61e"
 dependencies = [
  "once_cell",
  "protobuf-support",
+ "thiserror",
+]
+
+[[package]]
+name = "protobuf-codegen"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0dd418ac3c91caa4032d37cb80ff0d44e2ebe637b2fb243b6234bf89cdac4901"
+dependencies = [
+ "anyhow",
+ "once_cell",
+ "protobuf 3.2.0",
+ "protobuf-parse",
+ "regex",
+ "tempfile",
  "thiserror",
 ]
 
