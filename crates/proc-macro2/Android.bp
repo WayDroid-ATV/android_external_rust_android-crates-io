@@ -13,8 +13,9 @@ license {
     license_text: ["LICENSE"],
 }
 
-rust_library_host {
+rust_library {
     name: "libproc_macro2",
+    host_supported: true,
     host_cross_supported: false,
     crate_name: "proc_macro2",
     cargo_env_compat: true,
@@ -32,11 +33,17 @@ rust_library_host {
         "wrap_proc_macro",
     ],
     rustlibs: ["libunicode_ident"],
-    compile_multilib: "first",
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    product_available: true,
+    vendor_available: true,
 }
 
-rust_test_host {
+rust_test {
     name: "proc-macro2_test_tests_comments",
+    host_supported: true,
     host_cross_supported: false,
     crate_name: "comments",
     cargo_env_compat: true,
@@ -66,8 +73,9 @@ rust_test_host {
     proc_macros: ["librustversion"],
 }
 
-rust_test_host {
+rust_test {
     name: "proc-macro2_test_tests_features",
+    host_supported: true,
     host_cross_supported: false,
     crate_name: "features",
     cargo_env_compat: true,
@@ -97,8 +105,9 @@ rust_test_host {
     proc_macros: ["librustversion"],
 }
 
-rust_test_host {
+rust_test {
     name: "proc-macro2_test_tests_marker",
+    host_supported: true,
     host_cross_supported: false,
     crate_name: "marker",
     cargo_env_compat: true,
@@ -128,8 +137,9 @@ rust_test_host {
     proc_macros: ["librustversion"],
 }
 
-rust_test_host {
+rust_test {
     name: "proc-macro2_test_tests_test",
+    host_supported: true,
     host_cross_supported: false,
     crate_name: "test",
     cargo_env_compat: true,
@@ -159,8 +169,9 @@ rust_test_host {
     proc_macros: ["librustversion"],
 }
 
-rust_test_host {
+rust_test {
     name: "proc-macro2_test_tests_test_fmt",
+    host_supported: true,
     host_cross_supported: false,
     crate_name: "test_fmt",
     cargo_env_compat: true,
@@ -190,8 +201,9 @@ rust_test_host {
     proc_macros: ["librustversion"],
 }
 
-rust_test_host {
+rust_test {
     name: "proc-macro2_test_tests_test_size",
+    host_supported: true,
     host_cross_supported: false,
     crate_name: "test_size",
     cargo_env_compat: true,

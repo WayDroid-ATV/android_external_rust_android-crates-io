@@ -3,12 +3,6 @@
     "default",
     "span-locations"
   ],
-  "package": {
-    "proc-macro2": {
-      "device_supported": false,
-      "host_first_multilib": true
-    }
-  },
   "tests": true,
   "generate_rulesmk": true
 }

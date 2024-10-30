@@ -13,8 +13,9 @@ license {
     license_text: ["LICENSE"],
 }
 
-rust_library_host {
+rust_library {
     name: "libsyn",
+    host_supported: true,
     host_cross_supported: false,
     crate_name: "syn",
     cargo_env_compat: true,
@@ -39,7 +40,12 @@ rust_library_host {
         "libquote",
         "libunicode_ident",
     ],
-    compile_multilib: "first",
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    product_available: true,
+    vendor_available: true,
 }
 
 dirgroup {
