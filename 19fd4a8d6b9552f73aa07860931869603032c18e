@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "37fd406f_e892b317",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-10-30T08:06:44Z",
+      "side": 1,
+      "message": "For similar reasons as the other CL, you really should just make the new crate host-only.",
+      "revId": "19fd4a8d6b9552f73aa07860931869603032c18e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
