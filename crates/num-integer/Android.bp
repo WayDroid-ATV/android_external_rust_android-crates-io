@@ -103,3 +103,9 @@ rust_test {
         "libnum_traits",
     ],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_num-integer",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}
