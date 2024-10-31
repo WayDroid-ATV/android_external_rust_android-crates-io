@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "af9a6eef_4c234d11",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1950816
+      },
+      "writtenOn": "2024-10-31T01:46:42Z",
+      "side": 1,
+      "message": "Due to migration of libjni into android-crates-io, could I get review for libjni again? Thanks!",
+      "revId": "5551164532d70ef3a76d887142cae6c4cce84798",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
