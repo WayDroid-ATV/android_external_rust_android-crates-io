@@ -16,6 +16,24 @@
       "message": "Does this need a change to cargo_embargo.json as well?",
       "revId": "bdc0ec74f14604c56aaedea27a02aa2585efddcc",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e2ac6baf_03e7abd2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-11-01T17:58:54Z",
+      "side": 1,
+      "message": "I don\u0027t think it needs updating because the `cargo_embargo.json` under `extra_versions/crates/bitflags` does not set `generate_rules.mk`.",
+      "parentUuid": "cef4aaaa_6a08a3d1",
+      "revId": "bdc0ec74f14604c56aaedea27a02aa2585efddcc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
