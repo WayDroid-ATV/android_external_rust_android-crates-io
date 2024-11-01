@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d9565336_995a323e",
+        "filename": "extra_versions/crates/zerocopy/rules.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-11-01T03:17:05Z",
+      "side": 1,
+      "message": "This will make Trusty pick up the extra_version of zerocopy once aosp/3327149 is merged. Was this the intention?",
+      "revId": "ffd939f9ccd2ef48ad35e256582ed6af66f61138",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
