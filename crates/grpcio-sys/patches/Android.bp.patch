@@ -1,0 +1,10 @@
+--- Android.bp.orig	2024-05-21 14:41:37.180664996 +0100
++++ Android.bp	2024-05-21 14:43:05.926077455 +0100
+@@ -43,6 +43,7 @@
+     cargo_env_compat: true,
+     cargo_pkg_version: "0.13.0+1.56.2-patched",
+     crate_root: "src/lib.rs",
++    srcs: [":libgrpc_bindgen"],
+     edition: "2018",
+     features: [
+         "_gen-bindings",
