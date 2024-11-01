@@ -96,5 +96,10 @@
     {
       "path": "system/security/keystore2/legacykeystore"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "serde_derive_test_src_lib"
+    }
   ]
 }

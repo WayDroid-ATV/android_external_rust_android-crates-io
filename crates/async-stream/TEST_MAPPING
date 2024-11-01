@@ -22,5 +22,10 @@
     {
       "name": "async-stream_test_tests_try_stream"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "async-stream_test_tests_spans_preserved"
+    }
   ]
 }

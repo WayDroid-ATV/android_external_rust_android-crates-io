@@ -79,5 +79,10 @@
     {
       "name": "ryu_test_tests_s2f_test"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "ryu_test_tests_d2s_intrinsics_test"
+    }
   ]
 }

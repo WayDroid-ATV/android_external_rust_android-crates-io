@@ -73,5 +73,10 @@
     {
       "name": "futures-channel_test_tests_oneshot"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "futures-channel_test_tests_mpsc-size_hint"
+    }
   ]
 }

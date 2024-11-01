@@ -12,5 +12,10 @@
     {
       "path": "system/keymint/hal"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "zeroize_derive_test_src_lib"
+    }
   ]
 }

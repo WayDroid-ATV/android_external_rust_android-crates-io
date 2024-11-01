@@ -103,5 +103,13 @@
     {
       "name": "bytes_test_tests_test_take"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "bytes_test_src_lib"
+    },
+    {
+      "name": "bytes_test_tests_test_serde"
+    }
   ]
 }

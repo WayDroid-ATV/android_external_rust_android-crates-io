@@ -25,6 +25,7 @@ base64
 bencher
 bincode
 bindgen-cli
+bitflags
 bitreader
 bstr
 buddy_system_allocator
@@ -41,6 +42,7 @@ chrono
 ciborium
 ciborium-io
 ciborium-ll
+clang-sys
 clap_complete
 clap_derive
 clap_lex
@@ -89,6 +91,7 @@ fallible-streaming-iterator
 fastrand
 fixedbitset
 flagset
+flate2
 fnv
 foreign-types
 foreign-types-shared
@@ -137,11 +140,13 @@ instant
 intrusive-collections
 itertools
 itoa
+jni
 jni-sys
 kernlog
 lazy_static
 lazycell
 libc
+libfuzzer-sys
 libloading
 libm
 libtest-mimic
@@ -156,6 +161,7 @@ lru-cache
 lz4_flex
 macaddr
 managed
+matchit
 maybe-async
 memchr
 memoffset
@@ -255,6 +261,7 @@ serde_derive
 serde_json
 serde_spanned
 serde_test
+serde_yaml
 sharded-slab
 shared_child
 shared_library
@@ -289,6 +296,7 @@ tinyvec_macros
 tokio
 tokio-io-timeout
 tokio-macros
+tokio-openssl
 tokio-stream
 tokio-test
 tokio-util
@@ -308,6 +316,7 @@ tungstenite
 twox-hash
 ucd-trie
 unicode-bidi
+unicode-ident
 unicode-normalization
 unicode-segmentation
 unicode-width
@@ -333,6 +342,7 @@ vm-memory
 vmm-sys-util
 vsock
 vsprintf
+vulkano
 walkdir
 want
 weak-table

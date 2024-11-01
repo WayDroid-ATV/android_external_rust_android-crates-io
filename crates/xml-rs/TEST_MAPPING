@@ -6,5 +6,10 @@
     {
       "path": "packages/modules/Virtualization/virtualizationmanager"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "xml-rs_test_src_lib"
+    }
   ]
 }

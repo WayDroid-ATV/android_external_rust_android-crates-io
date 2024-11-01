@@ -36,5 +36,10 @@
     {
       "path": "system/security/keystore2/legacykeystore"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "heck_test_src_lib"
+    }
   ]
 }

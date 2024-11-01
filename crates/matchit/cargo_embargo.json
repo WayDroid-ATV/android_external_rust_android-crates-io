@@ -1,0 +1,9 @@
+{
+  "package": {
+    "matchit": {
+      "license_text": ["LICENSE", "LICENSE.httprouter"]
+    }
+  },
+  "min_sdk_version": "34",
+  "run_cargo": false
+}

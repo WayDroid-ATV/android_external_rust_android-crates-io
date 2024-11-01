@@ -162,5 +162,25 @@
     {
       "path": "system/security/keystore2/src/crypto"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "proc-macro2_test_tests_comments"
+    },
+    {
+      "name": "proc-macro2_test_tests_features"
+    },
+    {
+      "name": "proc-macro2_test_tests_marker"
+    },
+    {
+      "name": "proc-macro2_test_tests_test"
+    },
+    {
+      "name": "proc-macro2_test_tests_test_fmt"
+    },
+    {
+      "name": "proc-macro2_test_tests_test_size"
+    }
   ]
 }
