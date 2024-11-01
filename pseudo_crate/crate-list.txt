@@ -120,6 +120,7 @@ googletest_macro
 gpio-cdev
 grpcio
 grpcio-compiler
+grpcio-sys
 h2
 half
 hashbrown
