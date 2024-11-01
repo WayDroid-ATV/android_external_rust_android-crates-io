@@ -24,6 +24,7 @@ axum-core
 base64
 bencher
 bincode
+bindgen
 bindgen-cli
 bitflags
 bitreader
@@ -184,6 +185,7 @@ named-lock
 nix
 no-panic
 nom
+num-bigint
 num-complex
 num-derive
 num-integer
@@ -330,6 +332,7 @@ unsafe-libyaml
 untrusted
 url
 userfaultfd
+userfaultfd-sys
 utf-8
 uuid
 vhost

@@ -106,6 +106,7 @@ dependencies = [
  "base64 0.22.1",
  "bencher",
  "bincode",
+ "bindgen 0.69.5",
  "bindgen-cli",
  "bitflags 2.6.0",
  "bitreader",
@@ -266,6 +267,7 @@ dependencies = [
  "nix 0.28.0",
  "no-panic",
  "nom",
+ "num-bigint",
  "num-complex",
  "num-derive",
  "num-integer",
@@ -412,6 +414,7 @@ dependencies = [
  "untrusted 0.7.1",
  "url",
  "userfaultfd",
+ "userfaultfd-sys",
  "utf-8",
  "uuid",
  "vhost",
@@ -848,6 +851,7 @@ dependencies = [
  "lazy_static",
  "lazycell",
  "log",
+ "prettyplease 0.2.17",
  "proc-macro2",
  "quote",
  "regex",
@@ -3298,6 +3302,17 @@ checksum = "77a8165726e8236064dbb45459242600304b42a5ea24ee2948e18e023bf7ba84"
 dependencies = [
  "overload",
  "winapi",
+]
+
+[[package]]
+name = "num-bigint"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "608e7659b5c3d7cba262d894801b9ec9d00de989e8a82bd4bef91d08da45cdc0"
+dependencies = [
+ "autocfg",
+ "num-integer",
+ "num-traits",
 ]
 
 [[package]]

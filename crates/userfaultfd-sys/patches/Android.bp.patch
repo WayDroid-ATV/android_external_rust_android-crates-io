@@ -1,0 +1,12 @@
+diff --git a/Android.bp b/Android.bp
+index c0a0519..bb42191 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -31,6 +31,7 @@ rust_library {
+     edition: "2018",
+     features: ["default"],
+     rustlibs: ["libcfg_if"],
++    static_libs: ["libuserfaultfd_sys_consts"],
+     apex_available: [
+         "//apex_available:platform",
+         "//apex_available:anyapex",
