@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cef4aaaa_6a08a3d1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-11-01T14:13:16Z",
+      "side": 1,
+      "message": "Does this need a change to cargo_embargo.json as well?",
+      "revId": "bdc0ec74f14604c56aaedea27a02aa2585efddcc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
