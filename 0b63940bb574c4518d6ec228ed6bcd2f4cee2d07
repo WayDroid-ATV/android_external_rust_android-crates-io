@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "242020dd_e3f1ddd8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-11-01T19:04:51Z",
+      "side": 1,
+      "message": "Conflict markers and LINT.IfChange are unfortunately present in the upstream code.",
+      "revId": "0b63940bb574c4518d6ec228ed6bcd2f4cee2d07",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
