@@ -1,0 +1,19 @@
+{
+  "postsubmit": [
+    {
+      "name": "tracing-core_test_src_lib"
+    },
+    {
+      "name": "tracing-core_test_tests_dispatch"
+    },
+    {
+      "name": "tracing-core_test_tests_global_dispatch"
+    },
+    {
+      "name": "tracing-core_test_tests_local_dispatch_before_init"
+    },
+    {
+      "name": "tracing-core_test_tests_macros"
+    }
+  ]
+}

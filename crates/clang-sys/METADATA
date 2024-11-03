@@ -1,0 +1,20 @@
+# This project was upgraded with external_updater.
+# Usage: tools/external_updater/updater.sh update external/rust/crates/clang-sys
+# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
+
+name: "clang-sys"
+description: "Rust bindings for libclang."
+third_party {
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 5
+    day: 10
+  }
+  homepage: "https://crates.io/crates/clang-sys"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/clang-sys/clang-sys-1.7.0.crate"
+    version: "1.7.0"
+  }
+}

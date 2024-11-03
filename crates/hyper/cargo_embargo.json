@@ -12,5 +12,6 @@
     "stream",
     "tcp"
   ],
-  "run_cargo": false
+  "run_cargo": false,
+  "min_sdk_version": "34"
 }

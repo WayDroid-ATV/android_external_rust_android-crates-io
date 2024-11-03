@@ -4,5 +4,6 @@
     "com.android.virt",
     "com.sdv.*"
   ],
-  "tests": true
+  "tests": true,
+  "min_sdk_version": "34"
 }

@@ -28,3 +28,9 @@ rust_library_host {
     rustlibs: ["libproc_macro2"],
     compile_multilib: "first",
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_quote",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}

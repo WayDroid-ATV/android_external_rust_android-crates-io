@@ -1,7 +1,7 @@
 {
   "package": {
     "glob": {
-      "license_text": "LICENSE"
+      "license_text": ["LICENSE"]
     }
   },
   "run_cargo": false

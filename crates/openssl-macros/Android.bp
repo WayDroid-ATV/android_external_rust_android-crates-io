@@ -26,3 +26,9 @@ rust_proc_macro {
         "libsyn",
     ],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_openssl-macros",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}

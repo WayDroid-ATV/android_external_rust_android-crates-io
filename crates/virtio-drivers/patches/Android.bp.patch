@@ -1,15 +1,8 @@
 diff --git a/Android.bp b/Android.bp
-index 81021c8..916b74c 100644
+index 46c34934..2e75afd8 100644
 --- a/Android.bp
 +++ b/Android.bp
-@@ -25,22 +25,22 @@ license {
- rust_library_rlib {
-     name: "libvirtio_drivers",
-     crate_name: "virtio_drivers",
-     cargo_env_compat: true,
-     cargo_pkg_version: "0.7.4",
-     crate_root: "src/lib.rs",
-     edition: "2018",
+@@ -23,8 +23,8 @@ rust_library_rlib {
      features: ["alloc"],
      rustlibs: [
          "libbitflags",
@@ -20,21 +13,7 @@ index 81021c8..916b74c 100644
      ],
      apex_available: [
          "//apex_available:platform",
-         "//apex_available:anyapex",
-     ],
-     prefer_rlib: true,
-     no_stdlibs: true,
-     stdlibs: [
-         "libcompiler_builtins.rust_sysroot",
-         "libcore.rust_sysroot",
-@@ -53,13 +53,13 @@ rust_test {
-     cargo_env_compat: true,
-     cargo_pkg_version: "0.7.4",
-     crate_root: "src/lib.rs",
-     test_suites: ["general-tests"],
-     auto_gen_config: true,
-     edition: "2018",
-     features: ["alloc"],
+@@ -51,6 +51,6 @@ rust_test {
      rustlibs: [
          "libbitflags",
          "liblog_rust",
