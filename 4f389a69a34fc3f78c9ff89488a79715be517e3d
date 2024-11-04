@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bd21d7b3_2cb60af9",
+        "filename": "crates/protobuf/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-11-04T18:48:02Z",
+      "side": 0,
+      "message": "This really shouldn\u0027t be dropped.",
+      "revId": "4f389a69a34fc3f78c9ff89488a79715be517e3d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
