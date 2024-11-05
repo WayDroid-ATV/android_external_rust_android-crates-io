@@ -1,0 +1,5 @@
+{
+  "run_cargo": false,
+  "generate_androidbp": false,
+  "generate_rulesmk": true
+}

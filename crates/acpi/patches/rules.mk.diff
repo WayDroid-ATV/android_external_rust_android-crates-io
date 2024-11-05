@@ -1,0 +1,13 @@
+diff --git a/rules.mk b/rules.mk
+index 5336740..dacaa6b 100644
+--- a/rules.mk
++++ b/rules.mk
+@@ -19,6 +19,7 @@ MODULE_LIBRARY_DEPS := \
+ 	external/rust/crates/bit_field \
+ 	external/rust/crates/log \
+ 	trusty/user/base/lib/libcompiler_builtins-rust \
+-	trusty/user/base/lib/libcore-rust
++	trusty/user/base/lib/libcore-rust \
++	trusty/user/base/lib/liballoc-rust \
+
+ include make/library.mk

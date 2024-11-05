@@ -1,0 +1,20 @@
+name: "bit_field"
+description: "Simple bit field trait providing get_bit, get_bits, set_bit, and set_bits methods for Rust\'s integral types."
+third_party {
+  identifier {
+    type: "crates.io"
+    value: "https://crates.io/crates/bit_field"
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/bit_field/bit_field-0.10.2.crate"
+  }
+  version: "0.10.2"
+  # Dual-licensed, using the least restrictive per go/thirdpartylicenses#same.
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 2
+    day: 26
+  }
+}
