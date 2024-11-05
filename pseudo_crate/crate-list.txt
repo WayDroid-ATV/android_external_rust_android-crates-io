@@ -1,4 +1,5 @@
 aarch64-paging
+acpi
 ahash
 aho-corasick
 android_log-sys
@@ -26,6 +27,7 @@ bencher
 bincode
 bindgen
 bindgen-cli
+bit_field
 bitflags
 bitreader
 bstr
@@ -146,6 +148,7 @@ jni-sys
 kernlog
 lazy_static
 lazycell
+libbpf-rs
 libc
 libfuzzer-sys
 libloading
@@ -162,6 +165,7 @@ lru-cache
 lz4_flex
 macaddr
 managed
+matches
 matchit
 maybe-async
 memchr
@@ -223,6 +227,7 @@ pkcs8
 plotters
 plotters-backend
 plotters-svg
+poll_token_derive
 ppv-lite86
 predicates
 predicates-core
