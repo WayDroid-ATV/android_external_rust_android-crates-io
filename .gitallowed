@@ -1,0 +1,3 @@
+crates/ring/patches/restore-test-txt-files.patch
+crates/ring/src/hmac_generate_serializable_tests.txt
+crates/ring/tests/hmac_tests.txt
