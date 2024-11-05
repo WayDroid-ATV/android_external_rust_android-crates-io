@@ -16,6 +16,24 @@
       "message": "Are you missing a crate (CL upload) for what provides `libring_core_0_17_2_` or did something go wrong with cargo_embargo?",
       "revId": "4cdca464cfae7c5cc5fcfe7538e2b7b3c08dec16",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b11c8330_7e098887",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-11-05T19:58:39Z",
+      "side": 1,
+      "message": "Done. I fixed cargo_embargo.json.",
+      "parentUuid": "091b9bc2_afa925b6",
+      "revId": "4cdca464cfae7c5cc5fcfe7538e2b7b3c08dec16",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
