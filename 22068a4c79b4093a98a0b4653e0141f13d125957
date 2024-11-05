@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b38016e8_21e0f543",
+        "filename": "crates/bitflags/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-11-05T17:48:44Z",
+      "side": 1,
+      "message": "Weird that this didn\u0027t get updated previously.",
+      "revId": "22068a4c79b4093a98a0b4653e0141f13d125957",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "34698111_84ebe757",
+        "filename": "crates/config/METADATA",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-11-05T17:48:44Z",
+      "side": 1,
+      "message": "Oof, although I guess all these were just updating in the different identifier block.",
+      "revId": "22068a4c79b4093a98a0b4653e0141f13d125957",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
