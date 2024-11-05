@@ -253,6 +253,7 @@ regex
 regex-automata
 regex-syntax
 remain
+ring
 rusqlite
 rustc-demangle
 rustc-demangle-capi
