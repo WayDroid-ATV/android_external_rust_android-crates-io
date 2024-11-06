@@ -3,6 +3,13 @@
     "derive",
     "extern_crate_alloc"
   ],
+<<<<<<< PATCH SET (94a21d Use min_sdk_version 29 instead of 34)
+  "tests": true,
+  "min_sdk_version": "29"
+||||||| BASE
+  "tests": true,
+  "min_sdk_version": "34"
+=======
   "variants": [
     {
       "features": [
@@ -27,4 +34,5 @@
       }
     }
   ]
+>>>>>>> BASE      (cf51d2 Merge "Update fallible-iterator to 0.3.0" into main)
 }
