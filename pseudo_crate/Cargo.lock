@@ -434,7 +434,6 @@ dependencies = [
  "x509-cert",
  "xml-rs",
  "yaml-rust",
- "zerocopy",
  "zerocopy-derive",
  "zeroize",
  "zeroize_derive",
