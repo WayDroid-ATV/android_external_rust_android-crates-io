@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ab56bd2b_d7f8cec0",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1956220
+      },
+      "writtenOn": "2024-11-06T18:17:13Z",
+      "side": 1,
+      "message": "You would need to update those dependencies in https://source.corp.google.com/h/googleplex-android/platform/superproject/main/+/main:system/software_defined_vehicle/platform/sdv_allowed_deps.txt\n\nThis is a build time verification step to make sure that a change of sdv dependencies don\u0027t break our core services.",
+      "revId": "6ec9936f1357b845b7ea3d40b2eff24743b20ec0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
