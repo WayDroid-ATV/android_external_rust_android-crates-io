@@ -33,7 +33,7 @@ rust_library {
     ],
     product_available: true,
     vendor_available: true,
-    min_sdk_version: "34",
+    min_sdk_version: "29",
 }
 
 rust_test {
