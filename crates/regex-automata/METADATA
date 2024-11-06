@@ -8,4 +8,10 @@ third_party {
     month: 6
     day: 21
   }
+  homepage: "https://crates.io/crates/regex-automata"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/regex-automata/regex-automata-0.1.10.crate"
+    version: "0.1.10"
+  }
 }

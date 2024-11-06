@@ -1,25 +1,17 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update external/rust/crates/num-complex
-# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
-
 name: "num-complex"
 description: "Complex numbers implementation for Rust"
 third_party {
+  version: "0.4.6"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024
     month: 7
     day: 25
   }
-  identifier {
-    type: "crates.io"
-    value: "https://static.crates.io/crates/num-complex/num-complex-0.4.6.crate"
-    version: "0.4.5"
-  }
+  homepage: "https://crates.io/crates/num-complex"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/num-complex/num-complex-0.4.5.crate"
+    value: "https://static.crates.io/crates/num-complex/num-complex-0.4.6.crate"
     version: "0.4.6"
-    primary_source: true
   }
 }

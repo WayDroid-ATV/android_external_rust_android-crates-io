@@ -1,0 +1,10 @@
+diff --git a/Android.bp b/Android.bp
+index c9b8b1e..2ce3cf1 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -34,4 +34,5 @@ rust_library {
+         "//apex_available:platform",
+         "//apex_available:anyapex",
+     ],
++    shared_libs: ["libbpf"],
+ }

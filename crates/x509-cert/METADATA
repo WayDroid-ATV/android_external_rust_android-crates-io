@@ -1,10 +1,7 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update rust/crates/x509-cert
-# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
-
 name: "x509-cert"
 description: "Pure Rust implementation of the X.509 Public Key Infrastructure Certificate format as described in RFC 5280."
 third_party {
+  version: "0.2.4"
   license_type: NOTICE
   last_upgrade_date {
     year: 2023

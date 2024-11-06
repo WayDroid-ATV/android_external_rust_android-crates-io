@@ -8,4 +8,10 @@ third_party {
     month: 6
     day: 2
   }
+  homepage: "https://crates.io/crates/utf-8"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/utf-8/utf-8-0.7.6.crate"
+    version: "0.7.6"
+  }
 }

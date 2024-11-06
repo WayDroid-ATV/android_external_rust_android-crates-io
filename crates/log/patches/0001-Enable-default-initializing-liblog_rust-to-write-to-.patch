@@ -37,11 +37,11 @@ index 00000000..84b8625c
 +../../android_logger/src/lib.rs
 \ No newline at end of file
 diff --git b/src/lib.rs a/src/lib.rs
-index 4ead8262..8eb1c507 100644
+index 6b43a9ae..799b88e1 100644
 --- b/src/lib.rs
 +++ a/src/lib.rs
-@@ -344,6 +344,11 @@ mod serde;
- #[cfg(feature = "kv_unstable")]
+@@ -397,6 +397,11 @@ mod serde;
+ #[cfg(feature = "kv")]
  pub mod kv;
  
 +#[cfg(default_log_impl)]
@@ -49,10 +49,10 @@ index 4ead8262..8eb1c507 100644
 +#[cfg(default_log_impl)]
 +mod android_logger;
 +
- #[cfg(has_atomics)]
+ #[cfg(target_has_atomic = "ptr")]
  use std::sync::atomic::{AtomicUsize, Ordering};
  
-@@ -405,7 +410,10 @@ const UNINITIALIZED: usize = 0;
+@@ -458,7 +463,10 @@ const UNINITIALIZED: usize = 0;
  const INITIALIZING: usize = 1;
  const INITIALIZED: usize = 2;
  
@@ -63,10 +63,10 @@ index 4ead8262..8eb1c507 100644
  
  static LOG_LEVEL_NAMES: [&str; 6] = ["OFF", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
  
-@@ -1572,6 +1580,21 @@ impl error::Error for ParseLevelError {}
- /// If a logger has not been set, a no-op implementation is returned.
- pub fn logger() -> &'static dyn Log {
-     if STATE.load(Ordering::SeqCst) != INITIALIZED {
+@@ -1505,6 +1513,21 @@ pub fn logger() -> &'static dyn Log {
+     // write to the `LOGGER` static and initialization of the logger
+     // internal state synchronized with current thread.
+     if STATE.load(Ordering::Acquire) != INITIALIZED {
 +        #[cfg(default_log_impl)]
 +        {
 +            // On Android, default to logging to logcat if not explicitly initialized. This

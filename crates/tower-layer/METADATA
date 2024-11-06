@@ -1,20 +1,17 @@
 name: "tower-layer"
 description: "()"
 third_party {
-  identifier {
-    type: "crates.io"
-    value: "tower-layer"
-  }
-  identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/tower-layer/tower-layer-0.3.2.crate"
-    primary_source: true
-  }
   version: "0.3.2"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024
     month: 5
     day: 24
+  }
+  homepage: "https://crates.io/crates/tower-layer"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/tower-layer/tower-layer-0.3.2.crate"
+    version: "0.3.2"
   }
 }

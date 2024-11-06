@@ -1,10 +1,7 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update external/rust/crates/glam
-# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
-
 name: "glam"
 description: "A simple and fast 3D math library for games and graphics"
 third_party {
+  version: "0.25.0"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024

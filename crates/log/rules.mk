@@ -9,13 +9,8 @@ MODULE_CRATE_NAME := log
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_ADD_IMPLICIT_DEPS := false
-MODULE_RUST_EDITION := 2015
-MODULE_RUSTFLAGS += \
-	--cfg 'atomic_cas' \
-	--cfg 'has_atomics'
-
+MODULE_RUST_EDITION := 2021
 MODULE_LIBRARY_DEPS := \
-	$(call FIND_CRATE,cfg-if) \
 	trusty/user/base/lib/libcompiler_builtins-rust \
 	trusty/user/base/lib/libcore-rust
 

@@ -1,0 +1,20 @@
+diff --git a/build.rs b/build.rs
+index 5d5406c..82b7a43 100644
+--- a/build.rs
++++ b/build.rs
+@@ -37,6 +37,15 @@ fn main() {
+         }
+     }
+ 
++    // autocfg generates probe files in $OUT_DIR with nondeterministic contents.
++    // (In autocfg 1.4, the filenames are nondeterministic as well.)
++    let out_dir_env = env::var("OUT_DIR").unwrap();
++    let out_dir = Path::new(&out_dir_env);
++    std::fs::remove_file(out_dir.join("probe0.ll")).unwrap();
++    std::fs::remove_file(out_dir.join("probe1.ll")).unwrap();
++    std::fs::remove_file(out_dir.join("probe2.ll")).unwrap();
++    std::fs::remove_file(out_dir.join("probe3.ll")).unwrap();
++
+     autocfg::rerun_path("build.rs");
+ 
+     write_radix_bases().unwrap();
