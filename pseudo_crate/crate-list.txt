@@ -24,6 +24,7 @@ axum-core
 base64
 bencher
 bincode
+bindgen
 bindgen-cli
 bitflags
 bitreader
@@ -120,6 +121,7 @@ googletest_macro
 gpio-cdev
 grpcio
 grpcio-compiler
+grpcio-sys
 h2
 half
 hashbrown
@@ -184,6 +186,7 @@ named-lock
 nix
 no-panic
 nom
+num-bigint
 num-complex
 num-derive
 num-integer
@@ -227,6 +230,8 @@ predicates-core
 predicates-tree
 prettyplease
 proc-macro2
+protobuf
+protobuf-codegen
 protobuf-json-mapping
 protobuf-parse
 protobuf-support
@@ -330,6 +335,7 @@ unsafe-libyaml
 untrusted
 url
 userfaultfd
+userfaultfd-sys
 utf-8
 uuid
 vhost
@@ -352,6 +358,7 @@ winnow
 x509-cert
 xml-rs
 yaml-rust
+zerocopy
 zerocopy-derive
 zeroize
 zeroize_derive

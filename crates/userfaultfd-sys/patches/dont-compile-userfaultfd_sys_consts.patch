@@ -1,0 +1,15 @@
+diff --git a/build.rs b/build.rs
+index af7cda6..c18bb2e 100644
+--- a/build.rs
++++ b/build.rs
+@@ -6,10 +6,6 @@ use std::path::PathBuf;
+ 
+ fn main() {
+     generate_bindings();
+-
+-    cc::Build::new()
+-        .file("src/consts.c")
+-        .compile("userfaultfd_sys_consts");
+ }
+ 
+ fn generate_bindings() {

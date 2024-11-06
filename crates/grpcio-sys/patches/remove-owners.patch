@@ -1,0 +1,105 @@
+diff --git a/grpc/OWNERS b/grpc/OWNERS
+deleted file mode 100644
+index cdbc4bec..00000000
+--- a/grpc/OWNERS
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# Top level ownership
+-@markdroth **/OWNERS
+-@a11r **/OWNERS
+diff --git a/grpc/bazel/OWNERS b/grpc/bazel/OWNERS
+deleted file mode 100644
+index cf079bfa..00000000
+--- a/grpc/bazel/OWNERS
++++ /dev/null
+@@ -1,5 +0,0 @@
+-set noparent
+-@jtattermusch
+-@veblush
+-@gnossen
+-
+diff --git a/grpc/cmake/OWNERS b/grpc/cmake/OWNERS
+deleted file mode 100644
+index 47d3b37a..00000000
+--- a/grpc/cmake/OWNERS
++++ /dev/null
+@@ -1,3 +0,0 @@
+-set noparent
+-@jtattermusch
+-@apolcyn
+diff --git a/grpc/src/core/ext/filters/client_channel/OWNERS b/grpc/src/core/ext/filters/client_channel/OWNERS
+deleted file mode 100644
+index 14a32648..00000000
+--- a/grpc/src/core/ext/filters/client_channel/OWNERS
++++ /dev/null
+@@ -1,3 +0,0 @@
+-set noparent
+-@markdroth
+-
+diff --git a/grpc/src/core/ext/transport/chttp2/transport/OWNERS b/grpc/src/core/ext/transport/chttp2/transport/OWNERS
+deleted file mode 100644
+index 2713ac87..00000000
+--- a/grpc/src/core/ext/transport/chttp2/transport/OWNERS
++++ /dev/null
+@@ -1,2 +0,0 @@
+-set noparent
+-@ctiller
+diff --git a/grpc/src/core/ext/xds/OWNERS b/grpc/src/core/ext/xds/OWNERS
+deleted file mode 100644
+index 14a32648..00000000
+--- a/grpc/src/core/ext/xds/OWNERS
++++ /dev/null
+@@ -1,3 +0,0 @@
+-set noparent
+-@markdroth
+-
+diff --git a/grpc/src/core/lib/resolver/OWNERS b/grpc/src/core/lib/resolver/OWNERS
+deleted file mode 100644
+index 14a32648..00000000
+--- a/grpc/src/core/lib/resolver/OWNERS
++++ /dev/null
+@@ -1,3 +0,0 @@
+-set noparent
+-@markdroth
+-
+diff --git a/grpc/src/core/lib/service_config/OWNERS b/grpc/src/core/lib/service_config/OWNERS
+deleted file mode 100644
+index 14a32648..00000000
+--- a/grpc/src/core/lib/service_config/OWNERS
++++ /dev/null
+@@ -1,3 +0,0 @@
+-set noparent
+-@markdroth
+-
+diff --git a/grpc/src/core/lib/surface/OWNERS b/grpc/src/core/lib/surface/OWNERS
+deleted file mode 100644
+index 2713ac87..00000000
+--- a/grpc/src/core/lib/surface/OWNERS
++++ /dev/null
+@@ -1,2 +0,0 @@
+-set noparent
+-@ctiller
+diff --git a/grpc/src/core/lib/transport/OWNERS b/grpc/src/core/lib/transport/OWNERS
+deleted file mode 100644
+index 2713ac87..00000000
+--- a/grpc/src/core/lib/transport/OWNERS
++++ /dev/null
+@@ -1,2 +0,0 @@
+-set noparent
+-@ctiller
+diff --git a/grpc/tools/dockerfile/OWNERS b/grpc/tools/dockerfile/OWNERS
+deleted file mode 100644
+index 24fecf89..00000000
+--- a/grpc/tools/dockerfile/OWNERS
++++ /dev/null
+@@ -1,10 +0,0 @@
+-set noparent
+-
+-# These owners are in place to ensure that dockerfiles are changed in a way
+-# that maximizes use of docker cache when rebuilding and that the docker images
+-# are fast to build and sane in general.
+-# Also, push_testing_images.sh needs to be used upon changing the docker images
+-# for kokoro to be able to access the pre-built images.
+-
+-@jtattermusch
+-@apolcyn

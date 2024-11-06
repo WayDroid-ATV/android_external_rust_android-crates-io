@@ -13,8 +13,13 @@
 edition = "2018"
 rust-version = "1.64.0"
 name = "bindgen-cli"
-version = "0.69.2"
+version = "0.69.5"
 authors = ["The rust-bindgen project contributors"]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Automatically generates Rust FFI bindings to C and C++ libraries."
 homepage = "https://rust-lang.github.io/rust-bindgen/"
 documentation = "https://docs.rs/bindgen"
@@ -42,7 +47,7 @@ name = "bindgen"
 path = "main.rs"
 
 [dependencies.bindgen]
-version = "=0.69.2"
+version = "=0.69.5"
 features = [
     "__cli",
     "experimental",
@@ -69,7 +74,7 @@ version = "1"
 
 [features]
 __testing_only_extra_assertions = ["bindgen/__testing_only_extra_assertions"]
-__testing_only_libclang_5 = ["bindgen/__testing_only_libclang_5"]
+__testing_only_libclang_16 = ["bindgen/__testing_only_libclang_16"]
 __testing_only_libclang_9 = ["bindgen/__testing_only_libclang_9"]
 default = [
     "logging",

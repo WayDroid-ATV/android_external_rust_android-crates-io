@@ -8,4 +8,10 @@ third_party {
     month: 2
     day: 2
   }
+  homepage: "https://crates.io/crates/half"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/half/half-2.2.1.crate"
+    version: "2.2.1"
+  }
 }

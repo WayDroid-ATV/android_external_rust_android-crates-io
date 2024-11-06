@@ -1,11 +1,17 @@
 name: "thiserror-impl"
 description: "Implementation detail of the `thiserror` crate"
 third_party {
-  version: "1.0.40"
+  version: "1.0.49"
   license_type: NOTICE
   last_upgrade_date {
     year: 2023
     month: 3
     day: 23
+  }
+  homepage: "https://crates.io/crates/thiserror-impl"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/thiserror-impl/thiserror-impl-1.0.49.crate"
+    version: "1.0.49"
   }
 }

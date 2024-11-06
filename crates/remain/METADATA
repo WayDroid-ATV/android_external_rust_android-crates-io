@@ -1,10 +1,7 @@
-# This project was upgraded with external_updater.
-# Usage: tools/external_updater/updater.sh update external/rust/crates/remain
-# For more info, check https://cs.android.com/android/platform/superproject/+/main:tools/external_updater/README.md
-
 name: "remain"
 description: "Compile-time checks that an enum, struct, or match is written in sorted order."
 third_party {
+  version: "0.2.12"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024

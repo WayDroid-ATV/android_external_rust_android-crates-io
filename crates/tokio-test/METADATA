@@ -8,4 +8,10 @@ third_party {
     month: 5
     day: 19
   }
+  homepage: "https://crates.io/crates/tokio-test"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/tokio-test/tokio-test-0.4.2.crate"
+    version: "0.4.2"
+  }
 }
