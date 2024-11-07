@@ -4,7 +4,6 @@
     {
       "features": [
         "derive",
-        "byteorder",
         "simd"
       ]
     },
@@ -12,11 +11,9 @@
       "features": [
         "alloc",
         "derive",
-        "byteorder",
         "simd"
       ],
       "module_name_overrides": {
-        "libbyteorder": "libbyteorder_nostd",
         "libzerocopy": "libzerocopy_nostd"
       },
       "package": {
@@ -31,11 +28,9 @@
     {
       "features": [
         "derive",
-        "byteorder",
         "simd"
       ],
       "module_name_overrides": {
-        "libbyteorder": "libbyteorder_nostd",
         "libzerocopy": "libzerocopy_nostd_noalloc"
       },
       "package": {
