@@ -53,7 +53,7 @@ rust_library_rlib {
         "zerocopy-derive",
     ],
     rustlibs: ["libbyteorder_nostd"],
-    proc_macros: ["libzerocopy_derive"],
+    proc_macros: ["libzerocopy_derive-0.7.35"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -84,7 +84,7 @@ rust_library_rlib {
         "zerocopy-derive",
     ],
     rustlibs: ["libbyteorder_nostd"],
-    proc_macros: ["libzerocopy_derive"],
+    proc_macros: ["libzerocopy_derive-0.7.35"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
