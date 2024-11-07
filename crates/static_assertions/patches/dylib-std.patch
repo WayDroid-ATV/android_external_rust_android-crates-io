@@ -1,0 +1,14 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index a43cc1f..d9f1523 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -83,6 +83,9 @@
+ 
+ #![deny(unused_macros)]
+ 
++#[cfg(android_dylib)]
++extern crate std;
++
+ #[doc(hidden)]
+ pub extern crate core as _core;
+ 

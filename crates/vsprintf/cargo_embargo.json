@@ -8,7 +8,7 @@
   },
   "module_visibility": {
     "libvsprintf": [
-      "//external/rust/crates/libbpf-rs"
+      "//external/rust/android-crates-io/crates/libbpf-rs"
     ]
   }
 }

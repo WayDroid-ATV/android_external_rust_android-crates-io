@@ -29,7 +29,7 @@ rust_library {
     ],
     product_available: true,
     vendor_available: true,
-    visibility: ["//external/rust/crates/libbpf-rs"],
+    visibility: ["//external/rust/android-crates-io/crates/libbpf-rs"],
 }
 
 cc_library {
