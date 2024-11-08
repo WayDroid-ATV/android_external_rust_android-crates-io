@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bace1078_801ca267",
+        "filename": "crates/smccc/rules.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-11-08T16:52:32Z",
+      "side": 0,
+      "message": "I think we should probably update cargo_embargo to not insert this line, because my guess is that you had to remove it manually and skip the pre-upload check.",
+      "range": {
+        "startLine": 5,
+        "startChar": 0,
+        "endLine": 5,
+        "endChar": 48
+      },
+      "revId": "dc047616346bdb227bb9aecec667c3b57bf9c8b0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
