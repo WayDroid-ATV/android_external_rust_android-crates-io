@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4a42a410_47c434df",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1238042
+      },
+      "writtenOn": "2024-11-08T07:46:25Z",
+      "side": 1,
+      "message": "FYI: ag/30288927 adds the library using PDL.",
+      "revId": "41c96dfced3d6b46a908148c90bb0dacd904a641",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
