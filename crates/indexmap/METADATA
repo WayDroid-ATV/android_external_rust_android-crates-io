@@ -8,4 +8,10 @@ third_party {
     month: 12
     day: 12
   }
+  homepage: "https://crates.io/crates/indexmap"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/indexmap/indexmap-1.9.2.crate"
+    version: "1.9.2"
+  }
 }

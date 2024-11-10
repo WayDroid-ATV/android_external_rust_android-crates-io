@@ -18,7 +18,7 @@ rust_binary_host {
     host_cross_supported: false,
     crate_name: "bindgen",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.69.2",
+    cargo_pkg_version: "0.69.5",
     crate_root: "main.rs",
     edition: "2018",
     features: [

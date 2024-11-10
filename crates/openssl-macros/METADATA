@@ -8,4 +8,10 @@ third_party {
     month: 11
     day: 30
   }
+  homepage: "https://crates.io/crates/openssl-macros"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/openssl-macros/openssl-macros-0.1.0.crate"
+    version: "0.1.0"
+  }
 }

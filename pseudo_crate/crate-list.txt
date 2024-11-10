@@ -1,4 +1,5 @@
 aarch64-paging
+acpi
 ahash
 aho-corasick
 android_log-sys
@@ -24,7 +25,9 @@ axum-core
 base64
 bencher
 bincode
+bindgen
 bindgen-cli
+bit_field
 bitflags
 bitreader
 bstr
@@ -86,6 +89,7 @@ env_logger
 epoll
 equivalent
 errno
+etherparse
 fallible-iterator
 fallible-streaming-iterator
 fastrand
@@ -120,6 +124,7 @@ googletest_macro
 gpio-cdev
 grpcio
 grpcio-compiler
+grpcio-sys
 h2
 half
 hashbrown
@@ -145,6 +150,7 @@ jni-sys
 kernlog
 lazy_static
 lazycell
+libbpf-rs
 libc
 libfuzzer-sys
 libloading
@@ -161,9 +167,11 @@ lru-cache
 lz4_flex
 macaddr
 managed
+matches
 matchit
 maybe-async
 memchr
+memmap2
 memoffset
 merge
 merge_derive
@@ -184,6 +192,7 @@ named-lock
 nix
 no-panic
 nom
+num-bigint
 num-complex
 num-derive
 num-integer
@@ -221,12 +230,15 @@ pkcs8
 plotters
 plotters-backend
 plotters-svg
+poll_token_derive
 ppv-lite86
 predicates
 predicates-core
 predicates-tree
 prettyplease
 proc-macro2
+protobuf
+protobuf-codegen
 protobuf-json-mapping
 protobuf-parse
 protobuf-support
@@ -273,6 +285,7 @@ smccc
 socket2
 spin
 spki
+static_assertions
 strsim
 strum
 strum_macros
@@ -330,6 +343,7 @@ unsafe-libyaml
 untrusted
 url
 userfaultfd
+userfaultfd-sys
 utf-8
 uuid
 vhost
@@ -352,6 +366,7 @@ winnow
 x509-cert
 xml-rs
 yaml-rust
+zerocopy
 zerocopy-derive
 zeroize
 zeroize_derive
