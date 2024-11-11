@@ -2,7 +2,7 @@
   "min_sdk_version": "29",
   "package": {
     "tokio": {
-      "add_toplevel_block": "cargo2android_tests.bp"
+      "add_toplevel_block": "cargo2android_tests.bp.fragment"
     }
   },
   "variants": [

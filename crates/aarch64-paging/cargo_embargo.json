@@ -9,7 +9,7 @@
       "alloc": true,
       "no_std": true,
       "force_rlib": true,
-      "add_module_block": "cargo2android_module.bp",
+      "add_module_block": "cargo2android_module.bp.fragment",
       "license_text": ["LICENSE-APACHE"]
     }
   },

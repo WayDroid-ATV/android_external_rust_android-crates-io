@@ -7,8 +7,8 @@
   "min_sdk_version": "29",
   "package": {
     "grpcio-sys": {
-      "add_module_block": "cargo2android_module.bp",
-      "add_toplevel_block": "cargo2android-extra-module.bp",
+      "add_module_block": "cargo2android_module.bp.fragment",
+      "add_toplevel_block": "cargo2android-extra-module.bp.fragment",
       "dep_blocklist": [
         "libabsl_bad_optional_access",
         "libabsl_bad_variant_access",
