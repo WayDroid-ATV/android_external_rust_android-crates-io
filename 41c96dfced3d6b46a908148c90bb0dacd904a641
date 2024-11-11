@@ -33,6 +33,24 @@
       "message": "@srhines@google.com are you ok with adding vendor visiblity to rust crates ?\nAfter the onus of updating them might fall on your team...\n\nNo other comment otherwise",
       "revId": "41c96dfced3d6b46a908148c90bb0dacd904a641",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "45fe77dd_4c8bc82e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-11-11T21:49:04Z",
+      "side": 1,
+      "message": "If we can\u0027t update vendor code in a timely manner, this will slow/halt crate updates, which isn\u0027t a great place to be in, but you\u0027re not the only crate(s) with this. https://cs.android.com/android/platform/superproject/main/+/main:external/rust/crates/openssl/Android.bp;l\u003d67?q\u003dfile:Android.bp%20visibility%20file:external%2Frust\u0026ss\u003dandroid%2Fplatform%2Fsuperproject%2Fmain\u0026start\u003d11 is an example, and https://cs.android.com/search?q\u003dfile:Android.bp%20visibility%20vendor:__subpackages%20file:external%2F\u0026ss\u003dandroid%2Fplatform%2Fsuperproject%2Fmain shows other external/ projects with similar visibility.\n\n+James as FYI and for final +2 approval",
+      "parentUuid": "7e1ebddd_d2feed96",
+      "revId": "41c96dfced3d6b46a908148c90bb0dacd904a641",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
