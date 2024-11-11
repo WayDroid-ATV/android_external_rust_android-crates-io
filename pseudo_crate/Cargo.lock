@@ -140,7 +140,7 @@ dependencies = [
  "clang-sys",
  "clap_complete",
  "clap_derive",
- "clap_lex 0.3.2",
+ "clap_lex 0.7.2",
  "codespan-reporting",
  "combine",
  "command-fds",
@@ -1216,15 +1216,6 @@ name = "clap_lex"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2850f2f5a82cbf437dd5af4d49848fbdfc27c157c3d010345776f952765261c5"
-dependencies = [
- "os_str_bytes",
-]
-
-[[package]]
-name = "clap_lex"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "350b9cf31731f9957399229e9b2adc51eeabdfbe9d71d9a0552275fd12710d09"
 dependencies = [
  "os_str_bytes",
 ]
