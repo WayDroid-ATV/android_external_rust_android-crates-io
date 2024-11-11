@@ -6,6 +6,7 @@ android_log-sys
 android_logger
 anes
 annotate-snippets
+anstyle
 anyhow
 arbitrary
 arc-swap
