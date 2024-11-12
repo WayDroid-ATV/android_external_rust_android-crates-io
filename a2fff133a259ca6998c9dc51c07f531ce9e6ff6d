@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "2837e0a7_607103cf",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-11-12T23:32:24Z",
+      "side": 1,
+      "message": "LGTM. Would +2 if I could.",
+      "revId": "a2fff133a259ca6998c9dc51c07f531ce9e6ff6d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "30cad597_53f7d1d3",
@@ -31,6 +48,24 @@
       "writtenOn": "2024-11-12T16:43:31Z",
       "side": 1,
       "message": "Does this change cause any problems for the Trusty build?",
+      "revId": "a2fff133a259ca6998c9dc51c07f531ce9e6ff6d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "90924edd_06f93ef0",
+        "filename": "crates/bit_field/rules.mk",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2024-11-12T23:32:24Z",
+      "side": 1,
+      "message": "This should be fine. We actually want a `no_std` version for Trusty.",
+      "parentUuid": "1111820e_e286b2bc",
       "revId": "a2fff133a259ca6998c9dc51c07f531ce9e6ff6d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
