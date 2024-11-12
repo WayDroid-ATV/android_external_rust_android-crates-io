@@ -16,6 +16,24 @@
       "message": "Use spaces for indentation rather than tabs, for consistency.",
       "revId": "12add53204ab0ae5247a706a0306e29238612b20",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3128effb_3b77834a",
+        "filename": "crates/bytemuck/cargo_embargo.json",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 3632584
+      },
+      "writtenOn": "2024-11-12T15:58:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b82ede49_ea85cf44",
+      "revId": "12add53204ab0ae5247a706a0306e29238612b20",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }

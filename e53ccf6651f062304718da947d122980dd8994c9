@@ -22,6 +22,30 @@
       },
       "revId": "e53ccf6651f062304718da947d122980dd8994c9",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "193a001c_be2ad7ff",
+        "filename": "crates/bytemuck/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 3632584
+      },
+      "writtenOn": "2024-11-12T15:58:59Z",
+      "side": 1,
+      "message": "AFAIU, it overrides the top-level features.\n\n@qwandor@google.com Could you clarify this?",
+      "parentUuid": "4e96aa7e_9211312d",
+      "range": {
+        "startLine": 10,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 28
+      },
+      "revId": "e53ccf6651f062304718da947d122980dd8994c9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
