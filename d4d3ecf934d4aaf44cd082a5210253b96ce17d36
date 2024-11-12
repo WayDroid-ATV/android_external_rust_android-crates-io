@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "82a9111e_8c44d49b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-12T11:29:02Z",
+      "side": 1,
+      "message": "The downside of this is that the Blueprint fragments will no longer be syntax highlighted in Codesearch (or Cider, probably VSCode, or various other tools), nor will the \"lang:soong\" filter find them. We could update `recognize_language_classifiers_data` to recognise `.bp.fragment` as a Soong Blueprint file, but alternatively would it be possible to make `bpfmt` more liberal about formatting fragments of Blueprint files?",
+      "revId": "d4d3ecf934d4aaf44cd082a5210253b96ce17d36",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
