@@ -104,6 +104,24 @@
       "parentUuid": "2c5ea250_e8fff978",
       "revId": "371eddba4e15d270651f5c52f3280acf32965bb1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0a62f29d_c0b7f77d",
+        "filename": "crates/bit_field/rules.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-12T16:43:31Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "a19ab8ab_997b8b58",
+      "revId": "371eddba4e15d270651f5c52f3280acf32965bb1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
