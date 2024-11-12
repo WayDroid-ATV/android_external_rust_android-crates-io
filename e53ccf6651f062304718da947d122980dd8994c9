@@ -46,6 +46,30 @@
       },
       "revId": "e53ccf6651f062304718da947d122980dd8994c9",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2ccfd86b_15acc49b",
+        "filename": "crates/bytemuck/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-12T16:00:41Z",
+      "side": 1,
+      "message": "Yes, it overrides them for this variant. It looks fine to me.",
+      "parentUuid": "193a001c_be2ad7ff",
+      "range": {
+        "startLine": 10,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 28
+      },
+      "revId": "e53ccf6651f062304718da947d122980dd8994c9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
