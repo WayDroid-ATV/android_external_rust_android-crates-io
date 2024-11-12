@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "87b903dc_9b3640d8",
+        "filename": "crates/bit_field/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 3632584
+      },
+      "writtenOn": "2024-11-12T15:51:58Z",
+      "side": 1,
+      "message": "AFAIK no. I removed it.",
+      "parentUuid": "6da202ea_ddca204a",
+      "revId": "371eddba4e15d270651f5c52f3280acf32965bb1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c86747a6_78d853fc",
@@ -35,6 +53,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "bf8e5ee9_21a6c204",
+        "filename": "crates/bit_field/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 3632584
+      },
+      "writtenOn": "2024-11-12T15:51:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c86747a6_78d853fc",
+      "revId": "371eddba4e15d270651f5c52f3280acf32965bb1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2c5ea250_e8fff978",
@@ -48,6 +84,24 @@
       "writtenOn": "2024-11-12T15:33:39Z",
       "side": 1,
       "message": "Is this duplication intentional?",
+      "revId": "371eddba4e15d270651f5c52f3280acf32965bb1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a19ab8ab_997b8b58",
+        "filename": "crates/bit_field/rules.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 3632584
+      },
+      "writtenOn": "2024-11-12T15:51:58Z",
+      "side": 1,
+      "message": "It was automatically generated.",
+      "parentUuid": "2c5ea250_e8fff978",
       "revId": "371eddba4e15d270651f5c52f3280acf32965bb1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
