@@ -11,13 +11,5 @@
       "no_std": true
     }
   },
-  "run_cargo": false,
-  "variants": [
-    {},
-    {
-      "module_name_overrides": {},
-      "generate_androidbp": false,
-      "generate_rulesmk": true
-    }
-  ]
+  "run_cargo": false
 }
