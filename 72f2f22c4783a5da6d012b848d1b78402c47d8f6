@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c430b8e7_425fc6ae",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-12T11:30:54Z",
+      "side": 1,
+      "message": "Just \"Bug: 339424309\" is enough, Gerrit will recognise it and make it into a link.",
+      "revId": "72f2f22c4783a5da6d012b848d1b78402c47d8f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
