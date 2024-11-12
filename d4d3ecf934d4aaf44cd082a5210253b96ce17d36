@@ -34,6 +34,24 @@
       "parentUuid": "82a9111e_8c44d49b",
       "revId": "d4d3ecf934d4aaf44cd082a5210253b96ce17d36",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "4d5d608c_2e8f7b08",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-12T16:35:17Z",
+      "side": 1,
+      "message": "Okay, I\u0027ll send a CL to recognise them in codesearch.",
+      "parentUuid": "de18d7b0_bfd28a16",
+      "revId": "d4d3ecf934d4aaf44cd082a5210253b96ce17d36",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
