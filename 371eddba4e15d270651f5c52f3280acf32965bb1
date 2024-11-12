@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6da202ea_ddca204a",
+        "filename": "crates/bit_field/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-12T15:33:39Z",
+      "side": 1,
+      "message": "Are there any users for this variant? If not, then there\u0027s no need to have it.",
+      "revId": "371eddba4e15d270651f5c52f3280acf32965bb1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c86747a6_78d853fc",
+        "filename": "crates/bit_field/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-12T15:33:39Z",
+      "side": 1,
+      "message": "Use spaces rather than tabs for consistency.",
+      "revId": "371eddba4e15d270651f5c52f3280acf32965bb1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2c5ea250_e8fff978",
+        "filename": "crates/bit_field/rules.mk",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-12T15:33:39Z",
+      "side": 1,
+      "message": "Is this duplication intentional?",
+      "revId": "371eddba4e15d270651f5c52f3280acf32965bb1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
