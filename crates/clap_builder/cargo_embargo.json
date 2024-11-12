@@ -1,0 +1,9 @@
+{
+  "features": [
+    "std",
+    "help",
+    "usage",
+    "error-context",
+    "suggestions"
+  ]
+}
