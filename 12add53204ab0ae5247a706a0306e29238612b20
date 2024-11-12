@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b82ede49_ea85cf44",
+        "filename": "crates/bytemuck/cargo_embargo.json",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-12T15:26:35Z",
+      "side": 1,
+      "message": "Use spaces for indentation rather than tabs, for consistency.",
+      "revId": "12add53204ab0ae5247a706a0306e29238612b20",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
