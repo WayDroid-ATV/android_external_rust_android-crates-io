@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4e96aa7e_9211312d",
+        "filename": "crates/bytemuck/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1882526
+      },
+      "writtenOn": "2024-11-12T14:53:31Z",
+      "side": 1,
+      "message": "Is this needed? Doesn\u0027t it duplicate the top-level `features`?",
+      "range": {
+        "startLine": 10,
+        "startChar": 0,
+        "endLine": 11,
+        "endChar": 28
+      },
+      "revId": "e53ccf6651f062304718da947d122980dd8994c9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
