@@ -155,6 +155,7 @@ libc
 libfuzzer-sys
 libloading
 libm
+libsqlite3-sys
 libtest-mimic
 libz-sys
 linked-hash-map
