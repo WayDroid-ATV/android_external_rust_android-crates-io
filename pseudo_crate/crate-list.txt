@@ -89,6 +89,7 @@ env_logger
 epoll
 equivalent
 errno
+etherparse
 fallible-iterator
 fallible-streaming-iterator
 fastrand
@@ -170,6 +171,7 @@ matches
 matchit
 maybe-async
 memchr
+memmap2
 memoffset
 merge
 merge_derive
@@ -283,6 +285,7 @@ smccc
 socket2
 spin
 spki
+static_assertions
 strsim
 strum
 strum_macros
@@ -363,6 +366,7 @@ winnow
 x509-cert
 xml-rs
 yaml-rust
+zerocopy
 zerocopy-derive
 zeroize
 zeroize_derive

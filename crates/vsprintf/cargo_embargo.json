@@ -2,7 +2,7 @@
   "run_cargo": false,
   "package": {
     "vsprintf": {
-      "add_toplevel_block": "wrapper.bp",
+      "add_toplevel_block": "wrapper.bp.fragment",
       "patch": "patches/Android.bp.patch"
     }
   },

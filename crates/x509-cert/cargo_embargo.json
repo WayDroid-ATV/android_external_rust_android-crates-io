@@ -4,15 +4,19 @@
     "com.android.virt"
   ],
   "features": [],
+  "module_visibility": {
+    "libx509_cert": [
+      "//packages/modules/Virtualization:__subpackages__",
+      "//system/keymint:__subpackages__"
+    ],
+    "libx509_cert_nostd": [
+      "//packages/modules/Virtualization:__subpackages__",
+      "//system/keymint:__subpackages__"
+    ]
+  },
   "run_cargo": false,
   "variants": [
-    {
-      "package": {
-        "x509-cert": {
-          "add_module_block": "cargo2android_viz.bp"
-        }
-      }
-    },
+    {},
     {
       "module_name_overrides": {
         "libconst_oid": "libconst_oid_nostd",
@@ -23,7 +27,6 @@
       },
       "package": {
         "x509-cert": {
-          "add_module_block": "cargo2android_viz.bp",
           "force_rlib": true,
           "host_supported": false,
           "no_std": true

@@ -181,6 +181,7 @@ dependencies = [
  "epoll",
  "equivalent",
  "errno",
+ "etherparse",
  "fallible-iterator",
  "fallible-streaming-iterator",
  "fastrand",
@@ -262,6 +263,7 @@ dependencies = [
  "matchit",
  "maybe-async",
  "memchr",
+ "memmap2",
  "memoffset",
  "merge",
  "merge_derive",
@@ -375,6 +377,7 @@ dependencies = [
  "socket2",
  "spin 0.9.8",
  "spki",
+ "static_assertions",
  "strsim 0.11.1",
  "strum",
  "strum_macros",
@@ -455,6 +458,7 @@ dependencies = [
  "x509-cert",
  "xml-rs",
  "yaml-rust",
+ "zerocopy",
  "zerocopy-derive",
  "zeroize",
  "zeroize_derive",
@@ -1855,6 +1859,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "etherparse"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8d8a704b617484e9d867a0423cd45f7577f008c4068e2e33378f8d3860a6d73"
+dependencies = [
+ "arrayvec",
+]
+
+[[package]]
 name = "ext-trait"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3061,6 +3074,15 @@ name = "memchr"
 version = "2.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "523dc4f511e55ab87b694dc30d0f820d60906ef06413f93d4d7a1385599cc149"
+
+[[package]]
+name = "memmap2"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43a5a03cefb0d953ec0be133036f14e109412fa594edc2f77227249db66cc3ed"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "memoffset"

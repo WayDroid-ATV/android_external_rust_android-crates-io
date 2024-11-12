@@ -8,15 +8,19 @@
     "der",
     "pkcs8"
   ],
+  "module_visibility": {
+    "libsec1": [
+      "//packages/modules/Virtualization:__subpackages__",
+      "//system/keymint:__subpackages__"
+    ],
+    "libsec1_nostd": [
+      "//packages/modules/Virtualization:__subpackages__",
+      "//system/keymint:__subpackages__"
+    ]
+  },
   "run_cargo": false,
   "variants": [
-    {
-      "package": {
-        "sec1": {
-          "add_module_block": "cargo2android_viz.bp"
-        }
-      }
-    },
+    {},
     {
       "module_name_overrides": {
         "libder": "libder_nostd",
@@ -26,7 +30,6 @@
       },
       "package": {
         "sec1": {
-          "add_module_block": "cargo2android_viz.bp",
           "force_rlib": true,
           "host_supported": false,
           "no_std": true

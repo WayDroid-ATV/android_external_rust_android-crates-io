@@ -6,15 +6,25 @@
   "features": [
     "alloc"
   ],
+  "module_visibility": {
+    "libspki": [
+      "//external/rust/android-crates-io/crates/pkcs1:__subpackages__",
+      "//external/rust/android-crates-io/crates/pkcs8:__subpackages__",
+      "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
+      "//packages/modules/Virtualization:__subpackages__",
+      "//system/keymint:__subpackages__"
+    ],
+    "libspki_nostd": [
+      "//external/rust/android-crates-io/crates/pkcs1:__subpackages__",
+      "//external/rust/android-crates-io/crates/pkcs8:__subpackages__",
+      "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
+      "//packages/modules/Virtualization:__subpackages__",
+      "//system/keymint:__subpackages__"
+    ]
+  },
   "run_cargo": false,
   "variants": [
-    {
-      "package": {
-        "spki": {
-          "add_module_block": "cargo2android_viz.bp"
-        }
-      }
-    },
+    {},
     {
       "module_name_overrides": {
         "libder": "libder_nostd",
@@ -22,7 +32,6 @@
       },
       "package": {
         "spki": {
-          "add_module_block": "cargo2android_viz.bp",
           "alloc": true,
           "force_rlib": true,
           "host_supported": false,

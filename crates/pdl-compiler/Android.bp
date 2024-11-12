@@ -81,6 +81,7 @@ genrule_defaults {
         "//external/uwb/src",
         "//packages/modules/Bluetooth:__subpackages__",
         "//tools/netsim:__subpackages__",
+        "//vendor:__subpackages__",
     ],
 }
 

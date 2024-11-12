@@ -1,4 +1,0 @@
-visibility: [
-     "//packages/modules/Virtualization:__subpackages__",
-     "//system/keymint:__subpackages__",
-]
