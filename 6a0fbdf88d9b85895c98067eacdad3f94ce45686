@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2b91e7a1_724211db",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-12T11:00:59Z",
+      "side": 1,
+      "message": "We can probably trim some of these down further, but that can be a separate change.",
+      "revId": "6a0fbdf88d9b85895c98067eacdad3f94ce45686",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
