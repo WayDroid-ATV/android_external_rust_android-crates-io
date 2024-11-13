@@ -55,6 +55,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "61cdd631_fdf914fd",
+        "filename": "crates/bit_field/cargo_embargo.json",
+        "patchSetId": 3
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-13T10:04:29Z",
+      "side": 1,
+      "message": "I don\u0027t see any change.",
+      "parentUuid": "ebe864a2_6fa385cb",
+      "revId": "a2fff133a259ca6998c9dc51c07f531ce9e6ff6d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "1111820e_e286b2bc",
         "filename": "crates/bit_field/rules.mk",
         "patchSetId": 3
