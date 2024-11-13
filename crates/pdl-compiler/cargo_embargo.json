@@ -1,7 +1,7 @@
 {
   "package": {
     "pdl-compiler": {
-      "add_toplevel_block": "cargo2android_toplevel.bp",
+      "add_toplevel_block": "cargo2android_toplevel.bp.fragment",
       "device_supported": false,
       "host_first_multilib": true
     }

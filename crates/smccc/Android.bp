@@ -44,3 +44,9 @@ rust_test {
     auto_gen_config: true,
     edition: "2021",
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_smccc",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}

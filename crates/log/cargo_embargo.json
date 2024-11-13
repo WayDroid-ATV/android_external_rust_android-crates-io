@@ -10,7 +10,7 @@
       },
       "package": {
         "log": {
-          "add_module_block": "android_impl.bp"
+          "add_module_block": "android_impl.bp.fragment"
         }
       }
     },
@@ -25,7 +25,7 @@
       },
       "package": {
         "log": {
-          "add_module_block": "android_impl.bp"
+          "add_module_block": "android_impl.bp.fragment"
         }
       }
     },
@@ -40,7 +40,7 @@
       },
       "package": {
         "log": {
-          "add_module_block": "android_impl.bp"
+          "add_module_block": "android_impl.bp.fragment"
         }
       }
     },
