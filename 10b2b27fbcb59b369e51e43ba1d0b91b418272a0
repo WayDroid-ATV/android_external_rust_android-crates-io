@@ -33,6 +33,24 @@
       "message": "Please use min_sdk_version 29.",
       "revId": "10b2b27fbcb59b369e51e43ba1d0b91b418272a0",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8adea6e4_f785fb57",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3304973
+      },
+      "writtenOn": "2024-11-13T23:01:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ade7fea6_24fd0363",
+      "revId": "10b2b27fbcb59b369e51e43ba1d0b91b418272a0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
