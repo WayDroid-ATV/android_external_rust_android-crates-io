@@ -1,9 +1,32 @@
 {
   "features": [
     "derive",
-    "extern_crate_alloc",
-    "extern_crate_std"
+    "extern_crate_alloc"
   ],
   "tests": true,
   "min_sdk_version": "34"
+  "variants": [
+    {
+      "features": [
+        "extern_crate_std",
+        "derive",
+        "extern_crate_alloc"
+      ],
+      "tests": true,
+      "min_sdk_version": "34"
+    },
+    {
+      "module_name_overrides": {
+        "libbytemuck": "libbytemuck_nostd"
+      },
+      "package": {
+        "bytemuck": {
+          "force_rlib": true,
+          "host_supported": false,
+          "alloc": true,
+          "no_std": true
+        }
+      }
+    }
+  ]
 }
