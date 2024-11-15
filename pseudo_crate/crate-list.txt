@@ -151,6 +151,7 @@ kernlog
 lazy_static
 lazycell
 libbpf-rs
+libbpf-sys
 libc
 libfuzzer-sys
 libloading
@@ -255,6 +256,7 @@ regex
 regex-automata
 regex-syntax
 remain
+ring
 rusqlite
 rustc-demangle
 rustc-demangle-capi

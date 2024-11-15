@@ -11,6 +11,6 @@
     "async-stream_test_src_lib",
     "async-stream_test_tests_stream"
   ],
-  "min_sdk_version": "34",
+  "min_sdk_version": "29",
   "run_cargo": false
 }

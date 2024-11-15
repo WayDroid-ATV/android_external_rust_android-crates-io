@@ -1,0 +1,25 @@
+diff --git a/Android.bp b/Android.bp
+index 60c613c..8f26c4f 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -19,19 +19,7 @@ rust_library {
+     cargo_env_compat: true,
+     cargo_pkg_version: "1.4.3+v1.4.5",
+     crate_root: "src/lib.rs",
+-    edition: "2018",
+-    apex_available: [
+-        "//apex_available:platform",
+-        "//apex_available:anyapex",
+-    ],
+-}
+-
+-rust_ffi_static {
+-    name: "liblibbpf_sys_static",
+-    crate_name: "libbpf_sys",
+-    cargo_env_compat: true,
+-    cargo_pkg_version: "1.4.3+v1.4.5",
+-    crate_root: "src/lib.rs",
++    srcs: [":liblibbpf_bindgen"],
+     edition: "2018",
+     apex_available: [
+         "//apex_available:platform",

@@ -3,6 +3,8 @@
     "derive",
     "extern_crate_alloc"
   ],
+  "tests": true,
+  "min_sdk_version": "34"
   "variants": [
     {
       "features": [
