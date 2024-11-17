@@ -49,7 +49,6 @@ rust_library {
         "//packages/modules/Virtualization:__subpackages__",
         "//system/keymint:__subpackages__",
     ],
-
 }
 
 rust_library_rlib {
@@ -94,7 +93,6 @@ rust_library_rlib {
         "//packages/modules/Virtualization:__subpackages__",
         "//system/keymint:__subpackages__",
     ],
-
 }
 
 dirgroup {

@@ -2,5 +2,5 @@
   "features": [
     "serde-1"
   ],
-  "min_sdk_version": "34"
+  "min_sdk_version": "29"
 }

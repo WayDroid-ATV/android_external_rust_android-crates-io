@@ -4,7 +4,7 @@
       "device_supported": false,
       "host_first_multilib": true,
       "host_cross_supported": false,
-      "add_toplevel_block": "cargo2android-extra-module.bp"
+      "add_toplevel_block": "cargo2android-extra-module.bp.fragment"
     }
   },
   "run_cargo": false

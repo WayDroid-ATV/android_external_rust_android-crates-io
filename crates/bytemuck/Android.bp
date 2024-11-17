@@ -195,5 +195,33 @@ rust_library {
     ],
     product_available: true,
     vendor_available: true,
-    min_sdk_version: "34",
+    min_sdk_version: "29",
+}
+
+rust_library_rlib {
+    name: "libbytemuck_nostd",
+    crate_name: "bytemuck",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.19.0",
+    crate_root: "src/lib.rs",
+    edition: "2018",
+    features: [
+        "bytemuck_derive",
+        "derive",
+        "extern_crate_alloc",
+    ],
+    proc_macros: ["libbytemuck_derive"],
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    prefer_rlib: true,
+    no_stdlibs: true,
+    stdlibs: [
+        "liballoc.rust_sysroot",
+        "libcompiler_builtins.rust_sysroot",
+        "libcore.rust_sysroot",
+    ],
+    product_available: true,
+    vendor_available: true,
 }

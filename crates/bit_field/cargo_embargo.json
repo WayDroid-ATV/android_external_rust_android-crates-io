@@ -1,5 +1,14 @@
 {
   "run_cargo": false,
-  "generate_androidbp": false,
-  "generate_rulesmk": true
+  "generate_rulesmk": true,
+  "module_name_overrides": {
+    "libbit_field": "libbit_field_nostd"
+  },
+  "package": {
+    "bit_field": {
+      "force_rlib": true,
+      "host_supported": false,
+      "no_std": true
+    }
+  }
 }

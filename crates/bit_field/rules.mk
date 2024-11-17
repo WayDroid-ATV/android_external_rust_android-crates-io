@@ -8,8 +8,10 @@ MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := bit_field
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
+MODULE_ADD_IMPLICIT_DEPS := false
 MODULE_RUST_EDITION := 2015
 MODULE_LIBRARY_DEPS := \
-	
+	trusty/user/base/lib/libcompiler_builtins-rust \
+	trusty/user/base/lib/libcore-rust
 
 include make/library.mk
