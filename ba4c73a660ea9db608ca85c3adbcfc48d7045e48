@@ -16,6 +16,23 @@
       "message": "Adding jeffv for security review and iankaz for 3rd party review (we don\u0027t have Gerrit configured yet to do this automatically)",
       "revId": "ba4c73a660ea9db608ca85c3adbcfc48d7045e48",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fa324fa1_9cb821f7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-11-18T18:22:58Z",
+      "side": 1,
+      "message": "Replacing Ian with Manish for 3p reviewer",
+      "revId": "ba4c73a660ea9db608ca85c3adbcfc48d7045e48",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
