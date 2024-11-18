@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "500a4c22_2338135a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 6
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2024-11-18T21:02:37Z",
+      "side": 1,
+      "message": "LG for thrid-party, with dual licensing",
+      "revId": "a2e4136658608efb18acc9c78feb3d889baae21a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
