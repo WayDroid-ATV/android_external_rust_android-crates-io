@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8c2bdc16_4a6e460f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1958315
+      },
+      "writtenOn": "2024-11-19T12:43:39Z",
+      "side": 1,
+      "message": "Hi James, no need to review this cl. It will not land.",
+      "revId": "b9cf82a9e6cab2be6ad1f7243562485c45f76025",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
