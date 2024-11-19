@@ -1,4 +1,5 @@
 {
+  "run_cargo": false,
   "tests": true,
   "module_visibility": {
     "libfragile": [

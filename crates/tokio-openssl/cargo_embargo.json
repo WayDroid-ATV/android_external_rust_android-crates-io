@@ -1,4 +1,5 @@
 {
+  "run_cargo": false,
   "cfg_blocklist": ["ossl111"],
   "module_name_overrides": {
     "libopenssl_sys": "libbssl_sys"

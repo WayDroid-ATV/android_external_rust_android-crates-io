@@ -1,0 +1,10 @@
+{
+  "features": [
+    "std",
+    "help",
+    "usage",
+    "error-context",
+    "suggestions"
+  ],
+  "min_sdk_version": "29"
+}
