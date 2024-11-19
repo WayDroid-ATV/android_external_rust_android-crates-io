@@ -538,7 +538,7 @@ impl<H: Hal, T: Transport, const RX_BUFFER_SIZE: usize> VirtIOSocket<H, T, RX_BU
             header_result
         }?;
 
-        debug!("Received packet {:?}. Op {:?}", header, header.op());
+        // debug!("Received packet {:?}. Op {:?}", header, header.op());
         Ok(Some((header, body, token)))
     }
 }
