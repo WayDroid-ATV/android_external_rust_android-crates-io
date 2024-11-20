@@ -138,6 +138,7 @@ pin-project supports this.
 )]
 
 // ANDROID: Use std to allow building as a dylib.
+#[cfg(android_dylib)]
 extern crate std;
 
 /// A macro that creates a projection type covering all the fields of struct.

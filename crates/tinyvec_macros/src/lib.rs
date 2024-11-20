@@ -1,7 +1,8 @@
 #![no_std]
 #![forbid(unsafe_code)]
 
-// ANDROID: Unconditionally use std to allow building as a dylib.
+// ANDROID: Use std to allow building as a dylib.
+#[cfg(android_dylib)]
 extern crate std;
 
 #[macro_export]
