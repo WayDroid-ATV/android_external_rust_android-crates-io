@@ -70,6 +70,24 @@
       "parentUuid": "b06e9a6c_092798dd",
       "revId": "045b4b0c6e70bfe818b689f2bf097b010fe9039d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "76fca29a_be2606da",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1975240
+      },
+      "writtenOn": "2024-11-20T23:03:14Z",
+      "side": 1,
+      "message": "crate_tool is generating those differences on TOT without any changes as well. If you prefer I think that can be checked in as a separate CL? Or feel free to let me know how we should resolve those differences.",
+      "parentUuid": "9e5f4aa7_616670c0",
+      "revId": "045b4b0c6e70bfe818b689f2bf097b010fe9039d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
