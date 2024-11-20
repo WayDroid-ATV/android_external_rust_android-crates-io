@@ -1,17 +1,13 @@
-
----
- src/lib.rs | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git b/src/lib.rs a/src/lib.rs
-index 638552fc..1bc27e06 100644
---- b/src/lib.rs
-+++ a/src/lib.rs
-@@ -5,6 +5,9 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 638552fc..2b287785 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -5,6 +5,10 @@
  //   Machine (which is a ZST + Copy type), which can only by created unsafely or safely
  //   through feature detection (e.g. fn AVX2::try_get() -> Option<Machine>).
  
 +// ANDROID: Use std to allow building as a dylib.
++#[cfg(android_dylib)]
 +extern crate std;
 +
  mod soft;
