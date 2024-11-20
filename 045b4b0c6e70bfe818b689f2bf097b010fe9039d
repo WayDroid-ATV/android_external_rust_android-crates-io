@@ -16,6 +16,24 @@
       "message": "This change should have failed the preupload check.\n\nYou need to create a patch file.\n\nhttps://android.googlesource.com/platform/external/rust/android-crates-io/+/refs/heads/main/README.md#how-to-add-a-patch-file",
       "revId": "045b4b0c6e70bfe818b689f2bf097b010fe9039d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8c65be1a_1695d047",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-11-20T21:10:45Z",
+      "side": 1,
+      "message": "Actually, the android dir is a already created by a patch, but you need to update the patch file to include this change.",
+      "parentUuid": "3701821a_bac0046f",
+      "revId": "045b4b0c6e70bfe818b689f2bf097b010fe9039d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
