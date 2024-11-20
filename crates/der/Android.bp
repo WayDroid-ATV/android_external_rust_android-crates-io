@@ -26,6 +26,7 @@ rust_library {
         "derive",
         "flagset",
         "oid",
+        "std",
         "zeroize",
     ],
     rustlibs: [
@@ -48,6 +49,7 @@ rust_library {
         "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
         "//system/keymint:__subpackages__",
+        "//system/security/keystore2:__subpackages__",
     ],
 }
 
