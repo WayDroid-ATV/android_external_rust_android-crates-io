@@ -106,6 +106,24 @@
       "parentUuid": "76fca29a_be2606da",
       "revId": "045b4b0c6e70bfe818b689f2bf097b010fe9039d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3d1a131d_8b5465b0",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-11-20T23:52:36Z",
+      "side": 1,
+      "message": "Can you try running \"crate_tool --rebuild-cargo-embargo regenerate grpcio-sys\"",
+      "parentUuid": "a0cc040d_22790d89",
+      "revId": "045b4b0c6e70bfe818b689f2bf097b010fe9039d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
