@@ -52,6 +52,24 @@
       "parentUuid": "8c65be1a_1695d047",
       "revId": "045b4b0c6e70bfe818b689f2bf097b010fe9039d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9e5f4aa7_616670c0",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-11-20T22:02:17Z",
+      "side": 1,
+      "message": "When the directory contents are correct, \"crate_tool regenerate\" should not change anything, so the fact that you are seeing differences indicates something is wrong.",
+      "parentUuid": "b06e9a6c_092798dd",
+      "revId": "045b4b0c6e70bfe818b689f2bf097b010fe9039d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
