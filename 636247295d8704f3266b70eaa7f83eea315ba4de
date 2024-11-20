@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "79b61c98_dc65eed8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1975240
+      },
+      "writtenOn": "2024-11-20T20:53:35Z",
+      "side": 1,
+      "message": "build_cmake.rs was originally introduced in aosp/3063146 but the c++11 flag from the original build.rs should be kept for running clippy",
+      "revId": "636247295d8704f3266b70eaa7f83eea315ba4de",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
