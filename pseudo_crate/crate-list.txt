@@ -6,6 +6,7 @@ android_log-sys
 android_logger
 anes
 annotate-snippets
+anstyle
 anyhow
 arbitrary
 arc-swap
@@ -46,6 +47,8 @@ ciborium
 ciborium-io
 ciborium-ll
 clang-sys
+clap
+clap_builder
 clap_complete
 clap_derive
 clap_lex
@@ -151,6 +154,7 @@ kernlog
 lazy_static
 lazycell
 libbpf-rs
+libbpf-sys
 libc
 libfuzzer-sys
 libloading
@@ -255,6 +259,7 @@ regex
 regex-automata
 regex-syntax
 remain
+ring
 rusqlite
 rustc-demangle
 rustc-demangle-capi

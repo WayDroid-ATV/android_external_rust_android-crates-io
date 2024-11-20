@@ -8,6 +8,7 @@
 //!
 //! ```rust
 //! use std::path::PathBuf;
+//! use std::ffi::OsStr;
 //!
 //! type BoxedError = Box<dyn std::error::Error + Send + Sync>;
 //!
@@ -26,7 +27,7 @@
 //! }
 //!
 //! impl Color {
-//!     fn parse(s: Option<&clap_lex::RawOsStr>) -> Result<Self, BoxedError> {
+//!     fn parse(s: Option<&OsStr>) -> Result<Self, BoxedError> {
 //!         let s = s.map(|s| s.to_str().ok_or(s));
 //!         match s {
 //!             Some(Ok("always")) | Some(Ok("")) | None => {
@@ -39,7 +40,7 @@
 //!                 Ok(Color::Never)
 //!             }
 //!             Some(invalid) => {
-//!                 Err(format!("Invalid value for `--color`, {:?}", invalid).into())
+//!                 Err(format!("Invalid value for `--color`, {invalid:?}").into())
 //!             }
 //!         }
 //!     }
@@ -66,7 +67,7 @@
 //!             match long {
 //!                 Ok("verbose") => {
 //!                     if let Some(value) = value {
-//!                         return Err(format!("`--verbose` does not take a value, got `{:?}`", value).into());
+//!                         return Err(format!("`--verbose` does not take a value, got `{value:?}`").into());
 //!                     }
 //!                     args.verbosity += 1;
 //!                 }
@@ -90,15 +91,15 @@
 //!                         args.color = Color::parse(value)?;
 //!                     }
 //!                     Ok(c) => {
-//!                         return Err(format!("Unexpected flag: -{}", c).into());
+//!                         return Err(format!("Unexpected flag: -{c}").into());
 //!                     }
 //!                     Err(e) => {
-//!                         return Err(format!("Unexpected flag: -{}", e.to_str_lossy()).into());
+//!                         return Err(format!("Unexpected flag: -{}", e.to_string_lossy()).into());
 //!                     }
 //!                 }
 //!             }
 //!         } else {
-//!             args.paths.push(PathBuf::from(arg.to_value_os().to_os_str().into_owned()));
+//!             args.paths.push(PathBuf::from(arg.to_value_os().to_owned()));
 //!         }
 //!     }
 //!
@@ -106,16 +107,22 @@
 //! }
 //!
 //! let args = parse_args(["bin", "--hello", "world"]);
-//! println!("{:?}", args);
+//! println!("{args:?}");
 //! ```
+
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![warn(missing_docs)]
+#![warn(clippy::print_stderr)]
+#![warn(clippy::print_stdout)]
+
+mod ext;
 
 use std::ffi::OsStr;
 use std::ffi::OsString;
 
 pub use std::io::SeekFrom;
 
-pub use os_str_bytes::RawOsStr;
-pub use os_str_bytes::RawOsString;
+pub use ext::OsStrExt;
 
 /// Command-line arguments
 #[derive(Default, Clone, Debug, PartialEq, Eq)]
@@ -137,7 +144,7 @@ impl RawArgs {
     /// let _bin = raw.next_os(&mut cursor);
     ///
     /// let mut paths = raw.remaining(&mut cursor).map(PathBuf::from).collect::<Vec<_>>();
-    /// println!("{:?}", paths);
+    /// println!("{paths:?}");
     /// ```
     pub fn from_args() -> Self {
         Self::new(std::env::args_os())
@@ -154,9 +161,9 @@ impl RawArgs {
     /// let _bin = raw.next_os(&mut cursor);
     ///
     /// let mut paths = raw.remaining(&mut cursor).map(PathBuf::from).collect::<Vec<_>>();
-    /// println!("{:?}", paths);
+    /// println!("{paths:?}");
     /// ```
-    pub fn new(iter: impl IntoIterator<Item = impl Into<std::ffi::OsString>>) -> Self {
+    pub fn new(iter: impl IntoIterator<Item = impl Into<OsString>>) -> Self {
         let iter = iter.into_iter();
         Self::from(iter)
     }
@@ -172,7 +179,7 @@ impl RawArgs {
     /// let _bin = raw.next_os(&mut cursor);
     ///
     /// let mut paths = raw.remaining(&mut cursor).map(PathBuf::from).collect::<Vec<_>>();
-    /// println!("{:?}", paths);
+    /// println!("{paths:?}");
     /// ```
     pub fn cursor(&self) -> ArgCursor {
         ArgCursor::new()
@@ -211,7 +218,7 @@ impl RawArgs {
     /// let _bin = raw.next_os(&mut cursor);
     ///
     /// let mut paths = raw.remaining(&mut cursor).map(PathBuf::from).collect::<Vec<_>>();
-    /// println!("{:?}", paths);
+    /// println!("{paths:?}");
     /// ```
     pub fn remaining(&self, cursor: &mut ArgCursor) -> impl Iterator<Item = &OsStr> {
         let remaining = self.items[cursor.cursor..].iter().map(|s| s.as_os_str());
@@ -275,90 +282,73 @@ impl ArgCursor {
 /// Command-line Argument
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ParsedArg<'s> {
-    inner: std::borrow::Cow<'s, RawOsStr>,
-    utf8: Option<&'s str>,
+    inner: &'s OsStr,
 }
 
 impl<'s> ParsedArg<'s> {
     fn new(inner: &'s OsStr) -> Self {
-        let utf8 = inner.to_str();
-        let inner = RawOsStr::new(inner);
-        Self { inner, utf8 }
+        Self { inner }
     }
 
     /// Argument is length of 0
     pub fn is_empty(&self) -> bool {
-        self.inner.as_ref().is_empty()
+        self.inner.is_empty()
     }
 
     /// Does the argument look like a stdio argument (`-`)
     pub fn is_stdio(&self) -> bool {
-        self.inner.as_ref() == "-"
+        self.inner == "-"
     }
 
     /// Does the argument look like an argument escape (`--`)
     pub fn is_escape(&self) -> bool {
-        self.inner.as_ref() == "--"
+        self.inner == "--"
     }
 
-    /// Does the argument look like a number
-    pub fn is_number(&self) -> bool {
+    /// Does the argument look like a negative number?
+    ///
+    /// This won't parse the number in full but attempts to see if this looks
+    /// like something along the lines of `-3`, `-0.3`, or `-33.03`
+    pub fn is_negative_number(&self) -> bool {
         self.to_value()
-            .map(|s| s.parse::<f64>().is_ok())
+            .ok()
+            .and_then(|s| Some(is_number(s.strip_prefix('-')?)))
             .unwrap_or_default()
     }
 
     /// Treat as a long-flag
-    pub fn to_long(&self) -> Option<(Result<&str, &RawOsStr>, Option<&RawOsStr>)> {
-        if let Some(raw) = self.utf8 {
-            let remainder = raw.strip_prefix("--")?;
-            if remainder.is_empty() {
-                debug_assert!(self.is_escape());
-                return None;
-            }
-
-            let (flag, value) = if let Some((p0, p1)) = remainder.split_once('=') {
-                (p0, Some(p1))
-            } else {
-                (remainder, None)
-            };
-            let flag = Ok(flag);
-            let value = value.map(RawOsStr::from_str);
-            Some((flag, value))
-        } else {
-            let raw = self.inner.as_ref();
-            let remainder = raw.strip_prefix("--")?;
-            if remainder.is_empty() {
-                debug_assert!(self.is_escape());
-                return None;
-            }
-
-            let (flag, value) = if let Some((p0, p1)) = remainder.split_once('=') {
-                (p0, Some(p1))
-            } else {
-                (remainder, None)
-            };
-            let flag = flag.to_str().ok_or(flag);
-            Some((flag, value))
+    pub fn to_long(&self) -> Option<(Result<&str, &OsStr>, Option<&OsStr>)> {
+        let raw = self.inner;
+        let remainder = raw.strip_prefix("--")?;
+        if remainder.is_empty() {
+            debug_assert!(self.is_escape());
+            return None;
         }
+
+        let (flag, value) = if let Some((p0, p1)) = remainder.split_once("=") {
+            (p0, Some(p1))
+        } else {
+            (remainder, None)
+        };
+        let flag = flag.to_str().ok_or(flag);
+        Some((flag, value))
     }
 
     /// Can treat as a long-flag
     pub fn is_long(&self) -> bool {
-        self.inner.as_ref().starts_with("--") && !self.is_escape()
+        self.inner.starts_with("--") && !self.is_escape()
     }
 
     /// Treat as a short-flag
     pub fn to_short(&self) -> Option<ShortFlags<'_>> {
-        if let Some(remainder_os) = self.inner.as_ref().strip_prefix('-') {
-            if remainder_os.starts_with('-') {
+        if let Some(remainder_os) = self.inner.strip_prefix("-") {
+            if remainder_os.starts_with("-") {
                 None
             } else if remainder_os.is_empty() {
                 debug_assert!(self.is_stdio());
                 None
             } else {
-                let remainder = self.utf8.map(|s| &s[1..]);
-                Some(ShortFlags::new(remainder_os, remainder))
+                Some(ShortFlags::new(remainder_os))
             }
         } else {
             None
@@ -367,48 +357,42 @@ impl<'s> ParsedArg<'s> {
 
     /// Can treat as a short-flag
     pub fn is_short(&self) -> bool {
-        self.inner.as_ref().starts_with('-')
-            && !self.is_stdio()
-            && !self.inner.as_ref().starts_with("--")
+        self.inner.starts_with("-") && !self.is_stdio() && !self.inner.starts_with("--")
     }
 
     /// Treat as a value
     ///
     /// **NOTE:** May return a flag or an escape.
-    pub fn to_value_os(&self) -> &RawOsStr {
-        self.inner.as_ref()
+    pub fn to_value_os(&self) -> &OsStr {
+        self.inner
     }
 
     /// Treat as a value
     ///
     /// **NOTE:** May return a flag or an escape.
-    pub fn to_value(&self) -> Result<&str, &RawOsStr> {
-        self.utf8.ok_or_else(|| self.inner.as_ref())
+    pub fn to_value(&self) -> Result<&str, &OsStr> {
+        self.inner.to_str().ok_or(self.inner)
     }
 
     /// Safely print an argument that may contain non-UTF8 content
     ///
     /// This may perform lossy conversion, depending on the platform. If you would like an implementation which escapes the path please use Debug instead.
     pub fn display(&self) -> impl std::fmt::Display + '_ {
-        self.inner.to_str_lossy()
+        self.inner.to_string_lossy()
     }
 }
 
 /// Walk through short flags within a [`ParsedArg`]
 #[derive(Clone, Debug)]
 pub struct ShortFlags<'s> {
-    inner: &'s RawOsStr,
+    inner: &'s OsStr,
     utf8_prefix: std::str::CharIndices<'s>,
-    invalid_suffix: Option<&'s RawOsStr>,
+    invalid_suffix: Option<&'s OsStr>,
 }
 
 impl<'s> ShortFlags<'s> {
-    fn new(inner: &'s RawOsStr, utf8: Option<&'s str>) -> Self {
-        let (utf8_prefix, invalid_suffix) = if let Some(utf8) = utf8 {
-            (utf8, None)
-        } else {
-            split_nonutf8_once(inner)
-        };
+    fn new(inner: &'s OsStr) -> Self {
+        let (utf8_prefix, invalid_suffix) = split_nonutf8_once(inner);
         let utf8_prefix = utf8_prefix.char_indices();
         Self {
             inner,
@@ -433,14 +417,14 @@ impl<'s> ShortFlags<'s> {
     /// Does the short flag look like a number
     ///
     /// Ideally call this before doing any iterator
-    pub fn is_number(&self) -> bool {
-        self.invalid_suffix.is_none() && self.utf8_prefix.as_str().parse::<f64>().is_ok()
+    pub fn is_negative_number(&self) -> bool {
+        self.invalid_suffix.is_none() && is_number(self.utf8_prefix.as_str())
     }
 
     /// Advance the iterator, returning the next short flag on success
     ///
     /// On error, returns the invalid-UTF8 value
-    pub fn next_flag(&mut self) -> Option<Result<char, &'s RawOsStr>> {
+    pub fn next_flag(&mut self) -> Option<Result<char, &'s OsStr>> {
         if let Some((_, flag)) = self.utf8_prefix.next() {
             return Some(Ok(flag));
         }
@@ -454,11 +438,13 @@ impl<'s> ShortFlags<'s> {
     }
 
     /// Advance the iterator, returning everything left as a value
-    pub fn next_value_os(&mut self) -> Option<&'s RawOsStr> {
+    pub fn next_value_os(&mut self) -> Option<&'s OsStr> {
         if let Some((index, _)) = self.utf8_prefix.next() {
             self.utf8_prefix = "".char_indices();
             self.invalid_suffix = None;
-            return Some(&self.inner[index..]);
+            // SAFETY: `char_indices` ensures `index` is at a valid UTF-8 boundary
+            let remainder = unsafe { ext::split_at(self.inner, index).1 };
+            return Some(remainder);
         }
 
         if let Some(suffix) = self.invalid_suffix {
@@ -471,20 +457,54 @@ impl<'s> ShortFlags<'s> {
 }
 
 impl<'s> Iterator for ShortFlags<'s> {
-    type Item = Result<char, &'s RawOsStr>;
+    type Item = Result<char, &'s OsStr>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.next_flag()
     }
 }
 
-fn split_nonutf8_once(b: &RawOsStr) -> (&str, Option<&RawOsStr>) {
-    match std::str::from_utf8(b.as_raw_bytes()) {
+fn split_nonutf8_once(b: &OsStr) -> (&str, Option<&OsStr>) {
+    match b.try_str() {
         Ok(s) => (s, None),
         Err(err) => {
-            let (valid, after_valid) = b.split_at(err.valid_up_to());
-            let valid = std::str::from_utf8(valid.as_raw_bytes()).unwrap();
+            // SAFETY: `err.valid_up_to()`, which came from str::from_utf8(), is guaranteed
+            // to be a valid UTF8 boundary
+            let (valid, after_valid) = unsafe { ext::split_at(b, err.valid_up_to()) };
+            let valid = valid.try_str().unwrap();
             (valid, Some(after_valid))
         }
+    }
+}
+
+fn is_number(arg: &str) -> bool {
+    // Return true if this looks like an integer or a float where it's all
+    // digits plus an optional single dot after some digits.
+    //
+    // For floats allow forms such as `1.`, `1.2`, `1.2e10`, etc.
+    let mut seen_dot = false;
+    let mut position_of_e = None;
+    for (i, c) in arg.as_bytes().iter().enumerate() {
+        match c {
+            // Digits are always valid
+            b'0'..=b'9' => {}
+
+            // Allow a `.`, but only one, only if it comes before an
+            // optional exponent, and only if it's not the first character.
+            b'.' if !seen_dot && position_of_e.is_none() && i > 0 => seen_dot = true,
+
+            // Allow an exponent `e` but only at most one after the first
+            // character.
+            b'e' if position_of_e.is_none() && i > 0 => position_of_e = Some(i),
+
+            _ => return false,
+        }
+    }
+
+    // Disallow `-1e` which isn't a valid float since it doesn't actually have
+    // an exponent.
+    match position_of_e {
+        Some(i) => i != arg.len() - 1,
+        None => true,
     }
 }

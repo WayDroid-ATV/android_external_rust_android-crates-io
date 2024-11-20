@@ -1,4 +1,5 @@
 {
+  "run_cargo": false,
   "features": [
     "fallback",
     "std"

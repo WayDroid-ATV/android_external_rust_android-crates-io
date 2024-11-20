@@ -1,0 +1,115 @@
+diff --git b/android/bindgen_modules.bp a/android/bindgen_modules.bp
+new file mode 100644
+index 0000000..c9a3f45
+--- /dev/null
++++ a/android/bindgen_modules.bp
+@@ -0,0 +1,21 @@
++rust_binary_host {
++    name: "libbpf_bindgen_build",
++    host_cross_supported: false,
++    srcs: ["android/build.rs"],
++    rustlibs: [
++        "libbindgen",
++        "libbindgen_cmd",
++    ],
++    lints: "android",
++    clippy_lints: "android",
++}
++
++rust_bindgen {
++    name: "liblibbpf_bindgen",
++    crate_name: "libbpf_bindgen",
++    custom_bindgen: "libbpf_bindgen_build",
++    wrapper_src: "android/libbpf_wrapper.h",
++    source_stem: "bindgen",
++    header_libs: ["libbpf_build_headers"],
++    shared_libs: ["libbpf"],
++}
+diff --git b/android/build.rs a/android/build.rs
+new file mode 100644
+index 0000000..7e4c2ee
+--- /dev/null
++++ a/android/build.rs
+@@ -0,0 +1,58 @@
++//! libbpf bindgen configuration
++// Modified from the upstream libbpf-sys build.rs file in the libbpf-sys root dir.
++use std::collections::HashSet;
++fn main() {
++    #[derive(Debug)]
++    struct IgnoreMacros(HashSet<&'static str>);
++    impl bindgen::callbacks::ParseCallbacks for IgnoreMacros {
++        fn will_parse_macro(&self, name: &str) -> bindgen::callbacks::MacroParsingBehavior {
++            if self.0.contains(name) {
++                bindgen::callbacks::MacroParsingBehavior::Ignore
++            } else {
++                bindgen::callbacks::MacroParsingBehavior::Default
++            }
++        }
++    }
++    let ignored_macros = IgnoreMacros(
++        vec![
++            "BTF_KIND_FUNC",
++            "BTF_KIND_FUNC_PROTO",
++            "BTF_KIND_VAR",
++            "BTF_KIND_DATASEC",
++            "BTF_KIND_FLOAT",
++            "BTF_KIND_DECL_TAG",
++            "BTF_KIND_TYPE_TAG",
++            "BTF_KIND_ENUM64",
++        ]
++        .into_iter()
++        .collect(),
++    );
++    bindgen_cmd::build(|mut builder| {
++        builder = builder
++            .derive_default(true)
++            .explicit_padding(true)
++            .default_enum_style(bindgen::EnumVariation::Consts)
++            .size_t_is_usize(false)
++            .prepend_enum_name(false)
++            .layout_tests(false)
++            .generate_comments(false)
++            .emit_builtins()
++            .allowlist_function("bpf_.+")
++            .allowlist_function("btf_.+")
++            .allowlist_function("libbpf_.+")
++            .allowlist_function("perf_.+")
++            .allowlist_function("ring_buffer_.+")
++            .allowlist_function("user_ring_buffer_.+")
++            .allowlist_function("vdprintf")
++            .allowlist_type("bpf_.+")
++            .allowlist_type("btf_.+")
++            .allowlist_type("xdp_.+")
++            .allowlist_type("perf_.+")
++            .allowlist_var("BPF_.+")
++            .allowlist_var("BTF_.+")
++            .allowlist_var("XDP_.+")
++            .allowlist_var("PERF_.+")
++            .parse_callbacks(Box::new(ignored_macros));
++        builder
++    })
++}
+diff --git b/android/libbpf_wrapper.h a/android/libbpf_wrapper.h
+new file mode 100644
+index 0000000..b64ccef
+--- /dev/null
++++ a/android/libbpf_wrapper.h
+@@ -0,0 +1,18 @@
++/*
++ * Copyright (C) 2024 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++#include "bpf/bpf.h"
++#include "bpf/btf.h"
++#include "bpf/libbpf.h"
