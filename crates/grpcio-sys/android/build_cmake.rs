@@ -189,6 +189,9 @@ fn main() {
     }
 
     cc.cpp(true);
+    if !cfg!(target_env = "msvc") {
+        cc.flag("-std=c++11");
+    }
     cc.file("grpc_wrap.cc");
     cc.warnings_into_errors(true);
     cc.compile("libgrpc_wrap.a");
