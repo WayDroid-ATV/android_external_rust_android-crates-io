@@ -97,7 +97,8 @@ future, when upgrading.
 To create a patch for crate "foo", edit the files directly. Then do:
 
 ```
-git diff --relative=crates/foo -- crates/foo/<file1> crates/foo/<file2> > patches/<name>.patch`
+cd crates/foo
+git diff --relative -- <file1> <file2> > patches/<name>.diff
 ```
 
 If you stage or commit the change and the patch, you should see no new changes
