@@ -25,4 +25,5 @@ rust_library_host {
         "libvirtio_queue",
         "libvm_memory_android",
     ],
+    compile_multilib: "first",
 }

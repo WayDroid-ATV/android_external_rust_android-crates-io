@@ -52,6 +52,7 @@ pub enum Error {
 pub type Result<T> = result::Result<T, Error>;
 
 /// A factory struct to build `MmapRegion` objects.
+#[derive(Debug)]
 pub struct MmapRegionBuilder<B = ()> {
     size: usize,
     prot: i32,
@@ -445,6 +446,7 @@ mod tests {
     use super::*;
 
     use std::io::Write;
+    use std::num::NonZeroUsize;
     use std::slice;
     use std::sync::Arc;
     use vmm_sys_util::tempfile::TempFile;
@@ -453,13 +455,14 @@ mod tests {
 
     type MmapRegion = super::MmapRegion<()>;
 
-    // Adding a helper method to extract the errno within an Error::Mmap(e), or return a
-    // distinctive value when the error is represented by another variant.
     impl Error {
+        /// Helper method to extract the errno within an
+        /// `Error::Mmap(e)`. Returns `i32::MIN` if `self` is any
+        /// other variant.
         pub fn raw_os_error(&self) -> i32 {
             match self {
                 Error::Mmap(e) => e.raw_os_error().unwrap(),
-                _ => std::i32::MIN,
+                _ => i32::MIN,
             }
         }
     }
@@ -550,7 +553,7 @@ mod tests {
 
         // Offset + size will overflow.
         let r = MmapRegion::build(
-            Some(FileOffset::from_arc(a.clone(), std::u64::MAX)),
+            Some(FileOffset::from_arc(a.clone(), u64::MAX)),
             size,
             prot,
             flags,
@@ -598,7 +601,7 @@ mod tests {
         assert!(r.owned());
 
         let region_size = 0x10_0000;
-        let bitmap = AtomicBitmap::new(region_size, 0x1000);
+        let bitmap = AtomicBitmap::new(region_size, unsafe { NonZeroUsize::new_unchecked(0x1000) });
         let builder = MmapRegionBuilder::new_with_bitmap(region_size, bitmap)
             .with_hugetlbfs(true)
             .with_mmap_prot(libc::PROT_READ | libc::PROT_WRITE);
