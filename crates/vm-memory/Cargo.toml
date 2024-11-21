@@ -12,8 +12,12 @@
 [package]
 edition = "2021"
 name = "vm-memory"
-version = "0.12.2"
+version = "0.16.1"
 authors = ["Liu Jiang <gerry@linux.alibaba.com>"]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
 autobenches = false
 description = "Safe abstractions for accessing the VM physical memory"
 readme = "README.md"
@@ -24,13 +28,22 @@ repository = "https://github.com/rust-vmm/vm-memory"
 
 [package.metadata.docs.rs]
 all-features = true
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
+]
 
 [profile.bench]
 lto = true
 codegen-units = 1
 
+[lib]
+name = "vm_memory"
+path = "src/lib.rs"
+
 [[bench]]
 name = "main"
+path = "benches/main.rs"
 harness = false
 
 [dependencies.arc-swap]
@@ -38,7 +51,7 @@ version = "1.0.0"
 optional = true
 
 [dependencies.bitflags]
-version = "1.0"
+version = "2.4.0"
 optional = true
 
 [dependencies.libc]
@@ -48,17 +61,17 @@ version = "0.2.39"
 version = "1.0.40"
 
 [dependencies.vmm-sys-util]
-version = "0.11.0"
+version = "0.12.1"
 optional = true
 
 [dev-dependencies.criterion]
-version = "0.3.0"
+version = "0.5.0"
 
 [dev-dependencies.matches]
 version = "0.1.0"
 
 [dev-dependencies.vmm-sys-util]
-version = "0.11.0"
+version = "0.12.1"
 
 [features]
 backend-atomic = ["arc-swap"]
