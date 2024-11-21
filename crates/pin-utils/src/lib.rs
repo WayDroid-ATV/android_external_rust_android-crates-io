@@ -7,6 +7,7 @@
 #![doc(html_root_url = "https://docs.rs/pin-utils/0.1.0")]
 
 // ANDROID: Use std to allow building as a dylib.
+#[cfg(android_dylib)]
 extern crate std;
 
 #[doc(hidden)]
