@@ -1,5 +1,24 @@
 # Upcoming
 
+# v0.14.0
+
+## Changed
+
+- Updated vm-memory from 0.15.0 to 0.16.0
+- Updated virtio-bindings from 0.2.3 to 0.2.4.
+
+# v0.13.0
+
+## Changed
+
+- Updated vm-memory from 0.14.0 to 0.15.0
+- Updated virtio-bindings from 0.2.2 to 0.2.3.
+
+# v0.12.0
+
+## Added
+- `Reader`/`Writer` classes to iterate over descriptors
+
 # v0.11.0
 
 ## Changed

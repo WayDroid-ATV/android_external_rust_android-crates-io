@@ -18,10 +18,10 @@
 //! For the purposes of maintaining safety, volatile memory has some rules of its own:
 //! 1. No references or slices to volatile memory (`&` or `&mut`).
 //! 2. Access should always been done with a volatile read or write.
-//! The First rule is because having references of any kind to memory considered volatile would
-//! violate pointer aliasing. The second is because unvolatile accesses are inherently undefined if
-//! done concurrently without synchronization. With volatile access we know that the compiler has
-//! not reordered or elided the access.
+//!    The First rule is because having references of any kind to memory considered volatile would
+//!    violate pointer aliasing. The second is because unvolatile accesses are inherently undefined if
+//!    done concurrently without synchronization. With volatile access we know that the compiler has
+//!    not reordered or elided the access.
 
 use std::cmp::min;
 use std::io::{self, Read, Write};
@@ -31,7 +31,6 @@ use std::ptr::copy;
 use std::ptr::{read_volatile, write_volatile};
 use std::result;
 use std::sync::atomic::Ordering;
-use std::usize;
 
 use crate::atomic_integer::AtomicInteger;
 use crate::bitmap::{Bitmap, BitmapSlice, BS};
@@ -43,6 +42,7 @@ use crate::mmap_xen::{MmapXen as MmapInfo, MmapXenSlice};
 #[cfg(not(feature = "xen"))]
 type MmapInfo = std::marker::PhantomData<()>;
 
+use crate::io::{ReadVolatile, WriteVolatile};
 use copy_slice_impl::{copy_from_volatile_slice, copy_to_volatile_slice};
 
 /// `VolatileMemory` related errors.
@@ -301,6 +301,7 @@ impl<'a> From<&'a mut [u8]> for VolatileSlice<'a, ()> {
 struct Packed<T>(T);
 
 /// A guard to perform mapping and protect unmapping of the memory.
+#[derive(Debug)]
 pub struct PtrGuard {
     addr: *mut u8,
     len: usize,
@@ -346,6 +347,7 @@ impl PtrGuard {
 }
 
 /// A mutable guard to perform mapping and protect unmapping of the memory.
+#[derive(Debug)]
 pub struct PtrGuardMut(PtrGuard);
 
 #[allow(clippy::len_without_is_empty)]
@@ -682,7 +684,7 @@ impl<B: BitmapSlice> Bytes<usize> for VolatileSlice<'_, B> {
     /// assert!(res.is_ok());
     /// assert_eq!(res.unwrap(), 4);
     /// ```
-    fn write(&self, buf: &[u8], addr: usize) -> Result<usize> {
+    fn write(&self, mut buf: &[u8], addr: usize) -> Result<usize> {
         if buf.is_empty() {
             return Ok(0);
         }
@@ -691,18 +693,10 @@ impl<B: BitmapSlice> Bytes<usize> for VolatileSlice<'_, B> {
             return Err(Error::OutOfBounds { addr });
         }
 
-        let total = buf.len().min(self.len() - addr);
-        let dst = self.subslice(addr, total)?;
-
-        // SAFETY:
-        // We check above that `addr` is a valid offset within this volatile slice, and by
-        // the invariants of `VolatileSlice::new`, this volatile slice points to contiguous
-        // memory of length self.len(). Furthermore, both src and dst of the call to
-        // copy_to_volatile_slice are valid for reads and writes respectively of length `total`
-        // since total is the minimum of lengths of the memory areas pointed to. The areas do not
-        // overlap, since `dst` is inside guest memory, and buf is a slice (no slices to guest
-        // memory are possible without violating rust's aliasing rules).
-        Ok(unsafe { copy_to_volatile_slice(&dst, buf.as_ptr(), total) })
+        // NOTE: the duality of read <-> write here is correct. This is because we translate a call
+        // "volatile_slice.write(buf)" (e.g. "write to volatile_slice from buf") into
+        // "buf.read_volatile(volatile_slice)" (e.g. read from buf into volatile_slice)
+        buf.read_volatile(&mut self.offset(addr)?)
     }
 
     /// # Examples
@@ -719,7 +713,7 @@ impl<B: BitmapSlice> Bytes<usize> for VolatileSlice<'_, B> {
     /// assert!(res.is_ok());
     /// assert_eq!(res.unwrap(), 14);
     /// ```
-    fn read(&self, buf: &mut [u8], addr: usize) -> Result<usize> {
+    fn read(&self, mut buf: &mut [u8], addr: usize) -> Result<usize> {
         if buf.is_empty() {
             return Ok(0);
         }
@@ -728,18 +722,11 @@ impl<B: BitmapSlice> Bytes<usize> for VolatileSlice<'_, B> {
             return Err(Error::OutOfBounds { addr });
         }
 
-        let total = buf.len().min(self.len() - addr);
-        let src = self.subslice(addr, total)?;
-
-        // SAFETY:
-        // We check above that `addr` is a valid offset within this volatile slice, and by
-        // the invariants of `VolatileSlice::new`, this volatile slice points to contiguous
-        // memory of length self.len(). Furthermore, both src and dst of the call to
-        // copy_from_volatile_slice are valid for reads and writes respectively of length `total`
-        // since total is the minimum of lengths of the memory areas pointed to. The areas do not
-        // overlap, since `dst` is inside guest memory, and buf is a slice (no slices to guest
-        // memory are possible without violating rust's aliasing rules).
-        unsafe { Ok(copy_from_volatile_slice(buf.as_mut_ptr(), &src, total)) }
+        // NOTE: The duality of read <-> write here is correct. This is because we translate a call
+        // volatile_slice.read(buf) (e.g. read from volatile_slice into buf) into
+        // "buf.write_volatile(volatile_slice)" (e.g. write into buf from volatile_slice)
+        // Both express data transfer from volatile_slice to buf.
+        buf.write_volatile(&self.offset(addr)?)
     }
 
     /// # Examples
@@ -1512,7 +1499,7 @@ fn alignment(addr: usize) -> usize {
     addr & (!addr + 1)
 }
 
-mod copy_slice_impl {
+pub(crate) mod copy_slice_impl {
     use super::*;
 
     // SAFETY: Has the same safety requirements as `read_volatile` + `write_volatile`, namely:
@@ -1610,7 +1597,7 @@ mod copy_slice_impl {
     ///
     /// SAFETY: `slice` and `dst` must be point to a contiguously allocated memory region of at
     /// least length `total`. The regions must not overlap.
-    pub(super) unsafe fn copy_from_volatile_slice<B: BitmapSlice>(
+    pub(crate) unsafe fn copy_from_volatile_slice<B: BitmapSlice>(
         dst: *mut u8,
         slice: &VolatileSlice<'_, B>,
         total: usize,
@@ -1625,7 +1612,7 @@ mod copy_slice_impl {
     ///
     /// SAFETY: `slice` and `src` must be point to a contiguously allocated memory region of at
     /// least length `total`. The regions must not overlap.
-    pub(super) unsafe fn copy_to_volatile_slice<B: BitmapSlice>(
+    pub(crate) unsafe fn copy_to_volatile_slice<B: BitmapSlice>(
         slice: &VolatileSlice<'_, B>,
         src: *const u8,
         total: usize,
@@ -1647,7 +1634,6 @@ mod tests {
     use std::alloc::Layout;
 
     use std::fs::File;
-    use std::io::Cursor;
     use std::mem::size_of_val;
     use std::path::Path;
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -1655,12 +1641,15 @@ mod tests {
     use std::thread::spawn;
 
     use matches::assert_matches;
+    use std::num::NonZeroUsize;
     use vmm_sys_util::tempfile::TempFile;
 
     use crate::bitmap::tests::{
         check_range, range_is_clean, range_is_dirty, test_bytes, test_volatile_memory,
     };
     use crate::bitmap::{AtomicBitmap, RefSlice};
+
+    const DEFAULT_PAGE_SIZE: NonZeroUsize = unsafe { NonZeroUsize::new_unchecked(0x1000) };
 
     #[test]
     fn test_display_error() {
@@ -1899,8 +1888,8 @@ mod tests {
         assert!(slice.subslice(101, 0).is_err());
         assert!(slice.subslice(101, 1).is_err());
 
-        assert!(slice.subslice(std::usize::MAX, 2).is_err());
-        assert!(slice.subslice(2, std::usize::MAX).is_err());
+        assert!(slice.subslice(usize::MAX, 2).is_err());
+        assert!(slice.subslice(2, usize::MAX).is_err());
 
         let maybe_offset_slice = slice.subslice(10, 80);
         assert!(maybe_offset_slice.is_ok());
@@ -2008,14 +1997,13 @@ mod tests {
 
     #[test]
     fn slice_overflow_error() {
-        use std::usize::MAX;
         let mut backing = vec![0u8];
         let a = VolatileSlice::from(backing.as_mut_slice());
-        let res = a.get_slice(MAX, 1).unwrap_err();
+        let res = a.get_slice(usize::MAX, 1).unwrap_err();
         assert_matches!(
             res,
             Error::Overflow {
-                base: MAX,
+                base: usize::MAX,
                 offset: 1,
             }
         );
@@ -2032,14 +2020,13 @@ mod tests {
 
     #[test]
     fn ref_overflow_error() {
-        use std::usize::MAX;
         let mut backing = vec![0u8];
         let a = VolatileSlice::from(backing.as_mut_slice());
-        let res = a.get_ref::<u8>(MAX).unwrap_err();
+        let res = a.get_ref::<u8>(usize::MAX).unwrap_err();
         assert_matches!(
             res,
             Error::Overflow {
-                base: MAX,
+                base: usize::MAX,
                 offset: 1,
             }
         );
@@ -2114,11 +2101,11 @@ mod tests {
         let a = VolatileSlice::from(backing.as_mut_slice());
         let s = a.as_volatile_slice();
         assert!(s.write_obj(55u16, 4).is_err());
-        assert!(s.write_obj(55u16, core::usize::MAX).is_err());
+        assert!(s.write_obj(55u16, usize::MAX).is_err());
         assert!(s.write_obj(55u16, 2).is_ok());
         assert_eq!(s.read_obj::<u16>(2).unwrap(), 55u16);
         assert!(s.read_obj::<u16>(4).is_err());
-        assert!(s.read_obj::<u16>(core::usize::MAX).is_err());
+        assert!(s.read_obj::<u16>(usize::MAX).is_err());
     }
 
     #[test]
@@ -2132,16 +2119,15 @@ mod tests {
         } else {
             File::open(Path::new("c:\\Windows\\system32\\ntoskrnl.exe")).unwrap()
         };
-        assert!(s.read_exact_from(2, &mut file, size_of::<u32>()).is_err());
-        assert!(s
-            .read_exact_from(core::usize::MAX, &mut file, size_of::<u32>())
-            .is_err());
 
-        assert!(s.read_exact_from(1, &mut file, size_of::<u32>()).is_ok());
+        assert!(file
+            .read_exact_volatile(&mut s.get_slice(1, size_of::<u32>()).unwrap())
+            .is_ok());
 
         let mut f = TempFile::new().unwrap().into_file();
-        assert!(s.read_exact_from(1, &mut f, size_of::<u32>()).is_err());
-        format!("{:?}", s.read_exact_from(1, &mut f, size_of::<u32>()));
+        assert!(f
+            .read_exact_volatile(&mut s.get_slice(1, size_of::<u32>()).unwrap())
+            .is_err());
 
         let value = s.read_obj::<u32>(1).unwrap();
         if cfg!(unix) {
@@ -2150,13 +2136,12 @@ mod tests {
             assert_eq!(value, 0x0090_5a4d);
         }
 
-        let mut sink = Vec::new();
-        assert!(s.write_all_to(1, &mut sink, size_of::<u32>()).is_ok());
-        assert!(s.write_all_to(2, &mut sink, size_of::<u32>()).is_err());
-        assert!(s
-            .write_all_to(core::usize::MAX, &mut sink, size_of::<u32>())
-            .is_err());
-        format!("{:?}", s.write_all_to(2, &mut sink, size_of::<u32>()));
+        let mut sink = vec![0; size_of::<u32>()];
+        assert!(sink
+            .as_mut_slice()
+            .write_all_volatile(&s.get_slice(1, size_of::<u32>()).unwrap())
+            .is_ok());
+
         if cfg!(unix) {
             assert_eq!(sink, vec![0; size_of::<u32>()]);
         } else {
@@ -2190,16 +2175,15 @@ mod tests {
         }
         unsafe impl ByteValued for BytesToRead {}
         let cursor_size = 20;
-        let mut image = Cursor::new(vec![1u8; cursor_size]);
+        let image = vec![1u8; cursor_size];
 
-        // Trying to read more bytes than we have available in the cursor should
-        // make the read_from function return maximum cursor size (i.e. 20).
+        // Trying to read more bytes than we have space for in image
+        // make the read_from function return maximum vec size (i.e. 20).
         let mut bytes_to_read = BytesToRead::default();
-        let size_of_bytes = size_of_val(&bytes_to_read);
         assert_eq!(
-            bytes_to_read
-                .as_bytes()
-                .read_from(0, &mut image, size_of_bytes)
+            image
+                .as_slice()
+                .read_volatile(&mut bytes_to_read.as_bytes())
                 .unwrap(),
             cursor_size
         );
@@ -2314,14 +2298,13 @@ mod tests {
         let val = 123u64;
         let dirty_offset = 0x1000;
         let dirty_len = size_of_val(&val);
-        let page_size = 0x1000;
 
         let len = 0x10000;
         let buf = unsafe { std::alloc::alloc_zeroed(Layout::from_size_align(len, 8).unwrap()) };
 
         // Invoke the `Bytes` test helper function.
         {
-            let bitmap = AtomicBitmap::new(len, page_size);
+            let bitmap = AtomicBitmap::new(len, DEFAULT_PAGE_SIZE);
             let slice = unsafe { VolatileSlice::with_bitmap(buf, len, bitmap.slice_at(0), None) };
 
             test_bytes(
@@ -2337,18 +2320,18 @@ mod tests {
 
         // Invoke the `VolatileMemory` test helper function.
         {
-            let bitmap = AtomicBitmap::new(len, page_size);
+            let bitmap = AtomicBitmap::new(len, DEFAULT_PAGE_SIZE);
             let slice = unsafe { VolatileSlice::with_bitmap(buf, len, bitmap.slice_at(0), None) };
             test_volatile_memory(&slice);
         }
 
-        let bitmap = AtomicBitmap::new(len, page_size);
+        let bitmap = AtomicBitmap::new(len, DEFAULT_PAGE_SIZE);
         let slice = unsafe { VolatileSlice::with_bitmap(buf, len, bitmap.slice_at(0), None) };
 
-        let bitmap2 = AtomicBitmap::new(len, page_size);
+        let bitmap2 = AtomicBitmap::new(len, DEFAULT_PAGE_SIZE);
         let slice2 = unsafe { VolatileSlice::with_bitmap(buf, len, bitmap2.slice_at(0), None) };
 
-        let bitmap3 = AtomicBitmap::new(len, page_size);
+        let bitmap3 = AtomicBitmap::new(len, DEFAULT_PAGE_SIZE);
         let slice3 = unsafe { VolatileSlice::with_bitmap(buf, len, bitmap3.slice_at(0), None) };
 
         assert!(range_is_clean(slice.bitmap(), 0, slice.len()));
@@ -2404,9 +2387,8 @@ mod tests {
     fn test_volatile_ref_dirty_tracking() {
         let val = 123u64;
         let mut buf = vec![val];
-        let page_size = 0x1000;
 
-        let bitmap = AtomicBitmap::new(size_of_val(&val), page_size);
+        let bitmap = AtomicBitmap::new(size_of_val(&val), DEFAULT_PAGE_SIZE);
         let vref = unsafe {
             VolatileRef::with_bitmap(buf.as_mut_ptr() as *mut u8, bitmap.slice_at(0), None)
         };
@@ -2416,8 +2398,11 @@ mod tests {
         assert!(range_is_dirty(vref.bitmap(), 0, vref.len()));
     }
 
-    fn test_volatile_array_ref_copy_from_tracking<T>(buf: &mut [T], index: usize, page_size: usize)
-    where
+    fn test_volatile_array_ref_copy_from_tracking<T>(
+        buf: &mut [T],
+        index: usize,
+        page_size: NonZeroUsize,
+    ) where
         T: ByteValued + From<u8>,
     {
         let bitmap = AtomicBitmap::new(size_of_val(buf), page_size);
@@ -2444,14 +2429,13 @@ mod tests {
         let dirty_len = size_of_val(&val);
         let index = 0x1000;
         let dirty_offset = dirty_len * index;
-        let page_size = 0x1000;
 
         let mut buf = vec![0u64; index + 1];
         let mut byte_buf = vec![0u8; index + 1];
 
         // Test `ref_at`.
         {
-            let bitmap = AtomicBitmap::new(buf.len() * size_of_val(&val), page_size);
+            let bitmap = AtomicBitmap::new(buf.len() * size_of_val(&val), DEFAULT_PAGE_SIZE);
             let arr = unsafe {
                 VolatileArrayRef::with_bitmap(
                     buf.as_mut_ptr() as *mut u8,
@@ -2468,7 +2452,7 @@ mod tests {
 
         // Test `store`.
         {
-            let bitmap = AtomicBitmap::new(buf.len() * size_of_val(&val), page_size);
+            let bitmap = AtomicBitmap::new(buf.len() * size_of_val(&val), DEFAULT_PAGE_SIZE);
             let arr = unsafe {
                 VolatileArrayRef::with_bitmap(
                     buf.as_mut_ptr() as *mut u8,
@@ -2485,8 +2469,8 @@ mod tests {
         }
 
         // Test `copy_from` when size_of::<T>() == 1.
-        test_volatile_array_ref_copy_from_tracking(&mut byte_buf, index, page_size);
+        test_volatile_array_ref_copy_from_tracking(&mut byte_buf, index, DEFAULT_PAGE_SIZE);
         // Test `copy_from` when size_of::<T>() > 1.
-        test_volatile_array_ref_copy_from_tracking(&mut buf, index, page_size);
+        test_volatile_array_ref_copy_from_tracking(&mut buf, index, DEFAULT_PAGE_SIZE);
     }
 }

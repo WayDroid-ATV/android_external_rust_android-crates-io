@@ -4,9 +4,9 @@
 
 ### Bindgen
 The bindings are currently generated using
-[bindgen](https://rust-lang.github.io/rust-bindgen/) version 0.63.0:
+[bindgen](https://rust-lang.github.io/rust-bindgen/) version 0.70.1:
 ```bash
-cargo install bindgen-cli --vers 0.63.0
+cargo install bindgen-cli --vers 0.70.1
 ```
 
 ### Linux Kernel
@@ -39,6 +39,7 @@ for i in \
         virtio_config \
         virtio_gpu \
         virtio_ids \
+        virtio_input \
         virtio_mmio \
         virtio_net \
         virtio_ring \
@@ -53,6 +54,6 @@ done
 cd ~
 
 # Step 6: Copy the generated files to the new version module.
-cp linux/v5_0_headers/*.rs vm-virtio/crates/virtio-bindings/src
-mv vm-virtio/crates/virtio-bindings/src/virtio_net.rs vm-virtio/crates/virtio-bindings/src/virtio_net/generated.rs
+cp linux/v5_0_headers/*.rs vm-virtio/virtio-bindings/src
+mv vm-virtio/virtio-bindings/src/virtio_net.rs vm-virtio/virtio-bindings/src/virtio_net/generated.rs
 ```
