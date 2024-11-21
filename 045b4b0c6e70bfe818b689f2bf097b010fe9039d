@@ -142,6 +142,24 @@
       "parentUuid": "3d1a131d_8b5465b0",
       "revId": "045b4b0c6e70bfe818b689f2bf097b010fe9039d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2cdb85ad_e89a2bd8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-11-21T14:52:08Z",
+      "side": 1,
+      "message": "It means you had an old version of cargo_embargo that was compiled a long, long time ago. I think the solution is probably to have the crate tool check for the age of cargo_embargo and rebuild it if it\u0027s too old. I\u0027ve known about this potential problem for awhile, but I haven\u0027t had time to implement a fix. I don\u0027t think documentation is likely to help here.",
+      "parentUuid": "3736cd20_58eaa771",
+      "revId": "045b4b0c6e70bfe818b689f2bf097b010fe9039d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
