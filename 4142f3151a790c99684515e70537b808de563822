@@ -33,6 +33,24 @@
       "message": "This will turn on the `std` feature for all current users of the crate, which is probably going to cause problems.  Can you work around the lack of `std::error::Error` conversion instead?\n\n(Aside: I\u0027m guessing that future versions of this crate won\u0027t need `feature\u003dstd` to get `std::error::Error` support, as that\u0027s available as `core::error::Error` in more recent versions of Rust.)",
       "revId": "4142f3151a790c99684515e70537b808de563822",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e877dca6_8e4957df",
+        "filename": "crates/der/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-11-22T18:55:42Z",
+      "side": 1,
+      "message": "It\u0027s in 1.81.0, which we currently have available to Android. Perhaps that\u0027s the right step forward, rather than depending on `std`. https://blog.rust-lang.org/2024/09/05/Rust-1.81.0.html#coreerrorerror",
+      "parentUuid": "3994a82a_4073e381",
+      "revId": "4142f3151a790c99684515e70537b808de563822",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
