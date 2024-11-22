@@ -16,6 +16,24 @@
       "message": "The presubmit results here indicate that this crate isn\u0027t 32-bit aware. Perhaps we need to fix that upstream first (or fix the build rules that are using this crate in 32-bit contexts as well).",
       "revId": "0917e46b96d23264b405831e9c406bd7b4216eb7",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e0fed9f7_e1aa31a3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1110304
+      },
+      "writtenOn": "2024-11-22T19:00:00Z",
+      "side": 1,
+      "message": "One of these crates doesn\u0027t support 32 bits, it has this:\n```\n// We only support 64bit. Fail build when attempting to build other targets\n#[cfg(not(target_pointer_width \u003d \"64\"))]\ncompile_error!(\"vm-memory only supports 64-bit targets!\");\n```\n\nHow do I disable it for non-64 bit builds? I couldn\u0027t find how to do that with `rust_library`.",
+      "parentUuid": "eb32108f_989b59bb",
+      "revId": "0917e46b96d23264b405831e9c406bd7b4216eb7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
