@@ -143,16 +143,22 @@ impl WriteVolatile for Stdout {
     }
 }
 
+#[cfg(unix)]
 impl_read_write_volatile_for_raw_fd!(std::fs::File);
+#[cfg(unix)]
 impl_read_write_volatile_for_raw_fd!(std::net::TcpStream);
+#[cfg(unix)]
 impl_read_write_volatile_for_raw_fd!(std::os::unix::net::UnixStream);
+#[cfg(unix)]
 impl_read_write_volatile_for_raw_fd!(std::os::fd::OwnedFd);
+#[cfg(unix)]
 impl_read_write_volatile_for_raw_fd!(std::os::fd::BorrowedFd<'_>);
 
 /// Tries to do a single `read` syscall on the provided file descriptor, storing the data raed in
 /// the given [`VolatileSlice`].
 ///
 /// Returns the numbers of bytes read.
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn read_volatile_raw_fd<Fd: AsRawFd>(
     raw_fd: &mut Fd,
     buf: &mut VolatileSlice<impl BitmapSlice>,
@@ -178,11 +184,19 @@ fn read_volatile_raw_fd<Fd: AsRawFd>(
         Ok(bytes_read)
     }
 }
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
+fn read_volatile_raw_fd<Fd: AsRawFd>(
+    _raw_fd: &mut Fd,
+    _buf: &mut VolatileSlice<impl BitmapSlice>,
+) -> Result<usize, VolatileMemoryError> {
+    panic!("libc::read() not supported in this OS");
+}
 
 /// Tries to do a single `write` syscall on the provided file descriptor, attempting to write the
 /// data stored in the given [`VolatileSlice`].
 ///
 /// Returns the numbers of bytes written.
+#[cfg(any(target_os = "linux", target_os = "android"))]
 fn write_volatile_raw_fd<Fd: AsRawFd>(
     raw_fd: &mut Fd,
     buf: &VolatileSlice<impl BitmapSlice>,
@@ -202,6 +216,13 @@ fn write_volatile_raw_fd<Fd: AsRawFd>(
     } else {
         Ok(bytes_written.try_into().unwrap())
     }
+}
+#[cfg(not(any(target_os = "linux", target_os = "android")))]
+fn write_volatile_raw_fd<Fd: AsRawFd>(
+    _raw_fd: &mut Fd,
+    _buf: &VolatileSlice<impl BitmapSlice>,
+) -> Result<usize, VolatileMemoryError> {
+    panic!("libc::read() not supported in this OS");
 }
 
 impl WriteVolatile for &mut [u8] {
