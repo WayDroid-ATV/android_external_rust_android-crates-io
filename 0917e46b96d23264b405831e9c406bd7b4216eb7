@@ -34,6 +34,24 @@
       "parentUuid": "eb32108f_989b59bb",
       "revId": "0917e46b96d23264b405831e9c406bd7b4216eb7",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b09a20ad_69a5fe45",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-11-22T19:12:10Z",
+      "side": 1,
+      "message": "@jamesfarrell@google.com FYI\n\nhttps://cs.android.com/android/platform/superproject/main/+/main:external/rust/android-crates-io/crates/aarch64-paging/Android.bp;l\u003d68-73 seems relevant. I don\u0027t know that there\u0027s any other simplification here for Soong, but it seems like you\u0027ll need to also edit `cargo_embargo.json` (and add a fragment) to handle this.",
+      "parentUuid": "e0fed9f7_e1aa31a3",
+      "revId": "0917e46b96d23264b405831e9c406bd7b4216eb7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
