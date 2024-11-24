@@ -1,4 +1,5 @@
 {
+  "run_cargo": false,
   "tests": true,
   "apex_available": [
     "//apex_available:platform",

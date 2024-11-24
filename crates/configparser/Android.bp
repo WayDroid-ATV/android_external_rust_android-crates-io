@@ -13,11 +13,19 @@ license {
     license_text: ["LICENSE"],
 }
 
-rust_library_host {
+rust_library {
     name: "libconfigparser",
+    host_supported: true,
     crate_name: "configparser",
     cargo_env_compat: true,
     cargo_pkg_version: "3.0.4",
     crate_root: "src/lib.rs",
     edition: "2021",
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    product_available: true,
+    vendor_available: true,
+    visibility: ["//vendor:__subpackages__"],
 }

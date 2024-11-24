@@ -85,6 +85,24 @@ Since the only way to be confident an update will work is to try building it, th
 ./crate_tool try-updates | tee crate-updates
 ```
 
+## How to add a patch file
+
+You should avoid creating patches, if possible. Every patch file is an ongoing
+operational burden that makes it more difficult to keep our crates up-to-date.
+
+If a patch is absolutely necessary, you should, if possible, send a pull
+request to the upstream crate, so we can eliminate the Android patch in the
+future, when upgrading.
+
+To create a patch for crate "foo", edit the files directly. Then do:
+
+```
+git diff --relative=crates/foo -- crates/foo/<file1> crates/foo/<file2> > patches/<name>.patch`
+```
+
+If you stage or commit the change and the patch, you should see no new changes
+when you run "regenerate".
+
 ## I want to know how the sausage is made
 
 The source code for `crate_tool` is [here](https://android.googlesource.com/platform/development/+/refs/heads/main/tools/external_crates/).

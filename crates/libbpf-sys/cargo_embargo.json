@@ -1,0 +1,13 @@
+{
+  "run_cargo": false,
+  "features": [],
+  "package": {
+    "libbpf-sys": {
+      "add_toplevel_block": "android/bindgen_modules.bp",
+      "host_supported": false,
+      "patch": "patches/Android.bp.patch"
+    }
+  },
+  "product_available": false,
+  "vendor_available": false
+}

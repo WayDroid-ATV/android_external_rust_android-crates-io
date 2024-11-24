@@ -32,5 +32,6 @@ rust_library {
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "29",
     visibility: ["//system/software_defined_vehicle/core_services/sdv_comms/sdk"],
 }
