@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8903c8bc_376dfc7b",
+        "filename": "crates/der/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1954750
+      },
+      "writtenOn": "2024-11-27T03:28:58Z",
+      "side": 1,
+      "message": "Thanks! Done.",
+      "parentUuid": "2b30d8c9_1eee2b73",
+      "revId": "4142f3151a790c99684515e70537b808de563822",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "3994a82a_4073e381",
@@ -49,6 +67,24 @@
       "side": 1,
       "message": "It\u0027s in 1.81.0, which we currently have available to Android. Perhaps that\u0027s the right step forward, rather than depending on `std`. https://blog.rust-lang.org/2024/09/05/Rust-1.81.0.html#coreerrorerror",
       "parentUuid": "3994a82a_4073e381",
+      "revId": "4142f3151a790c99684515e70537b808de563822",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f019e7c8_d0620fa8",
+        "filename": "crates/der/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1954750
+      },
+      "writtenOn": "2024-11-27T03:28:58Z",
+      "side": 1,
+      "message": "It looks like `der::Error` hasn\u0027t implemented `core::error::Error` yet: https://docs.rs/der/latest/src/der/error.rs.html#73-74. :/\n\nI modified the Keystore2 code that\u0027s using this crate so that we don\u0027t have to turn on `std`.",
+      "parentUuid": "e877dca6_8e4957df",
       "revId": "4142f3151a790c99684515e70537b808de563822",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
