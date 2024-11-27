@@ -16,6 +16,24 @@
       "message": "Ah, this is also generating `rules.mk`, and that is building this for 32-bit Trusty, which is then failing in presubmit. It seems that they depend on this crate as well. 😞",
       "revId": "c6020c5c6cc2cd75549523b768dfb93458b52559",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "78041983_f656857c",
+        "filename": "crates/vm-memory/cargo_embargo.json",
+        "patchSetId": 3
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1110304
+      },
+      "writtenOn": "2024-11-27T18:37:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "969ea5c9_9373ba7b",
+      "revId": "c6020c5c6cc2cd75549523b768dfb93458b52559",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
