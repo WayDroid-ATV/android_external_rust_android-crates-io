@@ -24,7 +24,7 @@ rust_library_rlib {
     rustlibs: [
         "libbitflags",
         "liblog_rust_nostd",
-        "libzerocopy_nostd",
+        "libzerocopy-0.7.35_nostd",
     ],
     apex_available: [
         "//apex_available:platform",
@@ -50,8 +50,8 @@ rust_test {
     features: ["alloc"],
     rustlibs: [
         "libbitflags",
-        "liblog_rust",
-        "libzerocopy_nostd",
+        "liblog_rust_nostd",
+        "libzerocopy-0.7.35_nostd",
     ],
 }
 

@@ -7,7 +7,6 @@
       "force_rlib": true,
       "host_supported": false,
       "no_std": true,
-      "patch": "patches/Android.bp.patch",
       "rulesmk_patch": "patches/rules.mk.diff"
     }
   },
@@ -16,7 +15,12 @@
   "tests": true,
   "vendor_available": false,
   "variants": [
-    {},
+    {
+      "module_name_overrides": {
+        "liblog": "liblog_rust_nostd",
+        "libzerocopy": "libzerocopy-0.7.35_nostd"
+      }
+    },
     {
       "generate_androidbp": false,
       "generate_rulesmk": true,
