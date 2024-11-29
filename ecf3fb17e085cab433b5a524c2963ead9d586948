@@ -16,6 +16,24 @@
       "message": "This probably doesn\u0027t build, but the errors should point us to where we need to update dependencies to point to the 0.7 version.",
       "revId": "ecf3fb17e085cab433b5a524c2963ead9d586948",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d2de5d19_67a5c4eb",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-11-29T11:32:50Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "973f544e_5e00e590",
+      "revId": "ecf3fb17e085cab433b5a524c2963ead9d586948",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
