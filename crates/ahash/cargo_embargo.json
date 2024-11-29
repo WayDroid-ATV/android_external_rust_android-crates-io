@@ -1,4 +1,7 @@
 {
+  "module_name_overrides": {
+    "libzerocopy": "libzerocopy-0.7.35"
+  },
   "package": {
     "ahash": {
       "patch": "patches/Android.bp.diff"
