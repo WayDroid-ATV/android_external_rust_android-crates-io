@@ -9,10 +9,10 @@ index 00000000..d22a3675
 +#include "../grpc_wrap.cc"
 diff --git b/android/build_cmake.rs a/android/build_cmake.rs
 new file mode 100644
-index 00000000..73d084c4
+index 00000000..19f95377
 --- /dev/null
 +++ a/android/build_cmake.rs
-@@ -0,0 +1,197 @@
+@@ -0,0 +1,200 @@
 +// Copyright 2019 TiKV Project Authors. Licensed under Apache-2.0.
 +
 +use std::env;
@@ -204,6 +204,9 @@ index 00000000..73d084c4
 +    }
 +
 +    cc.cpp(true);
++    if !cfg!(target_env = "msvc") {
++        cc.flag("-std=c++11");
++    }
 +    cc.file("grpc_wrap.cc");
 +    cc.warnings_into_errors(true);
 +    cc.compile("libgrpc_wrap.a");
