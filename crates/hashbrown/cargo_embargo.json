@@ -1,9 +1,6 @@
 {
   "features": [
-    "ahash",
-    "default",
-    "inline-more",
-    "raw"
+    "default"
   ],
   "package": {
     "hashbrown": {
