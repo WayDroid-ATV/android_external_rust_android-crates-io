@@ -1,6 +1,7 @@
 bitflags
 clap
 clap_lex
+hashbrown
 jni
 protobuf
 protobuf-codegen
