@@ -16,6 +16,23 @@
       "message": "Adding James, since I think these version numbers are particularly sensitive/limiting.",
       "revId": "7646628e3e60de2f02cb1effce41f6a4c2dc3417",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e81aca99_b97904b3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-12-02T19:37:56Z",
+      "side": 1,
+      "message": "Please always use 29 for rust crates.",
+      "revId": "7646628e3e60de2f02cb1effce41f6a4c2dc3417",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
