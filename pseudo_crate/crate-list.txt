@@ -2,6 +2,7 @@ aarch64-paging
 acpi
 ahash
 aho-corasick
+allocator-api2
 android_log-sys
 android_logger
 anes
