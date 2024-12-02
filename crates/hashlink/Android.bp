@@ -18,7 +18,7 @@ rust_test {
     host_supported: true,
     crate_name: "linked_hash_map",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.1",
+    cargo_pkg_version: "0.10.0",
     crate_root: "tests/linked_hash_map.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -27,9 +27,9 @@ rust_test {
     },
     edition: "2018",
     rustlibs: [
-        "libfxhash",
         "libhashbrown",
         "libhashlink",
+        "librustc_hash",
         "libserde_test",
     ],
 }
@@ -39,7 +39,7 @@ rust_test {
     host_supported: true,
     crate_name: "linked_hash_set",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.1",
+    cargo_pkg_version: "0.10.0",
     crate_root: "tests/linked_hash_set.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -48,9 +48,9 @@ rust_test {
     },
     edition: "2018",
     rustlibs: [
-        "libfxhash",
         "libhashbrown",
         "libhashlink",
+        "librustc_hash",
         "libserde_test",
     ],
 }
@@ -60,7 +60,7 @@ rust_test {
     host_supported: true,
     crate_name: "lru_cache",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.1",
+    cargo_pkg_version: "0.10.0",
     crate_root: "tests/lru_cache.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -69,9 +69,9 @@ rust_test {
     },
     edition: "2018",
     rustlibs: [
-        "libfxhash",
         "libhashbrown",
         "libhashlink",
+        "librustc_hash",
         "libserde_test",
     ],
 }
@@ -81,7 +81,7 @@ rust_library {
     host_supported: true,
     crate_name: "hashlink",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.1",
+    cargo_pkg_version: "0.10.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     rustlibs: ["libhashbrown"],
