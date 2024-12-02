@@ -27,7 +27,7 @@ rust_library {
     ],
     cfgs: ["has_std"],
     rustlibs: [
-        "libhashbrown",
+        "libhashbrown-0.12.3",
         "libserde",
     ],
     apex_available: [
