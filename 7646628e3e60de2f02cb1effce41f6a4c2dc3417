@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ca6b79f5_ab3f8c5f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-02T18:43:29Z",
+      "side": 1,
+      "message": "Adding James, since I think these version numbers are particularly sensitive/limiting.",
+      "revId": "7646628e3e60de2f02cb1effce41f6a4c2dc3417",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
