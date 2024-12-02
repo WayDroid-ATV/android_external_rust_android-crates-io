@@ -1,4 +1,4 @@
-use std::{
+use core::{
     borrow::Borrow,
     fmt,
     hash::{BuildHasher, Hash, Hasher},
@@ -6,7 +6,7 @@ use std::{
     ops::{BitAnd, BitOr, BitXor, Sub},
 };
 
-use hashbrown::hash_map::DefaultHashBuilder;
+use hashbrown::DefaultHashBuilder;
 
 use crate::linked_hash_map::{self, LinkedHashMap, TryReserveError};
 
