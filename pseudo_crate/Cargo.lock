@@ -232,7 +232,7 @@ dependencies = [
  "h2 0.4.4",
  "half 2.2.1",
  "hashbrown 0.15.1",
- "hashlink",
+ "hashlink 0.10.0",
  "heck",
  "hex",
  "hound",
@@ -2512,6 +2512,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "hashlink"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7382cf6263419f2d8df38c55d7da83da5c18aef87fc7a7fc1fb1e344edfe14c1"
+dependencies = [
+ "hashbrown 0.15.1",
+]
+
+[[package]]
 name = "heck"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4516,7 +4525,7 @@ dependencies = [
  "bitflags 2.8.0",
  "fallible-iterator 0.2.0",
  "fallible-streaming-iterator",
- "hashlink",
+ "hashlink 0.8.1",
  "libsqlite3-sys",
  "smallvec",
 ]
