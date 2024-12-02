@@ -102,6 +102,7 @@ fixedbitset
 flagset
 flate2
 fnv
+foldhash
 foreign-types
 foreign-types-shared
 form_urlencoded
