@@ -1,0 +1,74 @@
+diff --git a/src/linked_hash_map.rs b/src/linked_hash_map.rs
+index f4274f3a..873f7356 100644
+--- a/src/linked_hash_map.rs
++++ b/src/linked_hash_map.rs
+@@ -12,7 +12,7 @@ use core::{
+ };
+ 
+ use alloc::boxed::Box;
+-use hashbrown::hash_map::DefaultHashBuilder;
++use hashbrown::DefaultHashBuilder;
+ use hashbrown::hash_table::{self, HashTable};
+ 
+ pub enum TryReserveError {
+diff --git a/src/linked_hash_set.rs b/src/linked_hash_set.rs
+index b3361fb5..55af73e1 100644
+--- a/src/linked_hash_set.rs
++++ b/src/linked_hash_set.rs
+@@ -6,7 +6,7 @@ use core::{
+     ops::{BitAnd, BitOr, BitXor, Sub},
+ };
+ 
+-use hashbrown::hash_map::DefaultHashBuilder;
++use hashbrown::DefaultHashBuilder;
+ 
+ use crate::linked_hash_map::{self, LinkedHashMap, TryReserveError};
+ 
+diff --git a/src/lru_cache.rs b/src/lru_cache.rs
+index 1db27cea..874623f5 100644
+--- a/src/lru_cache.rs
++++ b/src/lru_cache.rs
+@@ -5,7 +5,7 @@ use core::{
+     usize,
+ };
+ 
+-use hashbrown::hash_map;
++use hashbrown::DefaultHashBuilder;
+ 
+ use crate::linked_hash_map::{self, LinkedHashMap};
+ 
+@@ -14,7 +14,7 @@ pub use crate::linked_hash_map::{
+     RawOccupiedEntryMut, RawVacantEntryMut, VacantEntry,
+ };
+ 
+-pub struct LruCache<K, V, S = hash_map::DefaultHashBuilder> {
++pub struct LruCache<K, V, S = DefaultHashBuilder> {
+     map: LinkedHashMap<K, V, S>,
+     max_size: usize,
+ }
+diff --git a/tests/linked_hash_set.rs b/tests/linked_hash_set.rs
+index 7a9e33f9..e8fb6f9e 100644
+--- a/tests/linked_hash_set.rs
++++ b/tests/linked_hash_set.rs
+@@ -1,4 +1,4 @@
+-use hashbrown::hash_map::DefaultHashBuilder;
++use hashbrown::DefaultHashBuilder;
+ use hashlink::linked_hash_set::{self, LinkedHashSet};
+ 
+ #[allow(dead_code)]
+diff --git a/Cargo.toml b/Cargo.toml
+index ede2f679..e8e9af27 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -25,9 +25,9 @@ license = "MIT OR Apache-2.0"
+ repository = "https://github.com/kyren/hashlink"
+ 
+ [dependencies.hashbrown]
+-version = "0.14.3"
++version = "0.15.1"
+ features = [
+-    "ahash",
++    "default-hasher",
+     "inline-more",
+ ]
+ default-features = false
