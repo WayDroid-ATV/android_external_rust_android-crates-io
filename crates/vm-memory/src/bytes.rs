@@ -12,7 +12,7 @@
 //! data.
 
 use std::io::{Read, Write};
-use std::mem::{size_of, MaybeUninit};
+use std::mem::size_of;
 use std::result::Result;
 use std::slice::{from_raw_parts, from_raw_parts_mut};
 use std::sync::atomic::Ordering;
@@ -31,7 +31,7 @@ use crate::volatile_memory::VolatileSlice;
 /// cause undefined behavior.
 ///
 /// Implementing this trait guarantees that it is safe to instantiate the struct with random data.
-pub unsafe trait ByteValued: Copy + Send + Sync {
+pub unsafe trait ByteValued: Copy + Default + Send + Sync {
     /// Converts a slice of raw data into a reference of `Self`.
     ///
     /// The value of `data` is not copied. Instead a reference is made from the given slice. The
@@ -191,8 +191,7 @@ impl_atomic_access!(i32, std::sync::atomic::AtomicI32);
     target_arch = "x86_64",
     target_arch = "aarch64",
     target_arch = "powerpc64",
-    target_arch = "s390x",
-    target_arch = "riscv64"
+    target_arch = "s390x"
 ))]
 impl_atomic_access!(i64, std::sync::atomic::AtomicI64);
 
@@ -203,8 +202,7 @@ impl_atomic_access!(u32, std::sync::atomic::AtomicU32);
     target_arch = "x86_64",
     target_arch = "aarch64",
     target_arch = "powerpc64",
-    target_arch = "s390x",
-    target_arch = "riscv64"
+    target_arch = "s390x"
 ))]
 impl_atomic_access!(u64, std::sync::atomic::AtomicU64);
 
@@ -270,10 +268,7 @@ pub trait Bytes<A> {
     ///
     /// Returns an error if there's not enough data inside the container.
     fn read_obj<T: ByteValued>(&self, addr: A) -> Result<T, Self::E> {
-        // SAFETY: ByteValued objects must be assignable from a arbitrary byte
-        // sequence and are mandated to be packed.
-        // Hence, zeroed memory is a fine initialization.
-        let mut result: T = unsafe { MaybeUninit::<T>::zeroed().assume_init() };
+        let mut result: T = Default::default();
         self.read_slice(result.as_mut_slice(), addr).map(|_| result)
     }
 
@@ -285,9 +280,6 @@ pub trait Bytes<A> {
     /// * `addr` - Begin writing at this address.
     /// * `src` - Copy from `src` into the container.
     /// * `count` - Copy `count` bytes from `src` into the container.
-    #[deprecated(
-        note = "Use `.read_volatile_from` or the functions of the `ReadVolatile` trait instead"
-    )]
     fn read_from<F>(&self, addr: A, src: &mut F, count: usize) -> Result<usize, Self::E>
     where
         F: Read;
@@ -303,9 +295,6 @@ pub trait Bytes<A> {
     /// * `addr` - Begin writing at this address.
     /// * `src` - Copy from `src` into the container.
     /// * `count` - Copy exactly `count` bytes from `src` into the container.
-    #[deprecated(
-        note = "Use `.read_exact_volatile_from` or the functions of the `ReadVolatile` trait instead"
-    )]
     fn read_exact_from<F>(&self, addr: A, src: &mut F, count: usize) -> Result<(), Self::E>
     where
         F: Read;
@@ -318,9 +307,6 @@ pub trait Bytes<A> {
     /// * `addr` - Begin reading from this address.
     /// * `dst` - Copy from the container to `dst`.
     /// * `count` - Copy `count` bytes from the container to `dst`.
-    #[deprecated(
-        note = "Use `.write_volatile_to` or the functions of the `WriteVolatile` trait instead"
-    )]
     fn write_to<F>(&self, addr: A, dst: &mut F, count: usize) -> Result<usize, Self::E>
     where
         F: Write;
@@ -336,9 +322,6 @@ pub trait Bytes<A> {
     /// * `addr` - Begin reading from this address.
     /// * `dst` - Copy from the container to `dst`.
     /// * `count` - Copy exactly `count` bytes from the container to `dst`.
-    #[deprecated(
-        note = "Use `.write_all_volatile_to` or the functions of the `WriteVolatile` trait instead"
-    )]
     fn write_all_to<F>(&self, addr: A, dst: &mut F, count: usize) -> Result<(), Self::E>
     where
         F: Write;
@@ -527,11 +510,11 @@ pub(crate) mod tests {
     fn test_bytes() {
         let bytes = MockBytesContainer::new();
 
-        assert!(bytes.write_obj(u64::MAX, 0).is_ok());
-        assert_eq!(bytes.read_obj::<u64>(0).unwrap(), u64::MAX);
+        assert!(bytes.write_obj(std::u64::MAX, 0).is_ok());
+        assert_eq!(bytes.read_obj::<u64>(0).unwrap(), std::u64::MAX);
 
         assert!(bytes
-            .write_obj(u64::MAX, MOCK_BYTES_CONTAINER_SIZE)
+            .write_obj(std::u64::MAX, MOCK_BYTES_CONTAINER_SIZE)
             .is_err());
         assert!(bytes.read_obj::<u64>(MOCK_BYTES_CONTAINER_SIZE).is_err());
     }

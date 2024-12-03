@@ -60,8 +60,7 @@ impl_atomic_integer_ops!(std::sync::atomic::AtomicI32, i32);
     target_arch = "x86_64",
     target_arch = "aarch64",
     target_arch = "powerpc64",
-    target_arch = "s390x",
-    target_arch = "riscv64"
+    target_arch = "s390x"
 ))]
 impl_atomic_integer_ops!(std::sync::atomic::AtomicI64, i64);
 
@@ -72,8 +71,7 @@ impl_atomic_integer_ops!(std::sync::atomic::AtomicU32, u32);
     target_arch = "x86_64",
     target_arch = "aarch64",
     target_arch = "powerpc64",
-    target_arch = "s390x",
-    target_arch = "riscv64"
+    target_arch = "s390x"
 ))]
 impl_atomic_integer_ops!(std::sync::atomic::AtomicU64, u64);
 

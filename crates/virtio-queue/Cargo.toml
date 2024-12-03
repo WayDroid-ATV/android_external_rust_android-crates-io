@@ -12,36 +12,27 @@
 [package]
 edition = "2021"
 name = "virtio-queue"
-version = "0.14.0"
+version = "0.11.0"
 authors = ["The Chromium OS Authors"]
-build = false
-autobins = false
-autoexamples = false
-autotests = false
-autobenches = false
 description = "virtio queue implementation"
 readme = "README.md"
 keywords = ["virtio"]
-license = "Apache-2.0 AND BSD-3-Clause"
+license = "Apache-2.0 OR BSD-3-Clause"
 repository = "https://github.com/rust-vmm/vm-virtio"
-
-[lib]
-name = "virtio_queue"
-path = "src/lib.rs"
+resolver = "1"
 
 [[bench]]
 name = "main"
-path = "benches/main.rs"
 harness = false
 
 [dependencies.log]
 version = "0.4.17"
 
 [dependencies.virtio-bindings]
-version = "0.2.4"
+version = "0.2.2"
 
 [dependencies.vm-memory]
-version = "0.16.0"
+version = "0.14.0"
 
 [dependencies.vmm-sys-util]
 version = "0.12.1"
@@ -53,7 +44,7 @@ version = "0.5.1"
 version = "0.9.0"
 
 [dev-dependencies.vm-memory]
-version = "0.16.0"
+version = "0.14.0"
 features = [
     "backend-mmap",
     "backend-atomic",

@@ -4,8 +4,7 @@
   },
   "package": {
     "virtio-vsock": {
-      "device_supported": false,
-      "compile_multilib": "first"
+      "device_supported": false
     }
   },
   "run_cargo": false

@@ -4,8 +4,7 @@
   },
   "package": {
     "virtio-queue": {
-      "device_supported": false,
-      "compile_multilib": "first"
+      "device_supported": false
     }
   },
   "run_cargo": false

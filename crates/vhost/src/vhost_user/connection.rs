@@ -102,12 +102,12 @@ impl Drop for Listener {
 }
 
 /// Unix domain socket endpoint for vhost-user connection.
-pub(super) struct Endpoint<H: MsgHeader> {
+pub(super) struct Endpoint<R: Req> {
     sock: UnixStream,
-    _h: PhantomData<H>,
+    _r: PhantomData<R>,
 }
 
-impl<H: MsgHeader> Endpoint<H> {
+impl<R: Req> Endpoint<R> {
     /// Create a new stream by connecting to server at `str`.
     ///
     /// # Return:
@@ -122,7 +122,7 @@ impl<H: MsgHeader> Endpoint<H> {
     pub fn from_stream(sock: UnixStream) -> Self {
         Endpoint {
             sock,
-            _h: PhantomData,
+            _r: PhantomData,
         }
     }
 
@@ -135,7 +135,10 @@ impl<H: MsgHeader> Endpoint<H> {
     /// * - SocketBroken: the underline socket is broken.
     /// * - SocketError: other socket related errors.
     pub fn send_iovec(&mut self, iovs: &[&[u8]], fds: Option<&[RawFd]>) -> Result<usize> {
-        let rfds = fds.unwrap_or_default();
+        let rfds = match fds {
+            Some(rfds) => rfds,
+            _ => &[],
+        };
         self.sock.send_with_fds(iovs, rfds).map_err(Into::into)
     }
 
@@ -193,16 +196,20 @@ impl<H: MsgHeader> Endpoint<H> {
     /// * - SocketBroken: the underline socket is broken.
     /// * - SocketError: other socket related errors.
     /// * - PartialMessage: received a partial message.
-    pub fn send_header(&mut self, hdr: &H, fds: Option<&[RawFd]>) -> Result<()> {
+    pub fn send_header(
+        &mut self,
+        hdr: &VhostUserMsgHeader<R>,
+        fds: Option<&[RawFd]>,
+    ) -> Result<()> {
         // SAFETY: Safe because there can't be other mutable referance to hdr.
         let iovs = unsafe {
             [slice::from_raw_parts(
-                hdr as *const H as *const u8,
-                mem::size_of::<H>(),
+                hdr as *const VhostUserMsgHeader<R> as *const u8,
+                mem::size_of::<VhostUserMsgHeader<R>>(),
             )]
         };
         let bytes = self.send_iovec_all(&iovs[..], fds)?;
-        if bytes != mem::size_of::<H>() {
+        if bytes != mem::size_of::<VhostUserMsgHeader<R>>() {
             return Err(Error::PartialMessage);
         }
         Ok(())
@@ -219,15 +226,15 @@ impl<H: MsgHeader> Endpoint<H> {
     /// * - PartialMessage: received a partial message.
     pub fn send_message<T: ByteValued>(
         &mut self,
-        hdr: &H,
+        hdr: &VhostUserMsgHeader<R>,
         body: &T,
         fds: Option<&[RawFd]>,
     ) -> Result<()> {
-        if mem::size_of::<T>() > H::MAX_MSG_SIZE {
+        if mem::size_of::<T>() > MAX_MSG_SIZE {
             return Err(Error::OversizedMsg);
         }
         let bytes = self.send_iovec_all(&[hdr.as_slice(), body.as_slice()], fds)?;
-        if bytes != mem::size_of::<H>() + mem::size_of::<T>() {
+        if bytes != mem::size_of::<VhostUserMsgHeader<R>>() + mem::size_of::<T>() {
             return Err(Error::PartialMessage);
         }
         Ok(())
@@ -246,16 +253,16 @@ impl<H: MsgHeader> Endpoint<H> {
     /// * - IncorrectFds: wrong number of attached fds.
     pub fn send_message_with_payload<T: ByteValued>(
         &mut self,
-        hdr: &H,
+        hdr: &VhostUserMsgHeader<R>,
         body: &T,
         payload: &[u8],
         fds: Option<&[RawFd]>,
     ) -> Result<()> {
         let len = payload.len();
-        if mem::size_of::<T>() > H::MAX_MSG_SIZE {
+        if mem::size_of::<T>() > MAX_MSG_SIZE {
             return Err(Error::OversizedMsg);
         }
-        if len > H::MAX_MSG_SIZE - mem::size_of::<T>() {
+        if len > MAX_MSG_SIZE - mem::size_of::<T>() {
             return Err(Error::OversizedMsg);
         }
         if let Some(fd_arr) = fds {
@@ -264,7 +271,7 @@ impl<H: MsgHeader> Endpoint<H> {
             }
         }
 
-        let total = mem::size_of::<H>() + mem::size_of::<T>() + len;
+        let total = mem::size_of::<VhostUserMsgHeader<R>>() + mem::size_of::<T>() + len;
         let len = self.send_iovec_all(&[hdr.as_slice(), body.as_slice(), payload], fds)?;
         if len != total {
             return Err(Error::PartialMessage);
@@ -299,7 +306,6 @@ impl<H: MsgHeader> Endpoint<H> {
     /// attached file descriptors, the receiver must obey following rules:
     ///   1) file descriptors are attached to a message.
     ///   2) message(packet) boundaries must be respected on the receive side.
-    ///
     /// In other words, recvmsg() operations must not cross the packet boundary, otherwise the
     /// attached file descriptors will get lost.
     /// Note that this function wraps received file descriptors as `File`.
@@ -348,7 +354,6 @@ impl<H: MsgHeader> Endpoint<H> {
     /// attached file descriptors, the receiver must obey following rules:
     ///   1) file descriptors are attached to a message.
     ///   2) message(packet) boundaries must be respected on the receive side.
-    ///
     /// In other words, recvmsg() operations must not cross the packet boundary, otherwise the
     /// attached file descriptors will get lost.
     /// Note that this function wraps received file descriptors as `File`.
@@ -440,18 +445,18 @@ impl<H: MsgHeader> Endpoint<H> {
     /// * - SocketError: other socket related errors.
     /// * - PartialMessage: received a partial message.
     /// * - InvalidMessage: received a invalid message.
-    pub fn recv_header(&mut self) -> Result<(H, Option<Vec<File>>)> {
-        let mut hdr = H::default();
+    pub fn recv_header(&mut self) -> Result<(VhostUserMsgHeader<R>, Option<Vec<File>>)> {
+        let mut hdr = VhostUserMsgHeader::default();
         let mut iovs = [iovec {
-            iov_base: (&mut hdr as *mut H) as *mut c_void,
-            iov_len: mem::size_of::<H>(),
+            iov_base: (&mut hdr as *mut VhostUserMsgHeader<R>) as *mut c_void,
+            iov_len: mem::size_of::<VhostUserMsgHeader<R>>(),
         }];
         // SAFETY: Safe because we own hdr and it's ByteValued.
         let (bytes, files) = unsafe { self.recv_into_iovec_all(&mut iovs[..])? };
 
         if bytes == 0 {
             return Err(Error::Disconnected);
-        } else if bytes != mem::size_of::<H>() {
+        } else if bytes != mem::size_of::<VhostUserMsgHeader<R>>() {
             return Err(Error::PartialMessage);
         } else if !hdr.is_valid() {
             return Err(Error::InvalidMessage);
@@ -471,15 +476,15 @@ impl<H: MsgHeader> Endpoint<H> {
     /// * - SocketError: other socket related errors.
     /// * - PartialMessage: received a partial message.
     /// * - InvalidMessage: received a invalid message.
-    pub fn recv_body<T: ByteValued + Sized + VhostUserMsgValidator + Default>(
+    pub fn recv_body<T: ByteValued + Sized + VhostUserMsgValidator>(
         &mut self,
-    ) -> Result<(H, T, Option<Vec<File>>)> {
-        let mut hdr = H::default();
+    ) -> Result<(VhostUserMsgHeader<R>, T, Option<Vec<File>>)> {
+        let mut hdr = VhostUserMsgHeader::default();
         let mut body: T = Default::default();
         let mut iovs = [
             iovec {
-                iov_base: (&mut hdr as *mut H) as *mut c_void,
-                iov_len: mem::size_of::<H>(),
+                iov_base: (&mut hdr as *mut VhostUserMsgHeader<R>) as *mut c_void,
+                iov_len: mem::size_of::<VhostUserMsgHeader<R>>(),
             },
             iovec {
                 iov_base: (&mut body as *mut T) as *mut c_void,
@@ -489,7 +494,7 @@ impl<H: MsgHeader> Endpoint<H> {
         // SAFETY: Safe because we own hdr and body and they're ByteValued.
         let (bytes, files) = unsafe { self.recv_into_iovec_all(&mut iovs[..])? };
 
-        let total = mem::size_of::<H>() + mem::size_of::<T>();
+        let total = mem::size_of::<VhostUserMsgHeader<R>>() + mem::size_of::<T>();
         if bytes != total {
             return Err(Error::PartialMessage);
         } else if !hdr.is_valid() || !body.is_valid() {
@@ -513,12 +518,15 @@ impl<H: MsgHeader> Endpoint<H> {
     /// * - SocketError: other socket related errors.
     /// * - PartialMessage: received a partial message.
     /// * - InvalidMessage: received a invalid message.
-    pub fn recv_body_into_buf(&mut self, buf: &mut [u8]) -> Result<(H, usize, Option<Vec<File>>)> {
-        let mut hdr = H::default();
+    pub fn recv_body_into_buf(
+        &mut self,
+        buf: &mut [u8],
+    ) -> Result<(VhostUserMsgHeader<R>, usize, Option<Vec<File>>)> {
+        let mut hdr = VhostUserMsgHeader::default();
         let mut iovs = [
             iovec {
-                iov_base: (&mut hdr as *mut H) as *mut c_void,
-                iov_len: mem::size_of::<H>(),
+                iov_base: (&mut hdr as *mut VhostUserMsgHeader<R>) as *mut c_void,
+                iov_len: mem::size_of::<VhostUserMsgHeader<R>>(),
             },
             iovec {
                 iov_base: buf.as_mut_ptr() as *mut c_void,
@@ -529,13 +537,13 @@ impl<H: MsgHeader> Endpoint<H> {
         // and it's safe to fill a byte slice with arbitrary data.
         let (bytes, files) = unsafe { self.recv_into_iovec_all(&mut iovs[..])? };
 
-        if bytes < mem::size_of::<H>() {
+        if bytes < mem::size_of::<VhostUserMsgHeader<R>>() {
             return Err(Error::PartialMessage);
         } else if !hdr.is_valid() {
             return Err(Error::InvalidMessage);
         }
 
-        Ok((hdr, bytes - mem::size_of::<H>(), files))
+        Ok((hdr, bytes - mem::size_of::<VhostUserMsgHeader<R>>(), files))
     }
 
     /// Receive a message with optional payload and attached file descriptors.
@@ -549,17 +557,17 @@ impl<H: MsgHeader> Endpoint<H> {
     /// * - SocketError: other socket related errors.
     /// * - PartialMessage: received a partial message.
     /// * - InvalidMessage: received a invalid message.
-    #[allow(clippy::type_complexity)]
-    pub fn recv_payload_into_buf<T: ByteValued + Sized + VhostUserMsgValidator + Default>(
+    #[cfg_attr(feature = "cargo-clippy", allow(clippy::type_complexity))]
+    pub fn recv_payload_into_buf<T: ByteValued + Sized + VhostUserMsgValidator>(
         &mut self,
         buf: &mut [u8],
-    ) -> Result<(H, T, usize, Option<Vec<File>>)> {
-        let mut hdr = H::default();
+    ) -> Result<(VhostUserMsgHeader<R>, T, usize, Option<Vec<File>>)> {
+        let mut hdr = VhostUserMsgHeader::default();
         let mut body: T = Default::default();
         let mut iovs = [
             iovec {
-                iov_base: (&mut hdr as *mut H) as *mut c_void,
-                iov_len: mem::size_of::<H>(),
+                iov_base: (&mut hdr as *mut VhostUserMsgHeader<R>) as *mut c_void,
+                iov_len: mem::size_of::<VhostUserMsgHeader<R>>(),
             },
             iovec {
                 iov_base: (&mut body as *mut T) as *mut c_void,
@@ -575,7 +583,7 @@ impl<H: MsgHeader> Endpoint<H> {
         // arbitrary data.
         let (bytes, files) = unsafe { self.recv_into_iovec_all(&mut iovs[..])? };
 
-        let total = mem::size_of::<H>() + mem::size_of::<T>();
+        let total = mem::size_of::<VhostUserMsgHeader<R>>() + mem::size_of::<T>();
         if bytes < total {
             return Err(Error::PartialMessage);
         } else if !hdr.is_valid() || !body.is_valid() {
@@ -586,7 +594,7 @@ impl<H: MsgHeader> Endpoint<H> {
     }
 }
 
-impl<H: MsgHeader> AsRawFd for Endpoint<H> {
+impl<T: Req> AsRawFd for Endpoint<T> {
     fn as_raw_fd(&self) -> RawFd {
         self.sock.as_raw_fd()
     }
@@ -616,7 +624,6 @@ fn get_sub_iovs_offset(iov_lens: &[usize], skip_size: usize) -> (usize, usize) {
 mod tests {
     use super::*;
     use std::io::{Read, Seek, SeekFrom, Write};
-    use std::os::fd::IntoRawFd;
     use vmm_sys_util::rand::rand_alphanumerics;
     use vmm_sys_util::tempfile::TempFile;
 
@@ -640,9 +647,8 @@ mod tests {
         let path = temp_path();
         let file = File::create(path).unwrap();
 
-        // SAFETY: Safe because `file` contains a valid fd to a file just created and ownership of
-        // the file descriptor is released.
-        let listener = unsafe { Listener::from_raw_fd(file.into_raw_fd()) };
+        // SAFETY: Safe because `file` contains a valid fd to a file just created.
+        let listener = unsafe { Listener::from_raw_fd(file.as_raw_fd()) };
 
         assert!(listener.as_raw_fd() > 0);
     }
@@ -663,23 +669,23 @@ mod tests {
         let path = temp_path();
         let listener = Listener::new(&path, true).unwrap();
         listener.set_nonblocking(true).unwrap();
-        let mut frontend = Endpoint::<VhostUserMsgHeader<FrontendReq>>::connect(&path).unwrap();
+        let mut master = Endpoint::<MasterReq>::connect(&path).unwrap();
         let sock = listener.accept().unwrap().unwrap();
-        let mut backend = Endpoint::<VhostUserMsgHeader<FrontendReq>>::from_stream(sock);
+        let mut slave = Endpoint::<MasterReq>::from_stream(sock);
 
-        let buf1 = [0x1, 0x2, 0x3, 0x4];
-        let mut len = frontend.send_slice(&buf1[..], None).unwrap();
+        let buf1 = vec![0x1, 0x2, 0x3, 0x4];
+        let mut len = master.send_slice(&buf1[..], None).unwrap();
         assert_eq!(len, 4);
-        let (bytes, buf2, _) = backend.recv_into_buf(0x1000).unwrap();
+        let (bytes, buf2, _) = slave.recv_into_buf(0x1000).unwrap();
         assert_eq!(bytes, 4);
         assert_eq!(&buf1[..], &buf2[..bytes]);
 
-        len = frontend.send_slice(&buf1[..], None).unwrap();
+        len = master.send_slice(&buf1[..], None).unwrap();
         assert_eq!(len, 4);
-        let (bytes, buf2, _) = backend.recv_into_buf(0x2).unwrap();
+        let (bytes, buf2, _) = slave.recv_into_buf(0x2).unwrap();
         assert_eq!(bytes, 2);
         assert_eq!(&buf1[..2], &buf2[..]);
-        let (bytes, buf2, _) = backend.recv_into_buf(0x2).unwrap();
+        let (bytes, buf2, _) = slave.recv_into_buf(0x2).unwrap();
         assert_eq!(bytes, 2);
         assert_eq!(&buf1[2..], &buf2[..]);
     }
@@ -689,21 +695,21 @@ mod tests {
         let path = temp_path();
         let listener = Listener::new(&path, true).unwrap();
         listener.set_nonblocking(true).unwrap();
-        let mut frontend = Endpoint::<VhostUserMsgHeader<FrontendReq>>::connect(&path).unwrap();
+        let mut master = Endpoint::<MasterReq>::connect(&path).unwrap();
         let sock = listener.accept().unwrap().unwrap();
-        let mut backend = Endpoint::<VhostUserMsgHeader<FrontendReq>>::from_stream(sock);
+        let mut slave = Endpoint::<MasterReq>::from_stream(sock);
 
         let mut fd = TempFile::new().unwrap().into_file();
         write!(fd, "test").unwrap();
 
         // Normal case for sending/receiving file descriptors
-        let buf1 = [0x1, 0x2, 0x3, 0x4];
-        let len = frontend
+        let buf1 = vec![0x1, 0x2, 0x3, 0x4];
+        let len = master
             .send_slice(&buf1[..], Some(&[fd.as_raw_fd()]))
             .unwrap();
         assert_eq!(len, 4);
 
-        let (bytes, buf2, files) = backend.recv_into_buf(4).unwrap();
+        let (bytes, buf2, files) = slave.recv_into_buf(4).unwrap();
         assert_eq!(bytes, 4);
         assert_eq!(&buf1[..], &buf2[..]);
         assert!(files.is_some());
@@ -720,7 +726,7 @@ mod tests {
         // Following communication pattern should work:
         // Sending side: data(header, body) with fds
         // Receiving side: data(header) with fds, data(body)
-        let len = frontend
+        let len = master
             .send_slice(
                 &buf1[..],
                 Some(&[fd.as_raw_fd(), fd.as_raw_fd(), fd.as_raw_fd()]),
@@ -728,7 +734,7 @@ mod tests {
             .unwrap();
         assert_eq!(len, 4);
 
-        let (bytes, buf2, files) = backend.recv_into_buf(0x2).unwrap();
+        let (bytes, buf2, files) = slave.recv_into_buf(0x2).unwrap();
         assert_eq!(bytes, 2);
         assert_eq!(&buf1[..2], &buf2[..]);
         assert!(files.is_some());
@@ -741,7 +747,7 @@ mod tests {
             file.read_to_string(&mut content).unwrap();
             assert_eq!(content, "test");
         }
-        let (bytes, buf2, files) = backend.recv_into_buf(0x2).unwrap();
+        let (bytes, buf2, files) = slave.recv_into_buf(0x2).unwrap();
         assert_eq!(bytes, 2);
         assert_eq!(&buf1[2..], &buf2[..]);
         assert!(files.is_none());
@@ -749,7 +755,7 @@ mod tests {
         // Following communication pattern should not work:
         // Sending side: data(header, body) with fds
         // Receiving side: data(header), data(body) with fds
-        let len = frontend
+        let len = master
             .send_slice(
                 &buf1[..],
                 Some(&[fd.as_raw_fd(), fd.as_raw_fd(), fd.as_raw_fd()]),
@@ -757,10 +763,10 @@ mod tests {
             .unwrap();
         assert_eq!(len, 4);
 
-        let (bytes, buf4) = backend.recv_data(2).unwrap();
+        let (bytes, buf4) = slave.recv_data(2).unwrap();
         assert_eq!(bytes, 2);
         assert_eq!(&buf1[..2], &buf4[..]);
-        let (bytes, buf2, files) = backend.recv_into_buf(0x2).unwrap();
+        let (bytes, buf2, files) = slave.recv_into_buf(0x2).unwrap();
         assert_eq!(bytes, 2);
         assert_eq!(&buf1[2..], &buf2[..]);
         assert!(files.is_none());
@@ -768,9 +774,9 @@ mod tests {
         // Following communication pattern should work:
         // Sending side: data, data with fds
         // Receiving side: data, data with fds
-        let len = frontend.send_slice(&buf1[..], None).unwrap();
+        let len = master.send_slice(&buf1[..], None).unwrap();
         assert_eq!(len, 4);
-        let len = frontend
+        let len = master
             .send_slice(
                 &buf1[..],
                 Some(&[fd.as_raw_fd(), fd.as_raw_fd(), fd.as_raw_fd()]),
@@ -778,12 +784,12 @@ mod tests {
             .unwrap();
         assert_eq!(len, 4);
 
-        let (bytes, buf2, files) = backend.recv_into_buf(0x4).unwrap();
+        let (bytes, buf2, files) = slave.recv_into_buf(0x4).unwrap();
         assert_eq!(bytes, 4);
         assert_eq!(&buf1[..], &buf2[..]);
         assert!(files.is_none());
 
-        let (bytes, buf2, files) = backend.recv_into_buf(0x2).unwrap();
+        let (bytes, buf2, files) = slave.recv_into_buf(0x2).unwrap();
         assert_eq!(bytes, 2);
         assert_eq!(&buf1[..2], &buf2[..]);
         assert!(files.is_some());
@@ -796,7 +802,7 @@ mod tests {
             file.read_to_string(&mut content).unwrap();
             assert_eq!(content, "test");
         }
-        let (bytes, buf2, files) = backend.recv_into_buf(0x2).unwrap();
+        let (bytes, buf2, files) = slave.recv_into_buf(0x2).unwrap();
         assert_eq!(bytes, 2);
         assert_eq!(&buf1[2..], &buf2[..]);
         assert!(files.is_none());
@@ -804,9 +810,9 @@ mod tests {
         // Following communication pattern should not work:
         // Sending side: data1, data2 with fds
         // Receiving side: data + partial of data2, left of data2 with fds
-        let len = frontend.send_slice(&buf1[..], None).unwrap();
+        let len = master.send_slice(&buf1[..], None).unwrap();
         assert_eq!(len, 4);
-        let len = frontend
+        let len = master
             .send_slice(
                 &buf1[..],
                 Some(&[fd.as_raw_fd(), fd.as_raw_fd(), fd.as_raw_fd()]),
@@ -814,15 +820,15 @@ mod tests {
             .unwrap();
         assert_eq!(len, 4);
 
-        let (bytes, _) = backend.recv_data(5).unwrap();
+        let (bytes, _) = slave.recv_data(5).unwrap();
         assert_eq!(bytes, 5);
 
-        let (bytes, _, files) = backend.recv_into_buf(0x4).unwrap();
+        let (bytes, _, files) = slave.recv_into_buf(0x4).unwrap();
         assert_eq!(bytes, 3);
         assert!(files.is_none());
 
         // If the target fd array is too small, extra file descriptors will get lost.
-        let len = frontend
+        let len = master
             .send_slice(
                 &buf1[..],
                 Some(&[fd.as_raw_fd(), fd.as_raw_fd(), fd.as_raw_fd()]),
@@ -830,7 +836,7 @@ mod tests {
             .unwrap();
         assert_eq!(len, 4);
 
-        let (bytes, _, files) = backend.recv_into_buf(0x4).unwrap();
+        let (bytes, _, files) = slave.recv_into_buf(0x4).unwrap();
         assert_eq!(bytes, 4);
         assert!(files.is_some());
     }
@@ -840,15 +846,15 @@ mod tests {
         let path = temp_path();
         let listener = Listener::new(&path, true).unwrap();
         listener.set_nonblocking(true).unwrap();
-        let mut frontend = Endpoint::<VhostUserMsgHeader<FrontendReq>>::connect(&path).unwrap();
+        let mut master = Endpoint::<MasterReq>::connect(&path).unwrap();
         let sock = listener.accept().unwrap().unwrap();
-        let mut backend = Endpoint::<VhostUserMsgHeader<FrontendReq>>::from_stream(sock);
+        let mut slave = Endpoint::<MasterReq>::from_stream(sock);
 
         let mut hdr1 =
-            VhostUserMsgHeader::new(FrontendReq::GET_FEATURES, 0, mem::size_of::<u64>() as u32);
+            VhostUserMsgHeader::new(MasterReq::GET_FEATURES, 0, mem::size_of::<u64>() as u32);
         hdr1.set_need_reply(true);
         let features1 = 0x1u64;
-        frontend.send_message(&hdr1, &features1, None).unwrap();
+        master.send_message(&hdr1, &features1, None).unwrap();
 
         let mut features2 = 0u64;
 
@@ -859,14 +865,14 @@ mod tests {
                 mem::size_of::<u64>(),
             )
         };
-        let (hdr2, bytes, files) = backend.recv_body_into_buf(slice).unwrap();
+        let (hdr2, bytes, files) = slave.recv_body_into_buf(slice).unwrap();
         assert_eq!(hdr1, hdr2);
         assert_eq!(bytes, 8);
         assert_eq!(features1, features2);
         assert!(files.is_none());
 
-        frontend.send_header(&hdr1, None).unwrap();
-        let (hdr2, files) = backend.recv_header().unwrap();
+        master.send_header(&hdr1, None).unwrap();
+        let (hdr2, files) = slave.recv_header().unwrap();
         assert_eq!(hdr1, hdr2);
         assert!(files.is_none());
     }
@@ -875,13 +881,13 @@ mod tests {
     fn partial_message() {
         let path = temp_path();
         let listener = Listener::new(&path, true).unwrap();
-        let mut frontend = UnixStream::connect(&path).unwrap();
+        let mut master = UnixStream::connect(&path).unwrap();
         let sock = listener.accept().unwrap().unwrap();
-        let mut backend = Endpoint::<VhostUserMsgHeader<FrontendReq>>::from_stream(sock);
+        let mut slave = Endpoint::<MasterReq>::from_stream(sock);
 
-        write!(frontend, "a").unwrap();
-        drop(frontend);
-        assert!(matches!(backend.recv_header(), Err(Error::PartialMessage)));
+        write!(master, "a").unwrap();
+        drop(master);
+        assert!(matches!(slave.recv_header(), Err(Error::PartialMessage)));
     }
 
     #[test]
@@ -890,8 +896,8 @@ mod tests {
         let listener = Listener::new(&path, true).unwrap();
         let _ = UnixStream::connect(&path).unwrap();
         let sock = listener.accept().unwrap().unwrap();
-        let mut backend = Endpoint::<VhostUserMsgHeader<FrontendReq>>::from_stream(sock);
+        let mut slave = Endpoint::<MasterReq>::from_stream(sock);
 
-        assert!(matches!(backend.recv_header(), Err(Error::Disconnected)));
+        assert!(matches!(slave.recv_header(), Err(Error::Disconnected)));
     }
 }

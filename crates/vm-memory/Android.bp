@@ -17,7 +17,7 @@ rust_library_host {
     name: "libvm_memory_android",
     crate_name: "vm_memory",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.16.1",
+    cargo_pkg_version: "0.12.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -32,13 +32,4 @@ rust_library_host {
         "liblibc",
         "libthiserror",
     ],
-    compile_multilib: "first",
-    arch: {
-        arm64: {
-            enabled: true,
-        },
-        x86_64: {
-            enabled: true,
-        },
-    },
 }

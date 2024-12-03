@@ -432,7 +432,6 @@ impl Drop for MmapUnix {
 // Bit mask for the vhost-user xen mmap message.
 bitflags! {
     /// Flags for the Xen mmap message.
-    #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     pub struct MmapXenFlags: u32 {
         /// Standard Unix memory mapping.
         const UNIX = 0x0;
@@ -1036,7 +1035,7 @@ mod tests {
         fn raw_os_error(&self) -> i32 {
             match self {
                 Error::Mmap(e) => e.raw_os_error().unwrap(),
-                _ => i32::MIN,
+                _ => std::i32::MIN,
             }
         }
     }
@@ -1063,7 +1062,6 @@ mod tests {
     }
 
     impl MmapRegion {
-        /// Create an `MmapRegion` with specified `size` at GuestAdress(0)
         pub fn new(size: usize) -> Result<Self> {
             let range = MmapRange::new_unix(size, None, GuestAddress(0));
             Self::from_range(range)

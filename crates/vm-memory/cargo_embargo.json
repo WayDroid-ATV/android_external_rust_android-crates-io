@@ -11,16 +11,7 @@
   },
   "package": {
     "vm-memory": {
-      "device_supported": false,
-      "compile_multilib": "first",
-      "arch": {
-        "arm64": {
-          "enabled": true
-        },
-        "x86_64": {
-          "enabled": true
-        }
-      }
+      "device_supported": false
     }
   },
   "run_cargo": false

@@ -24,7 +24,8 @@ use std::sync::Arc;
 use crate::address::Address;
 use crate::bitmap::{Bitmap, BS};
 use crate::guest_memory::{
-    self, FileOffset, GuestAddress, GuestMemory, GuestMemoryRegion, GuestUsize, MemoryRegionAddress,
+    self, FileOffset, GuestAddress, GuestMemory, GuestMemoryIterator, GuestMemoryRegion,
+    GuestUsize, MemoryRegionAddress,
 };
 use crate::volatile_memory::{VolatileMemory, VolatileSlice};
 use crate::{AtomicAccess, Bytes};
@@ -272,7 +273,6 @@ impl<B: Bitmap> Bytes<MemoryRegionAddress> for GuestRegionMmap<B> {
         F: Read,
     {
         let maddr = addr.raw_value() as usize;
-        #[allow(deprecated)] // function itself is deprecated
         self.as_volatile_slice()
             .unwrap()
             .read_from::<F>(maddr, src, count)
@@ -318,7 +318,6 @@ impl<B: Bitmap> Bytes<MemoryRegionAddress> for GuestRegionMmap<B> {
         F: Read,
     {
         let maddr = addr.raw_value() as usize;
-        #[allow(deprecated)] // function itself is deprecated
         self.as_volatile_slice()
             .unwrap()
             .read_exact_from::<F>(maddr, src, count)
@@ -364,7 +363,6 @@ impl<B: Bitmap> Bytes<MemoryRegionAddress> for GuestRegionMmap<B> {
         F: Write,
     {
         let maddr = addr.raw_value() as usize;
-        #[allow(deprecated)] // function itself is deprecated
         self.as_volatile_slice()
             .unwrap()
             .write_to::<F>(maddr, dst, count)
@@ -410,7 +408,6 @@ impl<B: Bitmap> Bytes<MemoryRegionAddress> for GuestRegionMmap<B> {
         F: Write,
     {
         let maddr = addr.raw_value() as usize;
-        #[allow(deprecated)] // function itself is deprecated
         self.as_volatile_slice()
             .unwrap()
             .write_all_to::<F>(maddr, dst, count)
@@ -511,7 +508,7 @@ impl<B: NewBitmap> GuestMemoryMmap<B> {
 
     /// Creates a container and allocates anonymous memory for guest memory regions.
     ///
-    /// Valid memory regions are specified as a sequence of (Address, Size, [`Option<FileOffset>`])
+    /// Valid memory regions are specified as a sequence of (Address, Size, Option<FileOffset>)
     /// tuples sorted by Address.
     pub fn from_ranges_with_files<A, T>(ranges: T) -> result::Result<Self, Error>
     where
@@ -612,8 +609,26 @@ impl<B: Bitmap> GuestMemoryMmap<B> {
     }
 }
 
+/// An iterator over the elements of `GuestMemoryMmap`.
+///
+/// This struct is created by `GuestMemory::iter()`. See its documentation for more.
+pub struct Iter<'a, B>(std::slice::Iter<'a, Arc<GuestRegionMmap<B>>>);
+
+impl<'a, B> Iterator for Iter<'a, B> {
+    type Item = &'a GuestRegionMmap<B>;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next().map(AsRef::as_ref)
+    }
+}
+
+impl<'a, B: 'a> GuestMemoryIterator<'a, GuestRegionMmap<B>> for GuestMemoryMmap<B> {
+    type Iter = Iter<'a, B>;
+}
+
 impl<B: Bitmap + 'static> GuestMemory for GuestMemoryMmap<B> {
     type R = GuestRegionMmap<B>;
+
+    type I = Self;
 
     fn num_regions(&self) -> usize {
         self.regions.len()
@@ -629,8 +644,8 @@ impl<B: Bitmap + 'static> GuestMemory for GuestMemoryMmap<B> {
         index.map(|x| self.regions[x].as_ref())
     }
 
-    fn iter(&self) -> impl Iterator<Item = &Self::R> {
-        self.regions.iter().map(AsRef::as_ref)
+    fn iter(&self) -> Iter<B> {
+        Iter(self.regions.iter())
     }
 }
 
@@ -931,7 +946,7 @@ mod tests {
         ])
         .unwrap();
 
-        let guest_mem_list = [guest_mem, guest_mem_backed_by_file];
+        let guest_mem_list = vec![guest_mem, guest_mem_backed_by_file];
         for guest_mem in guest_mem_list.iter() {
             assert!(guest_mem.address_in_range(GuestAddress(0x200)));
             assert!(!guest_mem.address_in_range(GuestAddress(0x600)));
@@ -957,7 +972,7 @@ mod tests {
         ])
         .unwrap();
 
-        let guest_mem_list = [guest_mem, guest_mem_backed_by_file];
+        let guest_mem_list = vec![guest_mem, guest_mem_backed_by_file];
         for guest_mem in guest_mem_list.iter() {
             assert_eq!(
                 guest_mem.check_address(GuestAddress(0x200)),
@@ -989,7 +1004,7 @@ mod tests {
         ])
         .unwrap();
 
-        let guest_mem_list = [guest_mem, guest_mem_backed_by_file];
+        let guest_mem_list = vec![guest_mem, guest_mem_backed_by_file];
         for guest_mem in guest_mem_list.iter() {
             assert!(guest_mem.to_region_addr(GuestAddress(0x600)).is_none());
             let (r0, addr0) = guest_mem.to_region_addr(GuestAddress(0x800)).unwrap();
@@ -1017,7 +1032,7 @@ mod tests {
         ])
         .unwrap();
 
-        let guest_mem_list = [guest_mem, guest_mem_backed_by_file];
+        let guest_mem_list = vec![guest_mem, guest_mem_backed_by_file];
         for guest_mem in guest_mem_list.iter() {
             assert!(guest_mem.get_host_address(GuestAddress(0x600)).is_err());
             let ptr0 = guest_mem.get_host_address(GuestAddress(0x800)).unwrap();
@@ -1044,7 +1059,7 @@ mod tests {
         )])
         .unwrap();
 
-        let guest_mem_list = [guest_mem, guest_mem_backed_by_file];
+        let guest_mem_list = vec![guest_mem, guest_mem_backed_by_file];
         for guest_mem in guest_mem_list.iter() {
             let sample_buf = &[1, 2, 3, 4, 5];
 
@@ -1082,7 +1097,7 @@ mod tests {
         ])
         .unwrap();
 
-        let gm_list = [gm, gm_backed_by_file];
+        let gm_list = vec![gm, gm_backed_by_file];
         for gm in gm_list.iter() {
             let val1: u64 = 0xaa55_aa55_aa55_aa55;
             let val2: u64 = 0x55aa_55aa_55aa_55aa;
@@ -1122,7 +1137,7 @@ mod tests {
         )])
         .unwrap();
 
-        let gm_list = [gm, gm_backed_by_file];
+        let gm_list = vec![gm, gm_backed_by_file];
         for gm in gm_list.iter() {
             let sample_buf = &[1, 2, 3, 4, 5];
 
@@ -1153,7 +1168,7 @@ mod tests {
         )])
         .unwrap();
 
-        let gm_list = [gm, gm_backed_by_file];
+        let gm_list = vec![gm, gm_backed_by_file];
         for gm in gm_list.iter() {
             let addr = GuestAddress(0x1010);
             let mut file = if cfg!(unix) {
@@ -1162,7 +1177,7 @@ mod tests {
                 File::open(Path::new("c:\\Windows\\system32\\ntoskrnl.exe")).unwrap()
             };
             gm.write_obj(!0u32, addr).unwrap();
-            gm.read_exact_volatile_from(addr, &mut file, mem::size_of::<u32>())
+            gm.read_exact_from(addr, &mut file, mem::size_of::<u32>())
                 .unwrap();
             let value: u32 = gm.read_obj(addr).unwrap();
             if cfg!(unix) {
@@ -1171,8 +1186,8 @@ mod tests {
                 assert_eq!(value, 0x0090_5a4d);
             }
 
-            let mut sink = vec![0; mem::size_of::<u32>()];
-            gm.write_all_volatile_to(addr, &mut sink.as_mut_slice(), mem::size_of::<u32>())
+            let mut sink = Vec::new();
+            gm.write_all_to(addr, &mut sink, mem::size_of::<u32>())
                 .unwrap();
             if cfg!(unix) {
                 assert_eq!(sink, vec![0; mem::size_of::<u32>()]);
@@ -1256,7 +1271,7 @@ mod tests {
         ])
         .unwrap();
 
-        let gm_list = [gm, gm_backed_by_file];
+        let gm_list = vec![gm, gm_backed_by_file];
         for gm in gm_list.iter() {
             let sample_buf = &[1, 2, 3, 4, 5];
             assert_eq!(gm.write(sample_buf, GuestAddress(0xffc)).unwrap(), 5);
@@ -1469,7 +1484,7 @@ mod tests {
             Some(GuestAddress(0xfff))
         );
         assert_eq!(guest_mem.checked_offset(start_addr2, 0xc00), None);
-        assert_eq!(guest_mem.checked_offset(start_addr1, usize::MAX), None);
+        assert_eq!(guest_mem.checked_offset(start_addr1, std::usize::MAX), None);
 
         assert_eq!(guest_mem.checked_offset(start_addr1, 0x400), None);
         assert_eq!(
@@ -1498,7 +1513,7 @@ mod tests {
         assert!(guest_mem.check_range(start_addr2, 0x800));
         assert!(!guest_mem.check_range(start_addr2, 0x801));
         assert!(!guest_mem.check_range(start_addr2, 0xc00));
-        assert!(!guest_mem.check_range(start_addr1, usize::MAX));
+        assert!(!guest_mem.check_range(start_addr1, std::usize::MAX));
     }
 
     #[test]
