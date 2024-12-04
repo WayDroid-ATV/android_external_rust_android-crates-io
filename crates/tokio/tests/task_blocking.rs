@@ -1,5 +1,5 @@
 #![warn(rust_2018_idioms)]
-#![cfg(all(feature = "full", not(target_os = "wasi")))] // Wasi doesn't support threads
+#![cfg(all(feature = "full", not(target_os = "wasi"), not(miri)))] // Wasi doesn't support threads
 
 use tokio::{runtime, task, time};
 use tokio_test::assert_ok;
@@ -134,8 +134,7 @@ fn useful_panic_message_when_dropping_rt_in_rt() {
 
     assert!(
         err.contains("Cannot drop a runtime"),
-        "Wrong panic message: {:?}",
-        err
+        "Wrong panic message: {err:?}"
     );
 }
 
@@ -289,6 +288,7 @@ async fn unawaited_blocking_task_wakes_paused_runtime() {
     );
 }
 
+#[cfg(panic = "unwind")]
 #[cfg(feature = "test-util")]
 #[tokio::test(start_paused = true)]
 async fn panicking_blocking_task_wakes_paused_runtime() {
