@@ -160,6 +160,7 @@ libfuzzer-sys
 libloading
 libm
 libtest-mimic
+libusb1-sys
 libz-sys
 linked-hash-map
 linkme
@@ -246,6 +247,8 @@ protobuf-codegen
 protobuf-json-mapping
 protobuf-parse
 protobuf-support
+ptr_meta
+ptr_meta_derive
 quiche
 quickcheck
 quote
@@ -260,6 +263,7 @@ regex-automata
 regex-syntax
 remain
 ring
+rusb
 rusqlite
 rustc-demangle
 rustc-demangle-capi
@@ -333,6 +337,11 @@ try-lock
 tungstenite
 twox-hash
 ucd-trie
+ucs2
+uefi
+uefi-macros
+uefi-raw
+uguid
 unicode-bidi
 unicode-ident
 unicode-normalization

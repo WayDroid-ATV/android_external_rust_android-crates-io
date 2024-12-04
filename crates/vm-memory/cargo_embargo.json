@@ -11,19 +11,17 @@
   },
   "package": {
     "vm-memory": {
-      "device_supported": false
+      "device_supported": false,
+      "compile_multilib": "first",
+      "arch": {
+        "arm64": {
+          "enabled": true
+        },
+        "x86_64": {
+          "enabled": true
+        }
+      }
     }
   },
-  "run_cargo": false,
-  "variants": [
-    {
-      "features": [
-        "default"
-      ],
-      "generate_rulesmk": true,
-      "generate_androidbp": false
-    },
-    {
-    }
-  ]
+  "run_cargo": false
 }
