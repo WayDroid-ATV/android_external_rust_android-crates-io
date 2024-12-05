@@ -140,10 +140,10 @@ pub(crate) mod tests {
     }
 
     // Helper method that tests a generic `B: Bitmap` implementation. It assumes `b` covers
-    // an area of length at least 0x800.
+    // an area of length at least 0x2000.
     pub fn test_bitmap<B: Bitmap>(b: &B) {
-        let len = 0x800;
-        let dirty_offset = 0x400;
+        let len = 0x2000;
+        let dirty_offset = 0x1000;
         let dirty_len = 0x100;
 
         // Some basic checks.
@@ -267,7 +267,6 @@ pub(crate) mod tests {
         dirty_offset += step;
 
         // Test `read_from`.
-        #[allow(deprecated)] // test of deprecated functions
         h.test_access(bytes, dirty_offset, BUF_SIZE, |m, addr| {
             assert_eq!(
                 m.read_from(addr, &mut Cursor::new(&buf), BUF_SIZE).unwrap(),
@@ -278,7 +277,6 @@ pub(crate) mod tests {
         dirty_offset += step;
 
         // Test `read_exact_from`.
-        #[allow(deprecated)] // test of deprecated functions
         h.test_access(bytes, dirty_offset, BUF_SIZE, |m, addr| {
             m.read_exact_from(addr, &mut Cursor::new(&buf), BUF_SIZE)
                 .unwrap()

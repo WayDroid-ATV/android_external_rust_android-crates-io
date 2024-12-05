@@ -79,7 +79,7 @@ impl Selector {
         debug_assert!(events.capacity() >= length);
         #[cfg(debug_assertions)]
         if length == 0 {
-            log::warn!(
+            warn!(
                 "calling mio::Poll::poll with empty subscriptions, this likely not what you want"
             );
         }
@@ -207,7 +207,7 @@ impl Selector {
 }
 
 /// Token used to a add a timeout subscription, also used in removing it again.
-const TIMEOUT_TOKEN: wasi::Userdata = wasi::Userdata::max_value();
+const TIMEOUT_TOKEN: wasi::Userdata = wasi::Userdata::MAX;
 
 /// Returns a `wasi::Subscription` for `timeout`.
 fn timeout_subscription(timeout: Duration) -> wasi::Subscription {
@@ -334,7 +334,7 @@ pub(crate) mod event {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 f.debug_struct("EventFdReadwrite")
                     .field("nbytes", &self.0.nbytes)
-                    .field("flags", &self.0.flags)
+                    .field("flags", &EventrwflagsDetails(self.0.flags))
                     .finish()
             }
         }

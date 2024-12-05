@@ -9,11 +9,11 @@
 extern crate log;
 
 use std::fmt::{Display, Formatter};
-use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-use vhost::vhost_user::{BackendListener, BackendReqHandler, Error as VhostUserError, Listener};
+use vhost::vhost_user::{Error as VhostUserError, Listener, SlaveListener, SlaveReqHandler};
+use vm_memory::bitmap::Bitmap;
 use vm_memory::mmap::NewBitmap;
 use vm_memory::{GuestMemoryAtomic, GuestMemoryMmap};
 
@@ -28,19 +28,10 @@ pub use self::event_loop::VringEpollHandler;
 mod handler;
 pub use self::handler::VhostUserHandlerError;
 
-pub mod bitmap;
-use crate::bitmap::BitmapReplace;
-
 mod vring;
 pub use self::vring::{
     VringMutex, VringRwLock, VringState, VringStateGuard, VringStateMutGuard, VringT,
 };
-
-/// Due to the way `xen` handles memory mappings we can not combine it with
-/// `postcopy` feature which relies on persistent memory mappings. Thus we
-/// disallow enabling both features at the same time.
-#[cfg(all(feature = "postcopy", feature = "xen"))]
-compile_error!("Both `postcopy` and `xen` features can not be enabled at the same time.");
 
 /// An alias for `GuestMemoryAtomic<GuestMemoryMmap<B>>` to simplify code.
 type GM<B> = GuestMemoryAtomic<GuestMemoryMmap<B>>;
@@ -50,12 +41,10 @@ type GM<B> = GuestMemoryAtomic<GuestMemoryMmap<B>>;
 pub enum Error {
     /// Failed to create a new vhost-user handler.
     NewVhostUserHandler(VhostUserHandlerError),
-    /// Failed creating vhost-user backend listener.
-    CreateBackendListener(VhostUserError),
-    /// Failed creating vhost-user backend handler.
-    CreateBackendReqHandler(VhostUserError),
-    /// Failed creating listener socket
-    CreateVhostUserListener(VhostUserError),
+    /// Failed creating vhost-user slave listener.
+    CreateSlaveListener(VhostUserError),
+    /// Failed creating vhost-user slave handler.
+    CreateSlaveReqHandler(VhostUserError),
     /// Failed starting daemon thread.
     StartDaemon(std::io::Error),
     /// Failed waiting for daemon thread.
@@ -68,13 +57,8 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         match self {
             Error::NewVhostUserHandler(e) => write!(f, "cannot create vhost user handler: {}", e),
-            Error::CreateBackendListener(e) => write!(f, "cannot create backend listener: {}", e),
-            Error::CreateBackendReqHandler(e) => {
-                write!(f, "cannot create backend req handler: {}", e)
-            }
-            Error::CreateVhostUserListener(e) => {
-                write!(f, "cannot create vhost-user listener: {}", e)
-            }
+            Error::CreateSlaveListener(e) => write!(f, "cannot create slave listener: {}", e),
+            Error::CreateSlaveReqHandler(e) => write!(f, "cannot create slave req handler: {}", e),
             Error::StartDaemon(e) => write!(f, "failed to start daemon: {}", e),
             Error::WaitDaemon(_e) => write!(f, "failed to wait for daemon exit"),
             Error::HandleRequest(e) => write!(f, "failed to handle request: {}", e),
@@ -89,17 +73,17 @@ pub type Result<T> = std::result::Result<T, Error>;
 ///
 /// This structure is the public API the backend is allowed to interact with in order to run
 /// a fully functional vhost-user daemon.
-pub struct VhostUserDaemon<T: VhostUserBackend> {
+pub struct VhostUserDaemon<S, V, B: Bitmap + 'static = ()> {
     name: String,
-    handler: Arc<Mutex<VhostUserHandler<T>>>,
+    handler: Arc<Mutex<VhostUserHandler<S, V, B>>>,
     main_thread: Option<thread::JoinHandle<Result<()>>>,
 }
 
-impl<T> VhostUserDaemon<T>
+impl<S, V, B> VhostUserDaemon<S, V, B>
 where
-    T: VhostUserBackend + Clone + 'static,
-    T::Bitmap: BitmapReplace + NewBitmap + Clone + Send + Sync,
-    T::Vring: Clone + Send + Sync,
+    S: VhostUserBackend<V, B> + Clone + 'static,
+    V: VringT<GM<B>> + Clone + Send + Sync + 'static,
+    B: NewBitmap + Clone + Send + Sync,
 {
     /// Create the daemon instance, providing the backend implementation of `VhostUserBackend`.
     ///
@@ -108,8 +92,8 @@ where
     /// but they get to be registered later during the sequence.
     pub fn new(
         name: String,
-        backend: T,
-        atomic_mem: GuestMemoryAtomic<GuestMemoryMmap<T::Bitmap>>,
+        backend: S,
+        atomic_mem: GuestMemoryAtomic<GuestMemoryMmap<B>>,
     ) -> Result<Self> {
         let handler = Arc::new(Mutex::new(
             VhostUserHandler::new(backend, atomic_mem).map_err(Error::NewVhostUserHandler)?,
@@ -130,7 +114,7 @@ where
     /// it acts as a client or a server.
     fn start_daemon(
         &mut self,
-        mut handler: BackendReqHandler<Mutex<VhostUserHandler<T>>>,
+        mut handler: SlaveReqHandler<Mutex<VhostUserHandler<S, V, B>>>,
     ) -> Result<()> {
         let handle = thread::Builder::new()
             .name(self.name.clone())
@@ -149,9 +133,9 @@ where
     /// that should be terminating once the other end of the socket (the VMM)
     /// hangs up.
     pub fn start_client(&mut self, socket_path: &str) -> Result<()> {
-        let backend_handler = BackendReqHandler::connect(socket_path, self.handler.clone())
-            .map_err(Error::CreateBackendReqHandler)?;
-        self.start_daemon(backend_handler)
+        let slave_handler = SlaveReqHandler::connect(socket_path, self.handler.clone())
+            .map_err(Error::CreateSlaveReqHandler)?;
+        self.start_daemon(slave_handler)
     }
 
     /// Listen to the vhost-user socket and run a dedicated thread handling all requests coming
@@ -159,25 +143,22 @@ where
     ///
     /// This runs in an infinite loop that should be terminating once the other end of the socket
     /// (the VMM) disconnects.
-    ///
-    /// *Note:* A convenience function [VhostUserDaemon::serve] exists that
-    /// may be a better option than this for simple use-cases.
     // TODO: the current implementation has limitations that only one incoming connection will be
     // handled from the listener. Should it be enhanced to support reconnection?
     pub fn start(&mut self, listener: Listener) -> Result<()> {
-        let mut backend_listener = BackendListener::new(listener, self.handler.clone())
-            .map_err(Error::CreateBackendListener)?;
-        let backend_handler = self.accept(&mut backend_listener)?;
-        self.start_daemon(backend_handler)
+        let mut slave_listener = SlaveListener::new(listener, self.handler.clone())
+            .map_err(Error::CreateSlaveListener)?;
+        let slave_handler = self.accept(&mut slave_listener)?;
+        self.start_daemon(slave_handler)
     }
 
     fn accept(
         &self,
-        backend_listener: &mut BackendListener<Mutex<VhostUserHandler<T>>>,
-    ) -> Result<BackendReqHandler<Mutex<VhostUserHandler<T>>>> {
+        slave_listener: &mut SlaveListener<Mutex<VhostUserHandler<S, V, B>>>,
+    ) -> Result<SlaveReqHandler<Mutex<VhostUserHandler<S, V, B>>>> {
         loop {
-            match backend_listener.accept() {
-                Err(e) => return Err(Error::CreateBackendListener(e)),
+            match slave_listener.accept() {
+                Err(e) => return Err(Error::CreateSlaveListener(e)),
                 Ok(Some(v)) => return Ok(v),
                 Ok(None) => continue,
             }
@@ -185,9 +166,6 @@ where
     }
 
     /// Wait for the thread handling the vhost-user socket connection to terminate.
-    ///
-    /// *Note:* A convenience function [VhostUserDaemon::serve] exists that
-    /// may be a better option than this for simple use-cases.
     pub fn wait(&mut self) -> Result<()> {
         if let Some(handle) = self.main_thread.take() {
             match handle.join().map_err(Error::WaitDaemon)? {
@@ -200,47 +178,11 @@ where
         }
     }
 
-    /// Bind to socket, handle a single connection and shutdown
-    ///
-    /// This is a convenience function that provides an easy way to handle the
-    /// following actions without needing to call the low-level functions:
-    /// - Create a listener
-    /// - Start listening
-    /// - Handle a single event
-    /// - Send the exit event to all handler threads
-    ///
-    /// Internal `Err` results that indicate a device disconnect will be treated
-    /// as success and `Ok(())` will be returned in those cases.
-    ///
-    /// *Note:* See [VhostUserDaemon::start] and [VhostUserDaemon::wait] if you
-    /// need more flexibility.
-    pub fn serve<P: AsRef<Path>>(&mut self, socket: P) -> Result<()> {
-        let listener = Listener::new(socket, true).map_err(Error::CreateVhostUserListener)?;
-
-        self.start(listener)?;
-        let result = self.wait();
-
-        // Regardless of the result, we want to signal worker threads to exit
-        self.handler.lock().unwrap().send_exit_event();
-
-        // For this convenience function we are not treating certain "expected"
-        // outcomes as error. Disconnects and partial messages can be usual
-        // behaviour seen from quitting guests.
-        match &result {
-            Err(e) => match e {
-                Error::HandleRequest(VhostUserError::Disconnected) => Ok(()),
-                Error::HandleRequest(VhostUserError::PartialMessage) => Ok(()),
-                _ => result,
-            },
-            _ => result,
-        }
-    }
-
     /// Retrieve the vring epoll handler.
     ///
     /// This is necessary to perform further actions like registering and unregistering some extra
     /// event file descriptors.
-    pub fn get_epoll_handlers(&self) -> Vec<Arc<VringEpollHandler<T>>> {
+    pub fn get_epoll_handlers(&self) -> Vec<Arc<VringEpollHandler<S, V, B>>> {
         // Do not expect poisoned lock.
         self.handler.lock().unwrap().get_epoll_handlers()
     }
@@ -250,10 +192,8 @@ where
 mod tests {
     use super::backend::tests::MockVhostBackend;
     use super::*;
-    use libc::EAGAIN;
     use std::os::unix::net::{UnixListener, UnixStream};
     use std::sync::Barrier;
-    use std::time::Duration;
     use vm_memory::{GuestAddress, GuestMemoryAtomic, GuestMemoryMmap};
 
     #[test]
@@ -269,24 +209,26 @@ mod tests {
 
         let barrier = Arc::new(Barrier::new(2));
         let tmpdir = tempfile::tempdir().unwrap();
-        let path = tmpdir.path().join("socket");
+        let mut path = tmpdir.path().to_path_buf();
+        path.push("socket");
 
-        thread::scope(|s| {
-            s.spawn(|| {
-                barrier.wait();
-                let socket = UnixStream::connect(&path).unwrap();
-                barrier.wait();
-                drop(socket)
-            });
-
-            let listener = Listener::new(&path, false).unwrap();
-            barrier.wait();
-            daemon.start(listener).unwrap();
-            barrier.wait();
-            // Above process generates a `HandleRequest(PartialMessage)` error.
-            daemon.wait().unwrap_err();
-            daemon.wait().unwrap();
+        let barrier2 = barrier.clone();
+        let path1 = path.clone();
+        let thread = thread::spawn(move || {
+            barrier2.wait();
+            let socket = UnixStream::connect(&path1).unwrap();
+            barrier2.wait();
+            drop(socket)
         });
+
+        let listener = Listener::new(&path, false).unwrap();
+        barrier.wait();
+        daemon.start(listener).unwrap();
+        barrier.wait();
+        // Above process generates a `HandleRequest(PartialMessage)` error.
+        daemon.wait().unwrap_err();
+        daemon.wait().unwrap();
+        thread.join().unwrap();
     }
 
     #[test]
@@ -302,70 +244,27 @@ mod tests {
 
         let barrier = Arc::new(Barrier::new(2));
         let tmpdir = tempfile::tempdir().unwrap();
-        let path = tmpdir.path().join("socket");
+        let mut path = tmpdir.path().to_path_buf();
+        path.push("socket");
 
-        thread::scope(|s| {
-            s.spawn(|| {
-                let listener = UnixListener::bind(&path).unwrap();
-                barrier.wait();
-                let (stream, _) = listener.accept().unwrap();
-                barrier.wait();
-                drop(stream)
-            });
-
-            barrier.wait();
-            daemon
-                .start_client(path.as_path().to_str().unwrap())
-                .unwrap();
-            barrier.wait();
-            // Above process generates a `HandleRequest(PartialMessage)` error.
-            daemon.wait().unwrap_err();
-            daemon.wait().unwrap();
-        });
-    }
-
-    #[test]
-    fn test_daemon_serve() {
-        let mem = GuestMemoryAtomic::new(
-            GuestMemoryMmap::<()>::from_ranges(&[(GuestAddress(0x100000), 0x10000)]).unwrap(),
-        );
-        let backend = Arc::new(Mutex::new(MockVhostBackend::new()));
-        let mut daemon = VhostUserDaemon::new("test".to_owned(), backend.clone(), mem).unwrap();
-        let tmpdir = tempfile::tempdir().unwrap();
-        let socket_path = tmpdir.path().join("socket");
-
-        thread::scope(|s| {
-            s.spawn(|| {
-                let _ = daemon.serve(&socket_path);
-            });
-
-            // We have no way to wait for when the server becomes available...
-            // So we will have to spin!
-            while !socket_path.exists() {
-                thread::sleep(Duration::from_millis(10));
-            }
-
-            // Check that no exit events got triggered yet
-            for thread_id in 0..backend.queues_per_thread().len() {
-                let fd = backend.exit_event(thread_id).unwrap();
-                // Reading from exit fd should fail since nothing was written yet
-                assert_eq!(
-                    fd.read().unwrap_err().raw_os_error().unwrap(),
-                    EAGAIN,
-                    "exit event should not have been raised yet!"
-                );
-            }
-
-            let socket = UnixStream::connect(&socket_path).unwrap();
-            // disconnect immediately again
-            drop(socket);
+        let barrier2 = barrier.clone();
+        let path1 = path.clone();
+        let thread = thread::spawn(move || {
+            let listener = UnixListener::bind(&path1).unwrap();
+            barrier2.wait();
+            let (stream, _) = listener.accept().unwrap();
+            barrier2.wait();
+            drop(stream)
         });
 
-        // Check that exit events got triggered
-        let backend = backend.lock().unwrap();
-        for thread_id in 0..backend.queues_per_thread().len() {
-            let fd = backend.exit_event(thread_id).unwrap();
-            assert!(fd.read().is_ok(), "No exit event was raised!");
-        }
+        barrier.wait();
+        daemon
+            .start_client(path.as_path().to_str().unwrap())
+            .unwrap();
+        barrier.wait();
+        // Above process generates a `HandleRequest(PartialMessage)` error.
+        daemon.wait().unwrap_err();
+        daemon.wait().unwrap();
+        thread.join().unwrap();
     }
 }

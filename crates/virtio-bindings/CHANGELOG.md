@@ -1,19 +1,5 @@
 # Upcoming Release
 
-# v0.2.4
-
-## Changed
-
-- Regenerate bindings with bindgen 0.70.1.
-
-# v0.2.3
-
-## Added
-
-- Exposed virtio_ids.h bindings as a public module.
-- Regenerate bindings with Linux 6.10.
-- Added virtio_input.h bindings.
-
 # v0.2.2
 
 ## Added

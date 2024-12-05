@@ -77,14 +77,10 @@ mod tests {
     use super::*;
 
     use crate::bitmap::tests::test_bitmap;
-    use std::num::NonZeroUsize;
 
     #[test]
     fn test_bitmap_impl() {
-        // SAFETY: `128` is non-zero.
-        let b = AtomicBitmapArc::new(AtomicBitmap::new(0x800, unsafe {
-            NonZeroUsize::new_unchecked(128)
-        }));
+        let b = AtomicBitmapArc::new(AtomicBitmap::new(0x2000, 128));
         test_bitmap(&b);
     }
 }

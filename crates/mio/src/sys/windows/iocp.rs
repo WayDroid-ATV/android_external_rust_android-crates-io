@@ -96,7 +96,7 @@ impl CompletionPort {
         );
         let mut removed = 0;
         let timeout = duration_millis(timeout);
-        let len = cmp::min(list.len(), <u32>::max_value() as usize) as u32;
+        let len = cmp::min(list.len(), u32::MAX as usize) as u32;
         let ret = unsafe {
             GetQueuedCompletionStatusEx(
                 self.handle.raw(),
@@ -228,7 +228,10 @@ fn duration_millis(dur: Option<Duration>) -> u32 {
         // turning sub-millisecond timeouts into a zero timeout, unless
         // the caller explicitly requests that by specifying a zero
         // timeout.
-        let dur_ms = (dur + Duration::from_nanos(999_999)).as_millis();
+        let dur_ms = dur
+            .checked_add(Duration::from_nanos(999_999))
+            .unwrap_or(dur)
+            .as_millis();
         cmp::min(dur_ms, u32::MAX as u128) as u32
     } else {
         u32::MAX

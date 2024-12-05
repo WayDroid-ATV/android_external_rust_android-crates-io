@@ -1,3 +1,151 @@
+# 1.0.3
+
+* Implement more I/O safety traits
+  (https://github.com/tokio-rs/mio/pull/1831).
+* Remove hermit-abi dependency, now using libc
+  (https://github.com/tokio-rs/mio/pull/1830).
+* Use `poll(2)` implementation on AIX, removing the need for using
+  `mio_unsupported_force_poll_poll`
+  (https://github.com/tokio-rs/mio/pull/1833).
+
+# 1.0.2
+
+* Work around eventfd bug on illumos
+  (https://github.com/tokio-rs/mio/pull/1826).
+* Fix dead code warning on Hermit when building with `--no-default-features
+  --features os-ext`
+  (https://github.com/tokio-rs/mio/pull/1828).
+
+# 1.0.1
+
+* Added Fuchsia support
+  (https://github.com/tokio-rs/mio/pull/1811).
+* Added GNU/Hurd support
+  (https://github.com/tokio-rs/mio/pull/1816).
+* Fixed an issue where accepting on a UDS socket without sometime pass an address
+  with a NULL byte to SocketAddr::from_pathname
+  (https://github.com/tokio-rs/mio/pull/1817).
+* Internal cleanups that should make the `cfg` sitations easier to follow
+  (https://github.com/tokio-rs/mio/pull/1812,
+  https://github.com/tokio-rs/mio/pull/1813).
+
+# 1.0
+
+With v1 Mio is able to bump its MSRV to 1.70, allowing us to implement I/O
+safety traits (https://github.com/rust-lang/rust/issues/87074) and replace
+`SocketAddr` with the version found in the standard library.
+
+## Added
+
+* Implement `AsFd` for`TcpListener`, `TcpStream`, `UdpSocket`, `UnixDatagram`,
+  `UnixListener`, `UnixStream`, `pipe::Receiver` and `pipe::Sender`
+  (https://github.com/tokio-rs/mio/pull/1749, https://github.com/tokio-rs/mio/pull/1797).
+* Implement `From` for `TcpListener`, `TcpStream`, `UdpSocket`, `UnixDatagram`,
+  `UnixListener`, and `UnixStream` for their standard library counterpart
+  (https://github.com/tokio-rs/mio/pull/1767).
+* Add support for abstract namespaces on Android
+  (https://github.com/tokio-rs/mio/pull/1749).
+* Add support for QNX OS
+  (https://github.com/tokio-rs/mio/pull/1766,
+  https://github.com/tokio-rs/mio/pull/1800).
+* Add support for Apple visionOS
+  (https://github.com/tokio-rs/mio/pull/1795).
+* Support for Haiku
+  (https://github.com/tokio-rs/mio/pull/1807).
+
+## Removed
+
+* The `SocketAddr` type is removed in favour of `std::os::unix::net::SocketAddr`
+  (https://github.com/tokio-rs/mio/pull/1760). All methods on Mio's version
+  should exist on the version in the standard library.
+
+## Changes
+
+* MSRV was updated to 1.74, updating to Rust edition edition
+  (https://github.com/tokio-rs/mio/pull/1733).
+* `UnixDatagram::{local_addr,peer_addr,bind_addr,recv_from}`,
+  `UnixListener::{local_addr,bind_addr,accept}` and
+  `UnixStream::{local_addr,peer_addr,connect_addr}` return and/or use
+  `std::os::unix::net::SocketAddr` instead of Mio's own `SocketAddr` type
+  (https://github.com/tokio-rs/mio/pull/1760).
+* Use `OwnedFd` internally for `Poll` where possible
+  (https://github.com/tokio-rs/mio/pull/1749).
+* Support ESP-IDF and Hermit without cfg flags
+  (https://github.com/tokio-rs/mio/pull/1789,
+  https://github.com/tokio-rs/mio/pull/1802,
+  https://github.com/tokio-rs/mio/pull/1802).
+* Updated windows-sys to v0.52
+  (https://github.com/tokio-rs/mio/pull/1668).
+
+# 0.8.11
+
+* Fix receiving IOCP events after deregistering a Windows named pipe
+  (https://github.com/tokio-rs/mio/pull/1760, backport pr:
+  https://github.com/tokio-rs/mio/pull/1761).
+
+# 0.8.10
+
+## Added
+
+* Solaris support
+  (https://github.com/tokio-rs/mio/pull/1724).
+
+# 0.8.9
+
+## Added
+
+* ESP-IDF framework support
+  (https://github.com/tokio-rs/mio/pull/1692).
+* AIX operating system support
+  (https://github.com/tokio-rs/mio/pull/1704).
+* Vita support
+  (https://github.com/tokio-rs/mio/pull/1721).
+* `{UnixListener,UnixStream}:bind_addr`
+  (https://github.com/tokio-rs/mio/pull/1630).
+* `mio_unsupported_force_poll_poll` and `mio_unsupported_force_waker_pipe`
+  **unsupported** configuration flags to force a specific poll or waker
+  implementation
+  (https://github.com/tokio-rs/mio/pull/1684,
+  https://github.com/tokio-rs/mio/pull/1685,
+  https://github.com/tokio-rs/mio/pull/1692).
+
+## Fixed
+
+* The `pipe(2)` based waker (swapped file descriptors)
+  (https://github.com/tokio-rs/mio/pull/1722).
+* The duplicate waker check to work correctly with cloned `Registry`s.
+  (https://github.com/tokio-rs/mio/pull/1706).
+
+# 0.8.8
+
+## Fixed
+
+* Fix compilation on WASI (https://github.com/tokio-rs/mio/pull/1676).
+
+# 0.8.7
+
+## Added
+
+* Add/fix support for tvOS and watchOS, Mio should now build for tvOS and
+  watchOS, but we don't have a CI setup yet
+  (https://github.com/tokio-rs/mio/pull/1658).
+
+## Changed
+
+* Made the `log` dependency optional behind the `log` feature flag (enabled by
+  default). Users that disabled Mio's default features will now not see any
+  logging from Mio, enabling the `log` feature will fix that. This was done in
+  response to the `log` crate increasing it's MSRV to v1.60, see
+  https://github.com/rust-lang/log/pull/552
+  (https://github.com/tokio-rs/mio/pull/1673).
+* Update windows-sys dependency to v0.48
+  (https://github.com/tokio-rs/mio/pull/1663).
+
+## Fixed
+
+* Fix overflow in `Poll::poll` when using `Duration::MAX` as timeout
+  (https://github.com/tokio-rs/mio/pull/1657).
+
 # 0.8.6
 
 ## Added
@@ -370,7 +518,7 @@ information.
   at least `event::Source` and `Poll`.
 * Mio now uses Rust 2018 and rustfmt for all code.
 * `Event` was changed to be a wrapper around the OS event. This means it can be
-  significantly larger on some OSes.
+  significantly larger on some OSs.
 * `Ready` was removed and replaced with various `is_*` methods on `Event`. For
   example instead checking for readable readiness using
   `Event::ready().is_readable()`, you would call `Event::is_readable()`.

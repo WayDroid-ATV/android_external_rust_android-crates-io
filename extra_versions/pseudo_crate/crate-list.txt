@@ -4,6 +4,5 @@ clap_lex
 jni
 protobuf
 protobuf-codegen
-vm-memory
 zerocopy
 zerocopy-derive

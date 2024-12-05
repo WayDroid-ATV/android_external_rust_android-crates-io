@@ -35,7 +35,7 @@ tokio_thread_local! {
 // Bit of a hack, but it is only for loom
 #[cfg(loom)]
 tokio_thread_local! {
-    static CURRENT_THREAD_PARK_COUNT: AtomicUsize = AtomicUsize::new(0);
+    pub(crate) static CURRENT_THREAD_PARK_COUNT: AtomicUsize = AtomicUsize::new(0);
 }
 
 // ==== impl ParkThread ====
@@ -81,7 +81,6 @@ impl ParkThread {
 // ==== impl Inner ====
 
 impl Inner {
-    /// Parks the current thread for at most `dur`.
     fn park(&self) {
         // If we were previously notified then we consume this notification and
         // return quickly.
@@ -110,7 +109,7 @@ impl Inner {
 
                 return;
             }
-            Err(actual) => panic!("inconsistent park state; actual = {}", actual),
+            Err(actual) => panic!("inconsistent park state; actual = {actual}"),
         }
 
         loop {
@@ -129,6 +128,7 @@ impl Inner {
         }
     }
 
+    /// Parks the current thread for at most `dur`.
     fn park_timeout(&self, dur: Duration) {
         // Like `park` above we have a fast path for an already-notified thread,
         // and afterwards we start coordinating for a sleep. Return quickly.
@@ -155,7 +155,7 @@ impl Inner {
 
                 return;
             }
-            Err(actual) => panic!("inconsistent park_timeout state; actual = {}", actual),
+            Err(actual) => panic!("inconsistent park_timeout state; actual = {actual}"),
         }
 
         // Wait with a timeout, and if we spuriously wake up or otherwise wake up
@@ -167,7 +167,7 @@ impl Inner {
         match self.state.swap(EMPTY, SeqCst) {
             NOTIFIED => {} // got a notification, hurray!
             PARKED => {}   // no notification, alas
-            n => panic!("inconsistent park_timeout state: {}", n),
+            n => panic!("inconsistent park_timeout state: {n}"),
         }
     }
 
@@ -197,7 +197,7 @@ impl Inner {
         // to release `lock`.
         drop(self.mutex.lock());
 
-        self.condvar.notify_one()
+        self.condvar.notify_one();
     }
 
     fn shutdown(&self) {
@@ -243,11 +243,11 @@ impl CachedParkThread {
     }
 
     pub(crate) fn waker(&self) -> Result<Waker, AccessError> {
-        self.unpark().map(|unpark| unpark.into_waker())
+        self.unpark().map(UnparkThread::into_waker)
     }
 
     fn unpark(&self) -> Result<UnparkThread, AccessError> {
-        self.with_current(|park_thread| park_thread.unpark())
+        self.with_current(ParkThread::unpark)
     }
 
     pub(crate) fn park(&mut self) {
@@ -272,7 +272,6 @@ impl CachedParkThread {
         use std::task::Context;
         use std::task::Poll::Ready;
 
-        // `get_unpark()` should not return a Result
         let waker = self.waker()?;
         let mut cx = Context::from_waker(&waker);
 

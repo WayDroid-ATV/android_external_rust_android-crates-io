@@ -20,11 +20,10 @@ use std::ops::{Deref, DerefMut};
 use std::sync::atomic::Ordering;
 
 use log::error;
-use vm_memory::{GuestMemory, GuestMemoryError, VolatileMemoryError};
+use vm_memory::{GuestMemory, GuestMemoryError};
 
 pub use self::chain::{DescriptorChain, DescriptorChainRwIter};
 pub use self::descriptor::{Descriptor, VirtqUsedElem};
-pub use self::descriptor_utils::{Reader, Writer};
 pub use self::queue::{AvailIter, Queue};
 pub use self::queue_sync::QueueSync;
 pub use self::state::QueueState;
@@ -35,7 +34,6 @@ pub mod mock;
 
 mod chain;
 mod descriptor;
-mod descriptor_utils;
 mod queue;
 mod queue_sync;
 mod state;
@@ -69,16 +67,6 @@ pub enum Error {
     InvalidAvailRingIndex,
     /// The queue is not ready for operation.
     QueueNotReady,
-    /// Volatile memory error.
-    VolatileMemoryError(VolatileMemoryError),
-    /// The combined length of all the buffers in a `DescriptorChain` would overflow.
-    DescriptorChainOverflow,
-    /// No memory region for this address range.
-    FindMemoryRegion,
-    /// Descriptor guest memory error.
-    GuestMemoryError(GuestMemoryError),
-    /// DescriptorChain split is out of bounds.
-    SplitOutOfBounds(usize),
 }
 
 impl Display for Error {
@@ -110,14 +98,6 @@ impl Display for Error {
                 "invalid available ring index (more descriptors to process than queue size)"
             ),
             QueueNotReady => write!(f, "trying to process requests on a queue that's not ready"),
-            VolatileMemoryError(e) => write!(f, "volatile memory error: {e}"),
-            DescriptorChainOverflow => write!(
-                f,
-                "the combined length of all the buffers in a `DescriptorChain` would overflow"
-            ),
-            FindMemoryRegion => write!(f, "no memory region for this address range"),
-            GuestMemoryError(e) => write!(f, "descriptor guest memory error: {e}"),
-            SplitOutOfBounds(off) => write!(f, "`DescriptorChain` split is out of bounds: {off}"),
         }
     }
 }

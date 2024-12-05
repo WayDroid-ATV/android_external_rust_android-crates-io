@@ -99,16 +99,15 @@ mod tests {
 
     use crate::bitmap::tests::{range_is_clean, range_is_dirty, test_bitmap};
     use crate::bitmap::AtomicBitmap;
-    use std::num::NonZeroUsize;
 
     #[test]
     fn test_slice() {
-        let bitmap_size = 0x800;
-        let dirty_offset = 0x400;
+        let bitmap_size = 0x1_0000;
+        let dirty_offset = 0x1000;
         let dirty_len = 0x100;
 
         {
-            let bitmap = AtomicBitmap::new(bitmap_size, NonZeroUsize::MIN);
+            let bitmap = AtomicBitmap::new(bitmap_size, 1);
             let slice1 = bitmap.slice_at(0);
             let slice2 = bitmap.slice_at(dirty_offset);
 
@@ -122,7 +121,7 @@ mod tests {
         }
 
         {
-            let bitmap = AtomicBitmap::new(bitmap_size, NonZeroUsize::MIN);
+            let bitmap = AtomicBitmap::new(bitmap_size, 1);
             let slice = bitmap.slice_at(0);
             test_bitmap(&slice);
         }
