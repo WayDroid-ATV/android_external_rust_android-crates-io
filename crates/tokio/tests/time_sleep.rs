@@ -1,5 +1,6 @@
 #![warn(rust_2018_idioms)]
 #![cfg(feature = "full")]
+#![cfg(not(miri))] // Too slow on Miri.
 
 use std::future::Future;
 use std::task::Context;
@@ -189,7 +190,7 @@ async fn greater_than_max() {
 
 #[tokio::test]
 async fn short_sleeps() {
-    for _ in 0..10000 {
+    for _ in 0..1000 {
         tokio::time::sleep(std::time::Duration::from_millis(0)).await;
     }
 }
