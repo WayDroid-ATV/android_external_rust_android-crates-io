@@ -44,25 +44,20 @@ use std::task::{Context, Poll, Waker};
     ),
     repr(align(128))
 )]
-// arm, mips, mips64, riscv64, sparc, and hexagon have 32-byte cache line size.
+// arm, mips, mips64, sparc, and hexagon have 32-byte cache line size.
 //
 // Sources:
 // - https://github.com/golang/go/blob/3dd58676054223962cd915bb0934d1f9f489d4d2/src/internal/cpu/cpu_arm.go#L7
 // - https://github.com/golang/go/blob/3dd58676054223962cd915bb0934d1f9f489d4d2/src/internal/cpu/cpu_mips.go#L7
 // - https://github.com/golang/go/blob/3dd58676054223962cd915bb0934d1f9f489d4d2/src/internal/cpu/cpu_mipsle.go#L7
 // - https://github.com/golang/go/blob/3dd58676054223962cd915bb0934d1f9f489d4d2/src/internal/cpu/cpu_mips64x.go#L9
-// - https://github.com/golang/go/blob/3dd58676054223962cd915bb0934d1f9f489d4d2/src/internal/cpu/cpu_riscv64.go#L7
 // - https://github.com/torvalds/linux/blob/3516bd729358a2a9b090c1905bd2a3fa926e24c6/arch/sparc/include/asm/cache.h#L17
 // - https://github.com/torvalds/linux/blob/3516bd729358a2a9b090c1905bd2a3fa926e24c6/arch/hexagon/include/asm/cache.h#L12
-//
-// riscv32 is assumed not to exceed the cache line size of riscv64.
 #[cfg_attr(
     any(
         target_arch = "arm",
         target_arch = "mips",
         target_arch = "mips64",
-        target_arch = "riscv32",
-        target_arch = "riscv64",
         target_arch = "sparc",
         target_arch = "hexagon",
     ),
@@ -79,12 +74,13 @@ use std::task::{Context, Poll, Waker};
 // - https://github.com/golang/go/blob/3dd58676054223962cd915bb0934d1f9f489d4d2/src/internal/cpu/cpu_s390x.go#L7
 // - https://github.com/torvalds/linux/blob/3516bd729358a2a9b090c1905bd2a3fa926e24c6/arch/s390/include/asm/cache.h#L13
 #[cfg_attr(target_arch = "s390x", repr(align(256)))]
-// x86, wasm, and sparc64 have 64-byte cache line size.
+// x86, riscv, wasm, and sparc64 have 64-byte cache line size.
 //
 // Sources:
 // - https://github.com/golang/go/blob/dda2991c2ea0c5914714469c4defc2562a907230/src/internal/cpu/cpu_x86.go#L9
 // - https://github.com/golang/go/blob/3dd58676054223962cd915bb0934d1f9f489d4d2/src/internal/cpu/cpu_wasm.go#L7
 // - https://github.com/torvalds/linux/blob/3516bd729358a2a9b090c1905bd2a3fa926e24c6/arch/sparc/include/asm/cache.h#L19
+// - https://github.com/torvalds/linux/blob/3516bd729358a2a9b090c1905bd2a3fa926e24c6/arch/riscv/include/asm/cache.h#L10
 //
 // All others are assumed to have 64-byte cache line size.
 #[cfg_attr(
@@ -95,8 +91,6 @@ use std::task::{Context, Poll, Waker};
         target_arch = "arm",
         target_arch = "mips",
         target_arch = "mips64",
-        target_arch = "riscv32",
-        target_arch = "riscv64",
         target_arch = "sparc",
         target_arch = "hexagon",
         target_arch = "m68k",
@@ -120,10 +114,10 @@ struct Waiters {
     /// List of all current waiters.
     list: WaitList,
 
-    /// Waker used for AsyncRead.
+    /// Waker used for `AsyncRead`.
     reader: Option<Waker>,
 
-    /// Waker used for AsyncWrite.
+    /// Waker used for `AsyncWrite`.
     writer: Option<Waker>,
 }
 
@@ -171,11 +165,11 @@ enum State {
 //
 // | shutdown | driver tick | readiness |
 // |----------+-------------+-----------|
-// |   1 bit  |   8 bits    +   16 bits |
+// |   1 bit  |  15 bits    +   16 bits |
 
 const READINESS: bit::Pack = bit::Pack::least_significant(16);
 
-const TICK: bit::Pack = READINESS.then(8);
+const TICK: bit::Pack = READINESS.then(15);
 
 const SHUTDOWN: bit::Pack = TICK.then(1);
 
@@ -186,18 +180,17 @@ impl Default for ScheduledIo {
         ScheduledIo {
             linked_list_pointers: UnsafeCell::new(linked_list::Pointers::new()),
             readiness: AtomicUsize::new(0),
-            waiters: Mutex::new(Default::default()),
+            waiters: Mutex::new(Waiters::default()),
         }
     }
 }
 
 impl ScheduledIo {
     pub(crate) fn token(&self) -> mio::Token {
-        // use `expose_addr` when stable
-        mio::Token(self as *const _ as usize)
+        mio::Token(super::EXPOSE_IO.expose_provenance(self))
     }
 
-    /// Invoked when the IO driver is shut down; forces this ScheduledIo into a
+    /// Invoked when the IO driver is shut down; forces this `ScheduledIo` into a
     /// permanently shutdown state.
     pub(super) fn shutdown(&self) {
         let mask = SHUTDOWN.pack(1, 0);
@@ -213,39 +206,23 @@ impl ScheduledIo {
     ///    specific tick.
     /// - `f`: a closure returning a new readiness value given the previous
     ///   readiness.
-    pub(super) fn set_readiness(&self, tick: Tick, f: impl Fn(Ready) -> Ready) {
-        let mut current = self.readiness.load(Acquire);
+    pub(super) fn set_readiness(&self, tick_op: Tick, f: impl Fn(Ready) -> Ready) {
+        let _ = self.readiness.fetch_update(AcqRel, Acquire, |curr| {
+            // If the io driver is shut down, then you are only allowed to clear readiness.
+            debug_assert!(SHUTDOWN.unpack(curr) == 0 || matches!(tick_op, Tick::Clear(_)));
 
-        // The shutdown bit should not be set
-        debug_assert_eq!(0, SHUTDOWN.unpack(current));
+            const MAX_TICK: usize = TICK.max_value() + 1;
+            let tick = TICK.unpack(curr);
 
-        loop {
-            // Mask out the tick bits so that the modifying function doesn't see
-            // them.
-            let current_readiness = Ready::from_usize(current);
-            let new = f(current_readiness);
-
-            let next = match tick {
-                Tick::Set(t) => TICK.pack(t as usize, new.as_usize()),
-                Tick::Clear(t) => {
-                    if TICK.unpack(current) as u8 != t {
-                        // Trying to clear readiness with an old event!
-                        return;
-                    }
-
-                    TICK.pack(t as usize, new.as_usize())
-                }
+            let new_tick = match tick_op {
+                // Trying to clear readiness with an old event!
+                Tick::Clear(t) if tick as u8 != t => return None,
+                Tick::Clear(t) => t as usize,
+                Tick::Set => tick.wrapping_add(1) % MAX_TICK,
             };
-
-            match self
-                .readiness
-                .compare_exchange(current, next, AcqRel, Acquire)
-            {
-                Ok(_) => return,
-                // we lost the race, retry!
-                Err(actual) => current = actual,
-            }
-        }
+            let ready = Ready::from_usize(READINESS.unpack(curr));
+            Some(TICK.pack(new_tick, f(ready).as_usize()))
+        });
     }
 
     /// Notifies all pending waiters that have registered interest in `ready`.
@@ -338,22 +315,16 @@ impl ScheduledIo {
         if ready.is_empty() && !is_shutdown {
             // Update the task info
             let mut waiters = self.waiters.lock();
-            let slot = match direction {
+            let waker = match direction {
                 Direction::Read => &mut waiters.reader,
                 Direction::Write => &mut waiters.writer,
             };
 
             // Avoid cloning the waker if one is already stored that matches the
             // current task.
-            match slot {
-                Some(existing) => {
-                    if !existing.will_wake(cx.waker()) {
-                        *existing = cx.waker().clone();
-                    }
-                }
-                None => {
-                    *slot = Some(cx.waker().clone());
-                }
+            match waker {
+                Some(waker) => waker.clone_from(cx.waker()),
+                None => *waker = Some(cx.waker().clone()),
             }
 
             // Try again, in case the readiness was changed while we were
@@ -468,12 +439,11 @@ impl Future for Readiness<'_> {
                 State::Init => {
                     // Optimistically check existing readiness
                     let curr = scheduled_io.readiness.load(SeqCst);
-                    let ready = Ready::from_usize(READINESS.unpack(curr));
                     let is_shutdown = SHUTDOWN.unpack(curr) != 0;
 
                     // Safety: `waiter.interest` never changes
                     let interest = unsafe { (*waiter.get()).interest };
-                    let ready = ready.intersection(interest);
+                    let ready = Ready::from_usize(READINESS.unpack(curr)).intersection(interest);
 
                     if !ready.is_empty() || is_shutdown {
                         // Currently ready!
@@ -541,10 +511,7 @@ impl Future for Readiness<'_> {
                         *state = State::Done;
                     } else {
                         // Update the waker, if necessary.
-                        if !w.waker.as_ref().unwrap().will_wake(cx.waker()) {
-                            w.waker = Some(cx.waker().clone());
-                        }
-
+                        w.waker.as_mut().unwrap().clone_from(cx.waker());
                         return Poll::Pending;
                     }
 
@@ -569,8 +536,7 @@ impl Future for Readiness<'_> {
 
                     // The readiness state could have been cleared in the meantime,
                     // but we allow the returned ready set to be empty.
-                    let curr_ready = Ready::from_usize(READINESS.unpack(curr));
-                    let ready = curr_ready.intersection(w.interest);
+                    let ready = Ready::from_usize(READINESS.unpack(curr)).intersection(w.interest);
 
                     return Poll::Ready(ReadyEvent {
                         tick,

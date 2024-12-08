@@ -1,17 +1,20 @@
-
----
- tests/test_bytes.rs | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git b/tests/test_bytes.rs a/tests/test_bytes.rs
-index 5ec60a5b..da1b0743 100644
---- b/tests/test_bytes.rs
-+++ a/tests/test_bytes.rs
-@@ -288,6 +288,7 @@ fn split_to_uninitialized() {
+diff --git a/tests/test_bytes.rs b/tests/test_bytes.rs
+index fdc36ce8..94b46642 100644
+--- a/tests/test_bytes.rs
++++ b/tests/test_bytes.rs
+@@ -291,6 +291,7 @@ fn split_to_uninitialized() {
  }
  
  #[test]
-+#[ignore = "Android: we unwind differently."]
++#[cfg(panic = "unwind")]
  fn split_off_to_at_gt_len() {
      fn make_bytes() -> Bytes {
          let mut bytes = BytesMut::with_capacity(100);
+@@ -1618,6 +1619,7 @@ fn owned_to_vec() {
+ }
+ 
+ #[test]
++#[cfg(panic = "unwind")]
+ fn owned_safe_drop_on_as_ref_panic() {
+     let buf: [u8; 10] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+     let drop_counter = SharedAtomicCounter::new();

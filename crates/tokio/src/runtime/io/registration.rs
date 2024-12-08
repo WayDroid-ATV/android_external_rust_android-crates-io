@@ -7,7 +7,7 @@ use crate::runtime::scheduler;
 use mio::event::Source;
 use std::io;
 use std::sync::Arc;
-use std::task::{Context, Poll};
+use std::task::{ready, Context, Poll};
 
 cfg_io_driver! {
     /// Associates an I/O resource with the reactor instance that drives it.
@@ -219,11 +219,16 @@ impl Registration {
         loop {
             let event = self.readiness(interest).await?;
 
+            let coop = std::future::poll_fn(crate::runtime::coop::poll_proceed).await;
+
             match f() {
                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
                     self.clear_readiness(event);
                 }
-                x => return x,
+                x => {
+                    coop.made_progress();
+                    return x;
+                }
             }
         }
     }
