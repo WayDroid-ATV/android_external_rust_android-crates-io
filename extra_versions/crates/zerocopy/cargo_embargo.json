@@ -22,7 +22,8 @@
       ],
       "module_name_overrides": {
         "libbyteorder": "libbyteorder_nostd",
-        "libzerocopy": "libzerocopy-0.7.35_nostd"
+        "libzerocopy": "libzerocopy-0.7.35_nostd",
+        "libzerocopy_derive": "libzerocopy_derive-0.7.35"
       },
       "package": {
         "zerocopy": {
@@ -41,7 +42,8 @@
       ],
       "module_name_overrides": {
         "libbyteorder": "libbyteorder_nostd",
-        "libzerocopy": "libzerocopy-0.7.35_nostd_noalloc"
+        "libzerocopy": "libzerocopy-0.7.35_nostd_noalloc",
+        "libzerocopy_derive": "libzerocopy_derive-0.7.35"
       },
       "package": {
         "zerocopy": {
@@ -67,5 +69,5 @@
       "generate_rulesmk": true
     }
   ],
-  "min_sdk_version": "34"
+  "min_sdk_version": "29"
 }

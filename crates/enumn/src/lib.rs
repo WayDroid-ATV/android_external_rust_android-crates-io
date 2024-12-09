@@ -92,7 +92,7 @@
 //!
 //! # Discriminants
 //!
-//! The conversion respects explictly specified enum discriminants. Consider
+//! The conversion respects explicitly specified enum discriminants. Consider
 //! this enum:
 //!
 //! ```
@@ -105,7 +105,7 @@
 //!
 //! Here `Letter::n(65)` would return `Some(Letter::A)`.
 
-#![doc(html_root_url = "https://docs.rs/enumn/0.1.12")]
+#![doc(html_root_url = "https://docs.rs/enumn/0.1.14")]
 #![allow(
     clippy::missing_panics_doc,
     clippy::needless_doctest_main,

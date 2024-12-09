@@ -18,7 +18,8 @@
       "//external/rust/android-crates-io/crates/pkcs8:__subpackages__",
       "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
       "//packages/modules/Virtualization:__subpackages__",
-      "//system/keymint:__subpackages__"
+      "//system/keymint:__subpackages__",
+      "//system/security/keystore2:__subpackages__"
     ],
     "libder_nostd": [
       "//external/rust/android-crates-io/crates/sec1:__subpackages__",

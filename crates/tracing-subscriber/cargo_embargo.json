@@ -7,5 +7,6 @@
     "fmt",
     "registry"
   ],
+  "min_sdk_version": "29",
   "run_cargo": false
 }
