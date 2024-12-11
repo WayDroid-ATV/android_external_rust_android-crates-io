@@ -1,0 +1,17 @@
+name: "cfg_aliases"
+description: "A tiny utility to help save you a lot of effort with long winded `#[cfg()]` checks."
+third_party {
+  version: "0.1.1"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 12
+    day: 10
+  }
+  homepage: "https://crates.io/crates/cfg_aliases"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/cfg_aliases/cfg_aliases-0.1.1.crate"
+    version: "0.1.1"
+  }
+}

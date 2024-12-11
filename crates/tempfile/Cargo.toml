@@ -81,10 +81,3 @@ nightly = []
 [target.'cfg(any(unix, target_os = "wasi"))'.dependencies.rustix]
 version = "0.38.31"
 features = ["fs"]
-
-[target."cfg(windows)".dependencies.windows-sys]
-version = "0.59"
-features = [
-    "Win32_Storage_FileSystem",
-    "Win32_Foundation",
-]

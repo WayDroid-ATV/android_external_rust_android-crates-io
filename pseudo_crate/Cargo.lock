@@ -134,6 +134,7 @@ dependencies = [
  "cesu8",
  "cexpr",
  "cfg-if",
+ "cfg_aliases 0.1.1",
  "chrono",
  "ciborium",
  "ciborium-io",
