@@ -14,8 +14,8 @@ license {
 }
 
 rust_proc_macro {
-    name: "libzerocopy_derive-0.7.35",
-    crate_name: "zerocopy_derive",
+    name: "libzerocopy_derive_0735",
+    crate_name: "zerocopy_derive_0735",
     cargo_env_compat: true,
     cargo_pkg_version: "0.7.35",
     crate_root: "src/lib.rs",

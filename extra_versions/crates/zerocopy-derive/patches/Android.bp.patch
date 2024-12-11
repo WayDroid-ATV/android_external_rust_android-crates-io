@@ -1,0 +1,13 @@
+diff --git b/extra_versions/crates/zerocopy-derive/Android.bp a/extra_versions/crates/zerocopy-derive/Android.bp
+index d3fb508a..47ac5671 100644
+--- b/extra_versions/crates/zerocopy-derive/Android.bp
++++ a/extra_versions/crates/zerocopy-derive/Android.bp
+@@ -15,7 +15,7 @@ license {
+ 
+ rust_proc_macro {
+     name: "libzerocopy_derive_0735",
+-    crate_name: "zerocopy_derive",
++    crate_name: "zerocopy_derive_0735",
+     cargo_env_compat: true,
+     cargo_pkg_version: "0.7.35",
+     crate_root: "src/lib.rs",
