@@ -16,6 +16,24 @@
       "message": "The ExternalRustCrates analyzer failure is a bug, fixed in cl/705159320. I am intending to wait for the bugfix to roll out before submitting.",
       "revId": "5a786eabd3dc5ee2214c024ac6acaeed963f4ba8",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "439ddddf_f2232af6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-12-11T23:57:30Z",
+      "side": 1,
+      "message": "Is it possible to submit first, to unblock me making progess on all the rest of the things depending on zerocopy?",
+      "parentUuid": "4fe53644_ed853d1b",
+      "revId": "5a786eabd3dc5ee2214c024ac6acaeed963f4ba8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
