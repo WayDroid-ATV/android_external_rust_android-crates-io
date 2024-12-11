@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8532f4a6_3f327cbd",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 6
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-12-11T18:24:40Z",
+      "side": 1,
+      "message": "This is no longer part of the change, it was done separately.",
+      "revId": "4e28c9345beea2230fdb3e0d66c9054ad064a373",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
