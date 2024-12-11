@@ -16,6 +16,24 @@
       "message": "Can you please run this and include the checksum file in your CL:\n\ncrate_tool --managed-repo-path\u003dexternal/rust/android-crates-io/extra_versions regenerate zerocopy-derive\n\nAlso, you will need to rebase because I just did the same thing for my change.",
       "revId": "89ece0545d0fac17940903ee004eef03bdd13a90",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c0aa0c3c_9a43924f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-12-11T18:27:14Z",
+      "side": 1,
+      "message": "Actually, do this for both crates you touched:\n\ncrate_tool --managed-repo-path\u003dexternal/rust/android-crates-io/extra_versions regenerate zerocopy zerocopy-derive",
+      "parentUuid": "b939fbc1_9f459924",
+      "revId": "89ece0545d0fac17940903ee004eef03bdd13a90",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
