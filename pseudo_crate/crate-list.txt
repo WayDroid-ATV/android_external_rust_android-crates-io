@@ -42,6 +42,7 @@ cast
 cesu8
 cexpr
 cfg-if
+cfg_aliases
 chrono
 ciborium
 ciborium-io
