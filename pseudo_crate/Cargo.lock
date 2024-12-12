@@ -401,8 +401,8 @@ dependencies = [
  "termcolor",
  "termtree",
  "textwrap 0.16.0",
- "thiserror",
- "thiserror-impl",
+ "thiserror 2.0.6",
+ "thiserror-impl 2.0.6",
  "thread_local",
  "threadpool",
  "tikv-jemalloc-sys",
@@ -1290,7 +1290,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7bb11bd1378bf3731b182997b40cefe00aba6a6cc74042c8318c1b271d3badf7"
 dependencies = [
  "nix 0.27.1",
- "thiserror",
+ "thiserror 1.0.49",
 ]
 
 [[package]]
@@ -2781,7 +2781,7 @@ dependencies = [
  "combine",
  "jni-sys",
  "log",
- "thiserror",
+ "thiserror 1.0.49",
  "walkdir",
  "windows-sys 0.45.0",
 ]
@@ -3177,7 +3177,7 @@ checksum = "59bb584eaeeab6bd0226ccf3509a69d7936d148cf3d036ad350abe35e8c6856e"
 dependencies = [
  "miette-derive",
  "once_cell",
- "thiserror",
+ "thiserror 1.0.49",
  "unicode-width",
 ]
 
@@ -3259,7 +3259,7 @@ dependencies = [
  "safer-ffi-gen",
  "serde",
  "spin 0.9.8",
- "thiserror",
+ "thiserror 1.0.49",
  "wasm-bindgen",
  "zeroize",
 ]
@@ -3271,7 +3271,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f84f5344d759b6f5e64870845b90f0829a3402534582be354deb12e23de8741"
 dependencies = [
  "mls-rs-codec-derive",
- "thiserror",
+ "thiserror 1.0.49",
  "wasm-bindgen",
 ]
 
@@ -3299,7 +3299,7 @@ dependencies = [
  "mls-rs-codec",
  "safer-ffi-gen",
  "serde",
- "thiserror",
+ "thiserror 1.0.49",
  "wasm-bindgen",
  "zeroize",
 ]
@@ -3324,7 +3324,7 @@ dependencies = [
  "async-trait",
  "maybe-async",
  "mls-rs-core",
- "thiserror",
+ "thiserror 1.0.49",
  "wasm-bindgen",
 ]
 
@@ -3370,7 +3370,7 @@ dependencies = [
  "libc",
  "once_cell",
  "parking_lot",
- "thiserror",
+ "thiserror 1.0.49",
  "widestring",
  "winapi",
 ]
@@ -3769,7 +3769,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba0db8e089042439da5fd81b6be7c741bf7217502fb1c03646fc0ea998a09405"
 dependencies = [
  "bytes",
- "thiserror",
+ "thiserror 1.0.49",
 ]
 
 [[package]]
@@ -3806,7 +3806,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f200d8d83c44a45b21764d1916299752ca035d15ecd46faca3e9a2a2bf6ad06"
 dependencies = [
  "memchr",
- "thiserror",
+ "thiserror 1.0.49",
  "ucd-trie",
 ]
 
@@ -4147,7 +4147,7 @@ checksum = "b55bad9126f378a853655831eb7363b7b01b81d19f8cb1218861086ca4a1a61e"
 dependencies = [
  "once_cell",
  "protobuf-support",
- "thiserror",
+ "thiserror 1.0.49",
 ]
 
 [[package]]
@@ -4162,7 +4162,7 @@ dependencies = [
  "protobuf-parse",
  "regex",
  "tempfile",
- "thiserror",
+ "thiserror 1.0.49",
 ]
 
 [[package]]
@@ -4173,7 +4173,7 @@ checksum = "ce19fee00c35e62179f79d622f440c27466c9f8dff68ca907d8f59dfc8a88adb"
 dependencies = [
  "protobuf 3.2.0",
  "protobuf-support",
- "thiserror",
+ "thiserror 1.0.49",
 ]
 
 [[package]]
@@ -4188,7 +4188,7 @@ dependencies = [
  "protobuf 3.2.0",
  "protobuf-support",
  "tempfile",
- "thiserror",
+ "thiserror 1.0.49",
  "which",
 ]
 
@@ -4198,7 +4198,7 @@ version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a5d4d7b8601c814cfb36bcebb79f0e61e45e1e93640cf778837833bbed05c372"
 dependencies = [
- "thiserror",
+ "thiserror 1.0.49",
 ]
 
 [[package]]
@@ -4353,7 +4353,7 @@ checksum = "ba009ff324d1fc1b900bd1fdb31564febe58a8ccc8a6fdbb93b543d33b13ca43"
 dependencies = [
  "getrandom",
  "libredox",
- "thiserror",
+ "thiserror 1.0.49",
 ]
 
 [[package]]
@@ -4561,7 +4561,7 @@ dependencies = [
  "proc-macro2 1.0.92",
  "quote 1.0.36",
  "syn 2.0.90",
- "thiserror",
+ "thiserror 1.0.49",
 ]
 
 [[package]]
@@ -4633,7 +4633,7 @@ checksum = "fb3aa78ecda1ebc9ec9847d5d3aba7d618823446a049ba2491940506da6e2782"
 dependencies = [
  "log",
  "serde",
- "thiserror",
+ "thiserror 1.0.49",
  "xml-rs",
 ]
 
@@ -5068,7 +5068,16 @@ version = "1.0.49"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1177e8c6d7ede7afde3585fd2513e611227efd6481bd78d2e82ba1ce16557ed4"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 1.0.49",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fec2a1820ebd077e2b90c4df007bebf344cd394098a13c563957d0afc83ea47"
+dependencies = [
+ "thiserror-impl 2.0.6",
 ]
 
 [[package]]
@@ -5076,6 +5085,17 @@ name = "thiserror-impl"
 version = "1.0.49"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "10712f02019e9288794769fba95cd6847df9874d49d871d062172f9dd41bc4cc"
+dependencies = [
+ "proc-macro2 1.0.92",
+ "quote 1.0.36",
+ "syn 2.0.90",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d65750cab40f4ff1929fb1ba509e9914eb756131cef4210da8d5d700d26f6312"
 dependencies = [
  "proc-macro2 1.0.92",
  "quote 1.0.36",
@@ -5457,7 +5477,7 @@ dependencies = [
  "log",
  "rand",
  "sha1",
- "thiserror",
+ "thiserror 1.0.49",
  "url",
  "utf-8",
 ]
@@ -5710,7 +5730,7 @@ dependencies = [
  "cfg-if",
  "libc",
  "nix 0.27.1",
- "thiserror",
+ "thiserror 1.0.49",
  "userfaultfd-sys",
 ]
 
@@ -5863,7 +5883,7 @@ checksum = "9dc276f0d00c17b9aeb584da0f1e1c673df0d183cc2539e3636ec8cbc5eae99b"
 dependencies = [
  "arc-swap",
  "libc",
- "thiserror",
+ "thiserror 1.0.49",
  "winapi",
 ]
 
@@ -5874,7 +5894,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c3aba5064cc5f6f7740cddc8dae34d2d9a311cac69b60d942af7f3ab8fc49f4"
 dependencies = [
  "libc",
- "thiserror",
+ "thiserror 1.0.49",
  "winapi",
 ]
 
