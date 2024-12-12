@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3584864f_4a0cad96",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-12T19:19:21Z",
+      "side": 1,
+      "message": "I don\u0027t have any permissions here, but the logic LGTM. Thank you for getting this created.",
+      "revId": "987160a2d4ad46718c2b5c3064a2abdd21f4c0d8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
