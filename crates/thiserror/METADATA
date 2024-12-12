@@ -1,17 +1,17 @@
 name: "thiserror"
 description: "derive(Error)"
 third_party {
-  version: "1.0.49"
+  version: "2.0.6"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2023
-    month: 3
-    day: 23
+    year: 2024
+    month: 12
+    day: 12
   }
   homepage: "https://crates.io/crates/thiserror"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/thiserror/thiserror-1.0.49.crate"
-    version: "1.0.49"
+    value: "https://static.crates.io/crates/thiserror/thiserror-2.0.6.crate"
+    version: "2.0.6"
   }
 }
