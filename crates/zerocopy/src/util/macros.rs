@@ -66,10 +66,37 @@ macro_rules! unsafe_impl {
             unsafe_impl!(@method $trait $(; |$candidate: MaybeAligned<$repr>| $is_bit_valid)?);
         }
     };
+
     // Implement all `$traits` for `$ty` with no bounds.
-    ($ty:ty: $($traits:ident),*) => {
-        $( unsafe_impl!($ty: $traits); )*
+    //
+    // The 2 arms under this one are there so we can apply
+    // N attributes for each one of M trait implementations.
+    // The simple solution of:
+    //
+    // ($(#[$attrs:meta])* $ty:ty: $($traits:ident),*) => {
+    //     $( unsafe_impl!( $(#[$attrs])* $ty: $traits ) );*
+    // }
+    //
+    // Won't work. The macro processor sees that the outer repetition
+    // contains both $attrs and $traits and expects them to match the same
+    // amount of fragments.
+    //
+    // To solve this we must:
+    // 1. Pack the attributes into a single token tree fragment we can match over.
+    // 2. Expand the traits.
+    // 3. Unpack and expand the attributes.
+    ($(#[$attrs:meta])* $ty:ty: $($traits:ident),*) => {
+        unsafe_impl!(@impl_traits_with_packed_attrs { $(#[$attrs])* } $ty: $($traits),*)
     };
+
+    (@impl_traits_with_packed_attrs $attrs:tt $ty:ty: $($traits:ident),*) => {
+        $( unsafe_impl!(@unpack_attrs $attrs $ty: $traits); )*
+    };
+
+    (@unpack_attrs { $(#[$attrs:meta])* } $ty:ty: $traits:ident) => {
+        unsafe_impl!($(#[$attrs])* $ty: $traits);
+    };
+
     // This arm is identical to the following one, except it contains a
     // preceding `const`. If we attempt to handle these with a single arm, there
     // is an inherent ambiguity between `const` (the keyword) and `const` (the
@@ -530,6 +557,17 @@ macro_rules! impl_known_layout {
 
                 type PointerMetadata = ();
 
+                // SAFETY: `CoreMaybeUninit<T>::LAYOUT` and `T::LAYOUT` are
+                // identical because `CoreMaybeUninit<T>` has the same size and
+                // alignment as `T` [1], and `CoreMaybeUninit` admits
+                // uninitialized bytes in all positions.
+                //
+                // [1] Per https://doc.rust-lang.org/1.81.0/std/mem/union.MaybeUninit.html#layout-1:
+                //
+                //   `MaybeUninit<T>` is guaranteed to have the same size,
+                //   alignment, and ABI as `T`
+                type MaybeUninit = core::mem::MaybeUninit<Self>;
+
                 const LAYOUT: crate::DstLayout = crate::DstLayout::for_type::<$ty>();
 
                 // SAFETY: `.cast` preserves address and provenance.
@@ -572,6 +610,7 @@ macro_rules! unsafe_impl_known_layout {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
 
                 type PointerMetadata = <$repr as KnownLayout>::PointerMetadata;
+                type MaybeUninit = <$repr as KnownLayout>::MaybeUninit;
 
                 const LAYOUT: DstLayout = <$repr as KnownLayout>::LAYOUT;
 
