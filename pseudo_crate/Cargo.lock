@@ -472,8 +472,8 @@ dependencies = [
  "x509-cert",
  "xml-rs",
  "yaml-rust",
- "zerocopy 0.8.9",
- "zerocopy-derive 0.8.9",
+ "zerocopy 0.8.13",
+ "zerocopy-derive 0.8.13",
  "zeroize",
  "zeroize_derive",
  "zip",
@@ -6480,11 +6480,11 @@ dependencies = [
 
 [[package]]
 name = "zerocopy"
-version = "0.8.9"
+version = "0.8.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f49e690f8f352f4a9ee8679a8c5921f42ffd0d6d6413a0a66b8e81cf524e109c"
+checksum = "67914ab451f3bfd2e69e5e9d2ef3858484e7074d63f204fd166ec391b54de21d"
 dependencies = [
- "zerocopy-derive 0.8.9",
+ "zerocopy-derive 0.8.13",
 ]
 
 [[package]]
@@ -6500,9 +6500,9 @@ dependencies = [
 
 [[package]]
 name = "zerocopy-derive"
-version = "0.8.9"
+version = "0.8.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fa732fcc881df7a6fbe8e3ed17baadece53b379ad58fe2633396b1a2b108a7b1"
+checksum = "7988d73a4303ca289df03316bc490e934accf371af6bc745393cf3c2c5c4f25d"
 dependencies = [
  "proc-macro2 1.0.92",
  "quote 1.0.36",

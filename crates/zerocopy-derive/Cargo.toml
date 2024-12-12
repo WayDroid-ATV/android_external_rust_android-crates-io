@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "zerocopy-derive"
-version = "0.8.9"
+version = "0.8.13"
 authors = ["Joshua Liebow-Feeser <joshlf@google.com>"]
 build = false
 exclude = [
@@ -69,6 +69,10 @@ path = "tests/hygiene.rs"
 [[test]]
 name = "include"
 path = "tests/include.rs"
+
+[[test]]
+name = "issue_2117"
+path = "tests/issue_2117.rs"
 
 [[test]]
 name = "paths_and_modules"
@@ -150,6 +154,9 @@ features = ["full"]
 
 [dev-dependencies.dissimilar]
 version = "1.0.9"
+
+[dev-dependencies.libc]
+version = "=0.2.163"
 
 [dev-dependencies.once_cell]
 version = "=1.9"

@@ -102,6 +102,7 @@ fn test_known_layout() {
             struct Foo;
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::KnownLayout for Foo
             where
                 Self: ::zerocopy::util::macro_util::core_reexport::marker::Sized,
@@ -109,6 +110,8 @@ fn test_known_layout() {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
 
                 type PointerMetadata = ();
+
+                type MaybeUninit = ::zerocopy::util::macro_util::core_reexport::mem::MaybeUninit<Self>;
 
                 const LAYOUT: ::zerocopy::DstLayout = ::zerocopy::DstLayout::for_type::<Self>();
 
@@ -125,6 +128,141 @@ fn test_known_layout() {
             }
         } no_build
     }
+
+    test! {
+        KnownLayout {
+            #[repr(C, align(2))]
+            struct Foo<T, U>(T, U);
+        }
+        expands to {
+            const _: () = {
+                #[allow(deprecated)]
+                #[automatically_derived]
+                unsafe impl<T, U> ::zerocopy::KnownLayout for Foo<T, U>
+                where
+                    U: ::zerocopy::KnownLayout,
+                {
+                    fn only_derive_is_allowed_to_implement_this_trait() {}
+                    type PointerMetadata = <U as ::zerocopy::KnownLayout>::PointerMetadata;
+                    type MaybeUninit = __ZerocopyKnownLayoutMaybeUninit<T, U>;
+                    const LAYOUT: ::zerocopy::DstLayout = {
+                        use ::zerocopy::util::macro_util::core_reexport::num::NonZeroUsize;
+                        use ::zerocopy::{DstLayout, KnownLayout};
+                        let repr_align = ::zerocopy::util::macro_util::core_reexport::num::NonZeroUsize::new(
+                            2u32 as usize,
+                        );
+                        let repr_packed = ::zerocopy::util::macro_util::core_reexport::option::Option::None;
+                        DstLayout::new_zst(repr_align)
+                            .extend(DstLayout::for_type::<T>(), repr_packed)
+                            .extend(<U as KnownLayout>::LAYOUT, repr_packed)
+                            .pad_to_align()
+                    };
+                    #[inline(always)]
+                    fn raw_from_ptr_len(
+                        bytes: ::zerocopy::util::macro_util::core_reexport::ptr::NonNull<u8>,
+                        meta: Self::PointerMetadata,
+                    ) -> ::zerocopy::util::macro_util::core_reexport::ptr::NonNull<Self> {
+                        use ::zerocopy::KnownLayout;
+                        let trailing = <U as KnownLayout>::raw_from_ptr_len(bytes, meta);
+                        let slf = trailing.as_ptr() as *mut Self;
+                        unsafe {
+                            ::zerocopy::util::macro_util::core_reexport::ptr::NonNull::new_unchecked(
+                                slf,
+                            )
+                        }
+                    }
+                    #[inline(always)]
+                    fn pointer_to_metadata(ptr: *mut Self) -> Self::PointerMetadata {
+                        <U>::pointer_to_metadata(ptr as *mut _)
+                    }
+                }
+                #[allow(non_camel_case_types)]
+                struct __Zerocopy_Field_0;
+                #[allow(non_camel_case_types)]
+                struct __Zerocopy_Field_1;
+                unsafe impl<T, U> ::zerocopy::util::macro_util::Field<__Zerocopy_Field_0>
+                for Foo<T, U> {
+                    type Type = T;
+                }
+                unsafe impl<T, U> ::zerocopy::util::macro_util::Field<__Zerocopy_Field_1>
+                for Foo<T, U> {
+                    type Type = U;
+                }
+                #[repr(C)]
+                #[repr(align(2))]
+                #[doc(hidden)]
+                struct __ZerocopyKnownLayoutMaybeUninit<T, U>(
+                    ::zerocopy::util::macro_util::core_reexport::mem::MaybeUninit<
+                        <Foo<T, U> as ::zerocopy::util::macro_util::Field<__Zerocopy_Field_0>>::Type,
+                    >,
+                    <<Foo<
+                        T,
+                        U,
+                    > as ::zerocopy::util::macro_util::Field<
+                        __Zerocopy_Field_1,
+                    >>::Type as ::zerocopy::KnownLayout>::MaybeUninit,
+                )
+                where
+                    <Foo<
+                        T,
+                        U,
+                    > as ::zerocopy::util::macro_util::Field<
+                        __Zerocopy_Field_1,
+                    >>::Type: ::zerocopy::KnownLayout;
+                unsafe impl<T, U> ::zerocopy::KnownLayout for __ZerocopyKnownLayoutMaybeUninit<T, U>
+                where
+                    <Foo<
+                        T,
+                        U,
+                    > as ::zerocopy::util::macro_util::Field<
+                        __Zerocopy_Field_1,
+                    >>::Type: ::zerocopy::KnownLayout,
+                {
+                    #[allow(clippy::missing_inline_in_public_items)]
+                    fn only_derive_is_allowed_to_implement_this_trait() {}
+                    type PointerMetadata = <Foo<T, U> as ::zerocopy::KnownLayout>::PointerMetadata;
+                    type MaybeUninit = Self;
+                    const LAYOUT: ::zerocopy::DstLayout = <Foo<
+                        T,
+                        U,
+                    > as ::zerocopy::KnownLayout>::LAYOUT;
+                    #[inline(always)]
+                    fn raw_from_ptr_len(
+                        bytes: ::zerocopy::util::macro_util::core_reexport::ptr::NonNull<u8>,
+                        meta: Self::PointerMetadata,
+                    ) -> ::zerocopy::util::macro_util::core_reexport::ptr::NonNull<Self> {
+                        use ::zerocopy::KnownLayout;
+                        let trailing = <<<Foo<
+                            T,
+                            U,
+                        > as ::zerocopy::util::macro_util::Field<
+                            __Zerocopy_Field_1,
+                        >>::Type as ::zerocopy::KnownLayout>::MaybeUninit as KnownLayout>::raw_from_ptr_len(
+                            bytes,
+                            meta,
+                        );
+                        let slf = trailing.as_ptr() as *mut Self;
+                        unsafe {
+                            ::zerocopy::util::macro_util::core_reexport::ptr::NonNull::new_unchecked(
+                                slf,
+                            )
+                        }
+                    }
+                    #[inline(always)]
+                    fn pointer_to_metadata(ptr: *mut Self) -> Self::PointerMetadata {
+                        <<<Foo<
+                            T,
+                            U,
+                        > as ::zerocopy::util::macro_util::Field<
+                            __Zerocopy_Field_1,
+                        >>::Type as ::zerocopy::KnownLayout>::MaybeUninit>::pointer_to_metadata(
+                            ptr as *mut _,
+                        )
+                    }
+                }
+            };
+        } no_build
+    }
 }
 
 #[test]
@@ -134,6 +272,7 @@ fn test_immutable() {
             struct Foo;
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::Immutable for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
             }
@@ -148,6 +287,7 @@ fn test_try_from_bytes() {
             struct Foo;
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::TryFromBytes for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
 
@@ -172,6 +312,7 @@ fn test_from_zeros() {
             struct Foo;
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::TryFromBytes for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
 
@@ -187,6 +328,7 @@ fn test_from_zeros() {
             }
 
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::FromZeros for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
             }
@@ -201,6 +343,7 @@ fn test_from_bytes_struct() {
             struct Foo;
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::TryFromBytes for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
 
@@ -225,11 +368,13 @@ fn test_from_bytes_struct() {
             }
 
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::FromZeros for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
             }
 
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::FromBytes for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
             }
@@ -246,6 +391,7 @@ fn test_from_bytes_union() {
             }
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::TryFromBytes for Foo
             where
                 u8: ::zerocopy::TryFromBytes + ::zerocopy::Immutable,
@@ -273,6 +419,7 @@ fn test_from_bytes_union() {
             }
 
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::FromZeros for Foo
             where
                 u8: ::zerocopy::FromZeros + ::zerocopy::Immutable,
@@ -281,6 +428,7 @@ fn test_from_bytes_union() {
             }
 
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::FromBytes for Foo
             where
                 u8: ::zerocopy::FromBytes + ::zerocopy::Immutable,
@@ -299,6 +447,7 @@ fn test_into_bytes() {
             struct Foo;
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::IntoBytes for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
             }
@@ -314,6 +463,7 @@ fn test_into_bytes() {
             }
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::IntoBytes for Foo
             where
                 u8: ::zerocopy::IntoBytes,
@@ -337,6 +487,7 @@ fn test_unaligned() {
             struct Foo;
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::Unaligned for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
             }
@@ -359,6 +510,7 @@ fn test_try_from_bytes_enum() {
             }
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl<'a: 'static, const N: usize, X, Y: Deref> ::zerocopy::TryFromBytes
                 for ComplexWithGenerics<'a, { N }, X, Y>
             where
@@ -382,7 +534,7 @@ fn test_try_from_bytes_enum() {
                 {
                     use ::zerocopy::util::macro_util::core_reexport;
                     #[repr(u8)]
-                    #[allow(dead_code)]
+                    #[allow(dead_code, non_camel_case_types)]
                     enum ___ZerocopyTag {
                         UnitLike,
                         StructLike,
@@ -416,6 +568,7 @@ fn test_try_from_bytes_enum() {
                     where
                         X: Deref<Target = &'a [(X, Y); N]>;
                     #[allow(deprecated)]
+                    #[automatically_derived]
                     unsafe impl<'a: 'static, const N: usize, X, Y: Deref> ::zerocopy::TryFromBytes
                         for ___ZerocopyVariantStruct_StructLike<'a, { N }, X, Y>
                     where
@@ -512,6 +665,7 @@ fn test_try_from_bytes_enum() {
                     where
                         X: Deref<Target = &'a [(X, Y); N]>;
                     #[allow(deprecated)]
+                    #[automatically_derived]
                     unsafe impl<'a: 'static, const N: usize, X, Y: Deref> ::zerocopy::TryFromBytes
                         for ___ZerocopyVariantStruct_TupleLike<'a, { N }, X, Y>
                     where
@@ -620,7 +774,7 @@ fn test_try_from_bytes_enum() {
                                 })
                             };
                             let variant = unsafe { variant.assume_initialized() };
-                           <___ZerocopyVariantStruct_StructLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
+                        <___ZerocopyVariantStruct_StructLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
                                             variant)
                         }
                         ___ZEROCOPY_TAG_TupleLike => {
@@ -630,7 +784,7 @@ fn test_try_from_bytes_enum() {
                                 })
                             };
                             let variant = unsafe { variant.assume_initialized() };
-                           <___ZerocopyVariantStruct_TupleLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
+                        <___ZerocopyVariantStruct_TupleLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
                                             variant)
                         }
                         _ => false,
@@ -653,6 +807,7 @@ fn test_try_from_bytes_enum() {
             }
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl<'a: 'static, const N: usize, X, Y: Deref> ::zerocopy::TryFromBytes
                 for ComplexWithGenerics<'a, { N }, X, Y>
             where
@@ -676,7 +831,7 @@ fn test_try_from_bytes_enum() {
                 {
                     use ::zerocopy::util::macro_util::core_reexport;
                     #[repr(u32)]
-                    #[allow(dead_code)]
+                    #[allow(dead_code, non_camel_case_types)]
                     enum ___ZerocopyTag {
                         UnitLike,
                         StructLike,
@@ -710,6 +865,7 @@ fn test_try_from_bytes_enum() {
                     where
                         X: Deref<Target = &'a [(X, Y); N]>;
                     #[allow(deprecated)]
+                    #[automatically_derived]
                     unsafe impl<'a: 'static, const N: usize, X, Y: Deref> ::zerocopy::TryFromBytes
                         for ___ZerocopyVariantStruct_StructLike<'a, { N }, X, Y>
                     where
@@ -806,6 +962,7 @@ fn test_try_from_bytes_enum() {
                     where
                         X: Deref<Target = &'a [(X, Y); N]>;
                     #[allow(deprecated)]
+                    #[automatically_derived]
                     unsafe impl<'a: 'static, const N: usize, X, Y: Deref> ::zerocopy::TryFromBytes
                         for ___ZerocopyVariantStruct_TupleLike<'a, { N }, X, Y>
                     where
@@ -914,7 +1071,7 @@ fn test_try_from_bytes_enum() {
                                 })
                             };
                             let variant = unsafe { variant.assume_initialized() };
-                           <___ZerocopyVariantStruct_StructLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
+                        <___ZerocopyVariantStruct_StructLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
                                             variant)
                         }
                         ___ZEROCOPY_TAG_TupleLike => {
@@ -924,7 +1081,7 @@ fn test_try_from_bytes_enum() {
                                 })
                             };
                             let variant = unsafe { variant.assume_initialized() };
-                           <___ZerocopyVariantStruct_TupleLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
+                        <___ZerocopyVariantStruct_TupleLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
                                             variant)
                         }
                         _ => false,
@@ -947,6 +1104,7 @@ fn test_try_from_bytes_enum() {
             }
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl<'a: 'static, const N: usize, X, Y: Deref> ::zerocopy::TryFromBytes
                 for ComplexWithGenerics<'a, { N }, X, Y>
             where
@@ -970,7 +1128,7 @@ fn test_try_from_bytes_enum() {
                 {
                     use ::zerocopy::util::macro_util::core_reexport;
                     #[repr(C)]
-                    #[allow(dead_code)]
+                    #[allow(dead_code, non_camel_case_types)]
                     enum ___ZerocopyTag {
                         UnitLike,
                         StructLike,
@@ -1004,6 +1162,7 @@ fn test_try_from_bytes_enum() {
                     where
                         X: Deref<Target = &'a [(X, Y); N]>;
                     #[allow(deprecated)]
+                    #[automatically_derived]
                     unsafe impl<'a: 'static, const N: usize, X, Y: Deref> ::zerocopy::TryFromBytes
                         for ___ZerocopyVariantStruct_StructLike<'a, { N }, X, Y>
                     where
@@ -1100,6 +1259,7 @@ fn test_try_from_bytes_enum() {
                     where
                         X: Deref<Target = &'a [(X, Y); N]>;
                     #[allow(deprecated)]
+                    #[automatically_derived]
                     unsafe impl<'a: 'static, const N: usize, X, Y: Deref> ::zerocopy::TryFromBytes
                         for ___ZerocopyVariantStruct_TupleLike<'a, { N }, X, Y>
                     where
@@ -1208,7 +1368,7 @@ fn test_try_from_bytes_enum() {
                                 })
                             };
                             let variant = unsafe { variant.assume_initialized() };
-                           <___ZerocopyVariantStruct_StructLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
+                        <___ZerocopyVariantStruct_StructLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
                                             variant)
                         }
                         ___ZEROCOPY_TAG_TupleLike => {
@@ -1218,7 +1378,7 @@ fn test_try_from_bytes_enum() {
                                 })
                             };
                             let variant = unsafe { variant.assume_initialized() };
-                           <___ZerocopyVariantStruct_TupleLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
+                        <___ZerocopyVariantStruct_TupleLike<'a, N, X, Y> as ::zerocopy ::TryFromBytes>::is_bit_valid (
                                             variant)
                         }
                         _ => false,
@@ -1496,6 +1656,7 @@ fn test_from_bytes_enum() {
             }
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::TryFromBytes for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
 
@@ -1520,11 +1681,13 @@ fn test_from_bytes_enum() {
             }
 
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::FromZeros for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
             }
 
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::FromBytes for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
             }
@@ -1801,6 +1964,7 @@ fn test_try_from_bytes_trivial_is_bit_valid_enum() {
             }
         } expands to {
             #[allow(deprecated)]
+            #[automatically_derived]
             unsafe impl ::zerocopy::TryFromBytes for Foo {
                 fn only_derive_is_allowed_to_implement_this_trait() {}
 

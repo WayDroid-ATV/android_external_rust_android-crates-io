@@ -137,6 +137,10 @@
 //!   available on nightly. Since these types are unstable, support for any type
 //!   may be removed at any point in the future.
 //!
+//! - **`float-nightly`**
+//!   Adds support for the unstable `f16` and `f128` types. These types are
+//!   not yet fully implemented and may not be supported on all platforms.
+//!
 //! [duplicate-import-errors]: https://github.com/google/zerocopy/issues/1587
 //! [simd-layout]: https://rust-lang.github.io/unsafe-code-guidelines/layout/packed-simd-vectors.html
 //!
@@ -303,6 +307,7 @@
     all(feature = "simd-nightly", any(target_arch = "powerpc", target_arch = "powerpc64")),
     feature(stdarch_powerpc)
 )]
+#![cfg_attr(feature = "float-nightly", feature(f16, f128))]
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
 #![cfg_attr(
     __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS,
@@ -352,7 +357,7 @@ use core::{
     fmt::{self, Debug, Display, Formatter},
     hash::Hasher,
     marker::PhantomData,
-    mem::{self, ManuallyDrop, MaybeUninit},
+    mem::{self, ManuallyDrop, MaybeUninit as CoreMaybeUninit},
     num::{
         NonZeroI128, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI8, NonZeroIsize, NonZeroU128,
         NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize, Wrapping,
@@ -361,6 +366,9 @@ use core::{
     ptr::{self, NonNull},
     slice,
 };
+
+#[cfg(feature = "std")]
+use std::io;
 
 use crate::pointer::{invariant, BecauseExclusive};
 
@@ -727,6 +735,15 @@ pub unsafe trait KnownLayout {
     /// This is `()` for sized types and `usize` for slice DSTs.
     type PointerMetadata: PointerMetadata;
 
+    /// A maybe-uninitialized analog of `Self`
+    ///
+    /// # Safety
+    ///
+    /// `Self::LAYOUT` and `Self::MaybeUninit::LAYOUT` are identical.
+    /// `Self::MaybeUninit` admits uninitialized bytes in all positions.
+    #[doc(hidden)]
+    type MaybeUninit: ?Sized + KnownLayout<PointerMetadata = Self::PointerMetadata>;
+
     /// The layout of `Self`.
     ///
     /// # Safety
@@ -859,6 +876,35 @@ unsafe impl<T> KnownLayout for [T] {
 
     type PointerMetadata = usize;
 
+    // SAFETY: `CoreMaybeUninit<T>::LAYOUT` and `T::LAYOUT` are identical
+    // because `CoreMaybeUninit<T>` has the same size and alignment as `T` [1].
+    // Consequently, `[CoreMaybeUninit<T>]::LAYOUT` and `[T]::LAYOUT` are
+    // identical, because they both lack a fixed-sized prefix and because they
+    // inherit the alignments of their inner element type (which are identical)
+    // [2][3].
+    //
+    // `[CoreMaybeUninit<T>]` admits uninitialized bytes at all positions
+    // because `CoreMaybeUninit<T>` admits uninitialized bytes at all positions
+    // and because the inner elements of `[CoreMaybeUninit<T>]` are laid out
+    // back-to-back [2][3].
+    //
+    // [1] Per https://doc.rust-lang.org/1.81.0/std/mem/union.MaybeUninit.html#layout-1:
+    //
+    //   `MaybeUninit<T>` is guaranteed to have the same size, alignment, and ABI as
+    //   `T`
+    //
+    // [2] Per https://doc.rust-lang.org/1.82.0/reference/type-layout.html#slice-layout:
+    //
+    //   Slices have the same layout as the section of the array they slice.
+    //
+    // [3] Per https://doc.rust-lang.org/1.82.0/reference/type-layout.html#array-layout:
+    //
+    //   An array of `[T; N]` has a size of `size_of::<T>() * N` and the same
+    //   alignment of `T`. Arrays are laid out so that the zero-based `nth`
+    //   element of the array is offset from the start of the array by `n *
+    //   size_of::<T>()` bytes.
+    type MaybeUninit = [CoreMaybeUninit<T>];
+
     const LAYOUT: DstLayout = DstLayout::for_slice::<T>();
 
     // SAFETY: `.cast` preserves address and provenance. The returned pointer
@@ -911,9 +957,11 @@ impl_known_layout!(
     T         => Option<T>,
     T: ?Sized => PhantomData<T>,
     T         => Wrapping<T>,
-    T         => MaybeUninit<T>,
+    T         => CoreMaybeUninit<T>,
     T: ?Sized => *const T,
-    T: ?Sized => *mut T
+    T: ?Sized => *mut T,
+    T: ?Sized => &'_ T,
+    T: ?Sized => &'_ mut T,
 );
 impl_known_layout!(const N: usize, T => [T; N]);
 
@@ -944,12 +992,27 @@ safety_comment! {
     unsafe_impl_known_layout!(T: ?Sized + KnownLayout => #[repr(T)] UnsafeCell<T>);
 }
 
+safety_comment! {
+    /// SAFETY:
+    /// - By consequence of the invariant on `T::MaybeUninit` that `T::LAYOUT`
+    ///   and `T::MaybeUninit::LAYOUT` are equal, `T` and `T::MaybeUninit`
+    ///   have the same:
+    ///   - Fixed prefix size
+    ///   - Alignment
+    ///   - (For DSTs) trailing slice element size
+    /// - By consequence of the above, referents `T::MaybeUninit` and `T` have
+    ///   the require the same kind of pointer metadata, and thus it is valid to
+    ///   perform an `as` cast from `*mut T` and `*mut T::MaybeUninit`, and this
+    ///   operation preserves referent size (ie, `size_of_val_raw`).
+    unsafe_impl_known_layout!(T: ?Sized + KnownLayout => #[repr(T::MaybeUninit)] MaybeUninit<T>);
+}
+
 /// Analyzes whether a type is [`FromZeros`].
 ///
 /// This derive analyzes, at compile time, whether the annotated type satisfies
-/// the [safety conditions] of `FromZeros` and implements `FromZeros` if it is
-/// sound to do so. This derive can be applied to structs, enums, and unions;
-/// e.g.:
+/// the [safety conditions] of `FromZeros` and implements `FromZeros` and its
+/// supertraits if it is sound to do so. This derive can be applied to structs,
+/// enums, and unions; e.g.:
 ///
 /// ```
 /// # use zerocopy_derive::{FromZeros, Immutable};
@@ -2545,7 +2608,7 @@ pub unsafe trait TryFromBytes {
     where
         Self: Sized,
     {
-        let candidate = match MaybeUninit::<Self>::read_from_bytes(source) {
+        let candidate = match CoreMaybeUninit::<Self>::read_from_bytes(source) {
             Ok(candidate) => candidate,
             Err(e) => {
                 return Err(TryReadError::Size(e.with_dst()));
@@ -2606,7 +2669,7 @@ pub unsafe trait TryFromBytes {
     where
         Self: Sized,
     {
-        let (candidate, suffix) = match MaybeUninit::<Self>::read_from_prefix(source) {
+        let (candidate, suffix) = match CoreMaybeUninit::<Self>::read_from_prefix(source) {
             Ok(candidate) => candidate,
             Err(e) => {
                 return Err(TryReadError::Size(e.with_dst()));
@@ -2668,7 +2731,7 @@ pub unsafe trait TryFromBytes {
     where
         Self: Sized,
     {
-        let (prefix, candidate) = match MaybeUninit::<Self>::read_from_suffix(source) {
+        let (prefix, candidate) = match CoreMaybeUninit::<Self>::read_from_suffix(source) {
             Ok(candidate) => candidate,
             Err(e) => {
                 return Err(TryReadError::Size(e.with_dst()));
@@ -2741,7 +2804,7 @@ fn swap<T, U>((t, u): (T, U)) -> (U, T) {
 #[inline(always)]
 unsafe fn try_read_from<S, T: TryFromBytes>(
     source: S,
-    mut candidate: MaybeUninit<T>,
+    mut candidate: CoreMaybeUninit<T>,
 ) -> Result<T, TryReadError<S, T>> {
     // We use `from_mut` despite not mutating via `c_ptr` so that we don't need
     // to add a `T: Immutable` bound.
@@ -3030,75 +3093,11 @@ pub unsafe trait FromZeros: TryFromBytes {
     where
         Self: KnownLayout<PointerMetadata = usize>,
     {
-        let size = match count.size_for_metadata(Self::LAYOUT) {
-            Some(size) => size,
-            None => return Err(AllocError),
-        };
-
-        let align = Self::LAYOUT.align.get();
-        // On stable Rust versions <= 1.64.0, `Layout::from_size_align` has a
-        // bug in which sufficiently-large allocations (those which, when
-        // rounded up to the alignment, overflow `isize`) are not rejected,
-        // which can cause undefined behavior. See #64 for details.
-        //
-        // TODO(#67): Once our MSRV is > 1.64.0, remove this assertion.
-        #[allow(clippy::as_conversions)]
-        let max_alloc = (isize::MAX as usize).saturating_sub(align);
-        if size > max_alloc {
-            return Err(AllocError);
-        }
-
-        // TODO(https://github.com/rust-lang/rust/issues/55724): Use
-        // `Layout::repeat` once it's stabilized.
-        let layout = Layout::from_size_align(size, align).or(Err(AllocError))?;
-
-        let ptr = if layout.size() != 0 {
-            // TODO(#429): Add a "SAFETY" comment and remove this `allow`.
-            #[allow(clippy::undocumented_unsafe_blocks)]
-            let ptr = unsafe { alloc::alloc::alloc_zeroed(layout) };
-            match NonNull::new(ptr) {
-                Some(ptr) => ptr,
-                None => return Err(AllocError),
-            }
-        } else {
-            let align = Self::LAYOUT.align.get();
-            // We use `transmute` instead of an `as` cast since Miri (with
-            // strict provenance enabled) notices and complains that an `as`
-            // cast creates a pointer with no provenance. Miri isn't smart
-            // enough to realize that we're only executing this branch when
-            // we're constructing a zero-sized `Box`, which doesn't require
-            // provenance.
-            //
-            // SAFETY: any initialized bit sequence is a bit-valid `*mut u8`.
-            // All bits of a `usize` are initialized.
-            #[allow(clippy::useless_transmute)]
-            let dangling = unsafe { mem::transmute::<usize, *mut u8>(align) };
-            // SAFETY: `dangling` is constructed from `Self::LAYOUT.align`,
-            // which is a `NonZeroUsize`, which is guaranteed to be non-zero.
-            //
-            // `Box<[T]>` does not allocate when `T` is zero-sized or when `len`
-            // is zero, but it does require a non-null dangling pointer for its
-            // allocation.
-            //
-            // TODO(https://github.com/rust-lang/rust/issues/95228): Use
-            // `std::ptr::without_provenance` once it's stable. That may
-            // optimize better. As written, Rust may assume that this consumes
-            // "exposed" provenance, and thus Rust may have to assume that this
-            // may consume provenance from any pointer whose provenance has been
-            // exposed.
-            #[allow(fuzzy_provenance_casts)]
-            unsafe {
-                NonNull::new_unchecked(dangling)
-            }
-        };
-
-        let ptr = Self::raw_from_ptr_len(ptr, count);
-
-        // TODO(#429): Add a "SAFETY" comment and remove this `allow`. Make sure
-        // to include a justification that `ptr.as_ptr()` is validly-aligned in
-        // the ZST case (in which we manually construct a dangling pointer).
-        #[allow(clippy::undocumented_unsafe_blocks)]
-        Ok(unsafe { Box::from_raw(ptr.as_ptr()) })
+        // SAFETY: `alloc::alloc::alloc_zeroed` is a valid argument of
+        // `new_box`. The referent of the pointer returned by `alloc_zeroed`
+        // (and, consequently, the `Box` derived from it) is a valid instance of
+        // `Self`, because `Self` is `FromZeros`.
+        unsafe { crate::util::new_box(count, alloc::alloc::alloc_zeroed) }
     }
 
     #[deprecated(since = "0.8.0", note = "renamed to `FromZeros::new_box_zeroed_with_elems`")]
@@ -3207,8 +3206,9 @@ pub unsafe trait FromZeros: TryFromBytes {
 /// Analyzes whether a type is [`FromBytes`].
 ///
 /// This derive analyzes, at compile time, whether the annotated type satisfies
-/// the [safety conditions] of `FromBytes` and implements `FromBytes` if it is
-/// sound to do so. This derive can be applied to structs, enums, and unions;
+/// the [safety conditions] of `FromBytes` and implements `FromBytes` and its
+/// supertraits if it is sound to do so. This derive can be applied to structs,
+/// enums, and unions;
 /// e.g.:
 ///
 /// ```
@@ -4528,6 +4528,48 @@ pub unsafe trait FromBytes: FromZeros {
         }
     }
 
+    /// Reads a copy of `self` from an `io::Read`.
+    ///
+    /// This is useful for interfacing with operating system byte sinks (files,
+    /// sockets, etc.).
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use zerocopy::{byteorder::big_endian::*, FromBytes};
+    /// use std::fs::File;
+    /// # use zerocopy_derive::*;
+    ///
+    /// #[derive(FromBytes)]
+    /// #[repr(C)]
+    /// struct BitmapFileHeader {
+    ///     signature: [u8; 2],
+    ///     size: U32,
+    ///     reserved: U64,
+    ///     offset: U64,
+    /// }
+    ///
+    /// let mut file = File::open("image.bin").unwrap();
+    /// let header = BitmapFileHeader::read_from_io(&mut file).unwrap();
+    /// ```
+    #[cfg(feature = "std")]
+    #[inline(always)]
+    fn read_from_io<R>(mut src: R) -> io::Result<Self>
+    where
+        Self: Sized,
+        R: io::Read,
+    {
+        let mut buf = CoreMaybeUninit::<Self>::zeroed();
+        let ptr = Ptr::from_mut(&mut buf);
+        // SAFETY: `buf` consists entirely of initialized, zeroed bytes.
+        let ptr = unsafe { ptr.assume_validity::<invariant::Initialized>() };
+        let ptr = ptr.as_bytes::<BecauseExclusive>();
+        src.read_exact(ptr.as_mut())?;
+        // SAFETY: `buf` entirely consists of initialized bytes, and `Self` is
+        // `FromBytes`.
+        Ok(unsafe { buf.assume_init() })
+    }
+
     #[deprecated(since = "0.8.0", note = "renamed to `FromBytes::ref_from_bytes`")]
     #[doc(hidden)]
     #[must_use = "has no side effects"]
@@ -5189,6 +5231,55 @@ pub unsafe trait IntoBytes {
             util::copy_unchecked(src, dst);
         }
         Ok(())
+    }
+
+    /// Writes a copy of `self` to an `io::Write`.
+    ///
+    /// This is a shorthand for `dst.write_all(self.as_bytes())`, and is useful
+    /// for interfacing with operating system byte sinks (files, sockets, etc.).
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use zerocopy::{byteorder::big_endian::U16, FromBytes, IntoBytes};
+    /// use std::fs::File;
+    /// # use zerocopy_derive::*;
+    ///
+    /// #[derive(FromBytes, IntoBytes, Immutable, KnownLayout)]
+    /// #[repr(C, packed)]
+    /// struct GrayscaleImage {
+    ///     height: U16,
+    ///     width: U16,
+    ///     pixels: [U16],
+    /// }
+    ///
+    /// let image = GrayscaleImage::ref_from_bytes(&[0, 0, 0, 0][..]).unwrap();
+    /// let mut file = File::create("image.bin").unwrap();
+    /// image.write_to_io(&mut file).unwrap();
+    /// ```
+    ///
+    /// If the write fails, `write_to_io` returns `Err` and a partial write may
+    /// have occured; e.g.:
+    ///
+    /// ```
+    /// # use zerocopy::IntoBytes;
+    ///
+    /// let src = u128::MAX;
+    /// let mut dst = [0u8; 2];
+    ///
+    /// let write_result = src.write_to_io(&mut dst[..]);
+    ///
+    /// assert!(write_result.is_err());
+    /// assert_eq!(dst, [255, 255]);
+    /// ```
+    #[cfg(feature = "std")]
+    #[inline(always)]
+    fn write_to_io<W>(&self, mut dst: W) -> io::Result<()>
+    where
+        Self: Immutable,
+        W: io::Write,
+    {
+        dst.write_all(self.as_bytes())
     }
 
     #[deprecated(since = "0.8.0", note = "`IntoBytes::as_bytes_mut` was renamed to `as_mut_bytes`")]
@@ -5951,6 +6042,20 @@ mod tests {
         assert_eq!(VAL.write_to_suffix(&mut bytes[..]), Ok(()));
         let want: [u8; 16] = transmute!([[0; 8], VAL_BYTES]);
         assert_eq!(bytes, want);
+    }
+
+    #[test]
+    #[cfg(feature = "std")]
+    fn test_read_write_io() {
+        let mut long_buffer = [0, 0, 0, 0];
+        assert!(matches!(u16::MAX.write_to_io(&mut long_buffer[..]), Ok(())));
+        assert_eq!(long_buffer, [255, 255, 0, 0]);
+        assert!(matches!(u16::read_from_io(&long_buffer[..]), Ok(u16::MAX)));
+
+        let mut short_buffer = [0, 0];
+        assert!(u32::MAX.write_to_io(&mut short_buffer[..]).is_err());
+        assert_eq!(short_buffer, [255, 255]);
+        assert!(u32::read_from_io(&short_buffer[..]).is_err());
     }
 
     #[test]
