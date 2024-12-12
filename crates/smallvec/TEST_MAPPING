@@ -7,7 +7,7 @@
       "path": "external/rust/android-crates-io/crates/tinyvec"
     },
     {
-      "path": "external/rust/crates/vulkano"
+      "path": "external/rust/android-crates-io/crates/vulkano"
     },
     {
       "path": "packages/modules/Virtualization/authfs"
