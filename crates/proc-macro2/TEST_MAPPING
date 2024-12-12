@@ -55,9 +55,6 @@
       "path": "external/rust/crates/libsqlite3-sys"
     },
     {
-      "path": "external/rust/crates/oid-registry"
-    },
-    {
       "path": "external/rust/android-crates-io/crates/rand_chacha"
     },
     {
