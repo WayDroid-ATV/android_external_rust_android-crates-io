@@ -34,16 +34,10 @@
       "path": "external/rust/crates/libsqlite3-sys"
     },
     {
-      "path": "external/rust/crates/oid-registry"
-    },
-    {
       "path": "external/rust/android-crates-io/crates/once_cell"
     },
     {
       "path": "external/rust/android-crates-io/crates/regex"
-    },
-    {
-      "path": "external/rust/crates/rusticata-macros"
     },
     {
       "path": "external/rust/android-crates-io/crates/tinytemplate"
