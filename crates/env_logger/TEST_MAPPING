@@ -10,7 +10,7 @@
       "path": "external/rust/android-crates-io/crates/crc32fast"
     },
     {
-      "path": "external/rust/crates/flate2"
+      "path": "external/rust/android-crates-io/crates/flate2"
     },
     {
       "path": "external/rust/crates/libsqlite3-sys"

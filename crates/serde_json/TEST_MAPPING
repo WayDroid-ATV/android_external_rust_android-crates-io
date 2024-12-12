@@ -4,7 +4,7 @@
       "path": "external/rust/android-crates-io/crates/base64"
     },
     {
-      "path": "external/rust/crates/bitflags"
+      "path": "external/rust/android-crates-io/crates/bitflags"
     },
     {
       "path": "external/rust/android-crates-io/crates/either"

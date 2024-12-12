@@ -22,7 +22,7 @@
       "path": "external/rust/android-crates-io/crates/quiche"
     },
     {
-      "path": "external/rust/crates/ring"
+      "path": "external/rust/android-crates-io/crates/ring"
     },
     {
       "path": "external/rust/android-crates-io/crates/thread_local"
