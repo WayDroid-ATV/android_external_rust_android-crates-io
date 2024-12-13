@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "2be89e01_1290e6ed",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-13T01:34:26Z",
+      "side": 1,
+      "message": "Hmm weird. Is this meant for the refs/meta/config branch? The main branch does have a METADATA file already with a third_party block, even though it also has subdirs full of METADATA too.",
+      "parentUuid": "1d497f40_6be7fe50",
+      "revId": "96f4c453b0ccaa3e7b9d5564f78c214042c8daed",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "107f8baa_eec7e651",
         "filename": "groups",
         "patchSetId": 3
