@@ -101,6 +101,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "1663e521_b9e17193",
+        "filename": "groups",
+        "patchSetId": 3
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1307230
+      },
+      "writtenOn": "2024-12-13T13:35:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "107f8baa_eec7e651",
+      "range": {
+        "startLine": 3,
+        "startChar": 0,
+        "endLine": 6,
+        "endChar": 0
+      },
+      "revId": "96f4c453b0ccaa3e7b9d5564f78c214042c8daed",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "6a0bf86b_c05b8ddf",
@@ -137,6 +161,30 @@
       "writtenOn": "2024-12-13T13:34:11Z",
       "side": 1,
       "message": "I am going to keep third-party-reviewers to be consistent with internal.",
+      "parentUuid": "6a0bf86b_c05b8ddf",
+      "range": {
+        "startLine": 9,
+        "startChar": 41,
+        "endLine": 9,
+        "endChar": 62
+      },
+      "revId": "96f4c453b0ccaa3e7b9d5564f78c214042c8daed",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "75dbe4e8_480a81fb",
+        "filename": "project.config",
+        "patchSetId": 3
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1307230
+      },
+      "writtenOn": "2024-12-13T13:35:42Z",
+      "side": 1,
+      "message": "Done",
       "parentUuid": "6a0bf86b_c05b8ddf",
       "range": {
         "startLine": 9,
