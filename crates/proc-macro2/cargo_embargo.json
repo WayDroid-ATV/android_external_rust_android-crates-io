@@ -9,6 +9,6 @@
       "host_first_multilib": true
     }
   },
-  "tests": false,
+  "tests": true,
   "generate_rulesmk": true
 }
