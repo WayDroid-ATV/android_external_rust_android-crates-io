@@ -16,6 +16,24 @@
       "message": "Addressed the comments. PTAL, Thanks!",
       "revId": "da1d08ada00bf5231616cd2b1f9008b28cbb3cce",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5ab9e241_22309ace",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-13T20:09:09Z",
+      "side": 1,
+      "message": "Did you run `crate_tool`? If this passes presubmits, it\u0027s probably ok, but otherwise, you might need to run that to make sure that all of the checksums are regenerated, etc.",
+      "parentUuid": "b11c965d_7e3a1282",
+      "revId": "da1d08ada00bf5231616cd2b1f9008b28cbb3cce",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
