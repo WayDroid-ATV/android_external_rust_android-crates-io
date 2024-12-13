@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8ea608db_0931c2ef",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-12-13T11:28:52Z",
+      "side": 1,
+      "message": "Again, the error log from the bug you linked says it\u0027s an infrastructure error, why do you think it is likely to be related to this?",
+      "revId": "e2c1367a6ce998dfa15331492568371384fd82b3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
