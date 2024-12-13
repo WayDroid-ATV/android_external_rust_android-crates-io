@@ -3,7 +3,7 @@
 
 #![allow(clippy::clone_on_copy, clippy::expl_impl_clone_on_copy)]
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Abi {
     fn clone(&self) -> Self {
         crate::Abi {
@@ -13,7 +13,7 @@ impl Clone for crate::Abi {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::AngleBracketedGenericArguments {
     fn clone(&self) -> Self {
         crate::AngleBracketedGenericArguments {
@@ -25,7 +25,7 @@ impl Clone for crate::AngleBracketedGenericArguments {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Arm {
     fn clone(&self) -> Self {
         crate::Arm {
@@ -39,7 +39,7 @@ impl Clone for crate::Arm {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::AssocConst {
     fn clone(&self) -> Self {
         crate::AssocConst {
@@ -51,7 +51,7 @@ impl Clone for crate::AssocConst {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::AssocType {
     fn clone(&self) -> Self {
         crate::AssocType {
@@ -63,17 +63,17 @@ impl Clone for crate::AssocType {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Copy for crate::AttrStyle {}
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::AttrStyle {
     fn clone(&self) -> Self {
         *self
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Attribute {
     fn clone(&self) -> Self {
         crate::Attribute {
@@ -85,7 +85,7 @@ impl Clone for crate::Attribute {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::BareFnArg {
     fn clone(&self) -> Self {
         crate::BareFnArg {
@@ -96,7 +96,7 @@ impl Clone for crate::BareFnArg {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::BareVariadic {
     fn clone(&self) -> Self {
         crate::BareVariadic {
@@ -108,17 +108,17 @@ impl Clone for crate::BareVariadic {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Copy for crate::BinOp {}
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::BinOp {
     fn clone(&self) -> Self {
         *self
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Block {
     fn clone(&self) -> Self {
         crate::Block {
@@ -128,7 +128,7 @@ impl Clone for crate::Block {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::BoundLifetimes {
     fn clone(&self) -> Self {
         crate::BoundLifetimes {
@@ -139,20 +139,8 @@ impl Clone for crate::BoundLifetimes {
         }
     }
 }
-#[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
-impl Clone for crate::CapturedParam {
-    fn clone(&self) -> Self {
-        match self {
-            crate::CapturedParam::Lifetime(v0) => {
-                crate::CapturedParam::Lifetime(v0.clone())
-            }
-            crate::CapturedParam::Ident(v0) => crate::CapturedParam::Ident(v0.clone()),
-        }
-    }
-}
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ConstParam {
     fn clone(&self) -> Self {
         crate::ConstParam {
@@ -167,7 +155,7 @@ impl Clone for crate::ConstParam {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Constraint {
     fn clone(&self) -> Self {
         crate::Constraint {
@@ -179,7 +167,7 @@ impl Clone for crate::Constraint {
     }
 }
 #[cfg(feature = "derive")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Data {
     fn clone(&self) -> Self {
         match self {
@@ -190,7 +178,7 @@ impl Clone for crate::Data {
     }
 }
 #[cfg(feature = "derive")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::DataEnum {
     fn clone(&self) -> Self {
         crate::DataEnum {
@@ -201,7 +189,7 @@ impl Clone for crate::DataEnum {
     }
 }
 #[cfg(feature = "derive")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::DataStruct {
     fn clone(&self) -> Self {
         crate::DataStruct {
@@ -212,7 +200,7 @@ impl Clone for crate::DataStruct {
     }
 }
 #[cfg(feature = "derive")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::DataUnion {
     fn clone(&self) -> Self {
         crate::DataUnion {
@@ -222,7 +210,7 @@ impl Clone for crate::DataUnion {
     }
 }
 #[cfg(feature = "derive")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::DeriveInput {
     fn clone(&self) -> Self {
         crate::DeriveInput {
@@ -235,7 +223,7 @@ impl Clone for crate::DeriveInput {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Expr {
     fn clone(&self) -> Self {
         match self {
@@ -282,8 +270,6 @@ impl Clone for crate::Expr {
             crate::Expr::Path(v0) => crate::Expr::Path(v0.clone()),
             #[cfg(feature = "full")]
             crate::Expr::Range(v0) => crate::Expr::Range(v0.clone()),
-            #[cfg(feature = "full")]
-            crate::Expr::RawAddr(v0) => crate::Expr::RawAddr(v0.clone()),
             crate::Expr::Reference(v0) => crate::Expr::Reference(v0.clone()),
             #[cfg(feature = "full")]
             crate::Expr::Repeat(v0) => crate::Expr::Repeat(v0.clone()),
@@ -294,6 +280,7 @@ impl Clone for crate::Expr {
             crate::Expr::Try(v0) => crate::Expr::Try(v0.clone()),
             #[cfg(feature = "full")]
             crate::Expr::TryBlock(v0) => crate::Expr::TryBlock(v0.clone()),
+            #[cfg(feature = "full")]
             crate::Expr::Tuple(v0) => crate::Expr::Tuple(v0.clone()),
             crate::Expr::Unary(v0) => crate::Expr::Unary(v0.clone()),
             #[cfg(feature = "full")]
@@ -309,7 +296,7 @@ impl Clone for crate::Expr {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprArray {
     fn clone(&self) -> Self {
         crate::ExprArray {
@@ -320,7 +307,7 @@ impl Clone for crate::ExprArray {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprAssign {
     fn clone(&self) -> Self {
         crate::ExprAssign {
@@ -332,7 +319,7 @@ impl Clone for crate::ExprAssign {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprAsync {
     fn clone(&self) -> Self {
         crate::ExprAsync {
@@ -344,7 +331,7 @@ impl Clone for crate::ExprAsync {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprAwait {
     fn clone(&self) -> Self {
         crate::ExprAwait {
@@ -356,7 +343,7 @@ impl Clone for crate::ExprAwait {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprBinary {
     fn clone(&self) -> Self {
         crate::ExprBinary {
@@ -368,7 +355,7 @@ impl Clone for crate::ExprBinary {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprBlock {
     fn clone(&self) -> Self {
         crate::ExprBlock {
@@ -379,7 +366,7 @@ impl Clone for crate::ExprBlock {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprBreak {
     fn clone(&self) -> Self {
         crate::ExprBreak {
@@ -391,7 +378,7 @@ impl Clone for crate::ExprBreak {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprCall {
     fn clone(&self) -> Self {
         crate::ExprCall {
@@ -403,7 +390,7 @@ impl Clone for crate::ExprCall {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprCast {
     fn clone(&self) -> Self {
         crate::ExprCast {
@@ -415,7 +402,7 @@ impl Clone for crate::ExprCast {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprClosure {
     fn clone(&self) -> Self {
         crate::ExprClosure {
@@ -434,7 +421,7 @@ impl Clone for crate::ExprClosure {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprConst {
     fn clone(&self) -> Self {
         crate::ExprConst {
@@ -445,7 +432,7 @@ impl Clone for crate::ExprConst {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprContinue {
     fn clone(&self) -> Self {
         crate::ExprContinue {
@@ -456,7 +443,7 @@ impl Clone for crate::ExprContinue {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprField {
     fn clone(&self) -> Self {
         crate::ExprField {
@@ -468,7 +455,7 @@ impl Clone for crate::ExprField {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprForLoop {
     fn clone(&self) -> Self {
         crate::ExprForLoop {
@@ -483,7 +470,7 @@ impl Clone for crate::ExprForLoop {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprGroup {
     fn clone(&self) -> Self {
         crate::ExprGroup {
@@ -494,7 +481,7 @@ impl Clone for crate::ExprGroup {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprIf {
     fn clone(&self) -> Self {
         crate::ExprIf {
@@ -507,7 +494,7 @@ impl Clone for crate::ExprIf {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprIndex {
     fn clone(&self) -> Self {
         crate::ExprIndex {
@@ -519,7 +506,7 @@ impl Clone for crate::ExprIndex {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprInfer {
     fn clone(&self) -> Self {
         crate::ExprInfer {
@@ -529,7 +516,7 @@ impl Clone for crate::ExprInfer {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprLet {
     fn clone(&self) -> Self {
         crate::ExprLet {
@@ -542,7 +529,7 @@ impl Clone for crate::ExprLet {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprLit {
     fn clone(&self) -> Self {
         crate::ExprLit {
@@ -552,7 +539,7 @@ impl Clone for crate::ExprLit {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprLoop {
     fn clone(&self) -> Self {
         crate::ExprLoop {
@@ -564,7 +551,7 @@ impl Clone for crate::ExprLoop {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprMacro {
     fn clone(&self) -> Self {
         crate::ExprMacro {
@@ -574,7 +561,7 @@ impl Clone for crate::ExprMacro {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprMatch {
     fn clone(&self) -> Self {
         crate::ExprMatch {
@@ -587,7 +574,7 @@ impl Clone for crate::ExprMatch {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprMethodCall {
     fn clone(&self) -> Self {
         crate::ExprMethodCall {
@@ -602,7 +589,7 @@ impl Clone for crate::ExprMethodCall {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprParen {
     fn clone(&self) -> Self {
         crate::ExprParen {
@@ -613,7 +600,7 @@ impl Clone for crate::ExprParen {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprPath {
     fn clone(&self) -> Self {
         crate::ExprPath {
@@ -624,7 +611,7 @@ impl Clone for crate::ExprPath {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprRange {
     fn clone(&self) -> Self {
         crate::ExprRange {
@@ -635,21 +622,8 @@ impl Clone for crate::ExprRange {
         }
     }
 }
-#[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
-impl Clone for crate::ExprRawAddr {
-    fn clone(&self) -> Self {
-        crate::ExprRawAddr {
-            attrs: self.attrs.clone(),
-            and_token: self.and_token.clone(),
-            raw: self.raw.clone(),
-            mutability: self.mutability.clone(),
-            expr: self.expr.clone(),
-        }
-    }
-}
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprReference {
     fn clone(&self) -> Self {
         crate::ExprReference {
@@ -661,7 +635,7 @@ impl Clone for crate::ExprReference {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprRepeat {
     fn clone(&self) -> Self {
         crate::ExprRepeat {
@@ -674,7 +648,7 @@ impl Clone for crate::ExprRepeat {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprReturn {
     fn clone(&self) -> Self {
         crate::ExprReturn {
@@ -685,7 +659,7 @@ impl Clone for crate::ExprReturn {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprStruct {
     fn clone(&self) -> Self {
         crate::ExprStruct {
@@ -700,7 +674,7 @@ impl Clone for crate::ExprStruct {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprTry {
     fn clone(&self) -> Self {
         crate::ExprTry {
@@ -711,7 +685,7 @@ impl Clone for crate::ExprTry {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprTryBlock {
     fn clone(&self) -> Self {
         crate::ExprTryBlock {
@@ -721,8 +695,8 @@ impl Clone for crate::ExprTryBlock {
         }
     }
 }
-#[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg(feature = "full")]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprTuple {
     fn clone(&self) -> Self {
         crate::ExprTuple {
@@ -733,7 +707,7 @@ impl Clone for crate::ExprTuple {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprUnary {
     fn clone(&self) -> Self {
         crate::ExprUnary {
@@ -744,7 +718,7 @@ impl Clone for crate::ExprUnary {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprUnsafe {
     fn clone(&self) -> Self {
         crate::ExprUnsafe {
@@ -755,7 +729,7 @@ impl Clone for crate::ExprUnsafe {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprWhile {
     fn clone(&self) -> Self {
         crate::ExprWhile {
@@ -768,7 +742,7 @@ impl Clone for crate::ExprWhile {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ExprYield {
     fn clone(&self) -> Self {
         crate::ExprYield {
@@ -779,7 +753,7 @@ impl Clone for crate::ExprYield {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Field {
     fn clone(&self) -> Self {
         crate::Field {
@@ -793,7 +767,7 @@ impl Clone for crate::Field {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::FieldMutability {
     fn clone(&self) -> Self {
         match self {
@@ -802,7 +776,7 @@ impl Clone for crate::FieldMutability {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::FieldPat {
     fn clone(&self) -> Self {
         crate::FieldPat {
@@ -814,7 +788,7 @@ impl Clone for crate::FieldPat {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::FieldValue {
     fn clone(&self) -> Self {
         crate::FieldValue {
@@ -826,7 +800,7 @@ impl Clone for crate::FieldValue {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Fields {
     fn clone(&self) -> Self {
         match self {
@@ -837,7 +811,7 @@ impl Clone for crate::Fields {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::FieldsNamed {
     fn clone(&self) -> Self {
         crate::FieldsNamed {
@@ -847,7 +821,7 @@ impl Clone for crate::FieldsNamed {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::FieldsUnnamed {
     fn clone(&self) -> Self {
         crate::FieldsUnnamed {
@@ -857,7 +831,7 @@ impl Clone for crate::FieldsUnnamed {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::File {
     fn clone(&self) -> Self {
         crate::File {
@@ -868,7 +842,7 @@ impl Clone for crate::File {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::FnArg {
     fn clone(&self) -> Self {
         match self {
@@ -878,7 +852,7 @@ impl Clone for crate::FnArg {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ForeignItem {
     fn clone(&self) -> Self {
         match self {
@@ -891,7 +865,7 @@ impl Clone for crate::ForeignItem {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ForeignItemFn {
     fn clone(&self) -> Self {
         crate::ForeignItemFn {
@@ -903,7 +877,7 @@ impl Clone for crate::ForeignItemFn {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ForeignItemMacro {
     fn clone(&self) -> Self {
         crate::ForeignItemMacro {
@@ -914,7 +888,7 @@ impl Clone for crate::ForeignItemMacro {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ForeignItemStatic {
     fn clone(&self) -> Self {
         crate::ForeignItemStatic {
@@ -930,7 +904,7 @@ impl Clone for crate::ForeignItemStatic {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ForeignItemType {
     fn clone(&self) -> Self {
         crate::ForeignItemType {
@@ -944,7 +918,7 @@ impl Clone for crate::ForeignItemType {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::GenericArgument {
     fn clone(&self) -> Self {
         match self {
@@ -968,7 +942,7 @@ impl Clone for crate::GenericArgument {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::GenericParam {
     fn clone(&self) -> Self {
         match self {
@@ -981,7 +955,7 @@ impl Clone for crate::GenericParam {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Generics {
     fn clone(&self) -> Self {
         crate::Generics {
@@ -993,7 +967,7 @@ impl Clone for crate::Generics {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ImplItem {
     fn clone(&self) -> Self {
         match self {
@@ -1006,7 +980,7 @@ impl Clone for crate::ImplItem {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ImplItemConst {
     fn clone(&self) -> Self {
         crate::ImplItemConst {
@@ -1025,7 +999,7 @@ impl Clone for crate::ImplItemConst {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ImplItemFn {
     fn clone(&self) -> Self {
         crate::ImplItemFn {
@@ -1038,7 +1012,7 @@ impl Clone for crate::ImplItemFn {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ImplItemMacro {
     fn clone(&self) -> Self {
         crate::ImplItemMacro {
@@ -1049,7 +1023,7 @@ impl Clone for crate::ImplItemMacro {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ImplItemType {
     fn clone(&self) -> Self {
         crate::ImplItemType {
@@ -1066,14 +1040,14 @@ impl Clone for crate::ImplItemType {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ImplRestriction {
     fn clone(&self) -> Self {
         match *self {}
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Index {
     fn clone(&self) -> Self {
         crate::Index {
@@ -1083,7 +1057,7 @@ impl Clone for crate::Index {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Item {
     fn clone(&self) -> Self {
         match self {
@@ -1107,7 +1081,7 @@ impl Clone for crate::Item {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemConst {
     fn clone(&self) -> Self {
         crate::ItemConst {
@@ -1125,7 +1099,7 @@ impl Clone for crate::ItemConst {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemEnum {
     fn clone(&self) -> Self {
         crate::ItemEnum {
@@ -1140,7 +1114,7 @@ impl Clone for crate::ItemEnum {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemExternCrate {
     fn clone(&self) -> Self {
         crate::ItemExternCrate {
@@ -1155,7 +1129,7 @@ impl Clone for crate::ItemExternCrate {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemFn {
     fn clone(&self) -> Self {
         crate::ItemFn {
@@ -1167,7 +1141,7 @@ impl Clone for crate::ItemFn {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemForeignMod {
     fn clone(&self) -> Self {
         crate::ItemForeignMod {
@@ -1180,7 +1154,7 @@ impl Clone for crate::ItemForeignMod {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemImpl {
     fn clone(&self) -> Self {
         crate::ItemImpl {
@@ -1197,7 +1171,7 @@ impl Clone for crate::ItemImpl {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemMacro {
     fn clone(&self) -> Self {
         crate::ItemMacro {
@@ -1209,7 +1183,7 @@ impl Clone for crate::ItemMacro {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemMod {
     fn clone(&self) -> Self {
         crate::ItemMod {
@@ -1224,7 +1198,7 @@ impl Clone for crate::ItemMod {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemStatic {
     fn clone(&self) -> Self {
         crate::ItemStatic {
@@ -1242,7 +1216,7 @@ impl Clone for crate::ItemStatic {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemStruct {
     fn clone(&self) -> Self {
         crate::ItemStruct {
@@ -1257,7 +1231,7 @@ impl Clone for crate::ItemStruct {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemTrait {
     fn clone(&self) -> Self {
         crate::ItemTrait {
@@ -1277,7 +1251,7 @@ impl Clone for crate::ItemTrait {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemTraitAlias {
     fn clone(&self) -> Self {
         crate::ItemTraitAlias {
@@ -1293,7 +1267,7 @@ impl Clone for crate::ItemTraitAlias {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemType {
     fn clone(&self) -> Self {
         crate::ItemType {
@@ -1309,7 +1283,7 @@ impl Clone for crate::ItemType {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemUnion {
     fn clone(&self) -> Self {
         crate::ItemUnion {
@@ -1323,7 +1297,7 @@ impl Clone for crate::ItemUnion {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ItemUse {
     fn clone(&self) -> Self {
         crate::ItemUse {
@@ -1337,7 +1311,7 @@ impl Clone for crate::ItemUse {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Label {
     fn clone(&self) -> Self {
         crate::Label {
@@ -1347,7 +1321,7 @@ impl Clone for crate::Label {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::LifetimeParam {
     fn clone(&self) -> Self {
         crate::LifetimeParam {
@@ -1358,13 +1332,12 @@ impl Clone for crate::LifetimeParam {
         }
     }
 }
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Lit {
     fn clone(&self) -> Self {
         match self {
             crate::Lit::Str(v0) => crate::Lit::Str(v0.clone()),
             crate::Lit::ByteStr(v0) => crate::Lit::ByteStr(v0.clone()),
-            crate::Lit::CStr(v0) => crate::Lit::CStr(v0.clone()),
             crate::Lit::Byte(v0) => crate::Lit::Byte(v0.clone()),
             crate::Lit::Char(v0) => crate::Lit::Char(v0.clone()),
             crate::Lit::Int(v0) => crate::Lit::Int(v0.clone()),
@@ -1374,7 +1347,7 @@ impl Clone for crate::Lit {
         }
     }
 }
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::LitBool {
     fn clone(&self) -> Self {
         crate::LitBool {
@@ -1384,7 +1357,7 @@ impl Clone for crate::LitBool {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Local {
     fn clone(&self) -> Self {
         crate::Local {
@@ -1397,7 +1370,7 @@ impl Clone for crate::Local {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::LocalInit {
     fn clone(&self) -> Self {
         crate::LocalInit {
@@ -1408,7 +1381,7 @@ impl Clone for crate::LocalInit {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Macro {
     fn clone(&self) -> Self {
         crate::Macro {
@@ -1420,7 +1393,7 @@ impl Clone for crate::Macro {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::MacroDelimiter {
     fn clone(&self) -> Self {
         match self {
@@ -1433,7 +1406,7 @@ impl Clone for crate::MacroDelimiter {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Member {
     fn clone(&self) -> Self {
         match self {
@@ -1443,7 +1416,7 @@ impl Clone for crate::Member {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Meta {
     fn clone(&self) -> Self {
         match self {
@@ -1454,7 +1427,7 @@ impl Clone for crate::Meta {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::MetaList {
     fn clone(&self) -> Self {
         crate::MetaList {
@@ -1465,7 +1438,7 @@ impl Clone for crate::MetaList {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::MetaNameValue {
     fn clone(&self) -> Self {
         crate::MetaNameValue {
@@ -1476,7 +1449,7 @@ impl Clone for crate::MetaNameValue {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ParenthesizedGenericArguments {
     fn clone(&self) -> Self {
         crate::ParenthesizedGenericArguments {
@@ -1487,7 +1460,7 @@ impl Clone for crate::ParenthesizedGenericArguments {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Pat {
     fn clone(&self) -> Self {
         match self {
@@ -1512,7 +1485,7 @@ impl Clone for crate::Pat {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatIdent {
     fn clone(&self) -> Self {
         crate::PatIdent {
@@ -1525,7 +1498,7 @@ impl Clone for crate::PatIdent {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatOr {
     fn clone(&self) -> Self {
         crate::PatOr {
@@ -1536,7 +1509,7 @@ impl Clone for crate::PatOr {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatParen {
     fn clone(&self) -> Self {
         crate::PatParen {
@@ -1547,7 +1520,7 @@ impl Clone for crate::PatParen {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatReference {
     fn clone(&self) -> Self {
         crate::PatReference {
@@ -1559,7 +1532,7 @@ impl Clone for crate::PatReference {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatRest {
     fn clone(&self) -> Self {
         crate::PatRest {
@@ -1569,7 +1542,7 @@ impl Clone for crate::PatRest {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatSlice {
     fn clone(&self) -> Self {
         crate::PatSlice {
@@ -1580,7 +1553,7 @@ impl Clone for crate::PatSlice {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatStruct {
     fn clone(&self) -> Self {
         crate::PatStruct {
@@ -1594,7 +1567,7 @@ impl Clone for crate::PatStruct {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatTuple {
     fn clone(&self) -> Self {
         crate::PatTuple {
@@ -1605,7 +1578,7 @@ impl Clone for crate::PatTuple {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatTupleStruct {
     fn clone(&self) -> Self {
         crate::PatTupleStruct {
@@ -1618,7 +1591,7 @@ impl Clone for crate::PatTupleStruct {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatType {
     fn clone(&self) -> Self {
         crate::PatType {
@@ -1630,7 +1603,7 @@ impl Clone for crate::PatType {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PatWild {
     fn clone(&self) -> Self {
         crate::PatWild {
@@ -1640,7 +1613,7 @@ impl Clone for crate::PatWild {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Path {
     fn clone(&self) -> Self {
         crate::Path {
@@ -1650,7 +1623,7 @@ impl Clone for crate::Path {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PathArguments {
     fn clone(&self) -> Self {
         match self {
@@ -1665,7 +1638,7 @@ impl Clone for crate::PathArguments {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PathSegment {
     fn clone(&self) -> Self {
         crate::PathSegment {
@@ -1674,34 +1647,8 @@ impl Clone for crate::PathSegment {
         }
     }
 }
-#[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
-impl Clone for crate::PointerMutability {
-    fn clone(&self) -> Self {
-        match self {
-            crate::PointerMutability::Const(v0) => {
-                crate::PointerMutability::Const(v0.clone())
-            }
-            crate::PointerMutability::Mut(v0) => {
-                crate::PointerMutability::Mut(v0.clone())
-            }
-        }
-    }
-}
-#[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
-impl Clone for crate::PreciseCapture {
-    fn clone(&self) -> Self {
-        crate::PreciseCapture {
-            use_token: self.use_token.clone(),
-            lt_token: self.lt_token.clone(),
-            params: self.params.clone(),
-            gt_token: self.gt_token.clone(),
-        }
-    }
-}
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PredicateLifetime {
     fn clone(&self) -> Self {
         crate::PredicateLifetime {
@@ -1712,7 +1659,7 @@ impl Clone for crate::PredicateLifetime {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::PredicateType {
     fn clone(&self) -> Self {
         crate::PredicateType {
@@ -1724,7 +1671,7 @@ impl Clone for crate::PredicateType {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::QSelf {
     fn clone(&self) -> Self {
         crate::QSelf {
@@ -1737,17 +1684,17 @@ impl Clone for crate::QSelf {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Copy for crate::RangeLimits {}
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::RangeLimits {
     fn clone(&self) -> Self {
         *self
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Receiver {
     fn clone(&self) -> Self {
         crate::Receiver {
@@ -1761,7 +1708,7 @@ impl Clone for crate::Receiver {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::ReturnType {
     fn clone(&self) -> Self {
         match self {
@@ -1773,7 +1720,7 @@ impl Clone for crate::ReturnType {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Signature {
     fn clone(&self) -> Self {
         crate::Signature {
@@ -1792,7 +1739,7 @@ impl Clone for crate::Signature {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::StaticMutability {
     fn clone(&self) -> Self {
         match self {
@@ -1802,7 +1749,7 @@ impl Clone for crate::StaticMutability {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Stmt {
     fn clone(&self) -> Self {
         match self {
@@ -1814,7 +1761,7 @@ impl Clone for crate::Stmt {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::StmtMacro {
     fn clone(&self) -> Self {
         crate::StmtMacro {
@@ -1825,7 +1772,7 @@ impl Clone for crate::StmtMacro {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TraitBound {
     fn clone(&self) -> Self {
         crate::TraitBound {
@@ -1837,17 +1784,17 @@ impl Clone for crate::TraitBound {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Copy for crate::TraitBoundModifier {}
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TraitBoundModifier {
     fn clone(&self) -> Self {
         *self
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TraitItem {
     fn clone(&self) -> Self {
         match self {
@@ -1860,7 +1807,7 @@ impl Clone for crate::TraitItem {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TraitItemConst {
     fn clone(&self) -> Self {
         crate::TraitItemConst {
@@ -1876,7 +1823,7 @@ impl Clone for crate::TraitItemConst {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TraitItemFn {
     fn clone(&self) -> Self {
         crate::TraitItemFn {
@@ -1888,7 +1835,7 @@ impl Clone for crate::TraitItemFn {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TraitItemMacro {
     fn clone(&self) -> Self {
         crate::TraitItemMacro {
@@ -1899,7 +1846,7 @@ impl Clone for crate::TraitItemMacro {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TraitItemType {
     fn clone(&self) -> Self {
         crate::TraitItemType {
@@ -1915,7 +1862,7 @@ impl Clone for crate::TraitItemType {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Type {
     fn clone(&self) -> Self {
         match self {
@@ -1938,7 +1885,7 @@ impl Clone for crate::Type {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeArray {
     fn clone(&self) -> Self {
         crate::TypeArray {
@@ -1950,7 +1897,7 @@ impl Clone for crate::TypeArray {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeBareFn {
     fn clone(&self) -> Self {
         crate::TypeBareFn {
@@ -1966,7 +1913,7 @@ impl Clone for crate::TypeBareFn {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeGroup {
     fn clone(&self) -> Self {
         crate::TypeGroup {
@@ -1976,7 +1923,7 @@ impl Clone for crate::TypeGroup {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeImplTrait {
     fn clone(&self) -> Self {
         crate::TypeImplTrait {
@@ -1986,7 +1933,7 @@ impl Clone for crate::TypeImplTrait {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeInfer {
     fn clone(&self) -> Self {
         crate::TypeInfer {
@@ -1995,7 +1942,7 @@ impl Clone for crate::TypeInfer {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeMacro {
     fn clone(&self) -> Self {
         crate::TypeMacro {
@@ -2004,7 +1951,7 @@ impl Clone for crate::TypeMacro {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeNever {
     fn clone(&self) -> Self {
         crate::TypeNever {
@@ -2013,7 +1960,7 @@ impl Clone for crate::TypeNever {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeParam {
     fn clone(&self) -> Self {
         crate::TypeParam {
@@ -2027,7 +1974,7 @@ impl Clone for crate::TypeParam {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeParamBound {
     fn clone(&self) -> Self {
         match self {
@@ -2035,20 +1982,14 @@ impl Clone for crate::TypeParamBound {
             crate::TypeParamBound::Lifetime(v0) => {
                 crate::TypeParamBound::Lifetime(v0.clone())
             }
-            #[cfg(feature = "full")]
-            crate::TypeParamBound::PreciseCapture(v0) => {
-                crate::TypeParamBound::PreciseCapture(v0.clone())
-            }
             crate::TypeParamBound::Verbatim(v0) => {
                 crate::TypeParamBound::Verbatim(v0.clone())
             }
-            #[cfg(not(feature = "full"))]
-            _ => unreachable!(),
         }
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeParen {
     fn clone(&self) -> Self {
         crate::TypeParen {
@@ -2058,7 +1999,7 @@ impl Clone for crate::TypeParen {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypePath {
     fn clone(&self) -> Self {
         crate::TypePath {
@@ -2068,7 +2009,7 @@ impl Clone for crate::TypePath {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypePtr {
     fn clone(&self) -> Self {
         crate::TypePtr {
@@ -2080,7 +2021,7 @@ impl Clone for crate::TypePtr {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeReference {
     fn clone(&self) -> Self {
         crate::TypeReference {
@@ -2092,7 +2033,7 @@ impl Clone for crate::TypeReference {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeSlice {
     fn clone(&self) -> Self {
         crate::TypeSlice {
@@ -2102,7 +2043,7 @@ impl Clone for crate::TypeSlice {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeTraitObject {
     fn clone(&self) -> Self {
         crate::TypeTraitObject {
@@ -2112,7 +2053,7 @@ impl Clone for crate::TypeTraitObject {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::TypeTuple {
     fn clone(&self) -> Self {
         crate::TypeTuple {
@@ -2122,17 +2063,17 @@ impl Clone for crate::TypeTuple {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Copy for crate::UnOp {}
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::UnOp {
     fn clone(&self) -> Self {
         *self
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::UseGlob {
     fn clone(&self) -> Self {
         crate::UseGlob {
@@ -2141,7 +2082,7 @@ impl Clone for crate::UseGlob {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::UseGroup {
     fn clone(&self) -> Self {
         crate::UseGroup {
@@ -2151,7 +2092,7 @@ impl Clone for crate::UseGroup {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::UseName {
     fn clone(&self) -> Self {
         crate::UseName {
@@ -2160,7 +2101,7 @@ impl Clone for crate::UseName {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::UsePath {
     fn clone(&self) -> Self {
         crate::UsePath {
@@ -2171,7 +2112,7 @@ impl Clone for crate::UsePath {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::UseRename {
     fn clone(&self) -> Self {
         crate::UseRename {
@@ -2182,7 +2123,7 @@ impl Clone for crate::UseRename {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::UseTree {
     fn clone(&self) -> Self {
         match self {
@@ -2195,7 +2136,7 @@ impl Clone for crate::UseTree {
     }
 }
 #[cfg(feature = "full")]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Variadic {
     fn clone(&self) -> Self {
         crate::Variadic {
@@ -2207,7 +2148,7 @@ impl Clone for crate::Variadic {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Variant {
     fn clone(&self) -> Self {
         crate::Variant {
@@ -2219,7 +2160,7 @@ impl Clone for crate::Variant {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::VisRestricted {
     fn clone(&self) -> Self {
         crate::VisRestricted {
@@ -2231,7 +2172,7 @@ impl Clone for crate::VisRestricted {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::Visibility {
     fn clone(&self) -> Self {
         match self {
@@ -2244,7 +2185,7 @@ impl Clone for crate::Visibility {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::WhereClause {
     fn clone(&self) -> Self {
         crate::WhereClause {
@@ -2254,7 +2195,7 @@ impl Clone for crate::WhereClause {
     }
 }
 #[cfg(any(feature = "derive", feature = "full"))]
-#[cfg_attr(docsrs, doc(cfg(feature = "clone-impls")))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "clone-impls")))]
 impl Clone for crate::WherePredicate {
     fn clone(&self) -> Self {
         match self {
