@@ -9,11 +9,10 @@ use super::DEFAULT_RX_BUFFER_SIZE;
 use crate::hal::Hal;
 use crate::queue::{owning::OwningQueue, VirtQueue};
 use crate::transport::Transport;
-use crate::volatile::volread;
 use crate::Result;
-use core::mem::size_of;
+use core::mem::{offset_of, size_of};
 use log::debug;
-use zerocopy::{AsBytes, FromBytes};
+use zerocopy::{FromBytes, IntoBytes};
 
 pub(crate) const RX_QUEUE_IDX: u16 = 0;
 pub(crate) const TX_QUEUE_IDX: u16 = 1;
@@ -248,12 +247,13 @@ impl<H: Hal, T: Transport, const RX_BUFFER_SIZE: usize> VirtIOSocket<H, T, RX_BU
 
         let negotiated_features = transport.begin_init(SUPPORTED_FEATURES);
 
-        let config = transport.config_space::<VirtioVsockConfig>()?;
-        debug!("config: {:?}", config);
         // Safe because config is a valid pointer to the device configuration space.
-        let guest_cid = unsafe {
-            volread!(config, guest_cid_low) as u64 | (volread!(config, guest_cid_high) as u64) << 32
-        };
+        let guest_cid = transport
+            .read_config_space::<u32>(offset_of!(VirtioVsockConfig, guest_cid_low))?
+            as u64
+            | (transport.read_config_space::<u32>(offset_of!(VirtioVsockConfig, guest_cid_high))?
+                as u64)
+                << 32;
         debug!("guest cid: {guest_cid:?}");
 
         let rx = VirtQueue::new(
@@ -441,7 +441,9 @@ impl<H: Hal, T: Transport, const RX_BUFFER_SIZE: usize> VirtIOSocket<H, T, RX_BU
 
 fn read_header_and_body(buffer: &[u8]) -> Result<(VirtioVsockHdr, &[u8])> {
     // This could fail if the device returns a buffer used length shorter than the header size.
-    let header = VirtioVsockHdr::read_from_prefix(buffer).ok_or(SocketError::BufferTooShort)?;
+    let header = VirtioVsockHdr::read_from_prefix(buffer)
+        .map_err(|_| SocketError::BufferTooShort)?
+        .0;
     let body_length = header.len() as usize;
 
     // This could fail if the device returns an unreasonably long body length.
