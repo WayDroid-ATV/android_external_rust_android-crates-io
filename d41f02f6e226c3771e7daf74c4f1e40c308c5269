@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6327191f_9d1f38b9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-12-13T11:28:17Z",
+      "side": 1,
+      "message": "The build error you linked looks to be an infrastructure error, so why do you think this is likely to be related?",
+      "revId": "d41f02f6e226c3771e7daf74c4f1e40c308c5269",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
