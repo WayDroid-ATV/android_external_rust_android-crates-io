@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0b8deb61_babe0c51",
+        "filename": "crates/pdl-compiler/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-13T20:01:56Z",
+      "side": 1,
+      "message": "You can\u0027t just edit the Android.bp file, as it will break on updates. You have to edit https://android.googlesource.com/platform/external/rust/android-crates-io/+/refs/heads/main/crates/pdl-compiler/cargo2android_toplevel.bp.fragment as well (or cargo_embargo.json in some other cases).",
+      "revId": "8a94a2bed8462063d8dee843ed3cf1251964b7f3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
