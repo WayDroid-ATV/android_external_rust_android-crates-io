@@ -35,7 +35,7 @@ pub(crate) fn generate_tag_enum(repr: &EnumRepr, data: &DataEnum) -> TokenStream
 
     quote! {
         #repr
-        #[allow(dead_code, non_camel_case_types)]
+        #[allow(dead_code)]
         enum ___ZerocopyTag {
             #(#variants,)*
         }
