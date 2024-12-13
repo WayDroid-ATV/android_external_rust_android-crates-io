@@ -18,12 +18,16 @@
     {
       "module_name_overrides": {
         "liblog": "liblog_rust_nostd",
-        "libzerocopy": "libzerocopy-0.7.35_nostd"
+        "libthiserror": "libthiserror_nostd",
+        "libzerocopy": "libzerocopy_nostd"
       }
     },
     {
       "generate_androidbp": false,
       "generate_rulesmk": true,
+      "module_name_overrides": {
+        "libthiserror": "libthiserror_nostd"
+      },
       "tests": false
     }
   ]
