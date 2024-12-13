@@ -9,14 +9,16 @@ MODULE_CRATE_NAME := virtio_drivers
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_ADD_IMPLICIT_DEPS := false
-MODULE_RUST_EDITION := 2018
+MODULE_RUST_EDITION := 2021
 MODULE_RUSTFLAGS += \
 	--cfg 'feature="alloc"'
 
 MODULE_LIBRARY_DEPS := \
 	trusty/user/base/lib/liballoc-rust \
 	$(call FIND_CRATE,bitflags) \
+	$(call FIND_CRATE,enumn) \
 	$(call FIND_CRATE,log) \
+	$(call FIND_CRATE,thiserror) \
 	$(call FIND_CRATE,zerocopy) \
 	trusty/user/base/lib/libcompiler_builtins-rust \
 	trusty/user/base/lib/libcore-rust

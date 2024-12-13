@@ -33,14 +33,12 @@ pub trait VolatileReadable<T> {
     unsafe fn vread(self) -> T;
 }
 
-#[cfg(not(target_arch = "aarch64"))]
 impl<T: Copy> VolatileReadable<T> for *const ReadOnly<T> {
     unsafe fn vread(self) -> T {
         self.read_volatile().0
     }
 }
 
-#[cfg(not(target_arch = "aarch64"))]
 impl<T: Copy> VolatileReadable<T> for *const Volatile<T> {
     unsafe fn vread(self) -> T {
         self.read_volatile().0
@@ -53,170 +51,15 @@ pub trait VolatileWritable<T> {
     unsafe fn vwrite(self, value: T);
 }
 
-#[cfg(not(target_arch = "aarch64"))]
 impl<T: Copy> VolatileWritable<T> for *mut WriteOnly<T> {
     unsafe fn vwrite(self, value: T) {
         (self as *mut T).write_volatile(value)
     }
 }
 
-#[cfg(not(target_arch = "aarch64"))]
 impl<T: Copy> VolatileWritable<T> for *mut Volatile<T> {
     unsafe fn vwrite(self, value: T) {
         (self as *mut T).write_volatile(value)
-    }
-}
-
-#[cfg(target_arch = "aarch64")]
-mod aarch64_mmio {
-    use super::{ReadOnly, Volatile, VolatileReadable, VolatileWritable, WriteOnly};
-    use crate::{device::net::Status, transport::DeviceStatus};
-    use core::arch::asm;
-
-    macro_rules! asm_mmio_write {
-        ($t:ty, $assembly:literal) => {
-            impl VolatileWritable<$t> for *mut WriteOnly<$t> {
-                unsafe fn vwrite(self, value: $t) {
-                    asm!(
-                        $assembly,
-                        value = in(reg) value,
-                        ptr = in(reg) (self as *mut $t),
-                    );
-                }
-            }
-
-            impl VolatileWritable<$t> for *mut Volatile<$t> {
-                unsafe fn vwrite(self, value: $t) {
-                    asm!(
-                        $assembly,
-                        value = in(reg) value,
-                        ptr = in(reg) (self as *mut $t),
-                    );
-                }
-            }
-        };
-    }
-
-    macro_rules! asm_mmio_read {
-        ($t:ty, $assembly:literal) => {
-            impl VolatileReadable<$t> for *const ReadOnly<$t> {
-                unsafe fn vread(self) -> $t {
-                    let value;
-                    asm!(
-                        $assembly,
-                        value = out(reg) value,
-                        ptr = in(reg) (self as *const $t),
-                    );
-                    value
-                }
-            }
-
-            impl VolatileReadable<$t> for *const Volatile<$t> {
-                unsafe fn vread(self) -> $t {
-                    let value;
-                    asm!(
-                        $assembly,
-                        value = out(reg) value,
-                        ptr = in(reg) (self as *const $t),
-                    );
-                    value
-                }
-            }
-        };
-    }
-
-    asm_mmio_write!(u8, "strb {value:w}, [{ptr}]");
-    asm_mmio_write!(u16, "strh {value:w}, [{ptr}]");
-    asm_mmio_write!(u32, "str {value:w}, [{ptr}]");
-    asm_mmio_write!(u64, "str {value:x}, [{ptr}]");
-
-    impl VolatileWritable<DeviceStatus> for *mut WriteOnly<DeviceStatus> {
-        unsafe fn vwrite(self, value: DeviceStatus) {
-            let value: u32 = value.bits();
-            asm!(
-                "str {value:w}, [{ptr}]",
-                value = in(reg) value,
-                ptr = in(reg) (self as *mut u32),
-            );
-        }
-    }
-
-    impl VolatileWritable<DeviceStatus> for *mut Volatile<DeviceStatus> {
-        unsafe fn vwrite(self, value: DeviceStatus) {
-            let value: u32 = value.bits();
-            asm!(
-                "str {value:w}, [{ptr}]",
-                value = in(reg) value,
-                ptr = in(reg) (self as *mut u32),
-            );
-        }
-    }
-
-    asm_mmio_read!(u8, "ldrb {value:w}, [{ptr}]");
-    asm_mmio_read!(u16, "ldrh {value:w}, [{ptr}]");
-    asm_mmio_read!(u32, "ldr {value:w}, [{ptr}]");
-    asm_mmio_read!(u64, "ldr {value:x}, [{ptr}]");
-
-    impl VolatileReadable<DeviceStatus> for *const ReadOnly<DeviceStatus> {
-        unsafe fn vread(self) -> DeviceStatus {
-            let value: u32;
-            asm!(
-                "ldr {value:w}, [{ptr}]",
-                value = out(reg) value,
-                ptr = in(reg) (self as *const u32),
-            );
-            DeviceStatus::from_bits_retain(value)
-        }
-    }
-
-    impl VolatileReadable<DeviceStatus> for *const Volatile<DeviceStatus> {
-        unsafe fn vread(self) -> DeviceStatus {
-            let value: u32;
-            asm!(
-                "ldr {value:w}, [{ptr}]",
-                value = out(reg) value,
-                ptr = in(reg) (self as *const u32),
-            );
-            DeviceStatus::from_bits_retain(value)
-        }
-    }
-
-    impl VolatileReadable<Status> for *const ReadOnly<Status> {
-        unsafe fn vread(self) -> Status {
-            let value: u16;
-            asm!(
-                "ldrh {value:w}, [{ptr}]",
-                value = out(reg) value,
-                ptr = in(reg) (self as *const u16),
-            );
-            Status::from_bits_retain(value)
-        }
-    }
-
-    impl VolatileReadable<Status> for *const Volatile<Status> {
-        unsafe fn vread(self) -> Status {
-            let value: u16;
-            asm!(
-                "ldrh {value:w}, [{ptr}]",
-                value = out(reg) value,
-                ptr = in(reg) (self as *const u16),
-            );
-            Status::from_bits_retain(value)
-        }
-    }
-
-    impl<const SIZE: usize> VolatileReadable<[u8; SIZE]> for *const ReadOnly<[u8; SIZE]> {
-        unsafe fn vread(self) -> [u8; SIZE] {
-            let mut value = [0; SIZE];
-            for i in 0..SIZE {
-                asm!(
-                    "ldrb {value:w}, [{ptr}]",
-                    value = out(reg) value[i],
-                    ptr = in(reg) (self as *const u8).add(i),
-                );
-            }
-            value
-        }
     }
 }
 
