@@ -1,21 +1,8 @@
-diff --git a/src/device/net/mod.rs b/src/device/net/mod.rs
-index fa13b44..8375946 100644
---- a/src/device/net/mod.rs
-+++ b/src/device/net/mod.rs
-@@ -82,7 +82,7 @@ bitflags! {
-
- bitflags! {
-     #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
--    struct Status: u16 {
-+    pub(crate) struct Status: u16 {
-         const LINK_UP = 1;
-         const ANNOUNCE = 2;
-     }
 diff --git a/src/transport/pci/bus.rs b/src/transport/pci/bus.rs
-index 0a3014b..52f861e 100644
+index ac6e30da..0629b2cc 100644
 --- a/src/transport/pci/bus.rs
 +++ b/src/transport/pci/bus.rs
-@@ -202,7 +202,19 @@ impl PciRoot {
+@@ -357,7 +357,19 @@ impl ConfigurationAccess for MmioCam {
          // resulting pointer is within the MMIO range of the CAM.
          unsafe {
              // Right shift to convert from byte offset to word offset.
@@ -35,48 +22,48 @@ index 0a3014b..52f861e 100644
 +            }
          }
      }
-
+ 
 diff --git a/src/volatile.rs b/src/volatile.rs
-index b7059d1..67ebba3 100644
+index 74f527b3..caa58e23 100644
 --- a/src/volatile.rs
 +++ b/src/volatile.rs
 @@ -33,12 +33,14 @@ pub trait VolatileReadable<T> {
      unsafe fn vread(self) -> T;
  }
-
+ 
 +#[cfg(not(target_arch = "aarch64"))]
  impl<T: Copy> VolatileReadable<T> for *const ReadOnly<T> {
      unsafe fn vread(self) -> T {
          self.read_volatile().0
      }
  }
-
+ 
 +#[cfg(not(target_arch = "aarch64"))]
  impl<T: Copy> VolatileReadable<T> for *const Volatile<T> {
      unsafe fn vread(self) -> T {
          self.read_volatile().0
-@@ -51,18 +53,173 @@ pub trait VolatileWritable<T> {
+@@ -51,18 +53,135 @@ pub trait VolatileWritable<T> {
      unsafe fn vwrite(self, value: T);
  }
-
+ 
 +#[cfg(not(target_arch = "aarch64"))]
  impl<T: Copy> VolatileWritable<T> for *mut WriteOnly<T> {
      unsafe fn vwrite(self, value: T) {
          (self as *mut T).write_volatile(value)
      }
  }
-
+ 
 +#[cfg(not(target_arch = "aarch64"))]
  impl<T: Copy> VolatileWritable<T> for *mut Volatile<T> {
      unsafe fn vwrite(self, value: T) {
          (self as *mut T).write_volatile(value)
      }
  }
-
+ 
 +#[cfg(target_arch = "aarch64")]
 +mod aarch64_mmio {
 +    use super::{ReadOnly, Volatile, VolatileReadable, VolatileWritable, WriteOnly};
-+    use crate::{device::net::Status, transport::DeviceStatus};
++    use crate::transport::DeviceStatus;
 +    use core::arch::asm;
 +
 +    macro_rules! asm_mmio_write {
@@ -184,44 +171,6 @@ index b7059d1..67ebba3 100644
 +                ptr = in(reg) (self as *const u32),
 +            );
 +            DeviceStatus::from_bits_retain(value)
-+        }
-+    }
-+
-+    impl VolatileReadable<Status> for *const ReadOnly<Status> {
-+        unsafe fn vread(self) -> Status {
-+            let value: u16;
-+            asm!(
-+                "ldrh {value:w}, [{ptr}]",
-+                value = out(reg) value,
-+                ptr = in(reg) (self as *const u16),
-+            );
-+            Status::from_bits_retain(value)
-+        }
-+    }
-+
-+    impl VolatileReadable<Status> for *const Volatile<Status> {
-+        unsafe fn vread(self) -> Status {
-+            let value: u16;
-+            asm!(
-+                "ldrh {value:w}, [{ptr}]",
-+                value = out(reg) value,
-+                ptr = in(reg) (self as *const u16),
-+            );
-+            Status::from_bits_retain(value)
-+        }
-+    }
-+
-+    impl<const SIZE: usize> VolatileReadable<[u8; SIZE]> for *const ReadOnly<[u8; SIZE]> {
-+        unsafe fn vread(self) -> [u8; SIZE] {
-+            let mut value = [0; SIZE];
-+            for i in 0..SIZE {
-+                asm!(
-+                    "ldrb {value:w}, [{ptr}]",
-+                    value = out(reg) value[i],
-+                    ptr = in(reg) (self as *const u8).add(i),
-+                );
-+            }
-+            value
 +        }
 +    }
 +}

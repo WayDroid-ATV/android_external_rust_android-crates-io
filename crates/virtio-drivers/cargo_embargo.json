@@ -18,7 +18,7 @@
     {
       "module_name_overrides": {
         "liblog": "liblog_rust_nostd",
-        "libzerocopy": "libzerocopy-0.7.35_nostd"
+        "libzerocopy": "libzerocopy_nostd"
       }
     },
     {
