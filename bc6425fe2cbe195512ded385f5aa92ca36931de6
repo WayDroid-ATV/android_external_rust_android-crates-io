@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f16a7f22_4d2a425a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1895570
+      },
+      "writtenOn": "2024-12-13T14:37:53Z",
+      "side": 1,
+      "message": "Confirmed that this covers ag/3387055 using check.submit_requirement endpoint.",
+      "revId": "bc6425fe2cbe195512ded385f5aa92ca36931de6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
