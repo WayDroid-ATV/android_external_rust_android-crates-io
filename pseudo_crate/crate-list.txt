@@ -212,6 +212,8 @@ octets
 once_cell
 oneshot-uniffi
 oorandom
+open-enum
+open-enum-derive
 openssl-macros
 os_str_bytes
 p9
