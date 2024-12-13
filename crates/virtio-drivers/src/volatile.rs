@@ -70,7 +70,7 @@ impl<T: Copy> VolatileWritable<T> for *mut Volatile<T> {
 #[cfg(target_arch = "aarch64")]
 mod aarch64_mmio {
     use super::{ReadOnly, Volatile, VolatileReadable, VolatileWritable, WriteOnly};
-    use crate::{device::net::Status, transport::DeviceStatus};
+    use crate::transport::DeviceStatus;
     use core::arch::asm;
 
     macro_rules! asm_mmio_write {
@@ -178,44 +178,6 @@ mod aarch64_mmio {
                 ptr = in(reg) (self as *const u32),
             );
             DeviceStatus::from_bits_retain(value)
-        }
-    }
-
-    impl VolatileReadable<Status> for *const ReadOnly<Status> {
-        unsafe fn vread(self) -> Status {
-            let value: u16;
-            asm!(
-                "ldrh {value:w}, [{ptr}]",
-                value = out(reg) value,
-                ptr = in(reg) (self as *const u16),
-            );
-            Status::from_bits_retain(value)
-        }
-    }
-
-    impl VolatileReadable<Status> for *const Volatile<Status> {
-        unsafe fn vread(self) -> Status {
-            let value: u16;
-            asm!(
-                "ldrh {value:w}, [{ptr}]",
-                value = out(reg) value,
-                ptr = in(reg) (self as *const u16),
-            );
-            Status::from_bits_retain(value)
-        }
-    }
-
-    impl<const SIZE: usize> VolatileReadable<[u8; SIZE]> for *const ReadOnly<[u8; SIZE]> {
-        unsafe fn vread(self) -> [u8; SIZE] {
-            let mut value = [0; SIZE];
-            for i in 0..SIZE {
-                asm!(
-                    "ldrb {value:w}, [{ptr}]",
-                    value = out(reg) value[i],
-                    ptr = in(reg) (self as *const u8).add(i),
-                );
-            }
-            value
         }
     }
 }
