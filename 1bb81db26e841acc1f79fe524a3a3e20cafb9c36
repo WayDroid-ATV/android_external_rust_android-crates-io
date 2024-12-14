@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "19ac084c_8e22b6bc",
+        "filename": "crates/open-enum-derive/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-14T00:51:16Z",
+      "side": 1,
+      "message": "Perhaps turn off tests, since I think that is causing a presubmit build failure here (for host testing).",
+      "revId": "1bb81db26e841acc1f79fe524a3a3e20cafb9c36",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
