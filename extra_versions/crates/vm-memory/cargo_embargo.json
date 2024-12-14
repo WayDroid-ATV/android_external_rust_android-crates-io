@@ -7,8 +7,7 @@
     "arc-swap"
   ],
   "module_name_overrides": {
-    "libvm_memory": "libvm_memory_android-0.12.2",
-    "external_rust_crates_vm-memory_license": "external_rust_crates_vm-memory-0.12.2_license"
+    "libvm_memory": "libvm_memory_android-0.12.2"
   },
   "package": {
     "vm-memory": {
