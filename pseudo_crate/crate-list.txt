@@ -33,6 +33,7 @@ bitflags
 bitreader
 bstr
 buddy_system_allocator
+bumpalo
 bytemuck
 bytemuck_derive
 byteorder
