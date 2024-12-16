@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "86198fe0_fb7e8ece",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-12-16T21:43:03Z",
+      "side": 1,
+      "message": "Lint error is due to bug in AyeAye analyzer. Symlinks are not handled correctly.",
+      "revId": "780a74435832774e39e41f0317dbe29b87628a5d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
