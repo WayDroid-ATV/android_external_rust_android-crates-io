@@ -1,0 +1,14 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index c25e03ca..3cd3ea1e 100755
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -4,6 +4,9 @@
+ #![no_std]
+ #![cfg_attr(feature = "allocator_api", feature(allocator_api))]
+ 
++#[cfg(android_dylib)]
++extern crate std;
++
+ #[doc(hidden)]
+ pub extern crate alloc as core_alloc;
+ 
