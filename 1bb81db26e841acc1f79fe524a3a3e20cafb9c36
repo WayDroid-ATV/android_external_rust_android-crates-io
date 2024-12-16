@@ -16,6 +16,24 @@
       "message": "Perhaps turn off tests, since I think that is causing a presubmit build failure here (for host testing).",
       "revId": "1bb81db26e841acc1f79fe524a3a3e20cafb9c36",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dd80d595_979d276a",
+        "filename": "crates/open-enum-derive/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 3514500
+      },
+      "writtenOn": "2024-12-16T20:52:39Z",
+      "side": 1,
+      "message": "Done. Thank you!",
+      "parentUuid": "19ac084c_8e22b6bc",
+      "revId": "1bb81db26e841acc1f79fe524a3a3e20cafb9c36",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
