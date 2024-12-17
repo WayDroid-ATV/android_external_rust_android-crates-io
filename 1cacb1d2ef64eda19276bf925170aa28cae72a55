@@ -16,6 +16,23 @@
       "message": "Trying presubmit again since the failure is unrelated (b/380498755)",
       "revId": "1cacb1d2ef64eda19276bf925170aa28cae72a55",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "24501e12_a9a644e2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-17T15:52:48Z",
+      "side": 1,
+      "message": "You need to regenerate the checksum files since some other json and Android.bp files have been adjusted.\n\n```\n$ ./crate_tool regenerate open-enum open-enum-derive\n```",
+      "revId": "1cacb1d2ef64eda19276bf925170aa28cae72a55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
