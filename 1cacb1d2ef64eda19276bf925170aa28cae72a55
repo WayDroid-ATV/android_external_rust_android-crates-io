@@ -51,6 +51,24 @@
       "parentUuid": "24501e12_a9a644e2",
       "revId": "1cacb1d2ef64eda19276bf925170aa28cae72a55",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7fe1c7c2_c0412204",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-17T18:03:42Z",
+      "side": 1,
+      "message": "Actually thank you for pre-dogfooding this new process, and helping us work out some of the bugs (and I\u0027ll use some of your notes as part of our docs going forward).\n\nI\u0027m not sure why the libunwind problem happened, but we\u0027re trying to make crate_tool work within Soong, which would eliminate problems with the local builds that occur today.",
+      "parentUuid": "aa9e74c5_1cbb9ca8",
+      "revId": "1cacb1d2ef64eda19276bf925170aa28cae72a55",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
