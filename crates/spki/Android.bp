@@ -35,6 +35,8 @@ rust_library {
         "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
         "//system/keymint:__subpackages__",
+        "//system/security/keystore2/tests:__subpackages__",
+        "//system/security/keystore2/test_utils:__subpackages__",
     ],
 }
 
