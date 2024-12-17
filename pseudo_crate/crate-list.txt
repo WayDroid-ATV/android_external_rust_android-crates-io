@@ -152,6 +152,7 @@ itertools
 itoa
 jni
 jni-sys
+json-strip-comments
 kernlog
 lazy_static
 lazycell
