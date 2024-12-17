@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0dec20dc_ee8ed184",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-12-17T19:47:23Z",
+      "side": 1,
+      "message": "The bpfmt lint error is in 3rd party code and should be ignored. Unfortunately, there doesn\u0027t seem to be a way to exclude that single path from the linter.",
+      "revId": "8280b7c9daa6facebfada2428cdaf2afd6d01c04",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
