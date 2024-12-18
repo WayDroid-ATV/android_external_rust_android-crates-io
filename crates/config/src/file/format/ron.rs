@@ -1,18 +1,15 @@
 use std::error::Error;
 
+use crate::format;
 use crate::map::Map;
 use crate::value::{Value, ValueKind};
 
-pub fn parse(
+pub(crate) fn parse(
     uri: Option<&String>,
     text: &str,
 ) -> Result<Map<String, Value>, Box<dyn Error + Send + Sync>> {
     let value = from_ron_value(uri, ron::from_str(text)?)?;
-    match value.kind {
-        ValueKind::Table(map) => Ok(map),
-
-        _ => Ok(Map::new()),
-    }
+    format::extract_root_table(uri, value)
 }
 
 fn from_ron_value(

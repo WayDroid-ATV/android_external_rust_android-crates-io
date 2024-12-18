@@ -26,8 +26,8 @@ pub enum ValueKind {
     Array(Array),
 }
 
-pub type Array = Vec<Value>;
-pub type Table = Map<String, Value>;
+pub(crate) type Array = Vec<Value>;
+pub(crate) type Table = Map<String, Value>;
 
 impl Default for ValueKind {
     fn default() -> Self {
@@ -151,25 +151,32 @@ where
 }
 
 impl Display for ValueKind {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use std::fmt::Write;
+
         match *self {
-            Self::String(ref value) => write!(f, "{}", value),
-            Self::Boolean(value) => write!(f, "{}", value),
-            Self::I64(value) => write!(f, "{}", value),
-            Self::I128(value) => write!(f, "{}", value),
-            Self::U64(value) => write!(f, "{}", value),
-            Self::U128(value) => write!(f, "{}", value),
-            Self::Float(value) => write!(f, "{}", value),
+            Self::String(ref value) => write!(f, "{value}"),
+            Self::Boolean(value) => write!(f, "{value}"),
+            Self::I64(value) => write!(f, "{value}"),
+            Self::I128(value) => write!(f, "{value}"),
+            Self::U64(value) => write!(f, "{value}"),
+            Self::U128(value) => write!(f, "{value}"),
+            Self::Float(value) => write!(f, "{value}"),
             Self::Nil => write!(f, "nil"),
-            Self::Table(ref table) => write!(f, "{{ {} }}", {
-                table
-                    .iter()
-                    .map(|(k, v)| format!("{} => {}, ", k, v))
-                    .collect::<String>()
-            }),
-            Self::Array(ref array) => write!(f, "{:?}", {
-                array.iter().map(|e| format!("{}, ", e)).collect::<String>()
-            }),
+            Self::Table(ref table) => {
+                let mut s = String::new();
+                for (k, v) in table.iter() {
+                    write!(s, "{k} => {v}, ")?;
+                }
+                write!(f, "{{ {s} }}")
+            }
+            Self::Array(ref array) => {
+                let mut s = String::new();
+                for e in array.iter() {
+                    write!(s, "{e}, ")?;
+                }
+                write!(f, "{s:?}")
+            }
         }
     }
 }
@@ -186,7 +193,7 @@ pub struct Value {
     ///
     /// A Value originating from the environment would contain:
     /// ```text
-    /// the envrionment
+    /// the environment
     /// ```
     ///
     /// A Value originating from a remote source might contain:
@@ -209,6 +216,11 @@ impl Value {
             origin: origin.cloned(),
             kind: kind.into(),
         }
+    }
+
+    /// Get the description of the original location of the value.
+    pub fn origin(&self) -> Option<&str> {
+        self.origin.as_ref().map(AsRef::as_ref)
     }
 
     /// Attempt to deserialize this value into the requested type.
@@ -304,7 +316,7 @@ impl Value {
                 }
             }
 
-            ValueKind::Boolean(value) => Ok(if value { 1 } else { 0 }),
+            ValueKind::Boolean(value) => Ok(i64::from(value)),
             ValueKind::Float(value) => Ok(value.round() as i64),
 
             // Unexpected type
@@ -357,7 +369,7 @@ impl Value {
                 }
             }
 
-            ValueKind::Boolean(value) => Ok(if value { 1 } else { 0 }),
+            ValueKind::Boolean(value) => Ok(i128::from(value)),
             ValueKind::Float(value) => Ok(value.round() as i128),
 
             // Unexpected type
@@ -423,7 +435,7 @@ impl Value {
                 }
             }
 
-            ValueKind::Boolean(value) => Ok(if value { 1 } else { 0 }),
+            ValueKind::Boolean(value) => Ok(u64::from(value)),
             ValueKind::Float(value) => Ok(value.round() as u64),
 
             // Unexpected type
@@ -482,7 +494,7 @@ impl Value {
                 }
             }
 
-            ValueKind::Boolean(value) => Ok(if value { 1 } else { 0 }),
+            ValueKind::Boolean(value) => Ok(u128::from(value)),
             ValueKind::Float(value) => Ok(value.round() as u128),
 
             // Unexpected type
@@ -706,7 +718,7 @@ impl<'de> Deserialize<'de> for Value {
         impl<'de> Visitor<'de> for ValueVisitor {
             type Value = Value;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 formatter.write_str("any valid configuration value")
             }
 
@@ -756,15 +768,30 @@ impl<'de> Deserialize<'de> for Value {
             }
 
             #[inline]
-            fn visit_u64<E>(self, value: u64) -> ::std::result::Result<Value, E> {
-                // FIXME: This is bad
-                Ok((value as i64).into())
+            fn visit_u64<E>(self, value: u64) -> ::std::result::Result<Value, E>
+            where
+                E: ::serde::de::Error,
+            {
+                let num: i64 = value.try_into().map_err(|_| {
+                    E::invalid_type(::serde::de::Unexpected::Unsigned(value), &self)
+                })?;
+                Ok(num.into())
             }
 
             #[inline]
-            fn visit_u128<E>(self, value: u128) -> ::std::result::Result<Value, E> {
-                // FIXME: This is bad
-                Ok((value as i128).into())
+            fn visit_u128<E>(self, value: u128) -> ::std::result::Result<Value, E>
+            where
+                E: ::serde::de::Error,
+            {
+                let num: i128 = value.try_into().map_err(|_| {
+                    E::invalid_type(
+                        ::serde::de::Unexpected::Other(
+                            format!("integer `{value}` as u128").as_str(),
+                        ),
+                        &self,
+                    )
+                })?;
+                Ok(num.into())
             }
 
             #[inline]
@@ -848,7 +875,7 @@ where
 }
 
 impl Display for Value {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.kind)
     }
 }
@@ -861,6 +888,7 @@ mod tests {
     use crate::FileFormat;
 
     #[test]
+    #[cfg(feature = "toml")]
     fn test_i64() {
         let c = Config::builder()
             .add_source(File::new("tests/types/i64.toml", FileFormat::Toml))

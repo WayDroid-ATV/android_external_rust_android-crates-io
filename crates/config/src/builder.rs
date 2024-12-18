@@ -1,8 +1,8 @@
-use std::iter::IntoIterator;
 use std::str::FromStr;
 
 use crate::error::Result;
 use crate::map::Map;
+#[cfg(feature = "async")]
 use crate::source::AsyncSource;
 use crate::{config::Config, path::Expression, source::Source, value::Value};
 
@@ -38,6 +38,8 @@ use crate::{config::Config, path::Expression, source::Source, value::Value};
 /// # use config::*;
 /// # use std::error::Error;
 /// # fn main() -> Result<(), Box<dyn Error>> {
+/// # #[cfg(feature = "json")]
+/// # {
 /// let mut builder = Config::builder()
 ///     .set_default("default", "1")?
 ///     .add_source(File::new("config/settings", FileFormat::Json))
@@ -52,6 +54,7 @@ use crate::{config::Config, path::Expression, source::Source, value::Value};
 ///         // something went wrong
 ///     }
 /// }
+/// # }
 /// # Ok(())
 /// # }
 /// ```
@@ -64,11 +67,14 @@ use crate::{config::Config, path::Expression, source::Source, value::Value};
 /// # use std::error::Error;
 /// # use config::*;
 /// # fn main() -> Result<(), Box<dyn Error>> {
+/// # #[cfg(feature = "json")]
+/// # {
 /// let mut builder = Config::builder();
 /// builder = builder.set_default("default", "1")?;
 /// builder = builder.add_source(File::new("config/settings", FileFormat::Json));
 /// builder = builder.add_source(File::new("config/settings.prod", FileFormat::Json));
 /// builder = builder.set_override("override", "1")?;
+/// # }
 /// # Ok(())
 /// # }
 /// ```
@@ -87,6 +93,7 @@ use crate::{config::Config, path::Expression, source::Source, value::Value};
 /// let mut builder = ConfigBuilder::<DefaultState>::default();
 /// ```
 #[derive(Debug, Clone, Default)]
+#[must_use]
 pub struct ConfigBuilder<St: BuilderState> {
     defaults: Map<Expression, Value>,
     overrides: Map<Expression, Value>,
@@ -96,33 +103,28 @@ pub struct ConfigBuilder<St: BuilderState> {
 /// Represents [`ConfigBuilder`] state.
 pub trait BuilderState {}
 
-/// Represents data specific to builder in default, sychronous state, without support for async.
+/// Represents data specific to builder in default, synchronous state, without support for async.
 #[derive(Debug, Default, Clone)]
 pub struct DefaultState {
     sources: Vec<Box<dyn Source + Send + Sync>>,
 }
 
-/// The asynchronous configuration builder.
-///
-/// Similar to a [`ConfigBuilder`] it maintains a set of defaults, a set of sources, and overrides.
-///
-/// Defaults do not override anything, sources override defaults, and overrides override anything else.
-/// Within those three groups order of adding them at call site matters - entities added later take precedence.
-///
-/// For more detailed description and examples see [`ConfigBuilder`].
-/// [`AsyncConfigBuilder`] is just an extension of it that takes async functions into account.
-///
-/// To obtain a [`Config`] call [`build`](AsyncConfigBuilder::build) or [`build_cloned`](AsyncConfigBuilder::build_cloned)
-///
-/// # Example
-/// Since this library does not implement any [`AsyncSource`] an example in rustdocs cannot be given.
-/// Detailed explanation about why such a source is not implemented is in [`AsyncSource`]'s documentation.
-///
-/// Refer to [`ConfigBuilder`] for similar API sample usage or to the examples folder of the crate, where such a source is implemented.
+// Dummy useless struct
+//
+// This struct exists only to avoid the semver break
+// which would be implied by removing it.
+//
+// This struct cannot be used for anything useful.
+// (Nor can it be extended without a semver break, either.)
+//
+// In a future release, we should have
+//    type AsyncConfigBuilder = ConfigBuilder<AsyncState>;
+#[deprecated = "AsyncConfigBuilder is useless.  Use ConfigBuilder<AsyncState>"]
+#[doc(hidden)]
 #[derive(Debug, Clone, Default)]
 pub struct AsyncConfigBuilder {}
 
-/// Represents data specific to builder in asychronous state, with support for async.
+/// Represents data specific to builder in asynchronous state, with support for async.
 #[derive(Debug, Default, Clone)]
 pub struct AsyncState {
     sources: Vec<SourceType>,
@@ -131,6 +133,7 @@ pub struct AsyncState {
 #[derive(Debug, Clone)]
 enum SourceType {
     Sync(Box<dyn Source + Send + Sync>),
+    #[cfg(feature = "async")]
     Async(Box<dyn AsyncSource + Send + Sync>),
 }
 
@@ -201,7 +204,6 @@ impl ConfigBuilder<DefaultState> {
     /// Registers new [`Source`] in this builder.
     ///
     /// Calling this method does not invoke any I/O. [`Source`] is only saved in internal register for later use.
-    #[must_use]
     pub fn add_source<T>(mut self, source: T) -> Self
     where
         T: Source + Send + Sync + 'static,
@@ -213,6 +215,7 @@ impl ConfigBuilder<DefaultState> {
     /// Registers new [`AsyncSource`] in this builder and forces transition to [`AsyncState`].
     ///
     /// Calling this method does not invoke any I/O. [`AsyncSource`] is only saved in internal register for later use.
+    #[cfg(feature = "async")]
     pub fn add_async_source<T>(self, source: T) -> ConfigBuilder<AsyncState>
     where
         T: AsyncSource + Send + Sync + 'static,
@@ -223,7 +226,7 @@ impl ConfigBuilder<DefaultState> {
                     .state
                     .sources
                     .into_iter()
-                    .map(|s| SourceType::Sync(s))
+                    .map(SourceType::Sync)
                     .collect(),
             },
             defaults: self.defaults,
@@ -291,7 +294,6 @@ impl ConfigBuilder<AsyncState> {
     /// Registers new [`Source`] in this builder.
     ///
     /// Calling this method does not invoke any I/O. [`Source`] is only saved in internal register for later use.
-    #[must_use]
     pub fn add_source<T>(mut self, source: T) -> Self
     where
         T: Source + Send + Sync + 'static,
@@ -303,7 +305,7 @@ impl ConfigBuilder<AsyncState> {
     /// Registers new [`AsyncSource`] in this builder.
     ///
     /// Calling this method does not invoke any I/O. [`AsyncSource`] is only saved in internal register for later use.
-    #[must_use]
+    #[cfg(feature = "async")]
     pub fn add_async_source<T>(mut self, source: T) -> Self
     where
         T: AsyncSource + Send + Sync + 'static,
@@ -356,6 +358,7 @@ impl ConfigBuilder<AsyncState> {
         for source in sources.iter() {
             match source {
                 SourceType::Sync(source) => source.collect_to(&mut cache)?,
+                #[cfg(feature = "async")]
                 SourceType::Async(source) => source.collect_to(&mut cache).await?,
             }
         }
