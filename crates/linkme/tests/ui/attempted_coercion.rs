@@ -3,9 +3,9 @@
 use linkme::distributed_slice;
 
 #[distributed_slice]
-pub static mut SLICE: [i32];
+pub static SLICE: [&'static str];
 
-#[distributed_slice(BENCHMARKS)]
-static mut ELEMENT: i32 = -1;
+#[distributed_slice(SLICE)]
+static ELEMENT: &&str = &"uhoh";
 
 fn main() {}

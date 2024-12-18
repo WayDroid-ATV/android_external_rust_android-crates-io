@@ -12,9 +12,9 @@
 //!
 //! # Platform support
 //!
-//! | Component | Linux | macOS | Windows | FreeBSD | illumos | Other...<sup>†</sup> |
-//! |:---|:---:|:---:|:---:|:---:|:---:|:---:|
-//! | Distributed slice | 💚 | 💚 | 💚 | 💚 | 💚 | |
+//! | Component | Linux | macOS | Windows | FreeBSD | OpenBSD | illumos | Other...<sup>†</sup> |
+//! |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+//! | Distributed slice | 💚 | 💚 | 💚 | 💚 | 💚 | 💚 | |
 //!
 //! <br>***<sup>†</sup>*** We welcome PRs adding support for any platforms not
 //! listed here.
@@ -32,8 +32,7 @@
 //! of the API. The basic idea is as follows.
 //!
 //! A static distributed slice is declared by writing `#[distributed_slice]` on
-//! a static item whose type is `[T]` for some type `T`. The initializer
-//! expression must be `[..]` to indicate that elements come from elsewhere.
+//! a static item whose type is `[T]` for some type `T`.
 //!
 //! ```
 //! # #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
@@ -43,7 +42,7 @@
 //! use linkme::distributed_slice;
 //!
 //! #[distributed_slice]
-//! pub static BENCHMARKS: [fn(&mut Bencher)] = [..];
+//! pub static BENCHMARKS: [fn(&mut Bencher)];
 //! ```
 //!
 //! Slice elements may be registered into a distributed slice by a
@@ -60,7 +59,7 @@
 //! #     pub struct Bencher;
 //! #
 //! #     #[distributed_slice]
-//! #     pub static BENCHMARKS: [fn(&mut Bencher)] = [..];
+//! #     pub static BENCHMARKS: [fn(&mut Bencher)];
 //! # }
 //! #
 //! # use other_crate::Bencher;
@@ -86,7 +85,7 @@
 //! # struct Bencher;
 //! #
 //! # #[distributed_slice]
-//! # static BENCHMARKS: [fn(&mut Bencher)] = [..];
+//! # static BENCHMARKS: [fn(&mut Bencher)];
 //! #
 //! fn main() {
 //!     // Iterate the elements.
@@ -104,15 +103,46 @@
 //!     let len = BENCHMARKS.len();
 //! }
 //! ```
+//!
+//! <br>
+//!
+//! <details>
+//! <summary>Workaround for buggy IDEs</summary>
+//!
+//! JetBrains's Rust IDE uses an outdated Rust parser that treats distributed
+//! slice declarations as invalid syntax, despite being supported in stable
+//! rustc for over 3.5 years.
+//! See <https://youtrack.jetbrains.com/issue/RUST-12953>.
+//!
+//! If you hit this, you can work around it by adding a dummy initializer
+//! expression to the slice.
+//!
+//! ```
+//! # #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
+//! #
+//! # use linkme::distributed_slice;
+//! #
+//! # struct Bencher;
+//! #
+//! #[distributed_slice]
+//! pub static BENCHMARKS: [fn(&mut Bencher)] = [..];
+//! #
+//! # const _: &str = stringify! {
+//!                                           ^^^^^^
+//! # };
+//! ```
+//! </details>
 
 #![no_std]
-#![doc(html_root_url = "https://docs.rs/linkme/0.3.10")]
+#![doc(html_root_url = "https://docs.rs/linkme/0.3.31")]
+#![deny(unsafe_op_in_unsafe_fn)]
 #![allow(
     clippy::doc_markdown,
     clippy::empty_enum,
     clippy::expl_impl_clone_on_copy,
     clippy::manual_assert,
     clippy::missing_panics_doc,
+    clippy::missing_safety_doc,
     clippy::must_use_candidate,
     clippy::unused_self
 )]
