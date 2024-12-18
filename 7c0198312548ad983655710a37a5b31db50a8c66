@@ -16,6 +16,24 @@
       "message": "go/thirdpartyrust#licensing Rust specifies that this file should contain Apache + MIT license, not symlink to one.",
       "revId": "7c0198312548ad983655710a37a5b31db50a8c66",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8dcee361_7b83b75d",
+        "filename": "crates/spdx/LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-12-18T20:05:11Z",
+      "side": 1,
+      "message": "This is incorrect for Android, and (IMO) questionable guidance for google3.\n\nThis guidance arises, I think, because ComplianceLint doesn\u0027t understand Rust crates or SPDX expressions or different ways a crate can be \"dual-licensed\".\n\nThis crate\u0027s license is the most common one we see across all Rust crates: \"MIT OR Apache-2.0\". This means that we can choose which license term we will adhere to, and we choose Apache-2.0, and symlink LICENSE to the Apache license.\n\nIf the license was \"MIT OR Apache-2.0\" then we would be required to follow both licenses, in which case we *would* put both licenses in the LICENSE file.\n\nSee b/356656900 for additional context.",
+      "parentUuid": "d07acba7_72372efb",
+      "revId": "7c0198312548ad983655710a37a5b31db50a8c66",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
