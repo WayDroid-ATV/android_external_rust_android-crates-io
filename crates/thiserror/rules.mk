@@ -8,12 +8,11 @@ MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := thiserror
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
+MODULE_ADD_IMPLICIT_DEPS := false
 MODULE_RUST_EDITION := 2021
-MODULE_RUSTFLAGS += \
-	--cfg 'feature="default"' \
-	--cfg 'feature="std"'
-
 MODULE_LIBRARY_DEPS := \
-	$(call FIND_CRATE,thiserror-impl)
+	$(call FIND_CRATE,thiserror-impl) \
+	trusty/user/base/lib/libcompiler_builtins-rust \
+	trusty/user/base/lib/libcore-rust
 
 include make/library.mk
