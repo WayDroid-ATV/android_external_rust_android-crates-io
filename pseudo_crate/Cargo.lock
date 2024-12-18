@@ -400,6 +400,7 @@ dependencies = [
  "tempfile",
  "termcolor",
  "termtree",
+ "textdistance",
  "textwrap 0.16.0",
  "thiserror 2.0.6",
  "thiserror-impl 2.0.6",
@@ -5041,6 +5042,12 @@ name = "termtree"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
+
+[[package]]
+name = "textdistance"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa672c55ab69f787dbc9126cc387dbe57fdd595f585e4524cf89018fa44ab819"
 
 [[package]]
 name = "textwrap"
