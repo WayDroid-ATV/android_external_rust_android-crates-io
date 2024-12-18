@@ -17,10 +17,11 @@ rust_library_rlib {
     name: "libbuddy_system_allocator",
     crate_name: "buddy_system_allocator",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.9.0",
+    cargo_pkg_version: "0.11.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
+        "alloc",
         "default",
         "spin",
         "use_spin",
@@ -39,4 +40,10 @@ rust_library_rlib {
     ],
     product_available: true,
     vendor_available: true,
+}
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_buddy_system_allocator",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
 }

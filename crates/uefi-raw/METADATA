@@ -1,0 +1,20 @@
+name: "uefi-raw"
+description: "()"
+third_party {
+  identifier {
+    type: "crates.io"
+    value: "uefi-raw"
+  }
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/uefi-raw/uefi-raw-0.9.0.crate"
+    primary_source: true
+  }
+  version: "0.9.0"
+  license_type: RECIPROCAL
+  last_upgrade_date {
+    year: 2024
+    month: 11
+    day: 5
+  }
+}

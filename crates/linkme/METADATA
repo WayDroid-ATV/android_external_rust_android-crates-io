@@ -1,0 +1,17 @@
+name: "linkme"
+description: "Safe cross-platform linker shenanigans"
+third_party {
+  version: "0.3.10"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2023
+    month: 6
+    day: 1
+  }
+  homepage: "https://crates.io/crates/linkme"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/linkme/linkme-0.3.10.crate"
+    version: "0.3.10"
+  }
+}

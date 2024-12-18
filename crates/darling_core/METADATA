@@ -1,20 +1,17 @@
 name: "darling_core"
 description: "()"
 third_party {
-  identifier {
-    type: "crates.io"
-    value: "darling_core"
-  }
-  identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/darling_core/darling_core-0.20.8.crate"
-    primary_source: true
-  }
-  version: "0.20.8"
+  version: "0.20.10"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024
-    month: 3
-    day: 6
+    month: 10
+    day: 2
+  }
+  homepage: "https://crates.io/crates/darling_core"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/darling_core/darling_core-0.20.10.crate"
+    version: "0.20.10"
   }
 }

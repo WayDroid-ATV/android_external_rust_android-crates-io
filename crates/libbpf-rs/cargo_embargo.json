@@ -1,0 +1,11 @@
+{
+  "run_cargo": false,
+  "package": {
+    "libbpf-rs": {
+      "host_supported": false,
+      "patch": "patches/Android.bp.patch"
+    }
+  },
+  "product_available": false,
+  "vendor_available": false
+}

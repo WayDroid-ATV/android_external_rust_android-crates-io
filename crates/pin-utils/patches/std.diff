@@ -1,0 +1,15 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 6198e982..1e516d09 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -6,6 +6,10 @@
+ #![allow(unknown_lints)]
+ #![doc(html_root_url = "https://docs.rs/pin-utils/0.1.0")]
+ 
++// ANDROID: Use std to allow building as a dylib.
++#[cfg(android_dylib)]
++extern crate std;
++
+ #[doc(hidden)]
+ pub mod core_reexport {
+     pub use core::*;

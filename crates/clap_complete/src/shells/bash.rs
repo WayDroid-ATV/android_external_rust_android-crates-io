@@ -1,6 +1,6 @@
 use std::{fmt::Write as _, io::Write};
 
-use clap::*;
+use clap::{Arg, Command, ValueHint};
 
 use crate::generator::{utils, Generator};
 
@@ -178,10 +178,23 @@ fn option_details_for_path(cmd: &Command, path: &str) -> String {
 
         if let Some(longs) = o.get_long_and_visible_aliases() {
             opts.extend(longs.iter().map(|long| {
-                let mut v = vec![
-                    format!("--{})", long),
-                    format!("COMPREPLY=({})", vals_for(o)),
-                ];
+                let mut v = vec![format!("--{})", long)];
+
+                if o.get_value_hint() == ValueHint::FilePath {
+                    v.extend([
+                        "local oldifs".to_string(),
+                        r#"if [ -n "${IFS+x}" ]; then"#.to_string(),
+                        r#"    oldifs="$IFS""#.to_string(),
+                        "fi".to_string(),
+                        r#"IFS=$'\n'"#.to_string(),
+                        format!("COMPREPLY=({})", vals_for(o)),
+                        r#"if [ -n "${oldifs+x}" ]; then"#.to_string(),
+                        r#"    IFS="$oldifs""#.to_string(),
+                        "fi".to_string(),
+                    ]);
+                } else {
+                    v.push(format!("COMPREPLY=({})", vals_for(o)));
+                }
 
                 if let Some(copt) = compopt {
                     v.extend([
@@ -191,17 +204,30 @@ fn option_details_for_path(cmd: &Command, path: &str) -> String {
                     ]);
                 }
 
-                v.extend(["return 0", ";;"].iter().map(|s| s.to_string()));
+                v.extend(["return 0", ";;"].iter().map(|s| (*s).to_string()));
                 v.join("\n                    ")
             }));
         }
 
         if let Some(shorts) = o.get_short_and_visible_aliases() {
             opts.extend(shorts.iter().map(|short| {
-                let mut v = vec![
-                    format!("-{})", short),
-                    format!("COMPREPLY=({})", vals_for(o)),
-                ];
+                let mut v = vec![format!("-{})", short)];
+
+                if o.get_value_hint() == ValueHint::FilePath {
+                    v.extend([
+                        "local oldifs".to_string(),
+                        r#"if [ -n "${IFS+x}" ]; then"#.to_string(),
+                        r#"    oldifs="$IFS""#.to_string(),
+                        "fi".to_string(),
+                        r#"IFS=$'\n'"#.to_string(),
+                        format!("COMPREPLY=({})", vals_for(o)),
+                        r#"if [ -n "${oldifs+x}" ]; then"#.to_string(),
+                        r#"    IFS="$oldifs""#.to_string(),
+                        "fi".to_string(),
+                    ]);
+                } else {
+                    v.push(format!("COMPREPLY=({})", vals_for(o)));
+                }
 
                 if let Some(copt) = compopt {
                     v.extend([
@@ -211,7 +237,7 @@ fn option_details_for_path(cmd: &Command, path: &str) -> String {
                     ]);
                 }
 
-                v.extend(["return 0", ";;"].iter().map(|s| s.to_string()));
+                v.extend(["return 0", ";;"].iter().map(|s| (*s).to_string()));
                 v.join("\n                    ")
             }));
         }
@@ -223,7 +249,7 @@ fn option_details_for_path(cmd: &Command, path: &str) -> String {
 fn vals_for(o: &Arg) -> String {
     debug!("vals_for: o={}", o.get_id());
 
-    if let Some(vals) = crate::generator::utils::possible_values(o) {
+    if let Some(vals) = utils::possible_values(o) {
         format!(
             "$(compgen -W \"{}\" -- \"${{cur}}\")",
             vals.iter()

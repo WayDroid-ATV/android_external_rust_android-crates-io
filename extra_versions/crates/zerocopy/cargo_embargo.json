@@ -1,0 +1,73 @@
+{
+  "run_cargo": false,
+  "module_name_overrides": {
+    "external_rust_crates_zerocopy_license": "external_rust_crates_zerocopy-0.7.35_license",
+    "libzerocopy": "libzerocopy-0.7.35",
+    "libzerocopy_derive": "libzerocopy_derive-0.7.35"
+  },
+  "variants": [
+    {
+      "features": [
+        "derive",
+        "byteorder",
+        "simd"
+      ]
+    },
+    {
+      "features": [
+        "alloc",
+        "derive",
+        "byteorder",
+        "simd"
+      ],
+      "module_name_overrides": {
+        "libbyteorder": "libbyteorder_nostd",
+        "libzerocopy": "libzerocopy-0.7.35_nostd",
+        "libzerocopy_derive": "libzerocopy_derive-0.7.35"
+      },
+      "package": {
+        "zerocopy": {
+          "alloc": true,
+          "force_rlib": true,
+          "host_supported": false,
+          "no_std": true
+        }
+      }
+    },
+    {
+      "features": [
+        "derive",
+        "byteorder",
+        "simd"
+      ],
+      "module_name_overrides": {
+        "libbyteorder": "libbyteorder_nostd",
+        "libzerocopy": "libzerocopy-0.7.35_nostd_noalloc",
+        "libzerocopy_derive": "libzerocopy_derive-0.7.35"
+      },
+      "package": {
+        "zerocopy": {
+          "force_rlib": true,
+          "host_supported": false,
+          "no_std": true
+        }
+      }
+    },
+    {
+      "features": [
+        "alloc",
+        "derive",
+        "byteorder"
+      ],
+      "package": {
+        "zerocopy": {
+          "alloc": true,
+          "no_std": true
+        }
+      },
+      "generate_androidbp": false,
+      "generate_rulesmk": true
+    }
+  ],
+  "min_sdk_version": "29"
+}

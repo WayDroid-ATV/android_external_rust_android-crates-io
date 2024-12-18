@@ -1,4 +1,5 @@
 {
+  "run_cargo": false,
   "apex_available": [
     "//apex_available:platform",
     "//apex_available:anyapex"

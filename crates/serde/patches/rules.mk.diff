@@ -1,0 +1,23 @@
+diff --git a/crates/serde/rules.mk b/crates/serde/rules.mk
+index 7de6d869..13776636 100644
+--- a/crates/serde/rules.mk
++++ b/crates/serde/rules.mk
+@@ -14,9 +14,16 @@ MODULE_RUSTFLAGS += \
+ 	--cfg 'feature="default"' \
+ 	--cfg 'feature="derive"' \
+ 	--cfg 'feature="serde_derive"' \
+-	--cfg 'feature="std"'
++
++ifeq ($(call TOBOOL,$(TRUSTY_USERSPACE)),true)
++
++MODULE_RUSTFLAGS += \
++	--cfg 'feature="std"' \
++
++endif
+ 
+ MODULE_LIBRARY_DEPS := \
+-	$(call FIND_CRATE,serde_derive)
++	trusty/user/base/lib/liballoc-rust \
++	$(call FIND_CRATE,serde_derive) \
+ 
+ include make/library.mk

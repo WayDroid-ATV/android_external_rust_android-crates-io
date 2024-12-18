@@ -30,10 +30,9 @@ rust_library {
     vendor_available: true,
     visibility: [
         "//external/rust/android-crates-io/crates/der:__subpackages__",
-        "//external/rust/crates/x509-cert:__subpackages__",
+        "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
     ],
-
 }
 
 rust_library_rlib {
@@ -59,8 +58,13 @@ rust_library_rlib {
     vendor_available: true,
     visibility: [
         "//external/rust/android-crates-io/crates/der:__subpackages__",
-        "//external/rust/crates/x509-cert:__subpackages__",
+        "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
     ],
+}
 
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_const-oid",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
 }

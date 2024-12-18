@@ -1,10 +1,15 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index 7638340..01337e5 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
-@@ -9,6 +9,10 @@
- #![forbid(unsafe_code, clippy::unwrap_used)]
- #![warn(missing_docs, rust_2018_idioms)]
+
+---
+ src/lib.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index 5bdef085..9e360f4d 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -17,6 +17,10 @@
+     unused_qualifications
+ )]
  
 +/// Local Android change: Use std to allow building as a dylib.
 +#[cfg(android_dylib)]
@@ -12,3 +17,4 @@ index 7638340..01337e5 100644
 +
  #[cfg(feature = "std")]
  extern crate std;
+ 

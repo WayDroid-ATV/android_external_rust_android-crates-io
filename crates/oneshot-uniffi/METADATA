@@ -1,0 +1,17 @@
+name: "oneshot-uniffi"
+description: "()"
+third_party {
+  version: "0.1.6"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 3
+    day: 21
+  }
+  homepage: "https://crates.io/crates/oneshot-uniffi"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/oneshot-uniffi/oneshot-uniffi-0.1.6.crate"
+    version: "0.1.6"
+  }
+}

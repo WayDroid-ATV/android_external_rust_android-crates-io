@@ -1,0 +1,16 @@
+name: "inotify"
+description:
+    "Idiomatic inotify wrapper for the Rust programming language."
+
+third_party {
+homepage: "https://crates.io/crates/inotify"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/inotify/inotify-0.11.0.crate"
+    primary_source: true
+    version: "0.11.0"
+  }
+  version: "0.11.0"
+  last_upgrade_date { year: 2024 month: 11 day: 12 }
+  license_type: NOTICE
+}

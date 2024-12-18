@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "der",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.7.8",
+    cargo_pkg_version: "0.7.9",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -41,22 +41,22 @@ rust_library {
     product_available: true,
     vendor_available: true,
     visibility: [
-        "//external/rust/crates/sec1:__subpackages__",
-        "//external/rust/crates/spki:__subpackages__",
-        "//external/rust/crates/pkcs1:__subpackages__",
-        "//external/rust/crates/pkcs8:__subpackages__",
-        "//external/rust/crates/x509-cert:__subpackages__",
+        "//external/rust/android-crates-io/crates/sec1:__subpackages__",
+        "//external/rust/android-crates-io/crates/spki:__subpackages__",
+        "//external/rust/android-crates-io/crates/pkcs1:__subpackages__",
+        "//external/rust/android-crates-io/crates/pkcs8:__subpackages__",
+        "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
         "//system/keymint:__subpackages__",
+        "//system/security/keystore2:__subpackages__",
     ],
-
 }
 
 rust_library_rlib {
     name: "libder_nostd",
     crate_name: "der",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.7.8",
+    cargo_pkg_version: "0.7.9",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -86,13 +86,18 @@ rust_library_rlib {
     product_available: true,
     vendor_available: true,
     visibility: [
-        "//external/rust/crates/sec1:__subpackages__",
-        "//external/rust/crates/spki:__subpackages__",
-        "//external/rust/crates/pkcs1:__subpackages__",
-        "//external/rust/crates/pkcs8:__subpackages__",
-        "//external/rust/crates/x509-cert:__subpackages__",
+        "//external/rust/android-crates-io/crates/sec1:__subpackages__",
+        "//external/rust/android-crates-io/crates/spki:__subpackages__",
+        "//external/rust/android-crates-io/crates/pkcs1:__subpackages__",
+        "//external/rust/android-crates-io/crates/pkcs8:__subpackages__",
+        "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
         "//system/keymint:__subpackages__",
     ],
+}
 
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_der",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
 }

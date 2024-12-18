@@ -1,8 +1,13 @@
-diff --git a/src/lib.rs b/src/lib.rs
-index b657ea1..f16857b 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
-@@ -328,6 +328,10 @@
+
+---
+ src/lib.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index dcd5097d..0bb32c92 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -320,6 +320,10 @@
  //! [`UtcTime`]: asn1::UtcTime
  //! [`Utf8StringRef`]: asn1::Utf8StringRef
  

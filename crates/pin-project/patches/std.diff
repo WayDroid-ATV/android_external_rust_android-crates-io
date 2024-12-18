@@ -1,0 +1,19 @@
+
+---
+ src/lib.rs | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index aece45e1..41080ab3 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -119,6 +119,9 @@ see [examples] directory for more examples and generated code.
+ )]
+ #![allow(clippy::needless_doctest_main)]
+ 
++// ANDROID: Use std to allow building as a dylib.
++extern crate std;
++
+ #[doc(inline)]
+ pub use pin_project_internal::pin_project;
+ #[doc(inline)]

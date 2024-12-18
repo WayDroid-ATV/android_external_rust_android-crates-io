@@ -1,0 +1,17 @@
+name: "drm-ffi"
+description: "Safe, low-level bindings to the Direct Rendering Manager API"
+third_party {
+  version: "0.8.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 8
+    day: 8
+  }
+  homepage: "https://crates.io/crates/drm-ffi"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/drm-ffi/drm-ffi-0.8.0.crate"
+    version: "0.8.0"
+  }
+}

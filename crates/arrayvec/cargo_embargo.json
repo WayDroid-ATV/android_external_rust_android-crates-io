@@ -1,0 +1,12 @@
+{
+  "tests": true,
+  "variants": [
+    {},
+    {
+      "features": [],
+      "generate_androidbp": false,
+      "generate_rulesmk": true,
+      "tests": false
+    }
+  ]
+}

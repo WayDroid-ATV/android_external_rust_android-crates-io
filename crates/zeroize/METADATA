@@ -1,0 +1,17 @@
+name: "zeroize"
+description: "Securely zero memory while avoiding compiler optimizations."
+third_party {
+  version: "1.6.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2023
+    month: 3
+    day: 30
+  }
+  homepage: "https://crates.io/crates/zeroize"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/zeroize/zeroize-1.6.0.crate"
+    version: "1.6.0"
+  }
+}

@@ -1,0 +1,17 @@
+name: "glam"
+description: "A simple and fast 3D math library for games and graphics"
+third_party {
+  version: "0.25.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 2
+    day: 1
+  }
+  homepage: "https://crates.io/crates/glam"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/glam/glam-0.25.0.crate"
+    version: "0.25.0"
+  }
+}

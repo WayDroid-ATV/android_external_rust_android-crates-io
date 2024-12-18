@@ -353,7 +353,9 @@ pub trait Device: super::Device {
     where
         B: buffer::PlanarBuffer + ?Sized,
     {
-        let modifier = planar_buffer.modifier();
+        let modifier = planar_buffer
+            .modifier()
+            .filter(|modifier| !matches!(modifier, DrmModifier::Invalid));
         let has_modifier = flags.contains(FbCmd2Flags::MODIFIERS);
         assert!((has_modifier && modifier.is_some()) || (!has_modifier && modifier.is_none()));
         let modifier = if let Some(modifier) = modifier {
@@ -952,6 +954,18 @@ pub trait Device: super::Device {
         Ok(())
     }
 
+    /// Register an eventfd to be signalled by a syncobj.
+    fn syncobj_eventfd(
+        &self,
+        handle: syncobj::Handle,
+        point: u64,
+        eventfd: BorrowedFd<'_>,
+        wait_available: bool,
+    ) -> io::Result<()> {
+        ffi::syncobj::eventfd(self.as_fd(), handle.into(), point, eventfd, wait_available)?;
+        Ok(())
+    }
+
     /// Create a drm lease
     fn create_lease(
         &self,
@@ -1125,12 +1139,14 @@ impl Iterator for Events {
 
     fn next(&mut self) -> Option<Event> {
         if self.amount > 0 && self.i < self.amount {
-            let event = unsafe { &*(self.event_buf.as_ptr().add(self.i) as *const ffi::drm_event) };
+            let event_ptr = unsafe { self.event_buf.as_ptr().add(self.i) as *const ffi::drm_event };
+            let event = unsafe { std::ptr::read_unaligned(event_ptr) };
             self.i += event.length as usize;
             match event.type_ {
                 ffi::DRM_EVENT_VBLANK => {
-                    let vblank_event =
-                        unsafe { &*(event as *const _ as *const ffi::drm_event_vblank) };
+                    let vblank_event = unsafe {
+                        std::ptr::read_unaligned(event_ptr as *const ffi::drm_event_vblank)
+                    };
                     Some(Event::Vblank(VblankEvent {
                         frame: vblank_event.sequence,
                         time: Duration::new(
@@ -1143,8 +1159,9 @@ impl Iterator for Events {
                     }))
                 }
                 ffi::DRM_EVENT_FLIP_COMPLETE => {
-                    let vblank_event =
-                        unsafe { &*(event as *const _ as *const ffi::drm_event_vblank) };
+                    let vblank_event = unsafe {
+                        std::ptr::read_unaligned(event_ptr as *const ffi::drm_event_vblank)
+                    };
                     Some(Event::PageFlip(PageFlipEvent {
                         frame: vblank_event.sequence,
                         duration: Duration::new(

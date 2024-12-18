@@ -1,0 +1,59 @@
+
+---
+ src/expand.rs |  4 ++--
+ src/lib.rs    | 13 +++++++++++--
+ 2 files changed, 13 insertions(+), 4 deletions(-)
+
+diff --git b/src/expand.rs a/src/expand.rs
+index 813ba85d..3d4e3148 100644
+--- b/src/expand.rs
++++ a/src/expand.rs
+@@ -23,7 +23,7 @@ fn try_cfg(introducer: &str, args: TokenStream, input: TokenStream) -> Result<To
+     let expr = expr::parse(full_args)?;
+     token::parse_end(full_args)?;
+ 
+-    if expr.eval(crate::RUSTVERSION) {
++    if expr.eval(crate::rust_version()) {
+         Ok(input)
+     } else {
+         Ok(TokenStream::new())
+@@ -31,7 +31,7 @@ fn try_cfg(introducer: &str, args: TokenStream, input: TokenStream) -> Result<To
+ }
+ 
+ pub fn try_attr(args: attr::Args, input: TokenStream) -> Result<TokenStream> {
+-    if !args.condition.eval(crate::RUSTVERSION) {
++    if !args.condition.eval(crate::rust_version()) {
+         return Ok(input);
+     }
+ 
+diff --git b/src/lib.rs a/src/lib.rs
+index 885af6e9..1bf0f1dc 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -183,7 +183,16 @@ use crate::error::Error;
+ use crate::version::Version;
+ use proc_macro::TokenStream;
+ 
+-const RUSTVERSION: Version = include!(concat!(env!("OUT_DIR"), "/version.expr"));
++// ANDROID: Soong is providing the version of rustc via an env variable.
++const ANDROID_RUSTVERSION: Option<&str> = option_env!("ANDROID_RUST_VERSION");
++fn rust_version() -> Version {
++    let v: Vec<&str> = ANDROID_RUSTVERSION.unwrap().split('.').collect();
++    Version {
++        minor: v[1].parse().unwrap(),
++        patch: v[2].parse().unwrap(),
++        channel: version::Channel::Stable,
++    }
++}
+ 
+ #[proc_macro_attribute]
+ pub fn stable(args: TokenStream, input: TokenStream) -> TokenStream {
+@@ -240,7 +249,7 @@ pub fn cfg(input: TokenStream) -> TokenStream {
+         let ref mut args = iter::new(input);
+         let expr = expr::parse(args)?;
+         token::parse_end(args)?;
+-        let boolean = expr.eval(RUSTVERSION);
++        let boolean = expr.eval(rust_version());
+         let ident = Ident::new(&boolean.to_string(), Span::call_site());
+         Ok(TokenStream::from(TokenTree::Ident(ident)))
+     })()

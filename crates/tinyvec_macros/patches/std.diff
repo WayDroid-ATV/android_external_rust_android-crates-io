@@ -1,0 +1,15 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 3c15b19d..59c7e34f 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -1,6 +1,10 @@
+ #![no_std]
+ #![forbid(unsafe_code)]
+ 
++// ANDROID: Use std to allow building as a dylib.
++#[cfg(android_dylib)]
++extern crate std;
++
+ #[macro_export]
+ macro_rules! impl_mirrored {
+     {

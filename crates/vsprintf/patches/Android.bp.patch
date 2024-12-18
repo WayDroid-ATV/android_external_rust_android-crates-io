@@ -1,0 +1,12 @@
+diff --git a/Android.bp b/Android.bp
+index a49932f..e33b81e 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -22,6 +22,7 @@ rust_library {
+     crate_root: "src/lib.rs",
+     edition: "2018",
+     rustlibs: ["liblibc"],
++    shared_libs: ["libvsprintf_wrapper"],
+     apex_available: [
+         "//apex_available:platform",
+         "//apex_available:anyapex",

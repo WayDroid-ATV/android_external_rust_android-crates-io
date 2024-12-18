@@ -1,0 +1,17 @@
+name: "unicode-xid"
+description: "()"
+third_party {
+  version: "0.2.4"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2022
+    month: 12
+    day: 19
+  }
+  homepage: "https://crates.io/crates/unicode-xid"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/unicode-xid/unicode-xid-0.2.4.crate"
+    version: "0.2.4"
+  }
+}

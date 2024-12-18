@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "data_encoding",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.5.0",
+    cargo_pkg_version: "2.6.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
@@ -32,4 +32,5 @@ rust_library {
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "29",
 }

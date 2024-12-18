@@ -1,0 +1,20 @@
+
+---
+ src/lib.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index 6c0caa72..a8b76532 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -54,6 +54,10 @@ pub use crate::{
+ };
+ pub use der::{self, asn1::ObjectIdentifier};
+ 
++/// Local Android change: Use std to allow building as a dylib.
++#[cfg(android_dylib)]
++extern crate std;
++
+ #[cfg(feature = "alloc")]
+ pub use {
+     crate::{

@@ -1,0 +1,15 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 6ec2021e..785c42ec 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -137,6 +137,10 @@ pin-project supports this.
+     clippy::undocumented_unsafe_blocks,
+ )]
+ 
++// ANDROID: Use std to allow building as a dylib.
++#[cfg(android_dylib)]
++extern crate std;
++
+ /// A macro that creates a projection type covering all the fields of struct.
+ ///
+ /// This macro creates a projection type according to the following rules:

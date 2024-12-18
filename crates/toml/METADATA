@@ -1,0 +1,17 @@
+name: "toml"
+description: "()"
+third_party {
+  version: "0.8.10"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 2
+    day: 7
+  }
+  homepage: "https://crates.io/crates/toml"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/toml/toml-0.8.10.crate"
+    version: "0.8.10"
+  }
+}

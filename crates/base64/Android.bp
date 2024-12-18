@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "base64",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.22.0",
+    cargo_pkg_version: "0.22.1",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
@@ -30,6 +30,7 @@ rust_library {
         "//apex_available:platform",
         "com.android.resolv",
         "com.android.virt",
+        "com.sdv.*",
     ],
     product_available: true,
     vendor_available: true,

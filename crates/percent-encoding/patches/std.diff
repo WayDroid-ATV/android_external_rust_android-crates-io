@@ -1,0 +1,14 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 46a5d74..21d8a61 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -41,6 +41,9 @@
+ #[cfg(feature = "alloc")]
+ extern crate alloc;
+ 
++#[cfg(android_dylib)]
++extern crate std;
++
+ #[cfg(feature = "alloc")]
+ use alloc::{
+     borrow::{Cow, ToOwned},

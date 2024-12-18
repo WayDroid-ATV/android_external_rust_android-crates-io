@@ -1,0 +1,17 @@
+
+---
+ src/lib.rs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git b/src/lib.rs a/src/lib.rs
+index 2f31fc65..d1fe77e8 100644
+--- b/src/lib.rs
++++ a/src/lib.rs
+@@ -3,6 +3,7 @@
+ #![crate_type = "proc-macro"]
+ #![forbid(unsafe_code)]
+ #![warn(rust_2018_idioms, trivial_casts, unused_qualifications)]
++extern crate proc_macro;
+ 
+ use proc_macro2::{Ident, TokenStream};
+ use quote::{format_ident, quote};

@@ -1,0 +1,17 @@
+name: "libc"
+description: "()"
+third_party {
+  version: "0.2.161"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 10
+    day: 23
+  }
+  homepage: "https://crates.io/crates/libc"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/libc/libc-0.2.161.crate"
+    version: "0.2.161"
+  }
+}

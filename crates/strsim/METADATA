@@ -1,0 +1,17 @@
+name: "strsim"
+description: "()"
+third_party {
+  version: "0.11.1"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 10
+    day: 2
+  }
+  homepage: "https://crates.io/crates/strsim"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/strsim/strsim-0.11.1.crate"
+    version: "0.11.1"
+  }
+}

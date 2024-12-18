@@ -1,0 +1,17 @@
+name: "tower-service"
+description: "()"
+third_party {
+  version: "0.3.2"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2024
+    month: 5
+    day: 24
+  }
+  homepage: "https://crates.io/crates/tower-service"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/tower-service/tower-service-0.3.2.crate"
+    version: "0.3.2"
+  }
+}

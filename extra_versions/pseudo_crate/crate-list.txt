@@ -1,0 +1,8 @@
+bitflags
+clap
+clap_lex
+jni
+protobuf
+protobuf-codegen
+zerocopy
+zerocopy-derive

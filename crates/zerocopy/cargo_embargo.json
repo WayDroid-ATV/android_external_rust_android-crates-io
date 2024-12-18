@@ -1,0 +1,46 @@
+{
+  "run_cargo": false,
+  "variants": [
+    {
+      "features": [
+        "derive",
+        "simd"
+      ]
+    },
+    {
+      "features": [
+        "alloc",
+        "derive",
+        "simd"
+      ],
+      "module_name_overrides": {
+        "libzerocopy": "libzerocopy_nostd"
+      },
+      "package": {
+        "zerocopy": {
+          "alloc": true,
+          "force_rlib": true,
+          "host_supported": false,
+          "no_std": true
+        }
+      }
+    },
+    {
+      "features": [
+        "derive",
+        "simd"
+      ],
+      "module_name_overrides": {
+        "libzerocopy": "libzerocopy_nostd_noalloc"
+      },
+      "package": {
+        "zerocopy": {
+          "force_rlib": true,
+          "host_supported": false,
+          "no_std": true
+        }
+      }
+    }
+  ],
+  "min_sdk_version": "29"
+}

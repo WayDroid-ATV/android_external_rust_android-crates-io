@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "buddy_system_allocator"
-version = "0.9.0"
+version = "0.11.0"
 authors = [
     "Jiajie Chen <c@jia.je>",
     "Vinay Chandra Dommeti <github@vinay.vc>",
@@ -35,14 +35,14 @@ name = "memory_allocator_benchmark"
 harness = false
 
 [dependencies.spin]
-version = "0.9.3"
+version = "0.9.8"
 optional = true
 
 [dev-dependencies.criterion]
-version = "0.3"
+version = "0.5.1"
 
 [dev-dependencies.ctor]
-version = "0.1.23"
+version = "0.2.6"
 
 [dev-dependencies.rand]
 version = "0.8.5"
@@ -51,6 +51,9 @@ version = "0.8.5"
 version = "0.3.1"
 
 [features]
-const_fn = []
-default = ["use_spin"]
+alloc = []
+default = [
+    "alloc",
+    "use_spin",
+]
 use_spin = ["spin"]
