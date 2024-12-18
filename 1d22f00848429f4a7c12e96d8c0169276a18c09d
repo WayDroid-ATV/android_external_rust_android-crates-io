@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5b9561c6_4e4cbe9a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-12-18T19:44:47Z",
+      "side": 1,
+      "message": "ExternalRustCrates analyzer failure is a bug, fixed in cl/707620074",
+      "revId": "1d22f00848429f4a7c12e96d8c0169276a18c09d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
