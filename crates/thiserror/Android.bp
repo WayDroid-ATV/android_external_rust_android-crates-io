@@ -18,13 +18,40 @@ rust_library {
     host_supported: true,
     crate_name: "thiserror",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.49",
+    cargo_pkg_version: "2.0.6",
+    crate_root: "src/lib.rs",
+    edition: "2021",
+    features: [
+        "default",
+        "std",
+    ],
+    proc_macros: ["libthiserror_impl"],
+    apex_available: [
+        "//apex_available:anyapex",
+        "//apex_available:platform",
+    ],
+    product_available: true,
+    vendor_available: true,
+    min_sdk_version: "29",
+}
+
+rust_library_rlib {
+    name: "libthiserror_nostd",
+    crate_name: "thiserror",
+    cargo_env_compat: true,
+    cargo_pkg_version: "2.0.6",
     crate_root: "src/lib.rs",
     edition: "2021",
     proc_macros: ["libthiserror_impl"],
     apex_available: [
         "//apex_available:anyapex",
         "//apex_available:platform",
+    ],
+    prefer_rlib: true,
+    no_stdlibs: true,
+    stdlibs: [
+        "libcompiler_builtins.rust_sysroot",
+        "libcore.rust_sysroot",
     ],
     product_available: true,
     vendor_available: true,

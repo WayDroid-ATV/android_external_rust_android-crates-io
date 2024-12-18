@@ -7,7 +7,7 @@
       "path": "external/rust/crates/libsqlite3-sys"
     },
     {
-      "path": "external/rust/crates/vulkano"
+      "path": "external/rust/android-crates-io/crates/vulkano"
     },
     {
       "path": "system/security/keystore2"

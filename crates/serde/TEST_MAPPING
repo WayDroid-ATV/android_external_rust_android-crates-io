@@ -37,7 +37,7 @@
       "path": "external/rust/android-crates-io/crates/futures-util"
     },
     {
-      "path": "external/rust/crates/grpcio-sys"
+      "path": "external/rust/android-crates-io/crates/grpcio-sys"
     },
     {
       "path": "external/rust/android-crates-io/crates/hashbrown"
@@ -55,7 +55,7 @@
       "path": "external/rust/android-crates-io/crates/httpdate"
     },
     {
-      "path": "external/rust/crates/jni"
+      "path": "external/rust/android-crates-io/crates/jni"
     },
     {
       "path": "external/rust/android-crates-io/crates/oneshot-uniffi"

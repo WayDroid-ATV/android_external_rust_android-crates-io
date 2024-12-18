@@ -25,7 +25,7 @@
       "path": "external/rust/android-crates-io/crates/crossbeam-utils"
     },
     {
-      "path": "external/rust/crates/flate2"
+      "path": "external/rust/android-crates-io/crates/flate2"
     },
     {
       "path": "external/rust/android-crates-io/crates/futures-channel"
@@ -79,7 +79,7 @@
       "path": "external/rust/android-crates-io/crates/regex"
     },
     {
-      "path": "external/rust/crates/ring"
+      "path": "external/rust/android-crates-io/crates/ring"
     },
     {
       "path": "external/rust/android-crates-io/crates/ryu"
@@ -109,13 +109,13 @@
       "path": "external/rust/android-crates-io/crates/unicode-xid"
     },
     {
-      "path": "external/rust/crates/vulkano"
+      "path": "external/rust/android-crates-io/crates/vulkano"
     },
     {
       "path": "external/rust/android-crates-io/crates/webpki"
     },
     {
-      "path": "external/rust/crates/zerocopy"
+      "path": "external/rust/android-crates-io/crates/zerocopy"
     },
     {
       "path": "external/uwb/src"

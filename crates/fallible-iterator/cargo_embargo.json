@@ -1,4 +1,5 @@
 {
+  "min_sdk_version": "29",
   "package": {
     "fallible-iterator": {
       "license_text": ["LICENSE"]
