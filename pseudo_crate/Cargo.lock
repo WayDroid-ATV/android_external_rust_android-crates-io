@@ -240,6 +240,7 @@ dependencies = [
  "inotify-sys",
  "instant",
  "intrusive-collections",
+ "is-terminal",
  "itertools 0.13.0",
  "itoa",
  "jni",
