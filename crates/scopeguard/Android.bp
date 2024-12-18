@@ -52,3 +52,9 @@ rust_test {
         "use_std",
     ],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_scopeguard",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}
