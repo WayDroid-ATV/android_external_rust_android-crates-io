@@ -16,6 +16,23 @@
       "message": "ExternalRustCrates analyzer failure is a bug, fixed in cl/707620074",
       "revId": "1d22f00848429f4a7c12e96d8c0169276a18c09d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "90f98197_847953eb",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-18T19:55:41Z",
+      "side": 1,
+      "message": "GA+1 as this is a removal, so doesn\u0027t need Security/3P reviews.",
+      "revId": "1d22f00848429f4a7c12e96d8c0169276a18c09d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
