@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d07acba7_72372efb",
+        "filename": "crates/spdx/LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1804118
+      },
+      "writtenOn": "2024-12-18T19:50:28Z",
+      "side": 1,
+      "message": "go/thirdpartyrust#licensing Rust specifies that this file should contain Apache + MIT license, not symlink to one.",
+      "revId": "7c0198312548ad983655710a37a5b31db50a8c66",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
