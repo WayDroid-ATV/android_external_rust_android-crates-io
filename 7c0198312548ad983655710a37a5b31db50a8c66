@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "e73d6787_7ea210fc",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-12-18T20:07:14Z",
+      "side": 1,
+      "message": "ComplianceLint errors are because this crate, being concerned with analyzing licenses, contains the full text of a number of licenses, for textual analysis. These license files do not actually apply to the crate itself.",
+      "revId": "7c0198312548ad983655710a37a5b31db50a8c66",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d07acba7_72372efb",
