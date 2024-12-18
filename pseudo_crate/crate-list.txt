@@ -148,6 +148,7 @@ inotify
 inotify-sys
 instant
 intrusive-collections
+is-terminal
 itertools
 itoa
 jni
