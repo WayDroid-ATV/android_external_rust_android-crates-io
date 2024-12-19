@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "19062772_c826c1d8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2024-12-19T19:53:32Z",
+      "side": 1,
+      "message": "Please run `crate_tool regenerate scopeguard`",
+      "revId": "0916d0e3e53c73047326a1a7be16c1f2ab1241cb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
