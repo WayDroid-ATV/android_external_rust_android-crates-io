@@ -18,17 +18,42 @@ rust_test {
     host_supported: true,
     crate_name: "arbitrary",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.2.3",
+    cargo_pkg_version: "1.4.1",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "derive",
         "derive_arbitrary",
+    ],
+    rustlibs: ["libexhaustigen"],
+    proc_macros: ["libderive_arbitrary"],
+}
+
+rust_test {
+    name: "arbitrary_test_tests_bound",
+    host_supported: true,
+    crate_name: "bound",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.4.1",
+    crate_root: "tests/bound.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "derive",
+        "derive_arbitrary",
+    ],
+    rustlibs: [
+        "libarbitrary",
+        "libexhaustigen",
     ],
     proc_macros: ["libderive_arbitrary"],
 }
@@ -38,19 +63,22 @@ rust_test {
     host_supported: true,
     crate_name: "derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.2.3",
+    cargo_pkg_version: "1.4.1",
     crate_root: "tests/derive.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "derive",
         "derive_arbitrary",
     ],
-    rustlibs: ["libarbitrary"],
+    rustlibs: [
+        "libarbitrary",
+        "libexhaustigen",
+    ],
     proc_macros: ["libderive_arbitrary"],
 }
 
@@ -59,9 +87,9 @@ rust_library_rlib {
     host_supported: true,
     crate_name: "arbitrary",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.2.3",
+    cargo_pkg_version: "1.4.1",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     features: [
         "derive",
         "derive_arbitrary",

@@ -68,6 +68,7 @@ use std::{mem, ops};
 /// }
 /// # }
 /// ```
+#[derive(Debug)]
 pub struct Unstructured<'a> {
     data: &'a [u8],
 }
@@ -236,20 +237,20 @@ impl<'a> Unstructured<'a> {
 
             // We only consume as many bytes as necessary to cover the entire
             // range of the byte string.
-            // Note: We cast to u64 so we don't overflow when checking std::u32::MAX + 4 on 32-bit archs
-            let len = if self.data.len() as u64 <= std::u8::MAX as u64 + 1 {
+            // Note: We cast to u64 so we don't overflow when checking u32::MAX + 4 on 32-bit archs
+            let len = if self.data.len() as u64 <= u8::MAX as u64 + 1 {
                 let bytes = 1;
                 let max_size = self.data.len() - bytes;
                 let (rest, for_size) = self.data.split_at(max_size);
                 self.data = rest;
                 Self::int_in_range_impl(0..=max_size as u8, for_size.iter().copied())?.0 as usize
-            } else if self.data.len() as u64 <= std::u16::MAX as u64 + 2 {
+            } else if self.data.len() as u64 <= u16::MAX as u64 + 2 {
                 let bytes = 2;
                 let max_size = self.data.len() - bytes;
                 let (rest, for_size) = self.data.split_at(max_size);
                 self.data = rest;
                 Self::int_in_range_impl(0..=max_size as u16, for_size.iter().copied())?.0 as usize
-            } else if self.data.len() as u64 <= std::u32::MAX as u64 + 4 {
+            } else if self.data.len() as u64 <= u32::MAX as u64 + 4 {
                 let bytes = 4;
                 let max_size = self.data.len() - bytes;
                 let (rest, for_size) = self.data.split_at(max_size);
@@ -280,15 +281,16 @@ impl<'a> Unstructured<'a> {
     /// # Example
     ///
     /// ```
+    /// # fn foo() -> arbitrary::Result<()> {
     /// use arbitrary::{Arbitrary, Unstructured};
     ///
     /// let mut u = Unstructured::new(&[1, 2, 3, 4]);
     ///
-    /// let x: i32 = u.int_in_range(-5_000..=-1_000)
-    ///     .expect("constructed `u` with enough bytes to generate an `i32`");
+    /// let x: i32 = u.int_in_range(-5_000..=-1_000)?;
     ///
     /// assert!(-5_000 <= x);
     /// assert!(x <= -1_000);
+    /// # Ok(()) }
     /// ```
     pub fn int_in_range<T>(&mut self, range: ops::RangeInclusive<T>) -> Result<T>
     where
@@ -408,6 +410,41 @@ impl<'a> Unstructured<'a> {
     pub fn choose<'b, T>(&mut self, choices: &'b [T]) -> Result<&'b T> {
         let idx = self.choose_index(choices.len())?;
         Ok(&choices[idx])
+    }
+
+    /// Choose one of the given iterator choices.
+    ///
+    /// This should only be used inside of `Arbitrary` implementations.
+    ///
+    /// Returns an error if there is not enough underlying data to make a
+    /// choice or if no choices are provided.
+    ///
+    /// # Examples
+    ///
+    /// Selecting a random item from a set:
+    ///
+    /// ```
+    /// use std::collections::BTreeSet;
+    /// use arbitrary::Unstructured;
+    ///
+    /// let mut u = Unstructured::new(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
+    /// let set = BTreeSet::from(['a', 'b', 'c']);
+    ///
+    /// let choice = u.choose_iter(set.iter()).unwrap();
+    ///
+    /// println!("chose {}", choice);
+    /// ```
+    pub fn choose_iter<T, I>(&mut self, choices: I) -> Result<T>
+    where
+        I: IntoIterator<Item = T>,
+        I::IntoIter: ExactSizeIterator,
+    {
+        let mut choices = choices.into_iter();
+        let idx = self.choose_index(choices.len())?;
+        let choice = choices
+            .nth(idx)
+            .expect("ExactSizeIterator should have correct len");
+        Ok(choice)
     }
 
     /// Choose a value in `0..len`.
@@ -620,14 +657,8 @@ impl<'a> Unstructured<'a> {
     pub fn arbitrary_take_rest_iter<ElementType: Arbitrary<'a>>(
         self,
     ) -> Result<ArbitraryTakeRestIter<'a, ElementType>> {
-        let (lower, upper) = ElementType::size_hint(0);
-
-        let elem_size = upper.unwrap_or(lower * 2);
-        let elem_size = std::cmp::max(1, elem_size);
-        let size = self.len() / elem_size;
         Ok(ArbitraryTakeRestIter {
-            size,
-            u: Some(self),
+            u: self,
             _marker: PhantomData,
         })
     }
@@ -735,25 +766,16 @@ impl<'a, 'b, ElementType: Arbitrary<'a>> Iterator for ArbitraryIter<'a, 'b, Elem
 
 /// Utility iterator produced by [`Unstructured::arbitrary_take_rest_iter`]
 pub struct ArbitraryTakeRestIter<'a, ElementType> {
-    u: Option<Unstructured<'a>>,
-    size: usize,
+    u: Unstructured<'a>,
     _marker: PhantomData<ElementType>,
 }
 
 impl<'a, ElementType: Arbitrary<'a>> Iterator for ArbitraryTakeRestIter<'a, ElementType> {
     type Item = Result<ElementType>;
     fn next(&mut self) -> Option<Result<ElementType>> {
-        if let Some(mut u) = self.u.take() {
-            if self.size == 1 {
-                Some(Arbitrary::arbitrary_take_rest(u))
-            } else if self.size == 0 {
-                None
-            } else {
-                self.size -= 1;
-                let ret = Arbitrary::arbitrary(&mut u);
-                self.u = Some(u);
-                Some(ret)
-            }
+        let keep_going = self.u.arbitrary().unwrap_or(false);
+        if keep_going {
+            Some(Arbitrary::arbitrary(&mut self.u))
         } else {
             None
         }
@@ -890,8 +912,7 @@ mod tests {
         // Should take one byte off the end
         assert_eq!(u.arbitrary_byte_size().unwrap(), 6);
         assert_eq!(u.len(), 9);
-        let mut v = vec![];
-        v.resize(260, 0);
+        let mut v = vec![0; 260];
         v.push(1);
         v.push(4);
         let mut u = Unstructured::new(&v);
