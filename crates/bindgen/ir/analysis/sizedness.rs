@@ -24,13 +24,14 @@ use std::{cmp, ops};
 ///
 /// We initially assume that all types are `ZeroSized` and then update our
 /// understanding as we learn more about each type.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub(crate) enum SizednessResult {
     /// The type is zero-sized.
     ///
     /// This means that if it is a C++ type, and is not being used as a base
     /// member, then we must add an `_address` byte to enforce the
     /// unique-address-per-distinct-object-instance rule.
+    #[default]
     ZeroSized,
 
     /// Whether this type is zero-sized or not depends on whether a type
@@ -62,12 +63,6 @@ pub(crate) enum SizednessResult {
     NonZeroSized,
 }
 
-impl Default for SizednessResult {
-    fn default() -> Self {
-        SizednessResult::ZeroSized
-    }
-}
-
 impl SizednessResult {
     /// Take the least upper bound of `self` and `rhs`.
     pub(crate) fn join(self, rhs: Self) -> Self {
@@ -92,13 +87,13 @@ impl ops::BitOrAssign for SizednessResult {
 /// An analysis that computes the sizedness of all types.
 ///
 /// * For types with known sizes -- for example pointers, scalars, etc... --
-/// they are assigned `NonZeroSized`.
+///   they are assigned `NonZeroSized`.
 ///
 /// * For compound structure types with one or more fields, they are assigned
-/// `NonZeroSized`.
+///   `NonZeroSized`.
 ///
 /// * For compound structure types without any fields, the results of the bases
-/// are `join`ed.
+///   are `join`ed.
 ///
 /// * For type parameters, `DependsOnTypeParam` is assigned.
 #[derive(Debug)]

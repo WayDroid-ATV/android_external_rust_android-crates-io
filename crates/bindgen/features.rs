@@ -95,14 +95,18 @@ macro_rules! define_rust_targets {
 // not stable.
 define_rust_targets! {
     Nightly => {
-        vectorcall_abi,
+        vectorcall_abi: #124485,
+        ptr_metadata: #81513,
+        layout_for_ptr: #69835,
     },
+    Stable_1_77(77) => { offset_of: #106655 },
     Stable_1_73(73) => { thiscall_abi: #42202 },
     Stable_1_71(71) => { c_unwind_abi: #106075 },
     Stable_1_68(68) => { abi_efiapi: #105795 },
     Stable_1_64(64) => { core_ffi_c: #94503 },
     Stable_1_59(59) => { const_cstr: #54745 },
     Stable_1_47(47) => { larger_arrays: #74060 },
+    Stable_1_43(43) => { associated_constants: #68952 },
     Stable_1_40(40) => { non_exhaustive: #44109 },
     Stable_1_36(36) => { maybe_uninit: #60445 },
     Stable_1_33(33) => { repr_packed_n: #57049 },
@@ -230,7 +234,6 @@ impl Default for RustFeatures {
 
 #[cfg(test)]
 mod test {
-    #![allow(unused_imports)]
     use super::*;
 
     #[test]

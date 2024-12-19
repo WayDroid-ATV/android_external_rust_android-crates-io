@@ -118,7 +118,7 @@ dependencies = [
  "base64 0.22.1",
  "bencher",
  "bincode",
- "bindgen 0.69.5",
+ "bindgen 0.70.1",
  "bindgen-cli",
  "bit_field",
  "bitflags 2.6.0",
@@ -890,7 +890,6 @@ dependencies = [
  "lazy_static",
  "lazycell",
  "log",
- "prettyplease 0.2.17",
  "proc-macro2 1.0.92",
  "quote 1.0.36",
  "regex",
@@ -898,6 +897,26 @@ dependencies = [
  "shlex",
  "syn 2.0.90",
  "which",
+]
+
+[[package]]
+name = "bindgen"
+version = "0.70.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f49d8fed880d473ea71efb9bf597651e77201bdd4893efe54c9e5d65ae04ce6f"
+dependencies = [
+ "bitflags 2.6.0",
+ "cexpr",
+ "clang-sys",
+ "itertools 0.13.0",
+ "log",
+ "prettyplease 0.2.17",
+ "proc-macro2 1.0.92",
+ "quote 1.0.36",
+ "regex",
+ "rustc-hash",
+ "shlex",
+ "syn 2.0.90",
 ]
 
 [[package]]
