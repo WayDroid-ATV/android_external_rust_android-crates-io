@@ -48,7 +48,7 @@ fn postfix<'a>(expr: Expression) -> impl FnMut(&'a str) -> IResult<&'a str, Expr
     alt((child, subscript))
 }
 
-pub fn from_str(input: &str) -> Result<Expression, ErrorKind> {
+pub(crate) fn from_str(input: &str) -> Result<Expression, ErrorKind> {
     match ident(input) {
         Ok((mut rem, mut expr)) => {
             while !rem.is_empty() {
@@ -73,7 +73,7 @@ pub fn from_str(input: &str) -> Result<Expression, ErrorKind> {
     }
 }
 
-pub fn to_error_kind(e: Err<nom::error::Error<&str>>) -> ErrorKind {
+pub(crate) fn to_error_kind(e: Err<nom::error::Error<&str>>) -> ErrorKind {
     match e {
         Err::Incomplete(_) => ErrorKind::Complete,
         Err::Failure(e) | Err::Error(e) => e.code,
