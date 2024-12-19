@@ -106,7 +106,7 @@ dependencies = [
  "argh_derive",
  "argh_shared",
  "arrayvec",
- "ash",
+ "ash 0.38.0+1.3.281",
  "async-stream",
  "async-stream-impl",
  "async-task",
@@ -657,6 +657,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39e9c3835d686b0a6084ab4234fcd1b07dbf6e4767dce60874b12356a25ecd4a"
 dependencies = [
  "libloading 0.7.4",
+]
+
+[[package]]
+name = "ash"
+version = "0.38.0+1.3.281"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0bb44936d800fea8f016d7f2311c6a4f97aebd5dc86f09906139ec848cf3a46f"
+dependencies = [
+ "libloading 0.8.3",
 ]
 
 [[package]]
@@ -5945,7 +5954,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e1f15eeb9d93a05eb3c237332a10806eac1eb82444e54485bfcc1859c483c23"
 dependencies = [
  "ahash 0.8.11",
- "ash",
+ "ash 0.37.3+1.3.251",
  "bytemuck",
  "core-graphics-types",
  "crossbeam-queue",
