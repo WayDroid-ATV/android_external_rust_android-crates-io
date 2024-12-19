@@ -1,4 +1,4 @@
-use regex_automata::DFA;
+use regex_automata::{dfa::Automaton, Anchored, Input};
 
 use crate::{
     ext_slice::ByteSlice,
@@ -145,12 +145,15 @@ impl<'a> Iterator for SentenceIndices<'a> {
 fn decode_sentence(bs: &[u8]) -> (&str, usize) {
     if bs.is_empty() {
         ("", 0)
-    } else if let Some(end) = SENTENCE_BREAK_FWD.find(bs) {
+    } else if let Some(hm) = {
+        let input = Input::new(bs).anchored(Anchored::Yes);
+        SENTENCE_BREAK_FWD.try_search_fwd(&input).unwrap()
+    } {
         // Safe because a match can only occur for valid UTF-8.
-        let sentence = unsafe { bs[..end].to_str_unchecked() };
+        let sentence = unsafe { bs[..hm.offset()].to_str_unchecked() };
         (sentence, sentence.len())
     } else {
-        const INVALID: &'static str = "\u{FFFD}";
+        const INVALID: &str = "\u{FFFD}";
         // No match on non-empty bytes implies we found invalid UTF-8.
         let (_, size) = utf8::decode_lossy(bs);
         (INVALID, size)
@@ -159,6 +162,8 @@ fn decode_sentence(bs: &[u8]) -> (&str, usize) {
 
 #[cfg(all(test, feature = "std"))]
 mod tests {
+    use alloc::{vec, vec::Vec};
+
     #[cfg(not(miri))]
     use ucd_parse::SentenceBreakTest;
 
@@ -209,8 +214,7 @@ mod tests {
     /// Return all of the UCD for sentence breaks.
     #[cfg(not(miri))]
     fn ucdtests() -> Vec<SentenceBreakTest> {
-        const TESTDATA: &'static str =
-            include_str!("data/SentenceBreakTest.txt");
+        const TESTDATA: &str = include_str!("data/SentenceBreakTest.txt");
 
         let mut tests = vec![];
         for mut line in TESTDATA.lines() {

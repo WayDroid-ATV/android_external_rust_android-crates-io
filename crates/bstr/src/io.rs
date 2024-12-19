@@ -142,7 +142,7 @@ pub trait BufReadExt: io::BufRead {
         F: FnMut(&[u8]) -> io::Result<bool>,
     {
         self.for_byte_line_with_terminator(|line| {
-            for_each_line(&trim_line_slice(&line))
+            for_each_line(trim_line_slice(line))
         })
     }
 
@@ -193,7 +193,7 @@ pub trait BufReadExt: io::BufRead {
         F: FnMut(&[u8]) -> io::Result<bool>,
     {
         self.for_byte_record_with_terminator(terminator, |chunk| {
-            for_each_record(&trim_record_slice(&chunk, terminator))
+            for_each_record(trim_record_slice(chunk, terminator))
         })
     }
 
@@ -302,11 +302,14 @@ pub trait BufReadExt: io::BufRead {
             // Lend out complete record slices from our buffer
             {
                 let mut buf = self.fill_buf()?;
+                if buf.is_empty() {
+                    break;
+                }
                 while let Some(index) = buf.find_byte(terminator) {
                     let (record, rest) = buf.split_at(index + 1);
                     buf = rest;
                     consumed += record.len();
-                    match for_each_record(&record) {
+                    match for_each_record(record) {
                         Ok(false) => break 'outer,
                         Err(err) => {
                             res = Err(err);
@@ -319,7 +322,7 @@ pub trait BufReadExt: io::BufRead {
                 // Copy the final record fragment to our local buffer. This
                 // saves read_until() from re-scanning a buffer we know
                 // contains no remaining terminators.
-                bytes.extend_from_slice(&buf);
+                bytes.extend_from_slice(buf);
                 consumed += buf.len();
             }
 
@@ -440,6 +443,8 @@ fn trim_record_slice(mut record: &[u8], terminator: u8) -> &[u8] {
 
 #[cfg(all(test, feature = "std"))]
 mod tests {
+    use alloc::{vec, vec::Vec};
+
     use crate::bstring::BString;
 
     use super::BufReadExt;
