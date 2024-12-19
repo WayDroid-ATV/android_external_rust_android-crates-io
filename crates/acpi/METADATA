@@ -1,19 +1,17 @@
 name: "acpi"
 description: "A pure-Rust library for parsing ACPI tables"
 third_party {
-  identifier {
-    type: "crates.io"
-    value: "https://crates.io/crates/acpi"
-  }
-  identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/acpi/acpi-5.0.0.crate"
-  }
-  version: "5.0.0"
+  version: "5.1.0"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024
-    month: 2
-    day: 26
+    month: 12
+    day: 19
+  }
+  homepage: "https://crates.io/crates/acpi"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/acpi/acpi-5.1.0.crate"
+    version: "5.1.0"
   }
 }

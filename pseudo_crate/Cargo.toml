@@ -7,7 +7,7 @@ license = "Apache-2.0"
 
 [dependencies]
 aarch64-paging = "=0.7.0"
-acpi = "=5.0.0"
+acpi = "=5.1.0"
 ahash = "=0.8.11"
 aho-corasick = "=0.7.20"
 android_log-sys = "=0.3.1"

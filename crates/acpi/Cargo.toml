@@ -12,8 +12,14 @@
 [package]
 edition = "2021"
 name = "acpi"
-version = "5.0.0"
+version = "5.1.0"
 authors = ["Isaac Woods"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "A pure-Rust library for parsing ACPI tables"
 readme = "README.md"
 categories = [
@@ -23,8 +29,15 @@ categories = [
 license = "MIT/Apache-2.0"
 repository = "https://github.com/rust-osdev/acpi"
 
+[lib]
+name = "acpi"
+path = "src/lib.rs"
+
 [dependencies.bit_field]
 version = "0.10.2"
+
+[dependencies.bitflags]
+version = "2.5.0"
 
 [dependencies.log]
 version = "0.4.20"
