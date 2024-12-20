@@ -1,18 +1,20 @@
 use crate::combinator::trace;
 use crate::combinator::trace_result;
+use crate::combinator::DisplayDebug;
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
 use crate::error::{AddContext, ErrMode, ErrorKind, FromExternalError, ParserError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 use crate::stream::Recover;
 use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
 use crate::*;
 
 /// Implementation of [`Parser::by_ref`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct ByRef<'p, P> {
     p: &'p mut P,
 }
@@ -35,7 +37,6 @@ where
 }
 
 /// Implementation of [`Parser::map`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Map<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -82,7 +83,6 @@ where
 }
 
 /// Implementation of [`Parser::try_map`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct TryMap<F, G, I, O, O2, E, E2>
 where
     F: Parser<I, O, E>,
@@ -132,7 +132,7 @@ where
         let start = input.checkpoint();
         let o = self.parser.parse_next(input)?;
         let res = (self.map)(o).map_err(|err| {
-            input.reset(start);
+            input.reset(&start);
             ErrMode::from_external_error(input, ErrorKind::Verify, err)
         });
         trace_result("verify", &res);
@@ -141,7 +141,6 @@ where
 }
 
 /// Implementation of [`Parser::verify_map`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct VerifyMap<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -189,7 +188,7 @@ where
         let start = input.checkpoint();
         let o = self.parser.parse_next(input)?;
         let res = (self.map)(o).ok_or_else(|| {
-            input.reset(start);
+            input.reset(&start);
             ErrMode::from_error_kind(input, ErrorKind::Verify)
         });
         trace_result("verify", &res);
@@ -198,7 +197,6 @@ where
 }
 
 /// Implementation of [`Parser::and_then`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct AndThen<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -247,7 +245,7 @@ where
         let mut o = self.outer.parse_next(i)?;
         let _ = o.complete();
         let o2 = self.inner.parse_next(&mut o).map_err(|err| {
-            i.reset(start);
+            i.reset(&start);
             err
         })?;
         Ok(o2)
@@ -255,7 +253,6 @@ where
 }
 
 /// Implementation of [`Parser::parse_to`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct ParseTo<P, I, O, O2, E>
 where
     P: Parser<I, O, E>,
@@ -301,7 +298,7 @@ where
         let start = i.checkpoint();
         let o = self.p.parse_next(i)?;
         let res = o.parse_slice().ok_or_else(|| {
-            i.reset(start);
+            i.reset(&start);
             ErrMode::from_error_kind(i, ErrorKind::Verify)
         });
         trace_result("verify", &res);
@@ -310,7 +307,6 @@ where
 }
 
 /// Implementation of [`Parser::flat_map`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct FlatMap<F, G, H, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -360,7 +356,6 @@ where
 }
 
 /// Implementation of [`Parser::complete_err`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct CompleteErr<F> {
     f: F,
 }
@@ -393,7 +388,6 @@ where
 }
 
 /// Implementation of [`Parser::verify`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Verify<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -447,7 +441,7 @@ where
         let start = input.checkpoint();
         let o = self.parser.parse_next(input)?;
         let res = (self.filter)(o.borrow()).then_some(o).ok_or_else(|| {
-            input.reset(start);
+            input.reset(&start);
             ErrMode::from_error_kind(input, ErrorKind::Verify)
         });
         trace_result("verify", &res);
@@ -456,7 +450,6 @@ where
 }
 
 /// Implementation of [`Parser::value`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Value<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -498,7 +491,6 @@ where
 }
 
 /// Implementation of [`Parser::default_value`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct DefaultValue<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -540,7 +532,6 @@ where
 }
 
 /// Implementation of [`Parser::void`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Void<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -576,9 +567,12 @@ where
     }
 }
 
-/// Implementation of [`Parser::recognize`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct Recognize<F, I, O, E>
+/// Replaced with [`Take`]
+#[deprecated(since = "0.6.14", note = "Replaced with `Take`")]
+pub type Recognize<F, I, O, E> = Take<F, I, O, E>;
+
+/// Implementation of [`Parser::take`]
+pub struct Take<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -589,7 +583,7 @@ where
     e: core::marker::PhantomData<E>,
 }
 
-impl<F, I, O, E> Recognize<F, I, O, E>
+impl<F, I, O, E> Take<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -605,7 +599,7 @@ where
     }
 }
 
-impl<I, O, E, F> Parser<I, <I as Stream>::Slice, E> for Recognize<F, I, O, E>
+impl<I, O, E, F> Parser<I, <I as Stream>::Slice, E> for Take<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -616,18 +610,21 @@ where
         match (self.parser).parse_next(input) {
             Ok(_) => {
                 let offset = input.offset_from(&checkpoint);
-                input.reset(checkpoint);
-                let recognized = input.next_slice(offset);
-                Ok(recognized)
+                input.reset(&checkpoint);
+                let taken = input.next_slice(offset);
+                Ok(taken)
             }
             Err(e) => Err(e),
         }
     }
 }
 
-/// Implementation of [`Parser::with_recognized`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct WithRecognized<F, I, O, E>
+/// Replaced with [`WithTaken`]
+#[deprecated(since = "0.6.14", note = "Replaced with `WithTaken`")]
+pub type WithRecognized<F, I, O, E> = WithTaken<F, I, O, E>;
+
+/// Implementation of [`Parser::with_taken`]
+pub struct WithTaken<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -638,7 +635,7 @@ where
     e: core::marker::PhantomData<E>,
 }
 
-impl<F, I, O, E> WithRecognized<F, I, O, E>
+impl<F, I, O, E> WithTaken<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -654,7 +651,7 @@ where
     }
 }
 
-impl<F, I, O, E> Parser<I, (O, <I as Stream>::Slice), E> for WithRecognized<F, I, O, E>
+impl<F, I, O, E> Parser<I, (O, <I as Stream>::Slice), E> for WithTaken<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -665,9 +662,9 @@ where
         match (self.parser).parse_next(input) {
             Ok(result) => {
                 let offset = input.offset_from(&checkpoint);
-                input.reset(checkpoint);
-                let recognized = input.next_slice(offset);
-                Ok((result, recognized))
+                input.reset(&checkpoint);
+                let taken = input.next_slice(offset);
+                Ok((result, taken))
             }
             Err(e) => Err(e),
         }
@@ -675,7 +672,6 @@ where
 }
 
 /// Implementation of [`Parser::span`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Span<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -719,7 +715,6 @@ where
 }
 
 /// Implementation of [`Parser::with_span`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct WithSpan<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -763,7 +758,6 @@ where
 }
 
 /// Implementation of [`Parser::output_into`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct OutputInto<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -805,7 +799,6 @@ where
 }
 
 /// Implementation of [`Parser::err_into`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct ErrInto<F, I, O, E, E2>
 where
     F: Parser<I, O, E>,
@@ -852,7 +845,6 @@ where
 }
 
 /// Implementation of [`Parser::context`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Context<F, I, O, E, C>
 where
     F: Parser<I, O, E>,
@@ -895,22 +887,20 @@ where
 {
     #[inline]
     fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
-        #[cfg(feature = "debug")]
-        let name = format!("context={:?}", self.context);
-        #[cfg(not(feature = "debug"))]
-        let name = "context";
-        trace(name, move |i: &mut I| {
+        let context = self.context.clone();
+        trace(DisplayDebug(self.context.clone()), move |i: &mut I| {
+            let start = i.checkpoint();
             (self.parser)
                 .parse_next(i)
-                .map_err(|err| err.add_context(i, self.context.clone()))
+                .map_err(|err| err.add_context(i, &start, context.clone()))
         })
         .parse_next(i)
     }
 }
 
 /// Implementation of [`Parser::retry_after`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 pub struct RetryAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -927,6 +917,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 impl<P, R, I, O, E> RetryAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -948,6 +939,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 impl<P, R, I, O, E> Parser<I, O, E> for RetryAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -967,6 +959,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 fn retry_after_inner<P, R, I, O, E>(parser: &mut P, recover: &mut R, i: &mut I) -> PResult<O, E>
 where
     P: Parser<I, O, E>,
@@ -997,7 +990,7 @@ where
             }
         }
 
-        i.reset(err_start.clone());
+        i.reset(&err_start);
         err = err.map(|err| E::from_recoverable_error(&token_start, &err_start, i, err));
         return Err(err);
     }
@@ -1005,7 +998,7 @@ where
 
 /// Implementation of [`Parser::resume_after`]
 #[cfg(feature = "unstable-recover")]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+#[cfg(feature = "std")]
 pub struct ResumeAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -1022,6 +1015,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 impl<P, R, I, O, E> ResumeAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -1043,6 +1037,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 impl<P, R, I, O, E> Parser<I, Option<O>, E> for ResumeAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -1062,6 +1057,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 fn resume_after_inner<P, R, I, O, E>(
     parser: &mut P,
     recover: &mut R,
@@ -1091,7 +1087,7 @@ where
         }
     }
 
-    i.reset(err_start.clone());
+    i.reset(&err_start);
     err = err.map(|err| E::from_recoverable_error(&token_start, &err_start, i, err));
     Err(err)
 }
