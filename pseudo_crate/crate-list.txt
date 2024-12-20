@@ -317,6 +317,7 @@ thread_local
 threadpool
 tikv-jemalloc-sys
 tikv-jemallocator
+tinyjson
 tinytemplate
 tinyvec
 tinyvec_macros
