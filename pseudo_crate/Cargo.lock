@@ -464,7 +464,7 @@ dependencies = [
  "virtio-drivers",
  "virtio-queue 0.11.0",
  "virtio-vsock",
- "vm-memory 0.12.2",
+ "vm-memory 0.16.1",
  "vmm-sys-util 0.12.1",
  "vsock",
  "vsprintf",
@@ -5925,6 +5925,17 @@ name = "vm-memory"
 version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c3aba5064cc5f6f7740cddc8dae34d2d9a311cac69b60d942af7f3ab8fc49f4"
+dependencies = [
+ "libc",
+ "thiserror 1.0.49",
+ "winapi",
+]
+
+[[package]]
+name = "vm-memory"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1720e7240cdc739f935456eb77f370d7e9b2a3909204da1e2b47bef1137a013"
 dependencies = [
  "libc",
  "thiserror 1.0.49",
