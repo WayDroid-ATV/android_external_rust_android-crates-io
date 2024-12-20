@@ -1,10 +1,10 @@
 //! Contains `XmlEvent` datatype, instances of which are emitted by the parser.
 
-use std::fmt;
 use crate::attribute::OwnedAttribute;
 use crate::common::XmlVersion;
 use crate::name::OwnedName;
 use crate::namespace::Namespace;
+use std::fmt;
 
 /// An element of an XML input stream.
 ///
@@ -158,9 +158,9 @@ impl XmlEvent {
     /// ```rust
     /// use std::str;
     ///
-    /// use xml::{EventReader, EventWriter};
     /// use xml::reader::XmlEvent as ReaderEvent;
     /// use xml::writer::XmlEvent as WriterEvent;
+    /// use xml::{EventReader, EventWriter};
     ///
     /// let mut input: &[u8] = b"<hello>world</hello>";
     /// let mut output: Vec<u8> = Vec::new();

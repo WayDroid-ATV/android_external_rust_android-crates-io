@@ -20,6 +20,7 @@ macro_rules! gen_takes(
         impl MarkupData {
             #[inline]
             #[allow(clippy::mem_replace_option_with_none)]
+            #[allow(clippy::mem_replace_with_default)]
             fn $method(&mut self) -> $t {
                 std::mem::replace(&mut self.$field, $def)
             }
@@ -95,13 +96,13 @@ enum Encountered {
 impl PullParser {
     /// Returns a new parser using the given config.
     #[inline]
-    pub fn new(config: impl Into<ParserConfig2>) -> PullParser {
+    pub fn new(config: impl Into<ParserConfig2>) -> Self {
         let config = config.into();
         Self::new_with_config2(config)
     }
 
     #[inline]
-    fn new_with_config2(config: ParserConfig2) -> PullParser {
+    fn new_with_config2(config: ParserConfig2) -> Self {
         let mut lexer = Lexer::new(&config);
         if let Some(enc) = config.override_encoding {
             lexer.set_encoding(enc);
@@ -110,7 +111,7 @@ impl PullParser {
         let mut pos = Vec::with_capacity(16);
         pos.push(TextPosition::new());
 
-        PullParser {
+        Self {
             config,
             lexer,
             st: State::DocumentStart,
@@ -121,6 +122,7 @@ impl PullParser {
 
             data: MarkupData {
                 name: String::new(),
+                doctype: None,
                 version: None,
                 encoding: None,
                 standalone: None,
@@ -144,6 +146,12 @@ impl PullParser {
 
     /// Checks if this parser ignores the end of stream errors.
     pub fn is_ignoring_end_of_stream(&self) -> bool { self.config.c.ignore_end_of_stream }
+
+    /// Retrieves the Doctype from the document if any
+    #[inline]
+    pub fn doctype(&self) -> Option<&str> {
+        self.data.doctype.as_deref()
+    }
 
     #[inline(never)]
     fn set_encountered(&mut self, new_encounter: Encountered) -> Option<Result> {
@@ -172,7 +180,7 @@ impl Position for PullParser {
     /// Returns the position of the last event produced by the parser
     #[inline]
     fn position(&self) -> TextPosition {
-        self.pos[0]
+        self.pos.first().copied().unwrap_or_else(TextPosition::new)
     }
 }
 
@@ -260,7 +268,7 @@ pub enum DeclarationSubstate {
     AfterStandaloneDeclValue,
 }
 
-#[derive(PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 enum QualifiedNameTarget {
     AttributeNameTarget,
     OpeningTagNameTarget,
@@ -274,18 +282,22 @@ enum QuoteToken {
 }
 
 impl QuoteToken {
-    fn from_token(t: &Token) -> QuoteToken {
-        match *t {
-            Token::SingleQuote => QuoteToken::SingleQuoteToken,
-            Token::DoubleQuote => QuoteToken::DoubleQuoteToken,
-            _ => panic!("Unexpected token: {t}"),
+    #[inline]
+    fn from_token(t: Token) -> Option<Self> {
+        match t {
+            Token::SingleQuote => Some(Self::SingleQuoteToken),
+            Token::DoubleQuote => Some(Self::DoubleQuoteToken),
+            _ => {
+                debug_assert!(false);
+                None
+            },
         }
     }
 
-    fn as_token(self) -> Token {
+    const fn as_token(self) -> Token {
         match self {
-            QuoteToken::SingleQuoteToken => Token::SingleQuote,
-            QuoteToken::DoubleQuoteToken => Token::DoubleQuote,
+            Self::SingleQuoteToken => Token::SingleQuote,
+            Self::DoubleQuoteToken => Token::DoubleQuote,
         }
     }
 }
@@ -294,6 +306,7 @@ struct MarkupData {
     name: String,     // used for processing instruction name
     ref_data: String,  // used for reference content
 
+    doctype: Option<String>, // keeps a copy of the original doctype
     version: Option<XmlVersion>,  // used for XML declaration version
     encoding: Option<String>,  // used for XML declaration encoding
     standalone: Option<bool>,  // used for XML declaration standalone parameter
@@ -331,33 +344,33 @@ impl PullParser {
             // While lexer gives us Ok(maybe_token) -- we loop.
             // Upon having a complete XML-event -- we return from the whole function.
             match self.lexer.next_token(r) {
-                Ok(Some(token)) => {
-                    match self.dispatch_token(token) {
-                        None => {} // continue
-                        Some(Ok(xml_event)) => {
-                            self.next_pos();
-                            return Ok(xml_event)
-                        },
-                        Some(Err(xml_error)) => {
-                            self.next_pos();
-                            return self.set_final_result(Err(xml_error))
-                        },
-                    }
+                Ok(Token::Eof) => {
+                    // Forward pos to the lexer head
+                    self.next_pos();
+                    return self.handle_eof();
                 },
-                Ok(None) => break,
+                Ok(token) => match self.dispatch_token(token) {
+                    None => continue,
+                    Some(Ok(xml_event)) => {
+                        self.next_pos();
+                        return Ok(xml_event);
+                    },
+                    Some(Err(xml_error)) => {
+                        self.next_pos();
+                        return self.set_final_result(Err(xml_error));
+                    },
+                },
                 Err(lexer_error) => {
-                    return self.set_final_result(Err(lexer_error))
+                    self.next_pos();
+                    return self.set_final_result(Err(lexer_error));
                 },
             }
         }
-
-        self.handle_eof()
     }
 
     /// Handle end of stream
+    #[cold]
     fn handle_eof(&mut self) -> std::result::Result<XmlEvent, super::Error> {
-        // Forward pos to the lexer head
-        self.next_pos();
         let ev = if self.depth() == 0 {
             if self.encountered == Encountered::Element && self.st == State::OutsideTag {  // all is ok
                 Ok(XmlEvent::EndDocument)
@@ -474,18 +487,18 @@ impl PullParser {
     /// * `t`       --- next token;
     /// * `on_name` --- a callback which is executed when whitespace is encountered.
     fn read_qualified_name<F>(&mut self, t: Token, target: QualifiedNameTarget, on_name: F) -> Option<Result>
-      where F: Fn(&mut PullParser, Token, OwnedName) -> Option<Result> {
+      where F: Fn(&mut Self, Token, OwnedName) -> Option<Result> {
         // We can get here for the first time only when self.data.name contains zero or one character,
         // but first character cannot be a colon anyway
         if self.buf.len() <= 1 {
             self.read_prefix_separator = false;
         }
 
-        let invoke_callback = move |this: &mut PullParser, t| {
+        let invoke_callback = move |this: &mut Self, t| {
             let name = this.take_buf();
             match name.parse() {
                 Ok(name) => on_name(this, t, name),
-                Err(_) => Some(this.error(SyntaxError::InvalidQualifiedName(name.into()))),
+                Err(()) => Some(this.error(SyntaxError::InvalidQualifiedName(name.into()))),
             }
         };
 
@@ -495,7 +508,7 @@ impl PullParser {
                 self.buf.push(':');
                 self.read_prefix_separator = true;
                 None
-            }
+            },
 
             Token::Character(c) if c != ':' && (self.buf.is_empty() && is_name_start_char(c) ||
                                           self.buf_has_data() && is_name_char(c)) => {
@@ -525,20 +538,20 @@ impl PullParser {
     /// * `t`        --- next token;
     /// * `on_value` --- a callback which is called when terminating quote is encountered.
     fn read_attribute_value<F>(&mut self, t: Token, on_value: F) -> Option<Result>
-      where F: Fn(&mut PullParser, String) -> Option<Result> {
+      where F: Fn(&mut Self, String) -> Option<Result> {
         match t {
             Token::Character(c) if self.data.quote.is_none() && is_whitespace_char(c) => None, // skip leading whitespace
 
             Token::DoubleQuote | Token::SingleQuote => match self.data.quote {
                 None => {  // Entered attribute value
-                    self.data.quote = Some(QuoteToken::from_token(&t));
+                    self.data.quote = QuoteToken::from_token(t);
                     None
-                }
+                },
                 Some(q) if q.as_token() == t => {
                     self.data.quote = None;
                     let value = self.take_buf();
                     on_value(self, value)
-                }
+                },
                 _ => {
                     if let Token::Character(c) = t {
                         if !self.is_valid_xml_char_not_restricted(c) {
@@ -550,7 +563,7 @@ impl PullParser {
                     }
                     t.push_to_string(&mut self.buf);
                     None
-                }
+                },
             },
 
             Token::ReferenceStart if self.data.quote.is_some() => {
@@ -571,7 +584,7 @@ impl PullParser {
                 }
                 t.push_to_string(&mut self.buf);
                 None
-            }
+            },
 
             _ => Some(self.error(SyntaxError::UnexpectedToken(t))),
         }
@@ -585,7 +598,7 @@ impl PullParser {
         match self.nst.get(name.borrow().prefix_repr()) {
             Some("") => name.namespace = None, // default namespace
             Some(ns) => name.namespace = Some(ns.into()),
-            None => return Some(self.error(SyntaxError::UnboundElementPrefix(name.to_string().into())))
+            None => return Some(self.error(SyntaxError::UnboundElementPrefix(name.to_string().into()))),
         }
 
         // check and fix accumulated attributes prefixes
@@ -594,7 +607,7 @@ impl PullParser {
                 let new_ns = match self.nst.get(pfx) {
                     Some("") => None, // default namespace
                     Some(ns) => Some(ns.into()),
-                    None => return Some(self.error(SyntaxError::UnboundAttribute(attr.name.to_string().into())))
+                    None => return Some(self.error(SyntaxError::UnboundAttribute(attr.name.to_string().into()))),
                 };
                 attr.name.namespace = new_ns;
             }
@@ -623,7 +636,7 @@ impl PullParser {
         match self.nst.get(name.borrow().prefix_repr()) {
             Some("") => name.namespace = None, // default namespace
             Some(ns) => name.namespace = Some(ns.into()),
-            None => return Some(self.error(SyntaxError::UnboundElementPrefix(name.to_string().into())))
+            None => return Some(self.error(SyntaxError::UnboundElementPrefix(name.to_string().into()))),
         }
 
         let op_name = self.est.pop()?;
@@ -657,13 +670,13 @@ impl PullParser {
 
 #[cfg(test)]
 mod tests {
-    use std::io::BufReader;
     use crate::attribute::OwnedAttribute;
     use crate::common::TextPosition;
     use crate::name::OwnedName;
     use crate::reader::events::XmlEvent;
     use crate::reader::parser::PullParser;
     use crate::reader::ParserConfig;
+    use std::io::BufReader;
 
     fn new_parser() -> PullParser {
         PullParser::new(ParserConfig::new())
@@ -712,9 +725,9 @@ mod tests {
 
     #[test]
     fn issue_140_entity_reference_inside_tag() {
-        let (mut r, mut p) = test_data!(r#"
+        let (mut r, mut p) = test_data!(r"
             <bla>&#9835;</bla>
-        "#);
+        ");
 
         expect_event!(r, p, Ok(XmlEvent::StartDocument { .. }));
         expect_event!(r, p, Ok(XmlEvent::StartElement { ref name, .. }) => *name == OwnedName::local("bla"));
@@ -725,18 +738,18 @@ mod tests {
 
     #[test]
     fn issue_220_comment() {
-        let (mut r, mut p) = test_data!(r#"<x><!-- <!--></x>"#);
+        let (mut r, mut p) = test_data!(r"<x><!-- <!--></x>");
         expect_event!(r, p, Ok(XmlEvent::StartDocument { .. }));
         expect_event!(r, p, Ok(XmlEvent::StartElement { .. }));
         expect_event!(r, p, Ok(XmlEvent::EndElement { .. }));
         expect_event!(r, p, Ok(XmlEvent::EndDocument));
 
-        let (mut r, mut p) = test_data!(r#"<x><!-- <!---></x>"#);
+        let (mut r, mut p) = test_data!(r"<x><!-- <!---></x>");
         expect_event!(r, p, Ok(XmlEvent::StartDocument { .. }));
         expect_event!(r, p, Ok(XmlEvent::StartElement { .. }));
         expect_event!(r, p, Err(_)); // ---> is forbidden in comments
 
-        let (mut r, mut p) = test_data!(r#"<x><!--<text&x;> <!--></x>"#);
+        let (mut r, mut p) = test_data!(r"<x><!--<text&x;> <!--></x>");
         p.config.c.ignore_comments = false;
         expect_event!(r, p, Ok(XmlEvent::StartDocument { .. }));
         expect_event!(r, p, Ok(XmlEvent::StartElement { .. }));
@@ -782,9 +795,9 @@ mod tests {
 
     #[test]
     fn reference_err() {
-        let (mut r, mut p) = test_data!(r#"
+        let (mut r, mut p) = test_data!(r"
             <a>&&amp;</a>
-        "#);
+        ");
 
         expect_event!(r, p, Ok(XmlEvent::StartDocument { .. }));
         expect_event!(r, p, Ok(XmlEvent::StartElement { .. }));
