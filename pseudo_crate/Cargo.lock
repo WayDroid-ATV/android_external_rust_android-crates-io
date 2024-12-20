@@ -345,8 +345,8 @@ dependencies = [
  "protobuf-json-mapping",
  "protobuf-parse",
  "protobuf-support",
- "ptr_meta",
- "ptr_meta_derive",
+ "ptr_meta 0.3.0",
+ "ptr_meta_derive 0.2.0",
  "quiche",
  "quickcheck",
  "quote 1.0.36",
@@ -4240,7 +4240,16 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bcada80daa06c42ed5f48c9a043865edea5dc44cbf9ac009fda3b89526e28607"
 dependencies = [
- "ptr_meta_derive",
+ "ptr_meta_derive 0.2.0",
+]
+
+[[package]]
+name = "ptr_meta"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe9e76f66d3f9606f44e45598d155cb13ecf09f4a28199e48daf8c8fc937ea90"
+dependencies = [
+ "ptr_meta_derive 0.3.0",
 ]
 
 [[package]]
@@ -4252,6 +4261,17 @@ dependencies = [
  "proc-macro2 1.0.92",
  "quote 1.0.36",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "ptr_meta_derive"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca414edb151b4c8d125c12566ab0d74dc9cdba36fb80eb7b848c15f495fd32d1"
+dependencies = [
+ "proc-macro2 1.0.92",
+ "quote 1.0.36",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -5556,7 +5576,7 @@ dependencies = [
  "bitflags 2.6.0",
  "cfg-if",
  "log",
- "ptr_meta",
+ "ptr_meta 0.2.0",
  "ucs2",
  "uefi-macros",
  "uefi-raw",
@@ -5581,7 +5601,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f6d465de2c918779dafb769a5a4fe8d6e4fb7cc4cc6cb1a735f2f6ec68beea4"
 dependencies = [
  "bitflags 2.6.0",
- "ptr_meta",
+ "ptr_meta 0.2.0",
  "uguid",
 ]
 
