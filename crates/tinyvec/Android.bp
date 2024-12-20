@@ -18,13 +18,12 @@ rust_library {
     host_supported: true,
     crate_name: "tinyvec",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.6.0",
+    cargo_pkg_version: "1.8.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
         "alloc",
         "default",
-        "rustc_1_40",
         "rustc_1_55",
         "rustc_1_57",
         "std",
@@ -45,7 +44,7 @@ rust_test {
     host_supported: true,
     crate_name: "arrayvec",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.6.0",
+    cargo_pkg_version: "1.8.0",
     crate_root: "tests/arrayvec.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -56,7 +55,6 @@ rust_test {
     features: [
         "alloc",
         "default",
-        "rustc_1_40",
         "rustc_1_55",
         "rustc_1_57",
         "std",
@@ -64,11 +62,13 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
+        "libdebugger_test_parser",
         "libserde_test",
         "libsmallvec",
         "libtinyvec",
         "libtinyvec_macros",
     ],
+    proc_macros: ["libdebugger_test"],
 }
 
 rust_test {
@@ -76,7 +76,7 @@ rust_test {
     host_supported: true,
     crate_name: "tinyvec",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.6.0",
+    cargo_pkg_version: "1.8.0",
     crate_root: "tests/tinyvec.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -87,7 +87,6 @@ rust_test {
     features: [
         "alloc",
         "default",
-        "rustc_1_40",
         "rustc_1_55",
         "rustc_1_57",
         "std",
@@ -95,18 +94,20 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
+        "libdebugger_test_parser",
         "libserde_test",
         "libsmallvec",
         "libtinyvec",
         "libtinyvec_macros",
     ],
+    proc_macros: ["libdebugger_test"],
 }
 
 rust_library_rlib {
     name: "libtinyvec_nostd",
     crate_name: "tinyvec",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.6.0",
+    cargo_pkg_version: "1.8.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     apex_available: [
