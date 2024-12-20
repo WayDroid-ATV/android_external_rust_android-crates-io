@@ -33,6 +33,24 @@
       "message": "Ugh, I accidentally copy/pasted a change-id here. Let me undo this.",
       "revId": "bb819e867dd4c039db80c0b277a81a96be9d2f8b",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b426259f_572edb4e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-20T22:03:12Z",
+      "side": 1,
+      "message": "Ok, I restored the CL from James, but lost all the approvals. Ugh.",
+      "parentUuid": "82da2756_3ae59957",
+      "revId": "bb819e867dd4c039db80c0b277a81a96be9d2f8b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
