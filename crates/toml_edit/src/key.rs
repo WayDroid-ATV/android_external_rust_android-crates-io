@@ -113,7 +113,10 @@ impl Key {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor_mut`")]
+    #[deprecated(
+        since = "0.21.1",
+        note = "Replaced with `dotted_decor_mut`, `leaf_decor_mut"
+    )]
     pub fn decor_mut(&mut self) -> &mut Decor {
         self.leaf_decor_mut()
     }
@@ -129,7 +132,7 @@ impl Key {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor`")]
+    #[deprecated(since = "0.21.1", note = "Replaced with `dotted_decor`, `leaf_decor")]
     pub fn decor(&self) -> &Decor {
         self.leaf_decor()
     }
@@ -144,9 +147,10 @@ impl Key {
         &self.dotted_decor
     }
 
-    /// Returns the location within the original document
-    #[cfg(feature = "serde")]
-    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+    /// The location within the original document
+    ///
+    /// This generally requires an [`ImDocument`][crate::ImDocument].
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.repr.as_ref().and_then(|r| r.span())
     }
 
@@ -360,7 +364,10 @@ impl<'k> KeyMut<'k> {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor_mut`")]
+    #[deprecated(
+        since = "0.21.1",
+        note = "Replaced with `dotted_decor_mut`, `leaf_decor_mut"
+    )]
     pub fn decor_mut(&mut self) -> &mut Decor {
         #![allow(deprecated)]
         self.key.decor_mut()
@@ -377,7 +384,7 @@ impl<'k> KeyMut<'k> {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor`")]
+    #[deprecated(since = "0.21.1", note = "Replaced with `dotted_decor`, `leaf_decor")]
     pub fn decor(&self) -> &Decor {
         #![allow(deprecated)]
         self.key.decor()
@@ -433,4 +440,11 @@ impl<'k> std::fmt::Display for KeyMut<'k> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(&self.key, f)
     }
+}
+
+#[test]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
+fn string_roundtrip() {
+    Key::new("hello").to_string().parse::<Key>().unwrap();
 }

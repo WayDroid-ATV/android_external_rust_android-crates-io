@@ -148,8 +148,8 @@ impl InlineTable {
     /// ```
     /// # #[cfg(feature = "parse")] {
     /// # #[cfg(feature = "display")] {
-    /// use toml_edit::Document;
-    /// let mut doc = "[a]\n[a.b]\n".parse::<Document>().expect("invalid toml");
+    /// use toml_edit::DocumentMut;
+    /// let mut doc = "[a]\n[a.b]\n".parse::<DocumentMut>().expect("invalid toml");
     ///
     /// doc["a"].as_table_mut().unwrap().set_implicit(true);
     /// assert_eq!(doc.to_string(), "[a.b]\n");
@@ -219,8 +219,10 @@ impl InlineTable {
         &self.preamble
     }
 
-    /// Returns the location within the original document
-    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+    /// The location within the original document
+    ///
+    /// This generally requires an [`ImDocument`][crate::ImDocument].
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.span.clone()
     }
 
