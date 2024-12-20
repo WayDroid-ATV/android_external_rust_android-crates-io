@@ -1,6 +1,5 @@
 #![allow(
     clippy::assertions_on_result_states,
-    clippy::needless_lifetimes,
     clippy::non_ascii_literal,
     clippy::uninlined_format_args
 )]
@@ -17,32 +16,21 @@ use syn::{Block, Stmt};
 fn test_raw_operator() {
     let stmt = syn::parse_str::<Stmt>("let _ = &raw const x;").unwrap();
 
-    snapshot!(stmt, @r#"
+    snapshot!(stmt, @r###"
     Stmt::Local {
         pat: Pat::Wild,
         init: Some(LocalInit {
-            expr: Expr::RawAddr {
-                mutability: PointerMutability::Const,
-                expr: Expr::Path {
-                    path: Path {
-                        segments: [
-                            PathSegment {
-                                ident: "x",
-                            },
-                        ],
-                    },
-                },
-            },
+            expr: Expr::Verbatim(`& raw const x`),
         }),
     }
-    "#);
+    "###);
 }
 
 #[test]
 fn test_raw_variable() {
     let stmt = syn::parse_str::<Stmt>("let _ = &raw;").unwrap();
 
-    snapshot!(stmt, @r#"
+    snapshot!(stmt, @r###"
     Stmt::Local {
         pat: Pat::Wild,
         init: Some(LocalInit {
@@ -59,7 +47,7 @@ fn test_raw_variable() {
             },
         }),
     }
-    "#);
+    "###);
 }
 
 #[test]
@@ -69,10 +57,10 @@ fn test_raw_invalid() {
 
 #[test]
 fn test_none_group() {
-    // «∅ async fn f() {} ∅»
-    let tokens = TokenStream::from_iter([TokenTree::Group(Group::new(
+    // <Ø async fn f() {} Ø>
+    let tokens = TokenStream::from_iter(vec![TokenTree::Group(Group::new(
         Delimiter::None,
-        TokenStream::from_iter([
+        TokenStream::from_iter(vec![
             TokenTree::Ident(Ident::new("async", Span::call_site())),
             TokenTree::Ident(Ident::new("fn", Span::call_site())),
             TokenTree::Ident(Ident::new("f", Span::call_site())),
@@ -80,7 +68,7 @@ fn test_none_group() {
             TokenTree::Group(Group::new(Delimiter::Brace, TokenStream::new())),
         ]),
     ))]);
-    snapshot!(tokens as Stmt, @r#"
+    snapshot!(tokens as Stmt, @r###"
     Stmt::Item(Item::Fn {
         vis: Visibility::Inherited,
         sig: Signature {
@@ -93,11 +81,11 @@ fn test_none_group() {
             stmts: [],
         },
     })
-    "#);
+    "###);
 
     let tokens = Group::new(Delimiter::None, quote!(let None = None)).to_token_stream();
     let stmts = Block::parse_within.parse2(tokens).unwrap();
-    snapshot!(stmts, @r#"
+    snapshot!(stmts, @r###"
     [
         Stmt::Expr(
             Expr::Group {
@@ -119,7 +107,7 @@ fn test_none_group() {
             None,
         ),
     ]
-    "#);
+    "###);
 }
 
 #[test]
@@ -128,7 +116,7 @@ fn test_let_dot_dot() {
         let .. = 10;
     };
 
-    snapshot!(tokens as Stmt, @r#"
+    snapshot!(tokens as Stmt, @r###"
     Stmt::Local {
         pat: Pat::Rest,
         init: Some(LocalInit {
@@ -137,7 +125,7 @@ fn test_let_dot_dot() {
             },
         }),
     }
-    "#);
+    "###);
 }
 
 #[test]
@@ -146,7 +134,7 @@ fn test_let_else() {
         let Some(x) = None else { return 0; };
     };
 
-    snapshot!(tokens as Stmt, @r#"
+    snapshot!(tokens as Stmt, @r###"
     Stmt::Local {
         pat: Pat::TupleStruct {
             path: Path {
@@ -188,7 +176,7 @@ fn test_let_else() {
             }),
         }),
     }
-    "#);
+    "###);
 }
 
 #[test]
@@ -202,7 +190,7 @@ fn test_macros() {
         }
     };
 
-    snapshot!(tokens as Stmt, @r#"
+    snapshot!(tokens as Stmt, @r###"
     Stmt::Item(Item::Fn {
         vis: Visibility::Inherited,
         sig: Signature {
@@ -272,7 +260,7 @@ fn test_macros() {
             ],
         },
     })
-    "#);
+    "###);
 }
 
 #[test]
@@ -286,7 +274,7 @@ fn test_early_parse_loop() {
 
     let stmts = Block::parse_within.parse2(tokens).unwrap();
 
-    snapshot!(stmts, @r#"
+    snapshot!(stmts, @r###"
     [
         Stmt::Expr(
             Expr::Loop {
@@ -301,7 +289,7 @@ fn test_early_parse_loop() {
             None,
         ),
     ]
-    "#);
+    "###);
 
     let tokens = quote! {
         'a: loop {}
@@ -310,7 +298,7 @@ fn test_early_parse_loop() {
 
     let stmts = Block::parse_within.parse2(tokens).unwrap();
 
-    snapshot!(stmts, @r#"
+    snapshot!(stmts, @r###"
     [
         Stmt::Expr(
             Expr::Loop {
@@ -330,5 +318,5 @@ fn test_early_parse_loop() {
             None,
         ),
     ]
-    "#);
+    "###);
 }

@@ -82,7 +82,7 @@ impl Debug for Lite<TokenStream> {
     }
 }
 
-impl<T> Debug for Lite<&T>
+impl<'a, T> Debug for Lite<&'a T>
 where
     Lite<T>: Debug,
 {
