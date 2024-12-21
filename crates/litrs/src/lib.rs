@@ -9,7 +9,35 @@
 //! built. This crate also offers a bit more flexibility compared to `syn`
 //! (only regarding literals, of course).
 //!
-//! ---
+//!
+//! # Quick start
+//!
+//! | **`StringLit::try_from(tt)?.value()`** |
+//! | - |
+//!
+//! ... where `tt` is a `proc_macro::TokenTree` and where [`StringLit`] can be
+//! replaced with [`Literal`] or other types of literals (e.g. [`FloatLit`]).
+//! Calling `value()` returns the value that is represented by the literal.
+//!
+//! **Mini Example**
+//!
+//! ```ignore
+//! use proc_macro::TokenStream;
+//!
+//! #[proc_macro]
+//! pub fn foo(input: TokenStream) -> TokenStream {
+//!      let first_token = input.into_iter().next().unwrap(); // Do proper error handling!
+//!      let string_value = match litrs::StringLit::try_from(first_token) {
+//!          Ok(string_lit) => string_lit.value(),
+//!          Err(e) => return e.to_compile_error(),
+//!      };
+//!
+//!      // `string_value` is the string value with all escapes resolved.
+//!      todo!()
+//! }
+//! ```
+//!
+//! # Overview
 //!
 //! The main types of this library are [`Literal`], representing any kind of
 //! literal, and `*Lit`, like [`StringLit`] or [`FloatLit`], representing a
@@ -41,8 +69,8 @@
 //!
 //! **Note**: `true` and `false` are `Ident`s when passed to your proc macro.
 //! The `TryFrom<TokenTree>` impls check for those two special idents and
-//! return a `BoolLit` appropriately. For that reason, there is also no
-//! `TryFrom<proc_macro::Literal>` impl for `BoolLit`. The `proc_macro::Literal`
+//! return a [`BoolLit`] appropriately. For that reason, there is also no
+//! `TryFrom<proc_macro::Literal>` impl for [`BoolLit`]. The `proc_macro::Literal`
 //! simply cannot represent bool literals.
 //!
 //!
@@ -82,7 +110,7 @@
 //! // Parse a specific kind of literal (float in this case):
 //! let float_lit = FloatLit::parse("3.14f32");
 //! assert!(float_lit.is_ok());
-//! assert_eq!(float_lit.unwrap().type_suffix(), Some(litrs::FloatType::F32));
+//! assert_eq!(float_lit.unwrap().suffix(), "f32");
 //! assert!(FloatLit::parse("'c'").is_err());
 //!
 //! // Parse any kind of literal. After parsing, you can inspect the literal
@@ -105,6 +133,11 @@
 //!
 //! - `proc-macro2` (**default**): adds the dependency `proc_macro2`, a bunch of
 //!   `From` and `TryFrom` impls, and [`InvalidToken::to_compile_error2`].
+//! - `check_suffix`: if enabled, `parse` functions will exactly verify that the
+//!   literal suffix is valid. Adds the dependency `unicode-xid`. If disabled,
+//!   only an approximate check (only in ASCII range) is done. If you are
+//!   writing a proc macro, you don't need to enable this as the suffix is
+//!   already checked by the compiler.
 //!
 //!
 //! [ref]: https://doc.rust-lang.org/reference/tokens.html#literals
@@ -152,17 +185,10 @@ pub use self::{
 // ===== `Literal` and type defs
 // ==============================================================================================
 
-/// A literal which owns the underlying buffer.
-pub type OwnedLiteral = Literal<String>;
-
-/// A literal whose underlying buffer is borrowed.
-pub type SharedLiteral<'a> = Literal<&'a str>;
-
 /// A literal. This is the main type of this library.
 ///
 /// This type is generic over the underlying buffer `B`, which can be `&str` or
-/// `String`. There are two useful type aliases: [`OwnedLiteral`] and
-/// [`SharedLiteral`].
+/// `String`.
 ///
 /// To create this type, you have to either call [`Literal::parse`] with an
 /// input string or use the `From<_>` impls of this type. The impls are only
@@ -179,10 +205,66 @@ pub enum Literal<B: Buffer> {
     ByteString(ByteStringLit<B>),
 }
 
+impl<B: Buffer> Literal<B> {
+    /// Parses the given input as a Rust literal.
+    pub fn parse(input: B) -> Result<Self, ParseError> {
+        parse::parse(input)
+    }
+
+    /// Returns the suffix of this literal or `""` if it doesn't have one.
+    ///
+    /// Rust token grammar actually allows suffixes for all kinds of tokens.
+    /// Most Rust programmer only know the type suffixes for integer and
+    /// floats, e.g. `0u32`. And in normal Rust code, everything else causes an
+    /// error. But it is possible to pass literals with arbitrary suffixes to
+    /// proc macros, for example:
+    ///
+    /// ```ignore
+    /// some_macro!(3.14f33  16px  '🦊'good_boy  "toph"beifong);
+    /// ```
+    ///
+    /// Boolean literals, not actually being literals, but idents, cannot have
+    /// suffixes and this method always returns `""` for those.
+    ///
+    /// There are some edge cases to be aware of:
+    /// - Integer suffixes must not start with `e` or `E` as that conflicts with
+    ///   the exponent grammar for floats. `0e1` is a float; `0eel` is also
+    ///   parsed as a float and results in an error.
+    /// - Hexadecimal integers eagerly parse digits, so `0x5abcdefgh` has a
+    ///   suffix von `gh`.
+    /// - Suffixes can contain and start with `_`, but for integer and number
+    ///   literals, `_` is eagerly parsed as part of the number, so `1_x` has
+    ///   the suffix `x`.
+    /// - The input `55f32` is regarded as integer literal with suffix `f32`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use litrs::Literal;
+    ///
+    /// assert_eq!(Literal::parse(r##"3.14f33"##).unwrap().suffix(), "f33");
+    /// assert_eq!(Literal::parse(r##"123hackerman"##).unwrap().suffix(), "hackerman");
+    /// assert_eq!(Literal::parse(r##"0x0fuck"##).unwrap().suffix(), "uck");
+    /// assert_eq!(Literal::parse(r##"'🦊'good_boy"##).unwrap().suffix(), "good_boy");
+    /// assert_eq!(Literal::parse(r##""toph"beifong"##).unwrap().suffix(), "beifong");
+    /// ```
+    pub fn suffix(&self) -> &str {
+        match self {
+            Literal::Bool(_) => "",
+            Literal::Integer(l) => l.suffix(),
+            Literal::Float(l) => l.suffix(),
+            Literal::Char(l) => l.suffix(),
+            Literal::String(l) => l.suffix(),
+            Literal::Byte(l) => l.suffix(),
+            Literal::ByteString(l) => l.suffix(),
+        }
+    }
+}
+
 impl Literal<&str> {
     /// Makes a copy of the underlying buffer and returns the owned version of
     /// `Self`.
-    pub fn into_owned(self) -> OwnedLiteral {
+    pub fn into_owned(self) -> Literal<String> {
         match self {
             Literal::Bool(l) => Literal::Bool(l.to_owned()),
             Literal::Integer(l) => Literal::Integer(l.to_owned()),
@@ -218,7 +300,7 @@ impl<B: Buffer> fmt::Display for Literal<B> {
 ///
 /// This is trait is implementation detail of this library, cannot be
 /// implemented in other crates and is not subject to semantic versioning.
-/// `litrs` only gurantees that this trait is implemented for `String` and
+/// `litrs` only guarantees that this trait is implemented for `String` and
 /// `for<'a> &'a str`.
 pub trait Buffer: sealed::Sealed + Deref<Target = str> {
     /// This is `Cow<'static, str>` for `String`, and `Cow<'a, str>` for `&'a str`.
