@@ -1,5 +1,5 @@
 /* gzwrite.c -- zlib functions for writing gzip files
- * Copyright (C) 2004-2017 Mark Adler
+ * Copyright (C) 2004-2019 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -460,7 +460,7 @@ int Z_EXPORT PREFIX(gzsetparams)(gzFile file, int level, int strategy) {
     strm = &(state->strm);
 
     /* check that we're writing and that there's no error */
-    if (state->mode != GZ_WRITE || state->err != Z_OK)
+    if (state->mode != GZ_WRITE || state->err != Z_OK || state->direct)
         return Z_STREAM_ERROR;
 
     /* if no change is requested, then do nothing */

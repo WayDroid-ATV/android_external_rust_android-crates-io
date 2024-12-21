@@ -4,6 +4,7 @@
  */
 
 #include "zbuild.h"
+#include "zutil_p.h"
 #include "fallback_builtins.h"
 
 /* ALIGNED, byte comparison */
@@ -55,22 +56,25 @@ Z_INTERNAL uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1) {
 
 #include "match_tpl.h"
 
-#ifdef UNALIGNED_OK
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 /* 16-bit unaligned integer comparison */
 static inline uint32_t compare256_unaligned_16_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
-        if (zmemcmp_2(src0, src1) != 0)
+        if (zng_memcmp_2(src0, src1) != 0)
             return len + (*src0 == *src1);
         src0 += 2, src1 += 2, len += 2;
-        if (zmemcmp_2(src0, src1) != 0)
+
+        if (zng_memcmp_2(src0, src1) != 0)
             return len + (*src0 == *src1);
         src0 += 2, src1 += 2, len += 2;
-        if (zmemcmp_2(src0, src1) != 0)
+
+        if (zng_memcmp_2(src0, src1) != 0)
             return len + (*src0 == *src1);
         src0 += 2, src1 += 2, len += 2;
-        if (zmemcmp_2(src0, src1) != 0)
+
+        if (zng_memcmp_2(src0, src1) != 0)
             return len + (*src0 == *src1);
         src0 += 2, src1 += 2, len += 2;
     } while (len < 256);
@@ -101,8 +105,8 @@ static inline uint32_t compare256_unaligned_32_static(const uint8_t *src0, const
     do {
         uint32_t sv, mv, diff;
 
-        zmemcpy_4(&sv, src0);
-        zmemcpy_4(&mv, src1);
+        memcpy(&sv, src0, sizeof(sv));
+        memcpy(&mv, src1, sizeof(mv));
 
         diff = sv ^ mv;
         if (diff) {
@@ -141,8 +145,8 @@ static inline uint32_t compare256_unaligned_64_static(const uint8_t *src0, const
     do {
         uint64_t sv, mv, diff;
 
-        zmemcpy_8(&sv, src0);
-        zmemcpy_8(&mv, src1);
+        memcpy(&sv, src0, sizeof(sv));
+        memcpy(&mv, src1, sizeof(mv));
 
         diff = sv ^ mv;
         if (diff) {
