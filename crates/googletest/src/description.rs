@@ -89,6 +89,8 @@ use crate::internal::description_renderer::{List, INDENTATION_SIZE};
 pub struct Description {
     elements: List,
     initial_indentation: usize,
+    is_conjunction: bool,
+    is_disjunction: bool,
 }
 
 impl Description {
@@ -198,6 +200,27 @@ impl Description {
     /// Returns whether the set of elements is empty.
     pub fn is_empty(&self) -> bool {
         self.elements.is_empty()
+    }
+
+    pub(crate) fn push_in_last_nested(mut self, inner: Description) -> Self {
+        self.elements.push_at_end(inner.elements);
+        self
+    }
+
+    pub(crate) fn conjunction_description(self) -> Self {
+        Self { is_conjunction: true, ..self }
+    }
+
+    pub(crate) fn is_conjunction_description(&self) -> bool {
+        self.is_conjunction
+    }
+
+    pub(crate) fn disjunction_description(self) -> Self {
+        Self { is_disjunction: true, ..self }
+    }
+
+    pub(crate) fn is_disjunction_description(&self) -> bool {
+        self.is_disjunction
     }
 }
 
@@ -358,5 +381,25 @@ mod tests {
                     D E F"
             )))
         )
+    }
+
+    #[test]
+    fn new_is_empty() -> Result<()> {
+        verify_that!(Description::new(), predicate(Description::is_empty))
+    }
+
+    #[test]
+    fn text_is_not_empty() -> Result<()> {
+        verify_that!(Description::new().text("something"), not(predicate(Description::is_empty)))
+    }
+
+    #[test]
+    fn new_zero_length() -> Result<()> {
+        verify_that!(Description::new().len(), eq(0))
+    }
+
+    #[test]
+    fn text_one_length() -> Result<()> {
+        verify_that!(Description::new().text("something").len(), eq(1))
     }
 }

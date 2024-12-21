@@ -22,10 +22,15 @@ extern crate quickcheck;
 #[macro_use]
 pub mod assertions;
 pub mod description;
+pub mod fixtures;
+#[macro_use]
+pub mod fmt;
 pub mod internal;
 pub mod matcher;
 pub mod matcher_support;
 pub mod matchers;
+
+pub use googletest_macro::{__abbreviated_stringify, __googletest_macro_verify_pred};
 
 /// Re-exports of the symbols in this crate which are most likely to be used.
 ///
@@ -42,16 +47,25 @@ pub mod matchers;
 /// }
 /// ```
 pub mod prelude {
-    pub use super::matcher::Matcher;
+    pub use super::fixtures::{ConsumableFixture, Fixture, FixtureOf, StaticFixture};
+    pub use super::gtest;
+    pub use super::matcher::{Matcher, MatcherBase};
     pub use super::matchers::*;
     pub use super::verify_current_test_outcome;
     pub use super::GoogleTestSupport;
     pub use super::IntoTestResult;
     pub use super::Result;
     // Assert macros
-    pub use super::{assert_that, expect_pred, expect_that, fail, verify_pred, verify_that};
+    pub use super::{
+        add_failure, add_failure_at, assert_pred, assert_that, expect_eq, expect_false,
+        expect_float_eq, expect_ge, expect_gt, expect_le, expect_lt, expect_ne, expect_near,
+        expect_pred, expect_that, expect_true, fail, succeed, verify_eq, verify_false,
+        verify_float_eq, verify_ge, verify_gt, verify_le, verify_lt, verify_ne, verify_near,
+        verify_pred, verify_that, verify_true,
+    };
 }
 
+pub use googletest_macro::gtest;
 pub use googletest_macro::test;
 
 use internal::test_outcome::{TestAssertionFailure, TestOutcome};
@@ -89,13 +103,12 @@ pub type Result<T> = std::result::Result<T, TestAssertionFailure>;
 /// `?` operator to continue execution of the test conditionally on there not
 /// having been any failure yet.
 ///
-/// This requires the use of the [`#[googletest::test]`][crate::test] attribute
-/// macro.
+/// This requires the use of the [`#[gtest]`][crate::gtest] attribute macro.
 ///
 /// ```
 /// # use googletest::prelude::*;
 /// # /* Make sure this also compiles as a doctest.
-/// #[googletest::test]
+/// #[gtest]
 /// # */
 /// # fn foo() -> u32 { 1 }
 /// # fn bar() -> u32 { 2 }
@@ -108,6 +121,7 @@ pub type Result<T> = std::result::Result<T, TestAssertionFailure>;
 /// }
 /// # verify_that!(should_fail_and_not_execute_last_assertion(), err(displays_as(contains_substring("Test failed")))).unwrap();
 /// ```
+#[track_caller]
 pub fn verify_current_test_outcome() -> Result<()> {
     TestOutcome::get_current_test_outcome()
 }
@@ -203,7 +217,7 @@ pub trait GoogleTestSupport {
 
 impl<T> GoogleTestSupport for std::result::Result<T, TestAssertionFailure> {
     fn and_log_failure(self) {
-        TestOutcome::ensure_text_context_present();
+        TestOutcome::ensure_test_context_present();
         if let Err(failure) = self {
             failure.log();
         }
@@ -229,44 +243,52 @@ impl<T> GoogleTestSupport for std::result::Result<T, TestAssertionFailure> {
 ///
 /// A type can implement this trait to provide an easy way to return immediately
 /// from a test in conjunction with the `?` operator. This is useful for
-/// [`Result`][std::result::Result] types whose `Result::Err` variant does not
-/// implement [`std::error::Error`].
+/// [`Option`] and [`Result`][std::result::Result] types whose `Result::Err`
+/// variant does not implement [`std::error::Error`].
 ///
-/// There is an implementation of this trait for [`anyhow::Error`] (which does
-/// not implement `std::error::Error`) when the `anyhow` feature is enabled.
-/// Importing this trait allows one to easily map [`anyhow::Error`] to a test
-/// failure:
+/// If `Result::Err` implements [`std::error::Error`] you can just use the `?`
+/// operator directly.
 ///
 /// ```ignore
 /// #[test]
-/// fn should_work() -> Result<()> {
+/// fn should_work() -> googletest::Result<()> {
 ///     let value = something_which_can_fail().into_test_result()?;
+///     let value = something_which_can_fail_with_option().into_test_result()?;
 ///     ...
 /// }
 ///
-/// fn something_which_can_fail() -> anyhow::Result<...> { ... }
+/// fn something_which_can_fail() -> std::result::Result<T, String> { ... }
+/// fn something_which_can_fail_with_option() -> Option<T> { ... }
 /// ```
 pub trait IntoTestResult<T> {
     /// Converts this instance into a [`Result`].
     ///
-    /// Typically, the `Self` type is itself a [`std::result::Result`]. This
-    /// method should then map the `Err` variant to a [`TestAssertionFailure`]
-    /// and leave the `Ok` variant unchanged.
+    /// Typically, the `Self` type is itself an implementation of the
+    /// [`std::ops::Try`] trait. This method should then map the `Residual`
+    /// variant to a [`TestAssertionFailure`] and leave the `Output` variant
+    /// unchanged.
     fn into_test_result(self) -> Result<T>;
 }
 
-#[cfg(feature = "anyhow")]
-impl<T> IntoTestResult<T> for std::result::Result<T, anyhow::Error> {
+impl<T, E: std::fmt::Debug> IntoTestResult<T> for std::result::Result<T, E> {
+    #[track_caller]
     fn into_test_result(self) -> std::result::Result<T, TestAssertionFailure> {
-        self.map_err(|e| TestAssertionFailure::create(format!("{e}")))
+        match self {
+            Ok(t) => Ok(t),
+            Err(e) => Err(TestAssertionFailure::create(format!("{e:?}"))),
+        }
     }
 }
 
-#[cfg(feature = "proptest")]
-impl<OkT, CaseT: std::fmt::Debug> IntoTestResult<OkT>
-    for std::result::Result<OkT, proptest::test_runner::TestError<CaseT>>
-{
-    fn into_test_result(self) -> std::result::Result<OkT, TestAssertionFailure> {
-        self.map_err(|e| TestAssertionFailure::create(format!("{e}")))
+impl<T> IntoTestResult<T> for Option<T> {
+    #[track_caller]
+    fn into_test_result(self) -> std::result::Result<T, TestAssertionFailure> {
+        match self {
+            Some(t) => Ok(t),
+            None => Err(TestAssertionFailure::create(format!(
+                "called `Option::into_test_result()` on a `Option::<{}>::None` value",
+                std::any::type_name::<T>()
+            ))),
+        }
     }
 }

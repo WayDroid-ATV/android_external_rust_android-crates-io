@@ -14,9 +14,9 @@
 
 use crate::{
     description::Description,
-    matcher::{Matcher, MatcherResult},
+    matcher::{Matcher, MatcherBase, MatcherResult},
 };
-use std::{fmt::Debug, marker::PhantomData};
+use std::fmt::Debug;
 
 /// Matches a value less than or equal to (in the sense of `<=`) `expected`.
 ///
@@ -74,24 +74,20 @@ use std::{fmt::Debug, marker::PhantomData};
 ///
 /// You can find the standard library `PartialOrd` implementation in
 /// <https://doc.rust-lang.org/core/cmp/trait.PartialOrd.html#implementors>
-pub fn le<ActualT: Debug + PartialOrd<ExpectedT>, ExpectedT: Debug>(
-    expected: ExpectedT,
-) -> impl Matcher<ActualT = ActualT> {
-    LeMatcher::<ActualT, _> { expected, phantom: Default::default() }
+pub fn le<ExpectedT>(expected: ExpectedT) -> LeMatcher<ExpectedT> {
+    LeMatcher { expected }
 }
 
-struct LeMatcher<ActualT, ExpectedT> {
+#[derive(MatcherBase)]
+pub struct LeMatcher<ExpectedT> {
     expected: ExpectedT,
-    phantom: PhantomData<ActualT>,
 }
 
-impl<ActualT: Debug + PartialOrd<ExpectedT>, ExpectedT: Debug> Matcher
-    for LeMatcher<ActualT, ExpectedT>
+impl<ActualT: Debug + PartialOrd<ExpectedT> + Copy, ExpectedT: Debug> Matcher<ActualT>
+    for LeMatcher<ExpectedT>
 {
-    type ActualT = ActualT;
-
-    fn matches(&self, actual: &ActualT) -> MatcherResult {
-        (*actual <= self.expected).into()
+    fn matches(&self, actual: ActualT) -> MatcherResult {
+        (actual <= self.expected).into()
     }
 
     fn describe(&self, matcher_result: MatcherResult) -> Description {
@@ -104,8 +100,7 @@ impl<ActualT: Debug + PartialOrd<ExpectedT>, ExpectedT: Debug> Matcher
 
 #[cfg(test)]
 mod tests {
-    use super::le;
-    use crate::matcher::{Matcher, MatcherResult};
+    use crate::matcher::MatcherResult;
     use crate::prelude::*;
     use indoc::indoc;
     use std::ffi::OsString;
@@ -120,7 +115,7 @@ mod tests {
     #[test]
     fn le_does_not_match_bigger_i32() -> Result<()> {
         let matcher = le(0);
-        let result = matcher.matches(&1);
+        let result = matcher.matches(1);
         verify_that!(result, eq(MatcherResult::NoMatch))
     }
 
@@ -132,7 +127,7 @@ mod tests {
     #[test]
     fn le_does_not_match_bigger_str() -> Result<()> {
         let matcher = le("a");
-        let result = matcher.matches(&"z");
+        let result = matcher.matches("z");
         verify_that!(result, eq(MatcherResult::NoMatch))
     }
 
@@ -186,7 +181,7 @@ mod tests {
         /// A custom "number" that is lower than all other numbers. The only
         /// things we define about this "special" number is `PartialOrd` and
         /// `PartialEq` against `u32`.
-        #[derive(Debug)]
+        #[derive(Debug, Clone, Copy)]
         struct VeryLowNumber {}
 
         impl std::cmp::PartialEq<u32> for VeryLowNumber {
