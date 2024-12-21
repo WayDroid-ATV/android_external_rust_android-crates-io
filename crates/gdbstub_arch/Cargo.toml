@@ -12,8 +12,13 @@
 [package]
 edition = "2018"
 name = "gdbstub_arch"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Daniel Prilik <danielprilik@gmail.com>"]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Implementations of `gdbstub::arch::Arch` for various architectures."
 homepage = "https://github.com/daniel5151/gdbstub"
 documentation = "https://docs.rs/gdbstub_arch"
@@ -32,6 +37,10 @@ categories = [
 ]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/daniel5151/gdbstub"
+
+[lib]
+name = "gdbstub_arch"
+path = "src/lib.rs"
 
 [dependencies.gdbstub]
 version = "0.7"
