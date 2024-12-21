@@ -45,25 +45,27 @@
 #define HEAP_SIZE (2*L_CODES+1)
 /* maximum heap size */
 
-#define MAX_BITS 15
-/* All codes must not exceed MAX_BITS bits */
-
 #define BIT_BUF_SIZE 64
 /* size of bit buffer in bi_buf */
 
 #define END_BLOCK 256
 /* end of block literal code */
 
-#define INIT_STATE    42    /* zlib header -> BUSY_STATE */
+#define INIT_STATE      1    /* zlib header -> BUSY_STATE */
 #ifdef GZIP
-#  define GZIP_STATE  57    /* gzip header -> BUSY_STATE | EXTRA_STATE */
+#  define GZIP_STATE    4    /* gzip header -> BUSY_STATE | EXTRA_STATE */
+#  define EXTRA_STATE   5    /* gzip extra block -> NAME_STATE */
+#  define NAME_STATE    6    /* gzip file name -> COMMENT_STATE */
+#  define COMMENT_STATE 7    /* gzip comment -> HCRC_STATE */
+#  define HCRC_STATE    8    /* gzip header CRC -> BUSY_STATE */
 #endif
-#define EXTRA_STATE   69    /* gzip extra block -> NAME_STATE */
-#define NAME_STATE    73    /* gzip file name -> COMMENT_STATE */
-#define COMMENT_STATE 91    /* gzip comment -> HCRC_STATE */
-#define HCRC_STATE   103    /* gzip header CRC -> BUSY_STATE */
-#define BUSY_STATE   113    /* deflate -> FINISH_STATE */
-#define FINISH_STATE 666    /* stream complete */
+#define BUSY_STATE      2    /* deflate -> FINISH_STATE */
+#define FINISH_STATE    3    /* stream complete */
+#ifdef GZIP
+#  define MAX_STATE     HCRC_STATE
+#else
+#  define MAX_STATE     FINISH_STATE
+#endif
 /* Stream status */
 
 #define HASH_BITS    16u           /* log2(HASH_SIZE) */
@@ -306,7 +308,7 @@ static inline void put_short(deflate_state *s, uint16_t w) {
 #if BYTE_ORDER == BIG_ENDIAN
     w = ZSWAP16(w);
 #endif
-    zmemcpy_2(&s->pending_buf[s->pending], &w);
+    memcpy(&s->pending_buf[s->pending], &w, sizeof(w));
     s->pending += 2;
 }
 
@@ -318,7 +320,7 @@ static inline void put_short_msb(deflate_state *s, uint16_t w) {
 #if BYTE_ORDER == LITTLE_ENDIAN
     w = ZSWAP16(w);
 #endif
-    zmemcpy_2(&s->pending_buf[s->pending], &w);
+    memcpy(&s->pending_buf[s->pending], &w, sizeof(w));
     s->pending += 2;
 }
 
@@ -330,7 +332,7 @@ static inline void put_uint32(deflate_state *s, uint32_t dw) {
 #if BYTE_ORDER == BIG_ENDIAN
     dw = ZSWAP32(dw);
 #endif
-    zmemcpy_4(&s->pending_buf[s->pending], &dw);
+    memcpy(&s->pending_buf[s->pending], &dw, sizeof(dw));
     s->pending += 4;
 }
 
@@ -342,7 +344,7 @@ static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
 #if BYTE_ORDER == LITTLE_ENDIAN
     dw = ZSWAP32(dw);
 #endif
-    zmemcpy_4(&s->pending_buf[s->pending], &dw);
+    memcpy(&s->pending_buf[s->pending], &dw, sizeof(dw));
     s->pending += 4;
 }
 
@@ -354,7 +356,7 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
 #if BYTE_ORDER == BIG_ENDIAN
     lld = ZSWAP64(lld);
 #endif
-    zmemcpy_8(&s->pending_buf[s->pending], &lld);
+    memcpy(&s->pending_buf[s->pending], &lld, sizeof(lld));
     s->pending += 8;
 }
 
@@ -373,7 +375,7 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
    memory checker errors from longest match routines */
 
 
-void Z_INTERNAL fill_window(deflate_state *s);
+void Z_INTERNAL PREFIX(fill_window)(deflate_state *s);
 void Z_INTERNAL slide_hash_c(deflate_state *s);
 
         /* in trees.c */

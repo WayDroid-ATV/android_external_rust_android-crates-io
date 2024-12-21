@@ -3,7 +3,13 @@
 
 #define _POSIX_SOURCE 1  /* fileno */
 #ifndef _POSIX_C_SOURCE
-#  define _POSIX_C_SOURCE 200112L /* snprintf, posix_memalign */
+#  define _POSIX_C_SOURCE 200809L /* snprintf, posix_memalign, strdup */
+#endif
+#ifndef _ISOC11_SOURCE
+#  define _ISOC11_SOURCE 1 /* aligned_alloc */
+#endif
+#ifdef __OpenBSD__
+#  define _BSD_SOURCE 1
 #endif
 
 #include <stddef.h>
@@ -25,17 +31,27 @@
 #  endif
 #endif
 
-/* Determine compiler support for TLS */
-#ifndef Z_TLS
-#  if defined(STDC11) && !defined(__STDC_NO_THREADS__)
-#    define Z_TLS _Thread_local
-#  elif defined(__GNUC__) || defined(__SUNPRO_C)
-#    define Z_TLS __thread
-#  elif defined(_WIN32) && (defined(_MSC_VER) || defined(__ICL))
-#    define Z_TLS __declspec(thread)
+#ifndef Z_HAS_ATTRIBUTE
+#  if defined(__has_attribute)
+#    define Z_HAS_ATTRIBUTE(a) __has_attribute(a)
 #  else
-#    warning Unable to detect Thread Local Storage support.
-#    define Z_TLS
+#    define Z_HAS_ATTRIBUTE(a) 0
+#  endif
+#endif
+
+#ifndef Z_FALLTHROUGH
+#  if Z_HAS_ATTRIBUTE(__fallthrough__) || (defined(__GNUC__) && (__GNUC__ >= 7))
+#    define Z_FALLTHROUGH __attribute__((__fallthrough__))
+#  else
+#    define Z_FALLTHROUGH do {} while(0) /* fallthrough */
+#  endif
+#endif
+
+#ifndef Z_TARGET
+#  if Z_HAS_ATTRIBUTE(__target__)
+#    define Z_TARGET(x) __attribute__((__target__(x)))
+#  else
+#    define Z_TARGET(x)
 #  endif
 #endif
 
@@ -45,6 +61,12 @@
     typedef __int64 ssize_t;
 #  else
     typedef long ssize_t;
+#  endif
+
+#  if defined(_WIN64)
+    #define SSIZE_MAX _I64_MAX
+#  else
+    #define SSIZE_MAX LONG_MAX
 #  endif
 #endif
 
@@ -60,7 +82,6 @@
 #  define PREFIX3(x) z_ ## x
 #  define PREFIX4(x) x ## 64
 #  define zVersion zlibVersion
-#  define z_size_t unsigned long
 #else
 #  define PREFIX(x) zng_ ## x
 #  define PREFIX2(x) ZLIBNG_ ## x
@@ -68,6 +89,13 @@
 #  define PREFIX4(x) zng_ ## x
 #  define zVersion zlibng_version
 #  define z_size_t size_t
+#endif
+
+/* In zlib-compat some functions and types use unsigned long, but zlib-ng use size_t */
+#if defined(ZLIB_COMPAT)
+#  define z_uintmax_t unsigned long
+#else
+#  define z_uintmax_t size_t
 #endif
 
 /* Minimum of a and b. */
@@ -83,6 +111,20 @@
 #  define Z_INTERNAL __attribute__((visibility ("hidden")))
 #else
 #  define Z_INTERNAL
+#endif
+
+/* Symbol versioning helpers, allowing multiple versions of a function to exist.
+ * Functions using this must also be added to zlib-ng.map for each version.
+ * Double @@ means this is the default for newly compiled applications to link against.
+ * Single @ means this is kept for backwards compatibility.
+ * This is only used for Zlib-ng native API, and only on platforms supporting this.
+ */
+#if defined(HAVE_SYMVER)
+#  define ZSYMVER(func,alias,ver) __asm__(".symver " func ", " alias "@ZLIB_NG_" ver);
+#  define ZSYMVER_DEF(func,alias,ver) __asm__(".symver " func ", " alias "@@ZLIB_NG_" ver);
+#else
+#  define ZSYMVER(func,alias,ver)
+#  define ZSYMVER_DEF(func,alias,ver)
 #endif
 
 #ifndef __cplusplus
@@ -148,27 +190,13 @@
 #  define LIKELY_NULL(x)        __builtin_expect((x) != 0, 0)
 #  define LIKELY(x)             __builtin_expect(!!(x), 1)
 #  define UNLIKELY(x)           __builtin_expect(!!(x), 0)
-#  define PREFETCH_L1(addr)     __builtin_prefetch(addr, 0, 3)
-#  define PREFETCH_L2(addr)     __builtin_prefetch(addr, 0, 2)
-#  define PREFETCH_RW(addr)     __builtin_prefetch(addr, 1, 2)
-#elif defined(__WIN__)
-#  include <xmmintrin.h>
-#  define LIKELY_NULL(x)        x
-#  define LIKELY(x)             x
-#  define UNLIKELY(x)           x
-#  define PREFETCH_L1(addr)     _mm_prefetch((char *) addr, _MM_HINT_T0)
-#  define PREFETCH_L2(addr)     _mm_prefetch((char *) addr, _MM_HINT_T1)
-#  define PREFETCH_RW(addr)     _mm_prefetch((char *) addr, _MM_HINT_T1)
 #else
 #  define LIKELY_NULL(x)        x
 #  define LIKELY(x)             x
 #  define UNLIKELY(x)           x
-#  define PREFETCH_L1(addr)     addr
-#  define PREFETCH_L2(addr)     addr
-#  define PREFETCH_RW(addr)     addr
 #endif /* (un)likely */
 
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(HAVE_ATTRIBUTE_ALIGNED)
 #  define ALIGNED_(x) __attribute__ ((aligned(x)))
 #elif defined(_MSC_VER)
 #  define ALIGNED_(x) __declspec(align(x))
@@ -178,7 +206,7 @@
 #ifdef ZLIB_DEBUG
 #  include <stdio.h>
    extern int Z_INTERNAL z_verbose;
-   extern void Z_INTERNAL z_error(char *m);
+   extern void Z_INTERNAL z_error(const char *m);
 #  define Assert(cond, msg) {if (!(cond)) z_error(msg);}
 #  define Trace(x) {if (z_verbose >= 0) fprintf x;}
 #  define Tracev(x) {if (z_verbose > 0) fprintf x;}
@@ -201,7 +229,7 @@
 #  elif defined(__i386__) || defined(__i486__) || defined(__i586__) || \
         defined(__i686__) || defined(_X86_) || defined(_M_IX86)
 #    define UNALIGNED_OK
-#  elif defined(__aarch64__) || defined(_M_ARM64)
+#  elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #    if (defined(__GNUC__) && defined(__ARM_FEATURE_UNALIGNED)) || !defined(__GNUC__)
 #      define UNALIGNED_OK
 #      define UNALIGNED64_OK
@@ -218,39 +246,15 @@
 #  endif
 #endif
 
-/* Force compiler to emit unaligned memory accesses if unaligned access is supported
-   on the architecture, otherwise don't assume unaligned access is supported. Older
-   compilers don't optimize memcpy and memcmp calls to unaligned access instructions
-   when it is supported on the architecture resulting in significant performance impact.
-   Newer compilers might optimize memcpy but not all optimize memcmp for all integer types. */
-#ifdef UNALIGNED_OK
-#  define zmemcpy_2(dest, src)    (*((uint16_t *)(dest)) = *((uint16_t *)(src)))
-#  define zmemcmp_2(str1, str2)   (*((uint16_t *)(str1)) != *((uint16_t *)(str2)))
-#  define zmemcpy_4(dest, src)    (*((uint32_t *)(dest)) = *((uint32_t *)(src)))
-#  define zmemcmp_4(str1, str2)   (*((uint32_t *)(str1)) != *((uint32_t *)(str2)))
-#  if defined(UNALIGNED64_OK) && (UINTPTR_MAX == UINT64_MAX)
-#    define zmemcpy_8(dest, src)  (*((uint64_t *)(dest)) = *((uint64_t *)(src)))
-#    define zmemcmp_8(str1, str2) (*((uint64_t *)(str1)) != *((uint64_t *)(str2)))
-#  else
-#    define zmemcpy_8(dest, src)  (((uint32_t *)(dest))[0] = ((uint32_t *)(src))[0], \
-                                   ((uint32_t *)(dest))[1] = ((uint32_t *)(src))[1])
-#    define zmemcmp_8(str1, str2) (((uint32_t *)(str1))[0] != ((uint32_t *)(str2))[0] || \
-                                   ((uint32_t *)(str1))[1] != ((uint32_t *)(str2))[1])
-#  endif
-#else
-#  define zmemcpy_2(dest, src)  memcpy(dest, src, 2)
-#  define zmemcmp_2(str1, str2) memcmp(str1, str2, 2)
-#  define zmemcpy_4(dest, src)  memcpy(dest, src, 4)
-#  define zmemcmp_4(str1, str2) memcmp(str1, str2, 4)
-#  define zmemcpy_8(dest, src)  memcpy(dest, src, 8)
-#  define zmemcmp_8(str1, str2) memcmp(str1, str2, 8)
-#endif
-
 #if defined(__has_feature)
 #  if __has_feature(memory_sanitizer)
 #    define Z_MEMORY_SANITIZER 1
 #    include <sanitizer/msan_interface.h>
 #  endif
+#endif
+
+#ifndef Z_MEMORY_SANITIZER
+#  define __msan_unpoison(a, size) do { Z_UNUSED(a); Z_UNUSED(size); } while (0)
 #endif
 
 #endif

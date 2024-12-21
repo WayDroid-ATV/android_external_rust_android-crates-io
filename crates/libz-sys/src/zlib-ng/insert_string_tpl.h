@@ -31,7 +31,7 @@
 #ifndef HASH_CALC_READ
 #  if BYTE_ORDER == LITTLE_ENDIAN
 #    define HASH_CALC_READ \
-        zmemcpy_4(&val, strstart);
+        memcpy(&val, strstart, sizeof(val));
 #  else
 #    define HASH_CALC_READ \
         val  = ((uint32_t)(strstart[0])); \
@@ -43,7 +43,7 @@
 
 /* ===========================================================================
  * Update a hash value with the given input byte
- * IN  assertion: all calls to to UPDATE_HASH are made with consecutive
+ * IN  assertion: all calls to UPDATE_HASH are made with consecutive
  *    input characters, so that a running hash key can be computed from the
  *    previous key instead of complete recalculation each time.
  */
@@ -81,7 +81,7 @@ Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, uint32_t str) {
  * Insert string str in the dictionary and set match_head to the previous head
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
- * IN  assertion: all calls to to INSERT_STRING are made with consecutive
+ * IN  assertion: all calls to INSERT_STRING are made with consecutive
  *    input characters and the first STD_MIN_MATCH bytes of str are valid
  *    (except for the last STD_MIN_MATCH-1 bytes of the input file).
  */
