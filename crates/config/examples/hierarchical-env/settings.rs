@@ -34,7 +34,7 @@ struct Braintree {
 
 #[derive(Debug, Deserialize)]
 #[allow(unused)]
-pub struct Settings {
+pub(crate) struct Settings {
     debug: bool,
     database: Database,
     sparkpost: Sparkpost,
@@ -43,7 +43,7 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn new() -> Result<Self, ConfigError> {
+    pub(crate) fn new() -> Result<Self, ConfigError> {
         let run_mode = env::var("RUN_MODE").unwrap_or_else(|_| "development".into());
 
         let s = Config::builder()
@@ -53,7 +53,7 @@ impl Settings {
             // Default to 'development' env
             // Note that this file is _optional_
             .add_source(
-                File::with_name(&format!("examples/hierarchical-env/config/{}", run_mode))
+                File::with_name(&format!("examples/hierarchical-env/config/{run_mode}"))
                     .required(false),
             )
             // Add in a local configuration file

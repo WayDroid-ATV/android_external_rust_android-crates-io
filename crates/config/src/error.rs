@@ -20,15 +20,15 @@ pub enum Unexpected {
 }
 
 impl fmt::Display for Unexpected {
-    fn fmt(&self, f: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> result::Result<(), fmt::Error> {
         match *self {
-            Unexpected::Bool(b) => write!(f, "boolean `{}`", b),
-            Unexpected::I64(i) => write!(f, "integer 64 bit `{}`", i),
-            Unexpected::I128(i) => write!(f, "integer 128 bit `{}`", i),
-            Unexpected::U64(i) => write!(f, "unsigned integer 64 bit `{}`", i),
-            Unexpected::U128(i) => write!(f, "unsigned integer 128 bit `{}`", i),
-            Unexpected::Float(v) => write!(f, "floating point `{}`", v),
-            Unexpected::Str(ref s) => write!(f, "string {:?}", s),
+            Unexpected::Bool(b) => write!(f, "boolean `{b}`"),
+            Unexpected::I64(i) => write!(f, "64-bit integer `{i}`"),
+            Unexpected::I128(i) => write!(f, "128-bit integer `{i}`"),
+            Unexpected::U64(i) => write!(f, "64-bit unsigned integer `{i}`"),
+            Unexpected::U128(i) => write!(f, "128-bit unsigned integer `{i}`"),
+            Unexpected::Float(v) => write!(f, "floating point `{v}`"),
+            Unexpected::Str(ref s) => write!(f, "string {s:?}"),
             Unexpected::Unit => write!(f, "unit value"),
             Unexpected::Seq => write!(f, "sequence"),
             Unexpected::Map => write!(f, "map"),
@@ -137,12 +137,12 @@ impl ConfigError {
     fn prepend(self, segment: &str, add_dot: bool) -> Self {
         let concat = |key: Option<String>| {
             let key = key.unwrap_or_default();
-            let dot = if add_dot && key.as_bytes().get(0).unwrap_or(&b'[') != &b'[' {
+            let dot = if add_dot && key.as_bytes().first().unwrap_or(&b'[') != &b'[' {
                 "."
             } else {
                 ""
             };
-            format!("{}{}{}", segment, dot, key)
+            format!("{segment}{dot}{key}")
         };
         match self {
             Self::Type {
@@ -168,33 +168,33 @@ impl ConfigError {
 
     #[must_use]
     pub(crate) fn prepend_index(self, idx: usize) -> Self {
-        self.prepend(&format!("[{}]", idx), false)
+        self.prepend(&format!("[{idx}]"), false)
     }
 }
 
 /// Alias for a `Result` with the error type set to `ConfigError`.
-pub type Result<T> = result::Result<T, ConfigError>;
+pub(crate) type Result<T> = result::Result<T, ConfigError>;
 
 // Forward Debug to Display for readable panic! messages
 impl fmt::Debug for ConfigError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", *self)
     }
 }
 
 impl fmt::Display for ConfigError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             ConfigError::Frozen => write!(f, "configuration is frozen"),
 
             ConfigError::PathParse(ref kind) => write!(f, "{}", kind.description()),
 
-            ConfigError::Message(ref s) => write!(f, "{}", s),
+            ConfigError::Message(ref s) => write!(f, "{s}"),
 
-            ConfigError::Foreign(ref cause) => write!(f, "{}", cause),
+            ConfigError::Foreign(ref cause) => write!(f, "{cause}"),
 
             ConfigError::NotFound(ref key) => {
-                write!(f, "configuration property {:?} not found", key)
+                write!(f, "configuration property {key:?} not found")
             }
 
             ConfigError::Type {
@@ -203,24 +203,24 @@ impl fmt::Display for ConfigError {
                 expected,
                 ref key,
             } => {
-                write!(f, "invalid type: {}, expected {}", unexpected, expected)?;
+                write!(f, "invalid type: {unexpected}, expected {expected}")?;
 
                 if let Some(ref key) = *key {
-                    write!(f, " for key `{}`", key)?;
+                    write!(f, " for key `{key}`")?;
                 }
 
                 if let Some(ref origin) = *origin {
-                    write!(f, " in {}", origin)?;
+                    write!(f, " in {origin}")?;
                 }
 
                 Ok(())
             }
 
             ConfigError::FileParse { ref cause, ref uri } => {
-                write!(f, "{}", cause)?;
+                write!(f, "{cause}")?;
 
                 if let Some(ref uri) = *uri {
-                    write!(f, " in {}", uri)?;
+                    write!(f, " in {uri}")?;
                 }
 
                 Ok(())
