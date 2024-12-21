@@ -1,3 +1,6 @@
+#[cfg(all(feature = "serde", feature = "alloc"))]
+#[allow(unused_imports)]
+use alloc::string::ToString;
 #[cfg(feature = "bytemuck")]
 use bytemuck::{Pod, Zeroable};
 use core::{
@@ -28,17 +31,19 @@ pub(crate) mod convert;
 /// having a lower precision than [`f16`][crate::f16]. While [`f16`][crate::f16] has a precision of
 /// 11 bits, [`bf16`] has a precision of only 8 bits.
 ///
-/// Like [`f16`][crate::f16], [`bf16`] does not offer arithmetic operations as it is intended for
-/// compact storage rather than calculations. Operations should be performed with [`f32`] or
-/// higher-precision types and converted to/from [`bf16`] as necessary.
-///
 /// [`bfloat16`]: https://en.wikipedia.org/wiki/Bfloat16_floating-point_format
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy, Default)]
 #[repr(transparent)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
+#[cfg_attr(
+    feature = "rkyv",
+    derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+)]
+#[cfg_attr(feature = "rkyv", archive(resolver = "Bf16Resolver"))]
 #[cfg_attr(feature = "bytemuck", derive(Zeroable, Pod))]
 #[cfg_attr(feature = "zerocopy", derive(AsBytes, FromBytes))]
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 pub struct bf16(u16);
 
 impl bf16 {
@@ -51,9 +56,9 @@ impl bf16 {
 
     /// Constructs a [`bf16`] value from a 32-bit floating point value.
     ///
-    /// If the 32-bit value is too large to fit, ±∞ will result. NaN values are preserved.
-    /// Subnormal values that are too tiny to be represented will result in ±0. All other values
-    /// are truncated and rounded to the nearest representable value.
+    /// This operation is lossy. If the 32-bit value is too large to fit, ±∞ will result. NaN values
+    /// are preserved. Subnormal values that are too tiny to be represented will result in ±0. All
+    /// other values are truncated and rounded to the nearest representable value.
     #[inline]
     #[must_use]
     pub fn from_f32(value: f32) -> bf16 {
@@ -66,9 +71,9 @@ impl bf16 {
     /// intrinsics, which allows it to be `const`. [`from_f32`][Self::from_f32] should be preferred
     /// in any non-`const` context.
     ///
-    /// If the 32-bit value is too large to fit, ±∞ will result. NaN values are preserved.
-    /// Subnormal values that are too tiny to be represented will result in ±0. All other values
-    /// are truncated and rounded to the nearest representable value.
+    /// This operation is lossy. If the 32-bit value is too large to fit, ±∞ will result. NaN values
+    /// are preserved. Subnormal values that are too tiny to be represented will result in ±0. All
+    /// other values are truncated and rounded to the nearest representable value.
     #[inline]
     #[must_use]
     pub const fn from_f32_const(value: f32) -> bf16 {
@@ -77,10 +82,10 @@ impl bf16 {
 
     /// Constructs a [`bf16`] value from a 64-bit floating point value.
     ///
-    /// If the 64-bit value is to large to fit, ±∞ will result. NaN values are preserved.
-    /// 64-bit subnormal values are too tiny to be represented and result in ±0. Exponents that
-    /// underflow the minimum exponent will result in subnormals or ±0. All other values are
-    /// truncated and rounded to the nearest representable value.
+    /// This operation is lossy. If the 64-bit value is to large to fit, ±∞ will result. NaN values
+    /// are preserved. 64-bit subnormal values are too tiny to be represented and result in ±0.
+    /// Exponents that underflow the minimum exponent will result in subnormals or ±0. All other
+    /// values are truncated and rounded to the nearest representable value.
     #[inline]
     #[must_use]
     pub fn from_f64(value: f64) -> bf16 {
@@ -93,10 +98,10 @@ impl bf16 {
     /// intrinsics, which allows it to be `const`. [`from_f64`][Self::from_f64] should be preferred
     /// in any non-`const` context.
     ///
-    /// If the 64-bit value is to large to fit, ±∞ will result. NaN values are preserved.
-    /// 64-bit subnormal values are too tiny to be represented and result in ±0. Exponents that
-    /// underflow the minimum exponent will result in subnormals or ±0. All other values are
-    /// truncated and rounded to the nearest representable value.
+    /// This operation is lossy. If the 64-bit value is to large to fit, ±∞ will result. NaN values
+    /// are preserved. 64-bit subnormal values are too tiny to be represented and result in ±0.
+    /// Exponents that underflow the minimum exponent will result in subnormals or ±0. All other
+    /// values are truncated and rounded to the nearest representable value.
     #[inline]
     #[must_use]
     pub const fn from_f64_const(value: f64) -> bf16 {
@@ -689,7 +694,7 @@ impl bf16 {
     ///     value: bf16 // Will be serialized as a string instead of u16
     /// }
     /// ```
-    #[cfg(feature = "serde")]
+    #[cfg(all(feature = "serde", feature = "alloc"))]
     pub fn serialize_as_string<S: serde::Serializer>(
         &self,
         serializer: S,
@@ -921,14 +926,14 @@ impl FromStr for bf16 {
 #[cfg(not(target_arch = "spirv"))]
 impl Debug for bf16 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        write!(f, "{:?}", self.to_f32())
+        Debug::fmt(&self.to_f32(), f)
     }
 }
 
 #[cfg(not(target_arch = "spirv"))]
 impl Display for bf16 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        write!(f, "{}", self.to_f32())
+        Display::fmt(&self.to_f32(), f)
     }
 }
 
@@ -1260,7 +1265,7 @@ impl Sum for bf16 {
 impl<'a> Sum<&'a bf16> for bf16 {
     #[inline]
     fn sum<I: Iterator<Item = &'a bf16>>(iter: I) -> Self {
-        bf16::from_f32(iter.map(|f| f.to_f32()).product())
+        bf16::from_f32(iter.map(|f| f.to_f32()).sum())
     }
 }
 
@@ -1281,7 +1286,7 @@ impl<'de> Deserialize<'de> for bf16 {
 impl<'de> serde::de::Visitor<'de> for Visitor {
     type Value = bf16;
 
-    fn expecting(&self, formatter: &mut alloc::fmt::Formatter) -> alloc::fmt::Result {
+    fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(formatter, "tuple struct bf16")
     }
 
@@ -1324,6 +1329,7 @@ impl<'de> serde::de::Visitor<'de> for Visitor {
 #[cfg(test)]
 mod test {
     use super::*;
+    #[allow(unused_imports)]
     use core::cmp::Ordering;
     #[cfg(feature = "num-traits")]
     use num_traits::{AsPrimitive, FromPrimitive, ToPrimitive};
@@ -1499,12 +1505,14 @@ mod test {
         assert!(neg_nan64.is_nan() && neg_nan64.is_sign_negative());
         assert!(nan32.is_nan() && nan32.is_sign_positive());
         assert!(neg_nan32.is_nan() && neg_nan32.is_sign_negative());
-        assert!(nan32_from_64.is_nan() && nan32_from_64.is_sign_positive());
-        assert!(neg_nan32_from_64.is_nan() && neg_nan32_from_64.is_sign_negative());
-        assert!(nan16_from_64.is_nan() && nan16_from_64.is_sign_positive());
-        assert!(neg_nan16_from_64.is_nan() && neg_nan16_from_64.is_sign_negative());
-        assert!(nan16_from_32.is_nan() && nan16_from_32.is_sign_positive());
-        assert!(neg_nan16_from_32.is_nan() && neg_nan16_from_32.is_sign_negative());
+
+        // f32/f64 NaN conversion sign is non-deterministic: https://github.com/starkat99/half-rs/issues/103
+        assert!(neg_nan32_from_64.is_nan());
+        assert!(nan32_from_64.is_nan());
+        assert!(nan16_from_64.is_nan());
+        assert!(neg_nan16_from_64.is_nan());
+        assert!(nan16_from_32.is_nan());
+        assert!(neg_nan16_from_32.is_nan());
     }
 
     #[test]
@@ -1524,12 +1532,14 @@ mod test {
         assert!(neg_nan16.is_nan() && neg_nan16.is_sign_negative());
         assert!(nan32.is_nan() && nan32.is_sign_positive());
         assert!(neg_nan32.is_nan() && neg_nan32.is_sign_negative());
-        assert!(nan32_from_16.is_nan() && nan32_from_16.is_sign_positive());
-        assert!(neg_nan32_from_16.is_nan() && neg_nan32_from_16.is_sign_negative());
-        assert!(nan64_from_16.is_nan() && nan64_from_16.is_sign_positive());
-        assert!(neg_nan64_from_16.is_nan() && neg_nan64_from_16.is_sign_negative());
-        assert!(nan64_from_32.is_nan() && nan64_from_32.is_sign_positive());
-        assert!(neg_nan64_from_32.is_nan() && neg_nan64_from_32.is_sign_negative());
+
+        // // f32/f64 NaN conversion sign is non-deterministic: https://github.com/starkat99/half-rs/issues/103
+        assert!(nan32_from_16.is_nan());
+        assert!(neg_nan32_from_16.is_nan());
+        assert!(nan64_from_16.is_nan());
+        assert!(neg_nan64_from_16.is_nan());
+        assert!(nan64_from_32.is_nan());
+        assert!(neg_nan64_from_32.is_nan());
     }
 
     #[test]
@@ -1811,6 +1821,22 @@ mod test {
             bf16::from_f64(252.51f64).to_bits(),
             bf16::from_f64(253.0).to_bits()
         );
+    }
+
+    #[cfg(feature = "std")]
+    #[test]
+    fn formatting() {
+        let f = bf16::from_f32(0.1152344);
+
+        assert_eq!(format!("{:.3}", f), "0.115");
+        assert_eq!(format!("{:.4}", f), "0.1152");
+        assert_eq!(format!("{:+.4}", f), "+0.1152");
+        assert_eq!(format!("{:>+10.4}", f), "   +0.1152");
+
+        assert_eq!(format!("{:.3?}", f), "0.115");
+        assert_eq!(format!("{:.4?}", f), "0.1152");
+        assert_eq!(format!("{:+.4?}", f), "+0.1152");
+        assert_eq!(format!("{:>+10.4?}", f), "   +0.1152");
     }
 
     impl quickcheck::Arbitrary for bf16 {
