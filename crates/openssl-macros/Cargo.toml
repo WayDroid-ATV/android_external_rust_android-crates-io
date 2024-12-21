@@ -12,7 +12,7 @@
 [package]
 edition = "2018"
 name = "openssl-macros"
-version = "0.1.0"
+version = "0.1.1"
 description = "Internal macros used by the openssl crate."
 license = "MIT/Apache-2.0"
 
@@ -26,5 +26,5 @@ version = "1"
 version = "1"
 
 [dependencies.syn]
-version = "1"
+version = "2"
 features = ["full"]
