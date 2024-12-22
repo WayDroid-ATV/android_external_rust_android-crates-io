@@ -22,6 +22,30 @@
       },
       "revId": "e022ef3336438f7e11aa46defd52254f895db771",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "08492fdb_27617671",
+        "filename": "crates/arrayvec/src/arrayvec.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1952791
+      },
+      "writtenOn": "2024-12-22T16:26:32Z",
+      "side": 0,
+      "message": "Hi Stephen - yes, most likely something like that I imagine too, and the failure is near a hardware driver though I couldn\u0027t see anything with a quick look. \nWe\u0027ve pinned our manifest to the version before this update until we can root cause our failure - this Cl was just to help enable testing and ABTD builds.  The pinning gets us booting correctly again, important given holidays and the proximity of deadlines.",
+      "parentUuid": "8bd015dc_0d1d8a5a",
+      "range": {
+        "startLine": 42,
+        "startChar": 0,
+        "endLine": 47,
+        "endChar": 1
+      },
+      "revId": "e022ef3336438f7e11aa46defd52254f895db771",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
