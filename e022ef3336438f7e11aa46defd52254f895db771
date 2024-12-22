@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8bd015dc_0d1d8a5a",
+        "filename": "crates/arrayvec/src/arrayvec.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2024-12-22T16:16:15Z",
+      "side": 0,
+      "message": "Mike, I wonder if there is somewhere that people were unsafely relying on this struct layout in your failing case. The reordering of fields here is the only real \"content\" of this entire CL, as we don\u0027t enable the `borsh` feature.",
+      "range": {
+        "startLine": 42,
+        "startChar": 0,
+        "endLine": 47,
+        "endChar": 1
+      },
+      "revId": "e022ef3336438f7e11aa46defd52254f895db771",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
