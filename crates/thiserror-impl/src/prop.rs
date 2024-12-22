@@ -1,5 +1,7 @@
 use crate::ast::{Enum, Field, Struct, Variant};
-use syn::{Member, Type};
+use crate::unraw::MemberUnraw;
+use proc_macro2::Span;
+use syn::Type;
 
 impl Struct<'_> {
     pub(crate) fn from_field(&self) -> Option<&Field> {
@@ -36,10 +38,11 @@ impl Enum<'_> {
     pub(crate) fn has_display(&self) -> bool {
         self.attrs.display.is_some()
             || self.attrs.transparent.is_some()
+            || self.attrs.fmt.is_some()
             || self
                 .variants
                 .iter()
-                .any(|variant| variant.attrs.display.is_some())
+                .any(|variant| variant.attrs.display.is_some() || variant.attrs.fmt.is_some())
             || self
                 .variants
                 .iter()
@@ -70,6 +73,16 @@ impl Field<'_> {
     pub(crate) fn is_backtrace(&self) -> bool {
         type_is_backtrace(self.ty)
     }
+
+    pub(crate) fn source_span(&self) -> Span {
+        if let Some(source_attr) = &self.attrs.source {
+            source_attr.span
+        } else if let Some(from_attr) = &self.attrs.from {
+            from_attr.span
+        } else {
+            self.member.span()
+        }
+    }
 }
 
 fn from_field<'a, 'b>(fields: &'a [Field<'b>]) -> Option<&'a Field<'b>> {
@@ -89,7 +102,7 @@ fn source_field<'a, 'b>(fields: &'a [Field<'b>]) -> Option<&'a Field<'b>> {
     }
     for field in fields {
         match &field.member {
-            Member::Named(ident) if ident == "source" => return Some(field),
+            MemberUnraw::Named(ident) if ident == "source" => return Some(field),
             _ => {}
         }
     }

@@ -1,9 +1,23 @@
 {
-  "apex_available": [
-    "//apex_available:anyapex",
-    "//apex_available:platform"
-  ],
+  "apex_available": ["//apex_available:anyapex", "//apex_available:platform"],
   "min_sdk_version": "29",
   "run_cargo": false,
-  "generate_rulesmk": true
+  "variants": [
+    {
+      "generate_rulesmk": true
+    },
+    {
+      "features": [],
+      "module_name_overrides": {
+        "libthiserror": "libthiserror_nostd"
+      },
+      "package": {
+        "thiserror": {
+          "force_rlib": true,
+          "host_supported": false,
+          "no_std": true
+        }
+      }
+    }
+  ]
 }

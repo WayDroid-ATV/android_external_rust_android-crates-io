@@ -22,7 +22,7 @@
       "path": "external/rust/android-crates-io/crates/crossbeam-utils"
     },
     {
-      "path": "external/rust/crates/flate2"
+      "path": "external/rust/android-crates-io/crates/flate2"
     },
     {
       "path": "external/rust/android-crates-io/crates/hashbrown"
@@ -43,7 +43,7 @@
       "path": "external/rust/android-crates-io/crates/tokio"
     },
     {
-      "path": "external/rust/crates/zerocopy"
+      "path": "external/rust/android-crates-io/crates/zerocopy"
     },
     {
       "path": "external/uwb/src"

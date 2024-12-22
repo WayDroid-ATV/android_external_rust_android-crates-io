@@ -8,6 +8,7 @@ genrule_defaults {
         "//external/rust/pica",
         "//external/uwb/src",
         "//packages/modules/Bluetooth:__subpackages__",
+        "//packages/modules/Nfc:__subpackages__",
         "//tools/netsim:__subpackages__",
         "//vendor:__subpackages__",
     ],
@@ -23,6 +24,7 @@ genrule_defaults {
         "//external/rust/pica",
         "//external/uwb/src",
         "//packages/modules/Bluetooth:__subpackages__",
+        "//packages/modules/Nfc:__subpackages__",
         "//tools/netsim:__subpackages__",
     ],
 }

@@ -4,7 +4,7 @@
       "path": "external/rust/android-crates-io/crates/async-stream"
     },
     {
-      "path": "external/rust/crates/bitflags"
+      "path": "external/rust/android-crates-io/crates/bitflags"
     },
     {
       "path": "external/rust/android-crates-io/crates/crossbeam-epoch"

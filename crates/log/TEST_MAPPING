@@ -16,7 +16,7 @@
       "path": "external/rust/android-crates-io/crates/env_logger"
     },
     {
-      "path": "external/rust/crates/flate2"
+      "path": "external/rust/android-crates-io/crates/flate2"
     },
     {
       "path": "external/rust/android-crates-io/crates/futures-util"
@@ -25,7 +25,7 @@
       "path": "external/rust/android-crates-io/crates/gdbstub_arch"
     },
     {
-      "path": "external/rust/crates/jni"
+      "path": "external/rust/android-crates-io/crates/jni"
     },
     {
       "path": "external/rust/crates/libsqlite3-sys"
