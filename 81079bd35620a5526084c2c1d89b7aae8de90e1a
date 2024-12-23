@@ -16,6 +16,24 @@
       "message": "This has a lot of unsafe code an I\u0027m not entirely convinced it is sound, have we done an unsafe review of it?",
       "revId": "81079bd35620a5526084c2c1d89b7aae8de90e1a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e814ba33_52d69904",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2024-12-23T17:09:29Z",
+      "side": 1,
+      "message": "This crate was considered too difficult to verify and stopped being used for the original use case. Can we just unmap it instead? I don\u0027t think anyone should be using uniffi.",
+      "parentUuid": "a5116cf0_3a4fff06",
+      "revId": "81079bd35620a5526084c2c1d89b7aae8de90e1a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
