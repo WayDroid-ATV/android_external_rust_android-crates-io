@@ -11,19 +11,14 @@
 
 [package]
 name = "bitreader"
-version = "0.3.11"
+version = "0.3.8"
 authors = ["Ilkka Rauta <ilkka.rauta@gmail.com>"]
-build = false
-autobins = false
-autoexamples = false
-autotests = false
-autobenches = false
-description = '''
+description = """
 BitReader helps reading individual bits from a slice of bytes.
 
-You can read "unusual" numbers of bits from the byte slice, for example 13 bits
+You can read \"unusual\" numbers of bits from the byte slice, for example 13 bits
 at once. The reader internally keeps track of position within the buffer.
-'''
+"""
 homepage = "https://github.com/irauta/bitreader"
 documentation = "https://docs.rs/bitreader"
 readme = "README.md"
@@ -34,10 +29,6 @@ keywords = [
 ]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/irauta/bitreader"
-
-[lib]
-name = "bitreader"
-path = "src/lib.rs"
 
 [dependencies.cfg-if]
 version = "1"
