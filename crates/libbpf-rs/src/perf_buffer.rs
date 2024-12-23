@@ -2,6 +2,7 @@ use core::ffi::c_void;
 use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::fmt::Result as FmtResult;
+use std::os::unix::io::AsFd;
 use std::os::unix::prelude::AsRawFd;
 use std::ptr;
 use std::ptr::NonNull;
@@ -13,16 +14,23 @@ use crate::util::validate_bpf_ret;
 use crate::AsRawLibbpf;
 use crate::Error;
 use crate::ErrorExt as _;
-use crate::MapCore;
+use crate::Map;
+use crate::MapCore as _;
 use crate::MapType;
 use crate::Result;
 
-type SampleCb<'b> = Box<dyn FnMut(i32, &[u8]) + 'b>;
-type LostCb<'b> = Box<dyn FnMut(i32, u64) + 'b>;
+// Workaround for `trait_alias`
+// (https://doc.rust-lang.org/unstable-book/language-features/trait-alias.html)
+// not being available yet. This is just a custom trait plus a blanket implementation.
+pub trait SampleCb: FnMut(i32, &[u8]) {}
+impl<T> SampleCb for T where T: FnMut(i32, &[u8]) {}
+
+pub trait LostCb: FnMut(i32, u64) {}
+impl<T> LostCb for T where T: FnMut(i32, u64) {}
 
 struct CbStruct<'b> {
-    sample_cb: Option<SampleCb<'b>>,
-    lost_cb: Option<LostCb<'b>>,
+    sample_cb: Option<Box<dyn SampleCb + 'b>>,
+    lost_cb: Option<Box<dyn LostCb + 'b>>,
 }
 
 impl Debug for CbStruct<'_> {
@@ -36,23 +44,16 @@ impl Debug for CbStruct<'_> {
 }
 
 /// Builds [`PerfBuffer`] instances.
-pub struct PerfBufferBuilder<'a, 'b, M>
-where
-    M: MapCore,
-{
-    map: &'a M,
+pub struct PerfBufferBuilder<'a, 'b> {
+    map: &'a Map<'a>,
     pages: usize,
-    sample_cb: Option<SampleCb<'b>>,
-    lost_cb: Option<LostCb<'b>>,
+    sample_cb: Option<Box<dyn SampleCb + 'b>>,
+    lost_cb: Option<Box<dyn LostCb + 'b>>,
 }
 
-impl<'a, M> PerfBufferBuilder<'a, '_, M>
-where
-    M: MapCore,
-{
-    /// Create a new `PerfBufferBuilder` using the provided `MapCore`
-    /// object.
-    pub fn new(map: &'a M) -> Self {
+impl<'a> PerfBufferBuilder<'a, '_> {
+    /// Create a new `PerfBufferBuilder` using the provided `Map`.
+    pub fn new(map: &'a Map<'a>) -> Self {
         Self {
             map,
             pages: 64,
@@ -62,20 +63,14 @@ where
     }
 }
 
-impl<'a, 'b, M> PerfBufferBuilder<'a, 'b, M>
-where
-    M: MapCore,
-{
+impl<'a, 'b> PerfBufferBuilder<'a, 'b> {
     /// Callback to run when a sample is received.
     ///
     /// This callback provides a raw byte slice. You may find libraries such as
     /// [`plain`](https://crates.io/crates/plain) helpful.
     ///
     /// Callback arguments are: `(cpu, data)`.
-    pub fn sample_cb<F>(self, cb: F) -> PerfBufferBuilder<'a, 'b, M>
-    where
-        F: FnMut(i32, &[u8]) + 'b,
-    {
+    pub fn sample_cb<NewCb: SampleCb + 'b>(self, cb: NewCb) -> PerfBufferBuilder<'a, 'b> {
         PerfBufferBuilder {
             map: self.map,
             pages: self.pages,
@@ -87,10 +82,7 @@ where
     /// Callback to run when a sample is received.
     ///
     /// Callback arguments are: `(cpu, lost_count)`.
-    pub fn lost_cb<F>(self, cb: F) -> PerfBufferBuilder<'a, 'b, M>
-    where
-        F: FnMut(i32, u64) + 'b,
-    {
+    pub fn lost_cb<NewCb: LostCb + 'b>(self, cb: NewCb) -> PerfBufferBuilder<'a, 'b> {
         PerfBufferBuilder {
             map: self.map,
             pages: self.pages,
@@ -100,7 +92,7 @@ where
     }
 
     /// The number of pages to size the ring buffer.
-    pub fn pages(self, pages: usize) -> PerfBufferBuilder<'a, 'b, M> {
+    pub fn pages(self, pages: usize) -> PerfBufferBuilder<'a, 'b> {
         PerfBufferBuilder {
             map: self.map,
             pages,
@@ -172,10 +164,7 @@ where
     }
 }
 
-impl<M> Debug for PerfBufferBuilder<'_, '_, M>
-where
-    M: MapCore,
-{
+impl Debug for PerfBufferBuilder<'_, '_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let Self {
             map,
@@ -192,7 +181,7 @@ where
     }
 }
 
-/// Represents a special kind of [`MapCore`]. Typically used to transfer data between
+/// Represents a special kind of [`Map`]. Typically used to transfer data between
 /// [`Program`][crate::Program]s and userspace.
 #[derive(Debug)]
 pub struct PerfBuffer<'b> {
