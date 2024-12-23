@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5aa486ac_d2244188",
+        "filename": "crates/libz-sys/src/zlib/LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2024-12-23T12:09:58Z",
+      "side": 1,
+      "message": "Should this license be listed in the `Android.bp` too?",
+      "revId": "4a3382c54202b43f825eb7a5c87d1841c33477f8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
