@@ -51,6 +51,24 @@
       "parentUuid": "d07acba7_72372efb",
       "revId": "7c0198312548ad983655710a37a5b31db50a8c66",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6e5e6253_418de6fc",
+        "filename": "crates/spdx/LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1126384
+      },
+      "writtenOn": "2024-12-24T14:31:08Z",
+      "side": 1,
+      "message": "Indeed go/android3p#third-party-review-step-by-step step 3 is pretty clear that symlinks are fine, and this has been the case for years.",
+      "parentUuid": "8dcee361_7b83b75d",
+      "revId": "7c0198312548ad983655710a37a5b31db50a8c66",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
