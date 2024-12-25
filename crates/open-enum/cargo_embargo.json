@@ -1,0 +1,9 @@
+{
+  "run_cargo": false,
+  "module_blocklist" : [
+    "test_lints"
+  ],
+  "features": [
+    "std"
+  ]
+}

@@ -12,12 +12,17 @@
 [package]
 edition = "2021"
 name = "pdl-runtime"
-version = "0.3.1"
+version = "0.3.2"
 authors = [
     "Henri Chataing <henrichataing@google.com>",
     "David de Jesus Duarte <licorne@google.com>",
     "Martin Geisler <mgeisler@google.com>",
 ]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "PDL's runtime library"
 readme = "README.md"
 keywords = [
@@ -30,6 +35,10 @@ categories = ["parsing"]
 license = "Apache-2.0"
 repository = "https://github.com/google/pdl/"
 resolver = "1"
+
+[lib]
+name = "pdl_runtime"
+path = "src/lib.rs"
 
 [dependencies.bytes]
 version = "1.4.0"

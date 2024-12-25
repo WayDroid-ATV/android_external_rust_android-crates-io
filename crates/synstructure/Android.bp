@@ -18,7 +18,7 @@ rust_library_host {
     host_cross_supported: false,
     crate_name: "synstructure",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.6",
+    cargo_pkg_version: "0.13.1",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: ["proc-macro"],
@@ -26,7 +26,6 @@ rust_library_host {
         "libproc_macro2",
         "libquote",
         "libsyn",
-        "libunicode_xid",
     ],
     compile_multilib: "first",
 }

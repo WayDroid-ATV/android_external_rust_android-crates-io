@@ -1,10 +1,14 @@
 // Generated from mat.rs.tera template. Edit the template, not the generated file.
 
-use crate::{f64::math, swizzles::*, DMat3, DQuat, DVec3, DVec4, EulerRot, Mat4};
-#[cfg(not(target_arch = "spirv"))]
+use crate::{
+    euler::{FromEuler, ToEuler},
+    f64::math,
+    swizzles::*,
+    DMat3, DQuat, DVec3, DVec4, EulerRot, Mat4,
+};
 use core::fmt;
 use core::iter::{Product, Sum};
-use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 /// Creates a 4x4 matrix from four column vectors.
 #[inline(always)]
@@ -375,8 +379,27 @@ impl DMat4 {
     #[inline]
     #[must_use]
     pub fn from_euler(order: EulerRot, a: f64, b: f64, c: f64) -> Self {
-        let quat = DQuat::from_euler(order, a, b, c);
-        Self::from_quat(quat)
+        Self::from_euler_angles(order, a, b, c)
+    }
+
+    /// Extract Euler angles with the given Euler rotation order.
+    ///
+    /// Note if the upper 3x3 matrix contain scales, shears, or other non-rotation transformations
+    /// then the resulting Euler angles will be ill-defined.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if any column of the upper 3x3 rotation matrix is not normalized when
+    /// `glam_assert` is enabled.
+    #[inline]
+    #[must_use]
+    pub fn to_euler(&self, order: EulerRot) -> (f64, f64, f64) {
+        glam_assert!(
+            self.x_axis.xyz().is_normalized()
+                && self.y_axis.xyz().is_normalized()
+                && self.z_axis.xyz().is_normalized()
+        );
+        self.to_euler_angles(order)
     }
 
     /// Creates an affine transformation matrix containing a 3D rotation around the x axis of
@@ -729,7 +752,10 @@ impl DMat4 {
         Self::look_to_rh(eye, center.sub(eye), up)
     }
 
-    /// Creates a right-handed perspective projection matrix with [-1,1] depth range.
+    /// Creates a right-handed perspective projection matrix with `[-1,1]` depth range.
+    ///
+    /// Useful to map the standard right-handed coordinate system into what OpenGL expects.
+    ///
     /// This is the same as the OpenGL `gluPerspective` function.
     /// See <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml>
     #[inline]
@@ -755,6 +781,8 @@ impl DMat4 {
 
     /// Creates a left-handed perspective projection matrix with `[0,1]` depth range.
     ///
+    /// Useful to map the standard left-handed coordinate system into what WebGPU/Metal/Direct3D expect.
+    ///
     /// # Panics
     ///
     /// Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
@@ -776,6 +804,8 @@ impl DMat4 {
     }
 
     /// Creates a right-handed perspective projection matrix with `[0,1]` depth range.
+    ///
+    /// Useful to map the standard right-handed coordinate system into what WebGPU/Metal/Direct3D expect.
     ///
     /// # Panics
     ///
@@ -799,9 +829,13 @@ impl DMat4 {
 
     /// Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
     ///
+    /// Like `perspective_lh`, but with an infinite value for `z_far`.
+    /// The result is that points near `z_near` are mapped to depth `0`, and as they move towards infinity the depth approaches `1`.
+    ///
     /// # Panics
     ///
-    /// Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
+    /// Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
+    /// enabled.
     #[inline]
     #[must_use]
     pub fn perspective_infinite_lh(fov_y_radians: f64, aspect_ratio: f64, z_near: f64) -> Self {
@@ -817,7 +851,9 @@ impl DMat4 {
         )
     }
 
-    /// Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
+    /// Creates an infinite reverse left-handed perspective projection matrix with `[0,1]` depth range.
+    ///
+    /// Similar to `perspective_infinite_lh`, but maps `Z = z_near` to a depth of `1` and `Z = infinity` to a depth of `0`.
     ///
     /// # Panics
     ///
@@ -841,8 +877,15 @@ impl DMat4 {
         )
     }
 
-    /// Creates an infinite right-handed perspective projection matrix with
-    /// `[0,1]` depth range.
+    /// Creates an infinite right-handed perspective projection matrix with `[0,1]` depth range.
+    ///
+    /// Like `perspective_rh`, but with an infinite value for `z_far`.
+    /// The result is that points near `z_near` are mapped to depth `0`, and as they move towards infinity the depth approaches `1`.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
+    /// enabled.
     #[inline]
     #[must_use]
     pub fn perspective_infinite_rh(fov_y_radians: f64, aspect_ratio: f64, z_near: f64) -> Self {
@@ -856,8 +899,13 @@ impl DMat4 {
         )
     }
 
-    /// Creates an infinite reverse right-handed perspective projection matrix
-    /// with `[0,1]` depth range.
+    /// Creates an infinite reverse right-handed perspective projection matrix with `[0,1]` depth range.
+    ///
+    /// Similar to `perspective_infinite_rh`, but maps `Z = z_near` to a depth of `1` and `Z = infinity` to a depth of `0`.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
     #[inline]
     #[must_use]
     pub fn perspective_infinite_reverse_rh(
@@ -879,6 +927,8 @@ impl DMat4 {
     /// range.  This is the same as the OpenGL `glOrtho` function in OpenGL.
     /// See
     /// <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glOrtho.xml>
+    ///
+    /// Useful to map a right-handed coordinate system to the normalized device coordinates that OpenGL expects.
     #[inline]
     #[must_use]
     pub fn orthographic_rh_gl(
@@ -905,6 +955,8 @@ impl DMat4 {
     }
 
     /// Creates a left-handed orthographic projection matrix with `[0,1]` depth range.
+    ///
+    /// Useful to map a left-handed coordinate system to the normalized device coordinates that WebGPU/Direct3D/Metal expect.
     #[inline]
     #[must_use]
     pub fn orthographic_lh(
@@ -932,6 +984,8 @@ impl DMat4 {
     }
 
     /// Creates a right-handed orthographic projection matrix with `[0,1]` depth range.
+    ///
+    /// Useful to map a right-handed coordinate system to the normalized device coordinates that WebGPU/Direct3D/Metal expect.
     #[inline]
     #[must_use]
     pub fn orthographic_rh(
@@ -971,7 +1025,7 @@ impl DMat4 {
         res = self.y_axis.mul(rhs.y).add(res);
         res = self.z_axis.mul(rhs.z).add(res);
         res = self.w_axis.add(res);
-        res = res.mul(res.wwww().recip());
+        res = res.div(res.w);
         res.xyz()
     }
 
@@ -981,7 +1035,7 @@ impl DMat4 {
     /// `1.0`.
     ///
     /// This method assumes that `self` contains a valid affine transform. It does not perform
-    /// a persective divide, if `self` contains a perspective transform, or if you are unsure,
+    /// a perspective divide, if `self` contains a perspective transform, or if you are unsure,
     /// the [`Self::project_point3()`] method should be used instead.
     ///
     /// # Panics
@@ -1077,6 +1131,19 @@ impl DMat4 {
         )
     }
 
+    /// Divides a 4x4 matrix by a scalar.
+    #[inline]
+    #[must_use]
+    pub fn div_scalar(&self, rhs: f64) -> Self {
+        let rhs = DVec4::splat(rhs);
+        Self::from_cols(
+            self.x_axis.div(rhs),
+            self.y_axis.div(rhs),
+            self.z_axis.div(rhs),
+            self.w_axis.div(rhs),
+        )
+    }
+
     /// Returns true if the absolute difference of all elements between `self` and `rhs`
     /// is less than or equal to `max_abs_diff`.
     ///
@@ -1093,6 +1160,18 @@ impl DMat4 {
             && self.y_axis.abs_diff_eq(rhs.y_axis, max_abs_diff)
             && self.z_axis.abs_diff_eq(rhs.z_axis, max_abs_diff)
             && self.w_axis.abs_diff_eq(rhs.w_axis, max_abs_diff)
+    }
+
+    /// Takes the absolute value of each element in `self`
+    #[inline]
+    #[must_use]
+    pub fn abs(&self) -> Self {
+        Self::from_cols(
+            self.x_axis.abs(),
+            self.y_axis.abs(),
+            self.z_axis.abs(),
+            self.w_axis.abs(),
+        )
     }
 
     #[inline]
@@ -1202,6 +1281,29 @@ impl MulAssign<f64> for DMat4 {
     }
 }
 
+impl Div<DMat4> for f64 {
+    type Output = DMat4;
+    #[inline]
+    fn div(self, rhs: DMat4) -> Self::Output {
+        rhs.div_scalar(self)
+    }
+}
+
+impl Div<f64> for DMat4 {
+    type Output = Self;
+    #[inline]
+    fn div(self, rhs: f64) -> Self::Output {
+        self.div_scalar(rhs)
+    }
+}
+
+impl DivAssign<f64> for DMat4 {
+    #[inline]
+    fn div_assign(&mut self, rhs: f64) {
+        *self = self.div_scalar(rhs);
+    }
+}
+
 impl Sum<Self> for DMat4 {
     fn sum<I>(iter: I) -> Self
     where
@@ -1264,7 +1366,6 @@ impl AsMut<[f64; 16]> for DMat4 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Debug for DMat4 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(stringify!(DMat4))
@@ -1276,13 +1377,20 @@ impl fmt::Debug for DMat4 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Display for DMat4 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "[{}, {}, {}, {}]",
-            self.x_axis, self.y_axis, self.z_axis, self.w_axis
-        )
+        if let Some(p) = f.precision() {
+            write!(
+                f,
+                "[{:.*}, {:.*}, {:.*}, {:.*}]",
+                p, self.x_axis, p, self.y_axis, p, self.z_axis, p, self.w_axis
+            )
+        } else {
+            write!(
+                f,
+                "[{}, {}, {}, {}]",
+                self.x_axis, self.y_axis, self.z_axis, self.w_axis
+            )
+        }
     }
 }

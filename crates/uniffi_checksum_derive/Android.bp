@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libuniffi_checksum_derive",
     crate_name: "uniffi_checksum_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.27.1",
+    cargo_pkg_version: "0.28.3",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: ["default"],

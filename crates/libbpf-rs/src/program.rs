@@ -24,8 +24,10 @@ use std::slice;
 
 use libbpf_sys::bpf_func_id;
 
+use crate::netfilter;
 use crate::util;
 use crate::util::validate_bpf_ret;
+use crate::util::BpfObjectType;
 use crate::AsRawLibbpf;
 use crate::Error;
 use crate::ErrorExt as _;
@@ -122,8 +124,6 @@ pub struct OpenProgramImpl<'obj, T = ()> {
     _phantom: PhantomData<&'obj T>,
 }
 
-// TODO: Document variants.
-#[allow(missing_docs)]
 impl<'obj> OpenProgram<'obj> {
     /// Create a new [`OpenProgram`] from a ptr to a `libbpf_sys::bpf_program`.
     pub fn new(prog: &'obj libbpf_sys::bpf_program) -> Self {
@@ -135,7 +135,7 @@ impl<'obj> OpenProgram<'obj> {
         }
     }
 
-    // The `ProgramType` of this `OpenProgram`.
+    /// The `ProgramType` of this `OpenProgram`.
     pub fn prog_type(&self) -> ProgramType {
         ProgramType::from(unsafe { libbpf_sys::bpf_program__type(self.ptr.as_ptr()) })
     }
@@ -193,11 +193,13 @@ impl<'obj> OpenProgramMut<'obj> {
         }
     }
 
+    /// Set the program type.
     pub fn set_prog_type(&mut self, prog_type: ProgramType) {
         let rc = unsafe { libbpf_sys::bpf_program__set_type(self.ptr.as_ptr(), prog_type as u32) };
         debug_assert!(util::parse_ret(rc).is_ok(), "{rc}");
     }
 
+    /// Set the attachment type of the program.
     pub fn set_attach_type(&mut self, attach_type: ProgramAttachType) {
         let rc = unsafe {
             libbpf_sys::bpf_program__set_expected_attach_type(self.ptr.as_ptr(), attach_type as u32)
@@ -205,6 +207,9 @@ impl<'obj> OpenProgramMut<'obj> {
         debug_assert!(util::parse_ret(rc).is_ok(), "{rc}");
     }
 
+    /// Bind the program to a particular network device.
+    ///
+    /// Currently only used for hardware offload and certain XDP features such like HW metadata.
     pub fn set_ifindex(&mut self, idx: u32) {
         unsafe { libbpf_sys::bpf_program__set_ifindex(self.ptr.as_ptr(), idx) }
     }
@@ -229,6 +234,7 @@ impl<'obj> OpenProgramMut<'obj> {
         debug_assert!(util::parse_ret(rc).is_ok(), "{rc}");
     }
 
+    #[allow(missing_docs)]
     pub fn set_attach_target(
         &mut self,
         attach_prog_fd: i32,
@@ -256,6 +262,7 @@ impl<'obj> OpenProgramMut<'obj> {
         util::parse_ret(ret)
     }
 
+    /// Set flags on the program.
     pub fn set_flags(&mut self, flags: u32) {
         let rc = unsafe { libbpf_sys::bpf_program__set_flags(self.ptr.as_ptr(), flags) };
         debug_assert!(util::parse_ret(rc).is_ok(), "{rc}");
@@ -289,37 +296,37 @@ impl<T> AsRawLibbpf for OpenProgramImpl<'_, T> {
 #[allow(missing_docs)]
 pub enum ProgramType {
     Unspec = 0,
-    SocketFilter,
-    Kprobe,
-    SchedCls,
-    SchedAct,
-    Tracepoint,
-    Xdp,
-    PerfEvent,
-    CgroupSkb,
-    CgroupSock,
-    LwtIn,
-    LwtOut,
-    LwtXmit,
-    SockOps,
-    SkSkb,
-    CgroupDevice,
-    SkMsg,
-    RawTracepoint,
-    CgroupSockAddr,
-    LwtSeg6local,
-    LircMode2,
-    SkReuseport,
-    FlowDissector,
-    CgroupSysctl,
-    RawTracepointWritable,
-    CgroupSockopt,
-    Tracing,
-    StructOps,
-    Ext,
-    Lsm,
-    SkLookup,
-    Syscall,
+    SocketFilter = libbpf_sys::BPF_PROG_TYPE_SOCKET_FILTER,
+    Kprobe = libbpf_sys::BPF_PROG_TYPE_KPROBE,
+    SchedCls = libbpf_sys::BPF_PROG_TYPE_SCHED_CLS,
+    SchedAct = libbpf_sys::BPF_PROG_TYPE_SCHED_ACT,
+    Tracepoint = libbpf_sys::BPF_PROG_TYPE_TRACEPOINT,
+    Xdp = libbpf_sys::BPF_PROG_TYPE_XDP,
+    PerfEvent = libbpf_sys::BPF_PROG_TYPE_PERF_EVENT,
+    CgroupSkb = libbpf_sys::BPF_PROG_TYPE_CGROUP_SKB,
+    CgroupSock = libbpf_sys::BPF_PROG_TYPE_CGROUP_SOCK,
+    LwtIn = libbpf_sys::BPF_PROG_TYPE_LWT_IN,
+    LwtOut = libbpf_sys::BPF_PROG_TYPE_LWT_OUT,
+    LwtXmit = libbpf_sys::BPF_PROG_TYPE_LWT_XMIT,
+    SockOps = libbpf_sys::BPF_PROG_TYPE_SOCK_OPS,
+    SkSkb = libbpf_sys::BPF_PROG_TYPE_SK_SKB,
+    CgroupDevice = libbpf_sys::BPF_PROG_TYPE_CGROUP_DEVICE,
+    SkMsg = libbpf_sys::BPF_PROG_TYPE_SK_MSG,
+    RawTracepoint = libbpf_sys::BPF_PROG_TYPE_RAW_TRACEPOINT,
+    CgroupSockAddr = libbpf_sys::BPF_PROG_TYPE_CGROUP_SOCK_ADDR,
+    LwtSeg6local = libbpf_sys::BPF_PROG_TYPE_LWT_SEG6LOCAL,
+    LircMode2 = libbpf_sys::BPF_PROG_TYPE_LIRC_MODE2,
+    SkReuseport = libbpf_sys::BPF_PROG_TYPE_SK_REUSEPORT,
+    FlowDissector = libbpf_sys::BPF_PROG_TYPE_FLOW_DISSECTOR,
+    CgroupSysctl = libbpf_sys::BPF_PROG_TYPE_CGROUP_SYSCTL,
+    RawTracepointWritable = libbpf_sys::BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE,
+    CgroupSockopt = libbpf_sys::BPF_PROG_TYPE_CGROUP_SOCKOPT,
+    Tracing = libbpf_sys::BPF_PROG_TYPE_TRACING,
+    StructOps = libbpf_sys::BPF_PROG_TYPE_STRUCT_OPS,
+    Ext = libbpf_sys::BPF_PROG_TYPE_EXT,
+    Lsm = libbpf_sys::BPF_PROG_TYPE_LSM,
+    SkLookup = libbpf_sys::BPF_PROG_TYPE_SK_LOOKUP,
+    Syscall = libbpf_sys::BPF_PROG_TYPE_SYSCALL,
     /// See [`MapType::Unknown`][crate::MapType::Unknown]
     Unknown = u32::MAX,
 }
@@ -403,48 +410,48 @@ impl From<u32> for ProgramType {
 // TODO: Document variants.
 #[allow(missing_docs)]
 pub enum ProgramAttachType {
-    CgroupInetIngress,
-    CgroupInetEgress,
-    CgroupInetSockCreate,
-    CgroupSockOps,
-    SkSkbStreamParser,
-    SkSkbStreamVerdict,
-    CgroupDevice,
-    SkMsgVerdict,
-    CgroupInet4Bind,
-    CgroupInet6Bind,
-    CgroupInet4Connect,
-    CgroupInet6Connect,
-    CgroupInet4PostBind,
-    CgroupInet6PostBind,
-    CgroupUdp4Sendmsg,
-    CgroupUdp6Sendmsg,
-    LircMode2,
-    FlowDissector,
-    CgroupSysctl,
-    CgroupUdp4Recvmsg,
-    CgroupUdp6Recvmsg,
-    CgroupGetsockopt,
-    CgroupSetsockopt,
-    TraceRawTp,
-    TraceFentry,
-    TraceFexit,
-    ModifyReturn,
-    LsmMac,
-    TraceIter,
-    CgroupInet4Getpeername,
-    CgroupInet6Getpeername,
-    CgroupInet4Getsockname,
-    CgroupInet6Getsockname,
-    XdpDevmap,
-    CgroupInetSockRelease,
-    XdpCpumap,
-    SkLookup,
-    Xdp,
-    SkSkbVerdict,
-    SkReuseportSelect,
-    SkReuseportSelectOrMigrate,
-    PerfEvent,
+    CgroupInetIngress = libbpf_sys::BPF_CGROUP_INET_INGRESS,
+    CgroupInetEgress = libbpf_sys::BPF_CGROUP_INET_EGRESS,
+    CgroupInetSockCreate = libbpf_sys::BPF_CGROUP_INET_SOCK_CREATE,
+    CgroupSockOps = libbpf_sys::BPF_CGROUP_SOCK_OPS,
+    SkSkbStreamParser = libbpf_sys::BPF_SK_SKB_STREAM_PARSER,
+    SkSkbStreamVerdict = libbpf_sys::BPF_SK_SKB_STREAM_VERDICT,
+    CgroupDevice = libbpf_sys::BPF_CGROUP_DEVICE,
+    SkMsgVerdict = libbpf_sys::BPF_SK_MSG_VERDICT,
+    CgroupInet4Bind = libbpf_sys::BPF_CGROUP_INET4_BIND,
+    CgroupInet6Bind = libbpf_sys::BPF_CGROUP_INET6_BIND,
+    CgroupInet4Connect = libbpf_sys::BPF_CGROUP_INET4_CONNECT,
+    CgroupInet6Connect = libbpf_sys::BPF_CGROUP_INET6_CONNECT,
+    CgroupInet4PostBind = libbpf_sys::BPF_CGROUP_INET4_POST_BIND,
+    CgroupInet6PostBind = libbpf_sys::BPF_CGROUP_INET6_POST_BIND,
+    CgroupUdp4Sendmsg = libbpf_sys::BPF_CGROUP_UDP4_SENDMSG,
+    CgroupUdp6Sendmsg = libbpf_sys::BPF_CGROUP_UDP6_SENDMSG,
+    LircMode2 = libbpf_sys::BPF_LIRC_MODE2,
+    FlowDissector = libbpf_sys::BPF_FLOW_DISSECTOR,
+    CgroupSysctl = libbpf_sys::BPF_CGROUP_SYSCTL,
+    CgroupUdp4Recvmsg = libbpf_sys::BPF_CGROUP_UDP4_RECVMSG,
+    CgroupUdp6Recvmsg = libbpf_sys::BPF_CGROUP_UDP6_RECVMSG,
+    CgroupGetsockopt = libbpf_sys::BPF_CGROUP_GETSOCKOPT,
+    CgroupSetsockopt = libbpf_sys::BPF_CGROUP_SETSOCKOPT,
+    TraceRawTp = libbpf_sys::BPF_TRACE_RAW_TP,
+    TraceFentry = libbpf_sys::BPF_TRACE_FENTRY,
+    TraceFexit = libbpf_sys::BPF_TRACE_FEXIT,
+    ModifyReturn = libbpf_sys::BPF_MODIFY_RETURN,
+    LsmMac = libbpf_sys::BPF_LSM_MAC,
+    TraceIter = libbpf_sys::BPF_TRACE_ITER,
+    CgroupInet4Getpeername = libbpf_sys::BPF_CGROUP_INET4_GETPEERNAME,
+    CgroupInet6Getpeername = libbpf_sys::BPF_CGROUP_INET6_GETPEERNAME,
+    CgroupInet4Getsockname = libbpf_sys::BPF_CGROUP_INET4_GETSOCKNAME,
+    CgroupInet6Getsockname = libbpf_sys::BPF_CGROUP_INET6_GETSOCKNAME,
+    XdpDevmap = libbpf_sys::BPF_XDP_DEVMAP,
+    CgroupInetSockRelease = libbpf_sys::BPF_CGROUP_INET_SOCK_RELEASE,
+    XdpCpumap = libbpf_sys::BPF_XDP_CPUMAP,
+    SkLookup = libbpf_sys::BPF_SK_LOOKUP,
+    Xdp = libbpf_sys::BPF_XDP,
+    SkSkbVerdict = libbpf_sys::BPF_SK_SKB_VERDICT,
+    SkReuseportSelect = libbpf_sys::BPF_SK_REUSEPORT_SELECT,
+    SkReuseportSelectOrMigrate = libbpf_sys::BPF_SK_REUSEPORT_SELECT_OR_MIGRATE,
+    PerfEvent = libbpf_sys::BPF_PERF_EVENT,
     /// See [`MapType::Unknown`][crate::MapType::Unknown]
     Unknown = u32::MAX,
 }
@@ -598,8 +605,15 @@ impl<'obj> Program<'obj> {
         ProgramType::from(unsafe { libbpf_sys::bpf_program__type(self.ptr.as_ptr()) })
     }
 
-    /// Returns program fd by id
+    #[deprecated = "renamed to Program::fd_from_id"]
+    #[allow(missing_docs)]
+    #[inline]
     pub fn get_fd_by_id(id: u32) -> Result<OwnedFd> {
+        Self::fd_from_id(id)
+    }
+
+    /// Returns program file descriptor given a program ID.
+    pub fn fd_from_id(id: u32) -> Result<OwnedFd> {
         let ret = unsafe { libbpf_sys::bpf_prog_get_fd_by_id(id) };
         let fd = util::parse_ret_i32(ret)?;
         // SAFETY
@@ -608,8 +622,16 @@ impl<'obj> Program<'obj> {
         Ok(unsafe { OwnedFd::from_raw_fd(fd) })
     }
 
-    /// Returns program id by fd
+    // TODO: Remove once 0.25 is cut.
+    #[deprecated = "renamed to Program::id_from_fd"]
+    #[allow(missing_docs)]
+    #[inline]
     pub fn get_id_by_fd(fd: BorrowedFd<'_>) -> Result<u32> {
+        Self::id_from_fd(fd)
+    }
+
+    /// Returns program ID given a file descriptor.
+    pub fn id_from_fd(fd: BorrowedFd<'_>) -> Result<u32> {
         let mut prog_info = libbpf_sys::bpf_prog_info::default();
         let prog_info_ptr: *mut libbpf_sys::bpf_prog_info = &mut prog_info;
         let mut len = size_of::<libbpf_sys::bpf_prog_info>() as u32;
@@ -622,6 +644,35 @@ impl<'obj> Program<'obj> {
         };
         util::parse_ret(ret)?;
         Ok(prog_info.id)
+    }
+
+    /// Returns fd of a previously pinned program
+    ///
+    /// Returns error, if the pinned path doesn't represent an eBPF program.
+    pub fn fd_from_pinned_path<P: AsRef<Path>>(path: P) -> Result<OwnedFd> {
+        let path_c = util::path_to_cstring(&path)?;
+        let path_ptr = path_c.as_ptr();
+
+        let fd = unsafe { libbpf_sys::bpf_obj_get(path_ptr) };
+        let fd = util::parse_ret_i32(fd).with_context(|| {
+            format!(
+                "failed to retrieve BPF object from pinned path `{}`",
+                path.as_ref().display()
+            )
+        })?;
+        let fd = unsafe { OwnedFd::from_raw_fd(fd) };
+
+        // A pinned path may represent an object of any kind, including map
+        // and link. This may cause unexpected behaviour for following functions,
+        // like bpf_*_get_info_by_fd(), which allow objects of any type.
+        let fd_type = util::object_type_from_fd(fd.as_fd())?;
+        match fd_type {
+            BpfObjectType::Program => Ok(fd),
+            other => Err(Error::with_invalid_data(format!(
+                "retrieved BPF fd is not a program fd: {:#?}",
+                other
+            ))),
+        }
     }
 
     /// Returns flags that have been set for the program.
@@ -693,7 +744,7 @@ impl<'obj> ProgramMut<'obj> {
     }
 
     /// Auto-attach based on prog section
-    pub fn attach(&mut self) -> Result<Link> {
+    pub fn attach(&self) -> Result<Link> {
         let ptr = unsafe { libbpf_sys::bpf_program__attach(self.ptr.as_ptr()) };
         let ptr = validate_bpf_ret(ptr).context("failed to attach BPF program")?;
         // SAFETY: the pointer came from libbpf and has been checked for errors.
@@ -703,7 +754,7 @@ impl<'obj> ProgramMut<'obj> {
 
     /// Attach this program to a
     /// [cgroup](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html).
-    pub fn attach_cgroup(&mut self, cgroup_fd: i32) -> Result<Link> {
+    pub fn attach_cgroup(&self, cgroup_fd: i32) -> Result<Link> {
         let ptr = unsafe { libbpf_sys::bpf_program__attach_cgroup(self.ptr.as_ptr(), cgroup_fd) };
         let ptr = validate_bpf_ret(ptr).context("failed to attach cgroup")?;
         // SAFETY: the pointer came from libbpf and has been checked for errors.
@@ -712,7 +763,7 @@ impl<'obj> ProgramMut<'obj> {
     }
 
     /// Attach this program to a [perf event](https://linux.die.net/man/2/perf_event_open).
-    pub fn attach_perf_event(&mut self, pfd: i32) -> Result<Link> {
+    pub fn attach_perf_event(&self, pfd: i32) -> Result<Link> {
         let ptr = unsafe { libbpf_sys::bpf_program__attach_perf_event(self.ptr.as_ptr(), pfd) };
         let ptr = validate_bpf_ret(ptr).context("failed to attach perf event")?;
         // SAFETY: the pointer came from libbpf and has been checked for errors.
@@ -723,7 +774,7 @@ impl<'obj> ProgramMut<'obj> {
     /// Attach this program to a [userspace
     /// probe](https://www.kernel.org/doc/html/latest/trace/uprobetracer.html).
     pub fn attach_uprobe<T: AsRef<Path>>(
-        &mut self,
+        &self,
         retprobe: bool,
         pid: i32,
         binary_path: T,
@@ -750,7 +801,7 @@ impl<'obj> ProgramMut<'obj> {
     /// probe](https://www.kernel.org/doc/html/latest/trace/uprobetracer.html),
     /// providing additional options.
     pub fn attach_uprobe_with_opts(
-        &mut self,
+        &self,
         pid: i32,
         binary_path: impl AsRef<Path>,
         func_offset: usize,
@@ -793,7 +844,7 @@ impl<'obj> ProgramMut<'obj> {
 
     /// Attach this program to a [kernel
     /// probe](https://www.kernel.org/doc/html/latest/trace/kprobetrace.html).
-    pub fn attach_kprobe<T: AsRef<str>>(&mut self, retprobe: bool, func_name: T) -> Result<Link> {
+    pub fn attach_kprobe<T: AsRef<str>>(&self, retprobe: bool, func_name: T) -> Result<Link> {
         let func_name = util::str_to_cstring(func_name.as_ref())?;
         let func_name_ptr = func_name.as_ptr();
         let ptr = unsafe {
@@ -806,11 +857,7 @@ impl<'obj> ProgramMut<'obj> {
     }
 
     /// Attach this program to the specified syscall
-    pub fn attach_ksyscall<T: AsRef<str>>(
-        &mut self,
-        retprobe: bool,
-        syscall_name: T,
-    ) -> Result<Link> {
+    pub fn attach_ksyscall<T: AsRef<str>>(&self, retprobe: bool, syscall_name: T) -> Result<Link> {
         let opts = libbpf_sys::bpf_ksyscall_opts {
             sz: size_of::<libbpf_sys::bpf_ksyscall_opts>() as _,
             retprobe,
@@ -829,7 +876,7 @@ impl<'obj> ProgramMut<'obj> {
     }
 
     fn attach_tracepoint_impl(
-        &mut self,
+        &self,
         tp_category: &str,
         tp_name: &str,
         tp_opts: Option<TracepointOpts>,
@@ -868,7 +915,7 @@ impl<'obj> ProgramMut<'obj> {
     /// Attach this program to a [kernel
     /// tracepoint](https://www.kernel.org/doc/html/latest/trace/tracepoints.html).
     pub fn attach_tracepoint(
-        &mut self,
+        &self,
         tp_category: impl AsRef<str>,
         tp_name: impl AsRef<str>,
     ) -> Result<Link> {
@@ -879,7 +926,7 @@ impl<'obj> ProgramMut<'obj> {
     /// tracepoint](https://www.kernel.org/doc/html/latest/trace/tracepoints.html),
     /// providing additional options.
     pub fn attach_tracepoint_with_opts(
-        &mut self,
+        &self,
         tp_category: impl AsRef<str>,
         tp_name: impl AsRef<str>,
         tp_opts: TracepointOpts,
@@ -889,7 +936,7 @@ impl<'obj> ProgramMut<'obj> {
 
     /// Attach this program to a [raw kernel
     /// tracepoint](https://lwn.net/Articles/748352/).
-    pub fn attach_raw_tracepoint<T: AsRef<str>>(&mut self, tp_name: T) -> Result<Link> {
+    pub fn attach_raw_tracepoint<T: AsRef<str>>(&self, tp_name: T) -> Result<Link> {
         let tp_name = util::str_to_cstring(tp_name.as_ref())?;
         let tp_name_ptr = tp_name.as_ptr();
         let ptr = unsafe {
@@ -902,7 +949,7 @@ impl<'obj> ProgramMut<'obj> {
     }
 
     /// Attach to an [LSM](https://en.wikipedia.org/wiki/Linux_Security_Modules) hook
-    pub fn attach_lsm(&mut self) -> Result<Link> {
+    pub fn attach_lsm(&self) -> Result<Link> {
         let ptr = unsafe { libbpf_sys::bpf_program__attach_lsm(self.ptr.as_ptr()) };
         let ptr = validate_bpf_ret(ptr).context("failed to attach LSM")?;
         // SAFETY: the pointer came from libbpf and has been checked for errors.
@@ -911,7 +958,7 @@ impl<'obj> ProgramMut<'obj> {
     }
 
     /// Attach to a [fentry/fexit kernel probe](https://lwn.net/Articles/801479/)
-    pub fn attach_trace(&mut self) -> Result<Link> {
+    pub fn attach_trace(&self) -> Result<Link> {
         let ptr = unsafe { libbpf_sys::bpf_program__attach_trace(self.ptr.as_ptr()) };
         let ptr = validate_bpf_ret(ptr).context("failed to attach fentry/fexit kernel probe")?;
         // SAFETY: the pointer came from libbpf and has been checked for errors.
@@ -933,7 +980,7 @@ impl<'obj> ProgramMut<'obj> {
     }
 
     /// Attach this program to [XDP](https://lwn.net/Articles/825998/)
-    pub fn attach_xdp(&mut self, ifindex: i32) -> Result<Link> {
+    pub fn attach_xdp(&self, ifindex: i32) -> Result<Link> {
         let ptr = unsafe { libbpf_sys::bpf_program__attach_xdp(self.ptr.as_ptr(), ifindex) };
         let ptr = validate_bpf_ret(ptr).context("failed to attach XDP program")?;
         // SAFETY: the pointer came from libbpf and has been checked for errors.
@@ -942,7 +989,7 @@ impl<'obj> ProgramMut<'obj> {
     }
 
     /// Attach this program to [netns-based programs](https://lwn.net/Articles/819618/)
-    pub fn attach_netns(&mut self, netns_fd: i32) -> Result<Link> {
+    pub fn attach_netns(&self, netns_fd: i32) -> Result<Link> {
         let ptr = unsafe { libbpf_sys::bpf_program__attach_netns(self.ptr.as_ptr(), netns_fd) };
         let ptr = validate_bpf_ret(ptr).context("failed to attach network namespace program")?;
         // SAFETY: the pointer came from libbpf and has been checked for errors.
@@ -950,8 +997,28 @@ impl<'obj> ProgramMut<'obj> {
         Ok(link)
     }
 
+    /// Attach this program to [netfilter programs](https://lwn.net/Articles/925082/)
+    pub fn attach_netfilter_with_opts(
+        &self,
+        netfilter_opt: netfilter::NetfilterOpts,
+    ) -> Result<Link> {
+        let netfilter_opts = libbpf_sys::bpf_netfilter_opts::from(netfilter_opt);
+
+        let ptr = unsafe {
+            libbpf_sys::bpf_program__attach_netfilter(
+                self.ptr.as_ptr(),
+                &netfilter_opts as *const _,
+            )
+        };
+
+        let ptr = validate_bpf_ret(ptr).context("failed to attach netfilter program")?;
+        // SAFETY: the pointer came from libbpf and has been checked for errors.
+        let link = unsafe { Link::new(ptr) };
+        Ok(link)
+    }
+
     fn attach_usdt_impl(
-        &mut self,
+        &self,
         pid: i32,
         binary_path: &Path,
         usdt_provider: &str,
@@ -990,7 +1057,7 @@ impl<'obj> ProgramMut<'obj> {
     /// point. The entry point of the program must be defined with
     /// `SEC("usdt")`.
     pub fn attach_usdt(
-        &mut self,
+        &self,
         pid: i32,
         binary_path: impl AsRef<Path>,
         usdt_provider: impl AsRef<str>,
@@ -1009,7 +1076,7 @@ impl<'obj> ProgramMut<'obj> {
     /// point, providing additional options. The entry point of the program must
     /// be defined with `SEC("usdt")`.
     pub fn attach_usdt_with_opts(
-        &mut self,
+        &self,
         pid: i32,
         binary_path: impl AsRef<Path>,
         usdt_provider: impl AsRef<str>,
@@ -1028,7 +1095,7 @@ impl<'obj> ProgramMut<'obj> {
     /// Attach this program to a
     /// [BPF Iterator](https://www.kernel.org/doc/html/latest/bpf/bpf_iterators.html).
     /// The entry point of the program must be defined with `SEC("iter")` or `SEC("iter.s")`.
-    pub fn attach_iter(&mut self, map_fd: BorrowedFd<'_>) -> Result<Link> {
+    pub fn attach_iter(&self, map_fd: BorrowedFd<'_>) -> Result<Link> {
         let mut linkinfo = libbpf_sys::bpf_iter_link_info::default();
         linkinfo.map.map_fd = map_fd.as_raw_fd() as _;
         let attach_opt = libbpf_sys::bpf_iter_attach_opts {
@@ -1055,7 +1122,7 @@ impl<'obj> ProgramMut<'obj> {
     /// This function uses the
     /// [BPF_PROG_RUN](https://www.kernel.org/doc/html/latest/bpf/bpf_prog_run.html)
     /// facility.
-    pub fn test_run<'dat>(&mut self, input: Input<'dat>) -> Result<Output<'dat>> {
+    pub fn test_run<'dat>(&self, input: Input<'dat>) -> Result<Output<'dat>> {
         unsafe fn slice_from_array<'t, T>(items: *mut T, num_items: usize) -> Option<&'t mut [T]> {
             if items.is_null() {
                 None

@@ -22,11 +22,6 @@
 #![allow(non_camel_case_types, non_snake_case, non_upper_case_globals)]
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::unreadable_literal))]
 
-extern crate glob;
-extern crate libc;
-#[cfg(feature = "runtime")]
-extern crate libloading;
-
 pub mod support;
 
 #[macro_use]
@@ -184,6 +179,8 @@ cenum! {
         const CXCallingConv_SwiftAsync = 17,
         /// Only produced by `libclang` 15.0 and later.
         const CXCallingConv_AArch64SVEPCS = 18,
+        /// Only produced by `libclang` 18.0 and later.
+        const CXCallingConv_M68kRTD = 19,
     }
 }
 
@@ -560,6 +557,8 @@ cenum! {
         const CXCursor_OMPParallelMaskedTaskLoopSimdDirective = 304,
         /// Only produced by `libclang` 16.0 and later.
         const CXCursor_OMPErrorDirective = 305,
+        /// Only produced by `libclang` 18.0 and later.
+        const CXCursor_OMPScopeDirective = 306,
         #[cfg(not(feature="clang_15_0"))]
         const CXCursor_TranslationUnit = 300,
         #[cfg(feature="clang_15_0")]

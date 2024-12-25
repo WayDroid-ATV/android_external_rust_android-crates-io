@@ -83,8 +83,8 @@
 //!
 //! If you find that code requires optimization to pass `#[no_panic]`, either
 //! make no-panic an optional dependency that you only enable in release builds,
-//! or add a section like the following to Cargo.toml to enable very basic
-//! optimization in debug builds.
+//! or add a section like the following to your Cargo.toml or .cargo/config.toml
+//! to enable very basic optimization in debug builds.
 //!
 //! ```toml
 //! [profile.dev]
@@ -98,6 +98,15 @@
 //! ```toml
 //! [profile.release]
 //! lto = "thin"
+//! ```
+//!
+//! If thin LTO isn't cutting it, the next thing to try would be fat LTO with a
+//! single codegen unit:
+//!
+//! ```toml
+//! [profile.release]
+//! lto = "fat"
+//! codegen-units = 1
 //! ```
 //!
 //! If you want no_panic to just assume that some function you call doesn't
@@ -117,7 +126,7 @@
 //! [Kixunil]: https://github.com/Kixunil
 //! [`dont_panic`]: https://github.com/Kixunil/dont_panic
 
-#![doc(html_root_url = "https://docs.rs/no-panic/0.1.26")]
+#![doc(html_root_url = "https://docs.rs/no-panic/0.1.32")]
 #![allow(
     clippy::doc_markdown,
     clippy::match_same_arms,
@@ -165,6 +174,7 @@ fn parse(args: TokenStream2, input: TokenStream2) -> Result<ItemFn> {
 // Convert `Path<impl Trait>` to `Path<_>`
 fn make_impl_trait_wild(ret: &mut Type) {
     match ret {
+        #![cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
         Type::ImplTrait(impl_trait) => {
             *ret = Type::Infer(TypeInfer {
                 underscore_token: Token![_](impl_trait.impl_token.span),
@@ -186,7 +196,6 @@ fn make_impl_trait_wild(ret: &mut Type) {
         }
         Type::Tuple(ret) => ret.elems.iter_mut().for_each(make_impl_trait_wild),
         Type::BareFn(_) | Type::Infer(_) | Type::Macro(_) | Type::Never(_) | Type::Verbatim(_) => {}
-        #[cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
         _ => {}
     }
 }
@@ -255,13 +264,18 @@ fn expand_no_panic(mut function: ItemFn) -> TokenStream2 {
         "\n\nERROR[no-panic]: detected panic in function `{}`\n",
         function.sig.ident,
     );
+    let unsafe_extern = if cfg!(no_unsafe_extern_blocks) {
+        None
+    } else {
+        Some(Token![unsafe](Span::call_site()))
+    };
     function.block = Box::new(parse_quote!({
         struct __NoPanic;
-        extern "C" {
+        #unsafe_extern extern "C" {
             #[link_name = #message]
             fn trigger() -> !;
         }
-        impl core::ops::Drop for __NoPanic {
+        impl ::core::ops::Drop for __NoPanic {
             fn drop(&mut self) {
                 unsafe {
                     trigger();
@@ -276,7 +290,7 @@ fn expand_no_panic(mut function: ItemFn) -> TokenStream2 {
             )*
             #(#stmts)*
         })();
-        core::mem::forget(__guard);
+        ::core::mem::forget(__guard);
         __result
     }));
 

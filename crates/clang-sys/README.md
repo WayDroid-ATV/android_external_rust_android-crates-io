@@ -3,7 +3,7 @@
 [![Crate](https://img.shields.io/crates/v/clang-sys.svg)](https://crates.io/crates/clang-sys)
 [![Documentation](https://docs.rs/clang-sys/badge.svg)](https://docs.rs/clang-sys)
 [![CI](https://img.shields.io/github/actions/workflow/status/KyleMayes/clang-sys/ci.yml?branch=master)](https://github.com/KyleMayes/clang-sys/actions?query=workflow%3ACI)
-![MSRV](https://img.shields.io/badge/MSRV-1.51.0-blue)
+![MSRV](https://img.shields.io/badge/MSRV-1.60.0-blue)
 
 Rust bindings for `libclang`.
 
@@ -26,8 +26,8 @@ To target a version of `libclang`, enable a Cargo features such as one of the fo
 * `clang_3_5` - requires `libclang` 3.5 or later
 * `clang_3_6` - requires `libclang` 3.6 or later
 * etc...
-* `clang_15_0` - requires `libclang` 15.0 or later
-* `clang_16_0` - requires `libclang` 16.0 or later
+* `clang_17_0` - requires `libclang` 17.0 or later
+* `clang_18_0` - requires `libclang` 18.0 or later
 
 If you do not enable one of these features, the API provided by `libclang` 3.5 will be available by default.
 
@@ -83,6 +83,33 @@ On Windows, running an executable that has been dynamically linked to `libclang`
 ### Static
 
 The availability of `llvm-config` is not optional for static linking. Ensure that an instance of this executable can be found on your system's path or set the `LLVM_CONFIG_PATH` environment variable. The required LLVM and Clang static libraries will be searched for in the same way as shared libraries are searched for, except the `LIBCLANG_STATIC_PATH` environment variable is used in place of the `LIBCLANG_PATH` environment variable.
+
+**Note:** The `libcpp` Cargo feature can be used to enable linking to `libc++` instead of `libstd++` when linking to `libclang` statically on Linux or Haiku.
+
+#### Static Library Availability
+
+Linking to `libclang` statically on *nix systems requires that the `libclang.a` static library be available.  
+This library is usually *not* included in most distributions of LLVM and Clang (e.g., `libclang-dev` on Debian-based systems).  
+If you need to link to `libclang` statically then most likely the only consistent way to get your hands on `libclang.a` is to build it yourself.
+
+Here's an example of building the required static libraries and using them with `clang-sys`:
+
+```text
+git clone git@github.com:llvm/llvm-project.git
+cd llvm-project
+
+cmake -S llvm -B build -G Ninja -DLLVM_ENABLE_PROJECTS=clang -DLIBCLANG_BUILD_STATIC=ON
+ninja -C build
+
+cd ..
+git clone git@github.com:KyleMayes/clang-sys.git
+cd clang-sys
+
+LLVM_CONFIG_PATH=../llvm-project/build/bin/llvm-config cargo test --features static
+```
+
+Linking to `libclang` statically requires linking a large number of big static libraries.  
+Using [`rust-lld` as a linker](https://blog.rust-lang.org/2024/05/17/enabling-rust-lld-on-linux.html) can greatly reduce linking times.
 
 ### Runtime
 

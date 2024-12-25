@@ -29,7 +29,6 @@ use crate::OutOfRange;
 /// Can be Serialized/Deserialized with serde
 // Actual implementation is zero-indexed, API intended as 1-indexed for more intuitive behavior.
 #[derive(PartialEq, Eq, Copy, Clone, Debug, Hash, PartialOrd, Ord)]
-#[cfg_attr(feature = "rustc-serialize", derive(RustcEncodable, RustcDecodable))]
 #[cfg_attr(
     any(feature = "rkyv", feature = "rkyv-16", feature = "rkyv-32", feature = "rkyv-64"),
     derive(Archive, Deserialize, Serialize),
@@ -192,7 +191,6 @@ impl num_traits::FromPrimitive for Month {
     /// `Month::from_i64(n: i64)`: | `1`                  | `2`                   | ... | `12`
     /// ---------------------------| -------------------- | --------------------- | ... | -----
     /// ``:                        | Some(Month::January) | Some(Month::February) | ... | Some(Month::December)
-
     #[inline]
     fn from_u64(n: u64) -> Option<Month> {
         Self::from_u32(n as u32)
@@ -280,7 +278,7 @@ mod month_serde {
 
     struct MonthVisitor;
 
-    impl<'de> de::Visitor<'de> for MonthVisitor {
+    impl de::Visitor<'_> for MonthVisitor {
         type Value = Month;
 
         fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {

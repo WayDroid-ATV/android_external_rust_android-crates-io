@@ -1,8 +1,14 @@
 // Generated from vec_mask.rs.tera template. Edit the template, not the generated file.
 
-#[cfg(not(target_arch = "spirv"))]
 use core::fmt;
 use core::ops::*;
+
+/// Creates a 3-dimensional `bool` vector mask.
+#[inline(always)]
+#[must_use]
+pub const fn bvec3(x: bool, y: bool, z: bool) -> BVec3 {
+    BVec3::new(x, y, z)
+}
 
 /// A 3-dimensional `bool` vector mask.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -29,11 +35,18 @@ impl BVec3 {
         Self { x, y, z }
     }
 
-    /// Creates a vector with all elements set to `v`.
+    /// Creates a vector mask with all elements set to `v`.
     #[inline]
     #[must_use]
     pub const fn splat(v: bool) -> Self {
         Self::new(v, v, v)
+    }
+
+    /// Creates a new vector mask from a bool array.
+    #[inline]
+    #[must_use]
+    pub const fn from_array(a: [bool; 3]) -> Self {
+        Self::new(a[0], a[1], a[2])
     }
 
     /// Returns a bitmask with the lowest 3 bits set from the elements of `self`.
@@ -180,7 +193,6 @@ impl Not for BVec3 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Debug for BVec3 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let arr = self.into_u32_array();
@@ -195,11 +207,17 @@ impl fmt::Debug for BVec3 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Display for BVec3 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let arr = self.into_bool_array();
         write!(f, "[{}, {}, {}]", arr[0], arr[1], arr[2])
+    }
+}
+
+impl From<[bool; 3]> for BVec3 {
+    #[inline]
+    fn from(a: [bool; 3]) -> Self {
+        Self::from_array(a)
     }
 }
 

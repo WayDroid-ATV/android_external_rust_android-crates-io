@@ -1,3 +1,26 @@
+0.24.8
+------
+- Added `Program::attach_netfilter_with_opts` for attaching to netfilter
+  hooks
+
+
+0.24.5
+------
+- Renamed `Program::get_id_by_fd` to `id_from_fd`
+  - Deprecated `Program::get_id_by_fd`
+- Renamed `Program::get_fd_by_id` to `fd_from_id`
+  - Deprecated `Program::get_fd_by_id`
+- Adjusted `Program::{attach_*, test_run}` methods to work on shared
+  receivers
+- Adjusted `PerfBufferBuilder` to work with `MapCore` objects
+
+
+0.24.4
+------
+- Added `Program::fd_from_pinned_path` method for restoring program descriptor
+  from a pinned path
+
+
 0.24.0
 ------
 - Split `{Open,}{Map,Program}` into `{Open,}{Map,Program}` (for shared

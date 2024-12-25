@@ -74,8 +74,8 @@ provides the name of the offending function.
 
 If you find that code requires optimization to pass `#[no_panic]`, either make
 no-panic an optional dependency that you only enable in release builds, or add a
-section like the following to Cargo.toml to enable very basic optimization in
-debug builds.
+section like the following to your Cargo.toml or .cargo/config.toml to enable
+very basic optimization in debug builds.
 
 ```toml
 [profile.dev]
@@ -89,6 +89,15 @@ enabled for the linker to deduce those do not panic.
 ```toml
 [profile.release]
 lto = "thin"
+```
+
+If thin LTO isn't cutting it, the next thing to try would be fat LTO with a
+single codegen unit:
+
+```toml
+[profile.release]
+lto = "fat"
+codegen-units = 1
 ```
 
 If you want no\_panic to just assume that some function you call doesn't panic,

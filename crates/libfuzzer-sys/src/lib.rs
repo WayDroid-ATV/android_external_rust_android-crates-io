@@ -12,7 +12,7 @@
 #![deny(missing_docs, missing_debug_implementations)]
 
 pub use arbitrary;
-use once_cell::sync::OnceCell;
+use std::sync::OnceLock;
 
 /// Indicates whether the input should be kept in the corpus or rejected. This
 /// should be returned by your fuzz target. If your fuzz target does not return
@@ -53,10 +53,11 @@ extern "C" {
     fn LLVMFuzzerMutate(data: *mut u8, size: usize, max_size: usize) -> usize;
 }
 
+/// Do not use; only for LibFuzzer's consumption.
 #[doc(hidden)]
 #[export_name = "LLVMFuzzerTestOneInput"]
-pub fn test_input_wrap(data: *const u8, size: usize) -> i32 {
-    let test_input = ::std::panic::catch_unwind(|| unsafe {
+pub unsafe fn test_input_wrap(data: *const u8, size: usize) -> i32 {
+    let test_input = ::std::panic::catch_unwind(|| {
         let data_slice = ::std::slice::from_raw_parts(data, size);
         rust_fuzzer_test_input(data_slice)
     });
@@ -72,7 +73,10 @@ pub fn test_input_wrap(data: *const u8, size: usize) -> i32 {
 }
 
 #[doc(hidden)]
-pub static RUST_LIBFUZZER_DEBUG_PATH: OnceCell<String> = OnceCell::new();
+pub fn rust_libfuzzer_debug_path() -> &'static Option<String> {
+    static RUST_LIBFUZZER_DEBUG_PATH: OnceLock<Option<String>> = OnceLock::new();
+    RUST_LIBFUZZER_DEBUG_PATH.get_or_init(|| std::env::var("RUST_LIBFUZZER_DEBUG_PATH").ok())
+}
 
 #[doc(hidden)]
 #[export_name = "LLVMFuzzerInitialize"]
@@ -90,14 +94,6 @@ pub fn initialize(_argc: *const isize, _argv: *const *const *const u8) -> isize 
         default_hook(panic_info);
         ::std::process::abort();
     }));
-
-    // Initialize the `RUST_LIBFUZZER_DEBUG_PATH` cell with the path so it can be
-    // reused with little overhead.
-    if let Ok(path) = std::env::var("RUST_LIBFUZZER_DEBUG_PATH") {
-        RUST_LIBFUZZER_DEBUG_PATH
-            .set(path)
-            .expect("Since this is initialize it is only called once so can never fail");
-    }
     0
 }
 
@@ -212,7 +208,7 @@ macro_rules! fuzz_target {
                 // `cargo fuzz`'s use!
 
                 // `RUST_LIBFUZZER_DEBUG_PATH` is set in initialization.
-                if let Some(path) = $crate::RUST_LIBFUZZER_DEBUG_PATH.get() {
+                if let Some(path) = $crate::rust_libfuzzer_debug_path() {
                     use std::io::Write;
                     let mut file = std::fs::File::create(path)
                         .expect("failed to create `RUST_LIBFUZZER_DEBUG_PATH` file");
@@ -277,7 +273,7 @@ macro_rules! fuzz_target {
                 // `cargo fuzz`'s use!
 
                 // `RUST_LIBFUZZER_DEBUG_PATH` is set in initialization.
-                if let Some(path) = $crate::RUST_LIBFUZZER_DEBUG_PATH.get() {
+                if let Some(path) = $crate::rust_libfuzzer_debug_path() {
                     use std::io::Write;
                     let mut file = std::fs::File::create(path)
                         .expect("failed to create `RUST_LIBFUZZER_DEBUG_PATH` file");
@@ -459,9 +455,11 @@ macro_rules! fuzz_mutator {
         |
         $body:block
     ) => {
-        /// Auto-generated function.
+        /// Auto-generated function. Do not use; only for LibFuzzer's
+        /// consumption.
         #[export_name = "LLVMFuzzerCustomMutator"]
-        pub fn rust_fuzzer_custom_mutator(
+        #[doc(hidden)]
+        pub unsafe fn rust_fuzzer_custom_mutator(
             $data: *mut u8,
             $size: usize,
             $max_size: usize,
@@ -471,15 +469,26 @@ macro_rules! fuzz_mutator {
             // might be larger or smaller than `max_size`. The `data`'s capacity
             // is the maximum of the two.
             let len = std::cmp::max($max_size, $size);
-            let $data: &mut [u8] = unsafe { std::slice::from_raw_parts_mut($data, len) };
+            let $data: &mut [u8] = std::slice::from_raw_parts_mut($data, len);
 
             // `unsigned int` is generally a `u32`, but not on all targets. Do
             // an infallible (and potentially lossy, but that's okay because it
             // preserves determinism) conversion.
             let $seed = $seed as u32;
 
+            // Define and invoke a new, safe function so that the body doesn't
+            // inherit `unsafe`.
+            fn custom_mutator(
+                $data: &mut [u8],
+                $size: usize,
+                $max_size: usize,
+                $seed: u32,
+            ) -> usize {
+                $body
+            }
+            let new_size = custom_mutator($data, $size, $max_size, $seed);
+
             // Truncate the new size if it is larger than the max.
-            let new_size = { $body };
             std::cmp::min(new_size, $max_size)
         }
     };
@@ -523,4 +532,149 @@ pub fn fuzzer_mutate(data: &mut [u8], size: usize, max_size: usize) -> usize {
     let new_size = unsafe { LLVMFuzzerMutate(data.as_mut_ptr(), size, max_size) };
     assert!(new_size <= data.len());
     new_size
+}
+
+/// Define a custom cross-over function to combine test cases.
+///
+/// This is optional, and libFuzzer will use its own, default cross-over strategy
+/// if this is not provided. (As of the time of writing, this default strategy
+/// takes alternating byte sequences from the two test cases, to construct the
+/// new one) (see `FuzzerCrossOver.cpp`)
+///
+/// This could potentially be useful if your input is, for instance, a
+/// sequence of fixed sized, multi-byte values and the crossover could then
+/// merge discrete values rather than joining parts of a value.
+///
+/// ## Implementation Contract
+///
+/// The original, read-only inputs are given in the full slices of `data1`, and
+/// `data2` (as opposed to the, potentially, partial slice of `data` in
+/// [the `fuzz_mutator!` macro][crate::fuzz_mutator]).
+///
+/// You must place the new input merged from the two existing inputs' data
+/// into `out` and return the size of the relevant data written to that slice.
+///
+/// The deterministic requirements from [the `fuzz_mutator!` macro][crate::fuzz_mutator]
+/// apply as well to the `seed` parameter
+///
+/// ## Example: Floating-Point Sum NaN
+///
+/// ```no_run
+/// #![no_main]
+///
+/// use libfuzzer_sys::{fuzz_crossover, fuzz_mutator, fuzz_target, fuzzer_mutate};
+/// use rand::{rngs::StdRng, Rng, SeedableRng};
+/// use std::mem::size_of;
+///
+/// fuzz_target!(|data: &[u8]| {
+///     let (_, floats, _) = unsafe { data.align_to::<f64>() };
+///
+///     let res = floats
+///         .iter()
+///         .fold(0.0, |a, b| if b.is_nan() { a } else { a + b });
+///
+///     assert!(
+///         !res.is_nan(),
+///         "The sum of the following floats resulted in a NaN: {floats:?}"
+///     );
+/// });
+///
+/// // Inject some ...potentially problematic values to make the example close
+/// // more quickly.
+/// fuzz_mutator!(|data: &mut [u8], size: usize, max_size: usize, seed: u32| {
+///     let mut gen = StdRng::seed_from_u64(seed.into());
+///
+///     let (_, floats, _) = unsafe { data[..size].align_to_mut::<f64>() };
+///
+///     let x = gen.gen_range(0..=1000);
+///     if x == 0 && !floats.is_empty() {
+///         floats[0] = f64::INFINITY;
+///     } else if x == 1000 && floats.len() > 1 {
+///         floats[1] = f64::NEG_INFINITY;
+///     } else {
+///         return fuzzer_mutate(data, size, max_size);
+///     }
+///
+///     size
+/// });
+///
+/// fuzz_crossover!(|data1: &[u8], data2: &[u8], out: &mut [u8], _seed: u32| {
+///     // Decode each source to see how many floats we can pull with proper
+///     // alignment, and destination as to how many will fit with proper alignment
+///     //
+///     // Keep track of the unaligned prefix to `out`, as we will need to remember
+///     // that those bytes will remain prepended to the actual floats that we
+///     // write into the out buffer.
+///     let (out_pref, out_floats, _) = unsafe { out.align_to_mut::<f64>() };
+///     let (_, d1_floats, _) = unsafe { data1.align_to::<f64>() };
+///     let (_, d2_floats, _) = unsafe { data2.align_to::<f64>() };
+///
+///     // Put into the destination, floats first from data1 then from data2, ...if
+///     // possible given the size of `out`
+///     let mut i: usize = 0;
+///     for float in d1_floats.iter().chain(d2_floats).take(out_floats.len()) {
+///         out_floats[i] = *float;
+///         i += 1;
+///     }
+///
+///     // Now that we have written the true floats, report back to the fuzzing
+///     // engine that we left the unaligned `out` prefix bytes at the beginning of
+///     // `out` and also then the floats that we wrote into the aligned float
+///     // section.
+///     out_pref.len() * size_of::<u8>() + i * size_of::<f64>()
+/// });
+/// ```
+///
+/// This example is a minimized version of [Erik Rigtorp's floating point
+/// summation fuzzing example][1]. A more detailed version of this experiment
+/// can be found in the `example_crossover` directory.
+///
+/// [1]: https://rigtorp.se/fuzzing-floating-point-code/
+#[macro_export]
+macro_rules! fuzz_crossover {
+    (
+        |
+        $data1:ident : &[u8] ,
+        $data2:ident : &[u8] ,
+        $out:ident : &mut [u8] ,
+        $seed:ident : u32 $(,)*
+        |
+        $body:block
+    ) => {
+        /// Auto-generated function. Do not use; only for LibFuzzer's
+        /// consumption.
+        #[export_name = "LLVMFuzzerCustomCrossOver"]
+        #[doc(hidden)]
+        pub unsafe fn rust_fuzzer_custom_crossover(
+            $data1: *const u8,
+            size1: usize,
+            $data2: *const u8,
+            size2: usize,
+            $out: *mut u8,
+            max_out_size: usize,
+            $seed: std::os::raw::c_uint,
+        ) -> usize {
+            let $data1: &[u8] = std::slice::from_raw_parts($data1, size1);
+            let $data2: &[u8] = std::slice::from_raw_parts($data2, size2);
+            let $out: &mut [u8] = std::slice::from_raw_parts_mut($out, max_out_size);
+
+            // `unsigned int` is generally a `u32`, but not on all targets. Do
+            // an infallible (and potentially lossy, but that's okay because it
+            // preserves determinism) conversion.
+            let $seed = $seed as u32;
+
+            // Define and invoke a new, safe function so that the body doesn't
+            // inherit `unsafe`.
+            fn custom_crossover(
+                $data1: &[u8],
+                $data2: &[u8],
+                $out: &mut [u8],
+                $seed: u32,
+            ) -> usize {
+                $body
+            }
+
+            custom_crossover($data1, $data2, $out, $seed)
+        }
+    };
 }

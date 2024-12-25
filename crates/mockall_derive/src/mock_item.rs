@@ -1,8 +1,15 @@
 // vim: tw=80
-use super::*;
+use proc_macro2::{TokenStream};
+use quote::{ToTokens, quote};
+use syn::{
+    *,
+    spanned::Spanned
+};
 
 use crate::{
-    mock_function::MockFunction,
+    MockItemStruct,
+    compile_error,
+    mock_function::{self, MockFunction},
     mockable_item::{MockableItem, MockableModule}
 };
 
@@ -88,7 +95,24 @@ impl From<MockableModule> for MockItemModule {
 
                             // Set the ABI to match the ForeignMod's ABI
                             // for proper function linkage with external code.
-                            f.sig.abi = Some(ifm.abi.clone());
+                            //
+                            // BUT, use C-unwind instead of C, so we can panic
+                            // from the mock function (rust-lang/rust #74990)
+                            let needs_c_unwind = if let Some(n) = &ifm.abi.name
+                            {
+                                n.value() == "C"
+                            } else {
+                                false
+                            };
+                            f.sig.abi = Some(if needs_c_unwind {
+                                Abi {
+                                    extern_token:ifm.abi.extern_token,
+                                    name: Some(LitStr::new("C-unwind",
+                                                           ifm.abi.name.span()))
+                                }
+                            } else {
+                                ifm.abi.clone()
+                            });
 
                             let mf = mock_function::Builder::new(&f.sig, &f.vis)
                                 .attrs(&f.attrs)

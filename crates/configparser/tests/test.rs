@@ -1,5 +1,9 @@
-use configparser::ini::{Ini, WriteOptions};
+use configparser::ini::Ini;
+use std::collections::HashSet;
 use std::error::Error;
+
+#[cfg(feature = "indexmap")]
+use configparser::ini::WriteOptions;
 
 #[test]
 #[allow(clippy::approx_constant)]
@@ -228,6 +232,100 @@ fn cs() -> Result<(), Box<dyn Error>> {
     mut_map.clear();
     config2.clear();
     assert_eq!(config.get_map_ref(), config2.get_map_ref());
+    Ok(())
+}
+
+#[test]
+fn ensure_empty_sections_exist() -> Result<(), Box<dyn Error>> {
+    const FILE_CONTENTS: &str = "
+[basic_section]
+basic_option=basic_value
+[empty_section]
+";
+
+    let mut config = Ini::new();
+    config.read(FILE_CONTENTS.to_owned())?;
+
+    assert_eq!(
+        HashSet::from_iter(config.sections().into_iter()),
+        HashSet::from([String::from("basic_section"), String::from("empty_section")])
+    );
+
+    Ok(())
+}
+
+#[test]
+fn inline_comment_symbols() -> Result<(), Box<dyn Error>> {
+    const FILE_CONTENTS: &str = "
+[basic_section]
+; basic comment
+ ; comment with space
+! extra_comment=
+basic_option=value
+basic_with_comment=value ; Simple comment
+basic_with_extra_inline=value ! comment
+empty_option=
+";
+
+    let mut config = Ini::new();
+    config.read(FILE_CONTENTS.to_owned())?;
+
+    assert_eq!(
+        config.get("basic_section", "basic_option"),
+        Some(String::from("value"))
+    );
+    assert_eq!(
+        config.get("basic_section", "basic_with_comment"),
+        Some(String::from("value"))
+    );
+    assert_eq!(
+        config.get("basic_section", "basic_with_extra_inline"),
+        Some(String::from("value ! comment"))
+    );
+    assert_eq!(
+        config.get("basic_section", "! extra_comment"),
+        Some(String::from(""))
+    );
+
+    assert_eq!(
+        config.get("basic_section", "empty_option"),
+        Some(String::from(""))
+    );
+
+    config.set_inline_comment_symbols(Some(&['!']));
+
+    config.read(FILE_CONTENTS.to_owned())?;
+
+    assert_eq!(
+        config.get("basic_section", "basic_option"),
+        Some(String::from("value"))
+    );
+    assert_eq!(
+        config.get("basic_section", "basic_with_comment"),
+        Some(String::from("value ; Simple comment"))
+    );
+    assert_eq!(
+        config.get("basic_section", "basic_with_extra_inline"),
+        Some(String::from("value"))
+    );
+
+    config.set_inline_comment_symbols(Some(&[]));
+
+    config.read(FILE_CONTENTS.to_owned())?;
+
+    assert_eq!(
+        config.get("basic_section", "basic_option"),
+        Some(String::from("value"))
+    );
+    assert_eq!(
+        config.get("basic_section", "basic_with_comment"),
+        Some(String::from("value ; Simple comment"))
+    );
+    assert_eq!(
+        config.get("basic_section", "basic_with_extra_inline"),
+        Some(String::from("value ! comment"))
+    );
+
     Ok(())
 }
 
@@ -534,7 +632,7 @@ fn multiline_on() -> Result<(), Box<dyn Error>> {
     assert_eq!(config.get("Section", "Key2").unwrap(), "Value Two");
     assert_eq!(
         config.get("Section", "Key3").unwrap(),
-        "this is a haiku\nspread across separate lines\na single value"
+        "this is a haiku\nspread across separate lines\n\na single value"
     );
     assert_eq!(config.get("Section", "Key4").unwrap(), "Four");
 
@@ -545,6 +643,7 @@ Key1=Value1
 Key2=Value Two
 Key3=this is a haiku
     spread across separate lines
+
     a single value
 Key4=Four
 "

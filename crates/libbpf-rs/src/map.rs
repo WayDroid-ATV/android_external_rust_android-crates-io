@@ -125,10 +125,14 @@ impl<'obj> OpenMapMut<'obj> {
         }
     }
 
+    /// Bind map to a particular network device.
+    ///
+    /// Used for offloading maps to hardware.
     pub fn set_map_ifindex(&mut self, idx: u32) {
         unsafe { libbpf_sys::bpf_map__set_ifindex(self.ptr.as_ptr(), idx) };
     }
 
+    /// Set the initial value of the map.
     pub fn set_initial_value(&mut self, data: &[u8]) -> Result<()> {
         let ret = unsafe {
             libbpf_sys::bpf_map__set_initial_value(
@@ -141,36 +145,45 @@ impl<'obj> OpenMapMut<'obj> {
         util::parse_ret(ret)
     }
 
+    /// Set the type of the map.
     pub fn set_type(&mut self, ty: MapType) -> Result<()> {
         let ret = unsafe { libbpf_sys::bpf_map__set_type(self.ptr.as_ptr(), ty as u32) };
         util::parse_ret(ret)
     }
 
+    /// Set the key size of the map in bytes.
     pub fn set_key_size(&mut self, size: u32) -> Result<()> {
         let ret = unsafe { libbpf_sys::bpf_map__set_key_size(self.ptr.as_ptr(), size) };
         util::parse_ret(ret)
     }
 
+    /// Set the value size of the map in bytes.
     pub fn set_value_size(&mut self, size: u32) -> Result<()> {
         let ret = unsafe { libbpf_sys::bpf_map__set_value_size(self.ptr.as_ptr(), size) };
         util::parse_ret(ret)
     }
 
+    /// Set the maximum number of entries this map can have.
     pub fn set_max_entries(&mut self, count: u32) -> Result<()> {
         let ret = unsafe { libbpf_sys::bpf_map__set_max_entries(self.ptr.as_ptr(), count) };
         util::parse_ret(ret)
     }
 
+    /// Set flags on this map.
     pub fn set_map_flags(&mut self, flags: u32) -> Result<()> {
         let ret = unsafe { libbpf_sys::bpf_map__set_map_flags(self.ptr.as_ptr(), flags) };
         util::parse_ret(ret)
     }
 
+    // TODO: Document member.
+    #[allow(missing_docs)]
     pub fn set_numa_node(&mut self, numa_node: u32) -> Result<()> {
         let ret = unsafe { libbpf_sys::bpf_map__set_numa_node(self.ptr.as_ptr(), numa_node) };
         util::parse_ret(ret)
     }
 
+    // TODO: Document member.
+    #[allow(missing_docs)]
     pub fn set_inner_map_fd(&mut self, inner_map_fd: BorrowedFd<'_>) -> Result<()> {
         let ret = unsafe {
             libbpf_sys::bpf_map__set_inner_map_fd(self.ptr.as_ptr(), inner_map_fd.as_raw_fd())
@@ -178,16 +191,22 @@ impl<'obj> OpenMapMut<'obj> {
         util::parse_ret(ret)
     }
 
+    // TODO: Document member.
+    #[allow(missing_docs)]
     pub fn set_map_extra(&mut self, map_extra: u64) -> Result<()> {
         let ret = unsafe { libbpf_sys::bpf_map__set_map_extra(self.ptr.as_ptr(), map_extra) };
         util::parse_ret(ret)
     }
 
+    /// Set whether or not libbpf should automatically create this map during load phase.
     pub fn set_autocreate(&mut self, autocreate: bool) -> Result<()> {
         let ret = unsafe { libbpf_sys::bpf_map__set_autocreate(self.ptr.as_ptr(), autocreate) };
         util::parse_ret(ret)
     }
 
+    /// Set where the map should be pinned.
+    ///
+    /// Note this does not actually create the pin.
     pub fn set_pin_path<P: AsRef<Path>>(&mut self, path: P) -> Result<()> {
         let path_c = util::path_to_cstring(path)?;
         let path_ptr = path_c.as_ptr();
@@ -478,7 +497,7 @@ pub trait MapCore: Debug + AsFd + private::Sealed {
 
     /// Deletes many elements in batch mode from the map.
     ///
-    /// `keys` must have exactly [`Self::key_size()` * count] elements.
+    /// `keys` must have exactly `Self::key_size() * count` elements.
     fn delete_batch(
         &self,
         keys: &[u8],
@@ -509,7 +528,7 @@ pub trait MapCore: Debug + AsFd + private::Sealed {
             libbpf_sys::bpf_map_delete_batch(
                 self.as_fd().as_raw_fd(),
                 keys.as_ptr() as *const c_void,
-                (&mut count) as *mut u32,
+                &mut count,
                 &opts as *const libbpf_sys::bpf_map_batch_opts,
             )
         };
@@ -583,8 +602,8 @@ pub trait MapCore: Debug + AsFd + private::Sealed {
 
     /// Updates many elements in batch mode in the map
     ///
-    /// `keys` must have exactly [`Self::key_size()` * count] elements. `value` must have exactly
-    /// [`Self::key_size()` * count] elements
+    /// `keys` must have exactly `Self::key_size() * count` elements. `values` must have exactly
+    /// `Self::key_size() * count` elements.
     fn update_batch(
         &self,
         keys: &[u8],
@@ -626,7 +645,7 @@ pub trait MapCore: Debug + AsFd + private::Sealed {
                 self.as_fd().as_raw_fd(),
                 keys.as_ptr() as *const c_void,
                 values.as_ptr() as *const c_void,
-                (&mut count) as *mut u32,
+                &mut count,
                 &opts as *const libbpf_sys::bpf_map_batch_opts,
             )
         };
@@ -1100,38 +1119,38 @@ bitflags! {
 // TODO: Document members.
 #[allow(missing_docs)]
 pub enum MapType {
-    Unspec = 0,
-    Hash,
-    Array,
-    ProgArray,
-    PerfEventArray,
-    PercpuHash,
-    PercpuArray,
-    StackTrace,
-    CgroupArray,
-    LruHash,
-    LruPercpuHash,
-    LpmTrie,
-    ArrayOfMaps,
-    HashOfMaps,
-    Devmap,
-    Sockmap,
-    Cpumap,
-    Xskmap,
-    Sockhash,
-    CgroupStorage,
-    ReuseportSockarray,
-    PercpuCgroupStorage,
-    Queue,
-    Stack,
-    SkStorage,
-    DevmapHash,
-    StructOps,
-    RingBuf,
-    InodeStorage,
-    TaskStorage,
-    BloomFilter,
-    UserRingBuf,
+    Unspec = libbpf_sys::BPF_MAP_TYPE_UNSPEC,
+    Hash = libbpf_sys::BPF_MAP_TYPE_HASH,
+    Array = libbpf_sys::BPF_MAP_TYPE_ARRAY,
+    ProgArray = libbpf_sys::BPF_MAP_TYPE_PROG_ARRAY,
+    PerfEventArray = libbpf_sys::BPF_MAP_TYPE_PERF_EVENT_ARRAY,
+    PercpuHash = libbpf_sys::BPF_MAP_TYPE_PERCPU_HASH,
+    PercpuArray = libbpf_sys::BPF_MAP_TYPE_PERCPU_ARRAY,
+    StackTrace = libbpf_sys::BPF_MAP_TYPE_STACK_TRACE,
+    CgroupArray = libbpf_sys::BPF_MAP_TYPE_CGROUP_ARRAY,
+    LruHash = libbpf_sys::BPF_MAP_TYPE_LRU_HASH,
+    LruPercpuHash = libbpf_sys::BPF_MAP_TYPE_LRU_PERCPU_HASH,
+    LpmTrie = libbpf_sys::BPF_MAP_TYPE_LPM_TRIE,
+    ArrayOfMaps = libbpf_sys::BPF_MAP_TYPE_ARRAY_OF_MAPS,
+    HashOfMaps = libbpf_sys::BPF_MAP_TYPE_HASH_OF_MAPS,
+    Devmap = libbpf_sys::BPF_MAP_TYPE_DEVMAP,
+    Sockmap = libbpf_sys::BPF_MAP_TYPE_SOCKMAP,
+    Cpumap = libbpf_sys::BPF_MAP_TYPE_CPUMAP,
+    Xskmap = libbpf_sys::BPF_MAP_TYPE_XSKMAP,
+    Sockhash = libbpf_sys::BPF_MAP_TYPE_SOCKHASH,
+    CgroupStorage = libbpf_sys::BPF_MAP_TYPE_CGROUP_STORAGE,
+    ReuseportSockarray = libbpf_sys::BPF_MAP_TYPE_REUSEPORT_SOCKARRAY,
+    PercpuCgroupStorage = libbpf_sys::BPF_MAP_TYPE_PERCPU_CGROUP_STORAGE,
+    Queue = libbpf_sys::BPF_MAP_TYPE_QUEUE,
+    Stack = libbpf_sys::BPF_MAP_TYPE_STACK,
+    SkStorage = libbpf_sys::BPF_MAP_TYPE_SK_STORAGE,
+    DevmapHash = libbpf_sys::BPF_MAP_TYPE_DEVMAP_HASH,
+    StructOps = libbpf_sys::BPF_MAP_TYPE_STRUCT_OPS,
+    RingBuf = libbpf_sys::BPF_MAP_TYPE_RINGBUF,
+    InodeStorage = libbpf_sys::BPF_MAP_TYPE_INODE_STORAGE,
+    TaskStorage = libbpf_sys::BPF_MAP_TYPE_TASK_STORAGE,
+    BloomFilter = libbpf_sys::BPF_MAP_TYPE_BLOOM_FILTER,
+    UserRingBuf = libbpf_sys::BPF_MAP_TYPE_USER_RINGBUF,
     /// We choose to specify our own "unknown" type here b/c it's really up to the kernel
     /// to decide if it wants to reject the map. If it accepts it, it just means whoever
     /// using this library is a bit out of date.

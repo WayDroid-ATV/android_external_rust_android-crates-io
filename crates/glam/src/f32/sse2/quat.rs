@@ -1,7 +1,7 @@
 // Generated from quat.rs.tera template. Edit the template, not the generated file.
 
 use crate::{
-    euler::{EulerFromQuaternion, EulerRot, EulerToQuaternion},
+    euler::{EulerRot, FromEuler, ToEuler},
     f32::math,
     sse2::*,
     DQuat, Mat3, Mat3A, Mat4, Vec2, Vec3, Vec3A, Vec4,
@@ -12,7 +12,6 @@ use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
-#[cfg(not(target_arch = "spirv"))]
 use core::fmt;
 use core::iter::{Product, Sum};
 use core::ops::{Add, Deref, DerefMut, Div, Mul, MulAssign, Neg, Sub};
@@ -183,14 +182,22 @@ impl Quat {
     #[inline]
     #[must_use]
     pub fn from_euler(euler: EulerRot, a: f32, b: f32, c: f32) -> Self {
-        euler.new_quat(a, b, c)
+        Self::from_euler_angles(euler, a, b, c)
     }
 
     /// From the columns of a 3x3 rotation matrix.
+    ///
+    /// Note if the input axes contain scales, shears, or other non-rotation transformations then
+    /// the output of this function is ill-defined.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if any axis is not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
     pub(crate) fn from_rotation_axes(x_axis: Vec3, y_axis: Vec3, z_axis: Vec3) -> Self {
-        // Based on https://github.com/microsoft/DirectXMath `XM$quaternionRotationMatrix`
+        glam_assert!(x_axis.is_normalized() && y_axis.is_normalized() && z_axis.is_normalized());
+        // Based on https://github.com/microsoft/DirectXMath `XMQuaternionRotationMatrix`
         let (m00, m01, m02) = x_axis.into();
         let (m10, m11, m12) = y_axis.into();
         let (m20, m21, m22) = z_axis.into();
@@ -248,6 +255,13 @@ impl Quat {
     }
 
     /// Creates a quaternion from a 3x3 rotation matrix.
+    ///
+    /// Note if the input matrix contain scales, shears, or other non-rotation transformations then
+    /// the resulting quaternion will be ill-defined.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if any input matrix column is not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
     pub fn from_mat3(mat: &Mat3) -> Self {
@@ -255,13 +269,28 @@ impl Quat {
     }
 
     /// Creates a quaternion from a 3x3 SIMD aligned rotation matrix.
+    ///
+    /// Note if the input matrix contain scales, shears, or other non-rotation transformations then
+    /// the resulting quaternion will be ill-defined.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if any input matrix column is not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
     pub fn from_mat3a(mat: &Mat3A) -> Self {
         Self::from_rotation_axes(mat.x_axis.into(), mat.y_axis.into(), mat.z_axis.into())
     }
 
-    /// Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
+    /// Creates a quaternion from the upper 3x3 rotation matrix inside a homogeneous 4x4 matrix.
+    ///
+    /// Note if the upper 3x3 matrix contain scales, shears, or other non-rotation transformations
+    /// then the resulting quaternion will be ill-defined.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if any column of the upper 3x3 rotation matrix is not normalized when
+    /// `glam_assert` is enabled.
     #[inline]
     #[must_use]
     pub fn from_mat4(mat: &Mat4) -> Self {
@@ -290,13 +319,13 @@ impl Quat {
         glam_assert!(from.is_normalized());
         glam_assert!(to.is_normalized());
 
-        const ONE_MINUS_EPS: f32 = 1.0 - 2.0 * core::f32::EPSILON;
+        const ONE_MINUS_EPS: f32 = 1.0 - 2.0 * f32::EPSILON;
         let dot = from.dot(to);
         if dot > ONE_MINUS_EPS {
-            // 0° singulary: from ≈ to
+            // 0° singularity: from ≈ to
             Self::IDENTITY
         } else if dot < -ONE_MINUS_EPS {
-            // 180° singulary: from ≈ -to
+            // 180° singularity: from ≈ -to
             use core::f32::consts::PI; // half a turn = 𝛕/2 = 180°
             Self::from_axis_angle(from.any_orthonormal_vector(), PI)
         } else {
@@ -346,13 +375,13 @@ impl Quat {
         glam_assert!(from.is_normalized());
         glam_assert!(to.is_normalized());
 
-        const ONE_MINUS_EPSILON: f32 = 1.0 - 2.0 * core::f32::EPSILON;
+        const ONE_MINUS_EPSILON: f32 = 1.0 - 2.0 * f32::EPSILON;
         let dot = from.dot(to);
         if dot > ONE_MINUS_EPSILON {
-            // 0° singulary: from ≈ to
+            // 0° singularity: from ≈ to
             Self::IDENTITY
         } else if dot < -ONE_MINUS_EPSILON {
-            // 180° singulary: from ≈ -to
+            // 180° singularity: from ≈ -to
             const COS_FRAC_PI_2: f32 = 0.0;
             const SIN_FRAC_PI_2: f32 = 1.0;
             // rotation around z by PI radians
@@ -394,8 +423,8 @@ impl Quat {
     /// Returns the rotation angles for the given euler rotation sequence.
     #[inline]
     #[must_use]
-    pub fn to_euler(self, euler: EulerRot) -> (f32, f32, f32) {
-        euler.convert_quat(self)
+    pub fn to_euler(self, order: EulerRot) -> (f32, f32, f32) {
+        self.to_euler_angles(order)
     }
 
     /// `[x, y, z, w]`
@@ -494,6 +523,7 @@ impl Quat {
         Vec4::from(self).is_finite()
     }
 
+    /// Returns `true` if any elements are `NAN`.
     #[inline]
     #[must_use]
     pub fn is_nan(self) -> bool {
@@ -546,6 +576,29 @@ impl Quat {
         math::acos_approx(math::abs(self.dot(rhs))) * 2.0
     }
 
+    /// Rotates towards `rhs` up to `max_angle` (in radians).
+    ///
+    /// When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to
+    /// `self.angle_between(rhs)`, the result will be equal to `rhs`. If `max_angle` is negative,
+    /// rotates towards the exact opposite of `rhs`. Will not go past the target.
+    ///
+    /// Both quaternions must be normalized.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+    #[inline]
+    #[must_use]
+    pub fn rotate_towards(&self, rhs: Self, max_angle: f32) -> Self {
+        glam_assert!(self.is_normalized() && rhs.is_normalized());
+        let angle = self.angle_between(rhs);
+        if angle <= 1e-4 {
+            return *self;
+        }
+        let s = (max_angle / angle).clamp(-1.0, 1.0);
+        self.slerp(rhs, s)
+    }
+
     /// Returns true if the absolute difference of all elements between `self` and `rhs`
     /// is less than or equal to `max_abs_diff`.
     ///
@@ -559,6 +612,12 @@ impl Quat {
     #[must_use]
     pub fn abs_diff_eq(self, rhs: Self, max_abs_diff: f32) -> bool {
         Vec4::from(self).abs_diff_eq(Vec4::from(rhs), max_abs_diff)
+    }
+
+    #[inline(always)]
+    #[must_use]
+    fn lerp_impl(self, end: Self, s: f32) -> Self {
+        (self * (1.0 - s) + end * s).normalize()
     }
 
     /// Performs a linear interpolation between `self` and `rhs` based on
@@ -578,18 +637,12 @@ impl Quat {
         glam_assert!(end.is_normalized());
 
         const NEG_ZERO: __m128 = m128_from_f32x4([-0.0; 4]);
-        let start = self.0;
-        let end = end.0;
         unsafe {
-            let dot = dot4_into_m128(start, end);
+            let dot = dot4_into_m128(self.0, end.0);
             // Calculate the bias, if the dot product is positive or zero, there is no bias
             // but if it is negative, we want to flip the 'end' rotation XYZW components
             let bias = _mm_and_ps(dot, NEG_ZERO);
-            let interpolated = _mm_add_ps(
-                _mm_mul_ps(_mm_sub_ps(_mm_xor_ps(end, bias), start), _mm_set_ps1(s)),
-                start,
-            );
-            Quat(interpolated).normalize()
+            self.lerp_impl(Self(_mm_xor_ps(end.0, bias)), s)
         }
     }
 
@@ -609,8 +662,6 @@ impl Quat {
         glam_assert!(self.is_normalized());
         glam_assert!(end.is_normalized());
 
-        const DOT_THRESHOLD: f32 = 0.9995;
-
         // Note that a rotation can be represented by two quaternions: `q` and
         // `-q`. The slerp path between `q` and `end` will be different from the
         // path between `-q` and `end`. One path will take the long way around and
@@ -623,9 +674,10 @@ impl Quat {
             dot = -dot;
         }
 
+        const DOT_THRESHOLD: f32 = 1.0 - f32::EPSILON;
         if dot > DOT_THRESHOLD {
-            // assumes lerp returns a normalized quaternion
-            self.lerp(end, s)
+            // if above threshold perform linear interpolation to avoid divide by zero
+            self.lerp_impl(end, s)
         } else {
             let theta = math::acos_approx(dot);
 
@@ -673,9 +725,6 @@ impl Quat {
     #[inline]
     #[must_use]
     pub fn mul_quat(self, rhs: Self) -> Self {
-        glam_assert!(self.is_normalized());
-        glam_assert!(rhs.is_normalized());
-
         // Based on https://github.com/nfrechette/rtm `rtm::quat_mul`
         const CONTROL_WZYX: __m128 = m128_from_f32x4([1.0, -1.0, 1.0, -1.0]);
         const CONTROL_ZWXY: __m128 = m128_from_f32x4([1.0, 1.0, -1.0, -1.0]);
@@ -714,6 +763,14 @@ impl Quat {
     }
 
     /// Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
+    ///
+    /// Note if the input affine matrix contain scales, shears, or other non-rotation
+    /// transformations then the resulting quaternion will be ill-defined.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if any input affine matrix column is not normalized when `glam_assert` is
+    /// enabled.
     #[inline]
     #[must_use]
     pub fn from_affine3(a: &crate::Affine3A) -> Self {
@@ -749,16 +806,8 @@ impl Quat {
     pub fn as_dquat(self) -> DQuat {
         DQuat::from_xyzw(self.x as f64, self.y as f64, self.z as f64, self.w as f64)
     }
-
-    #[inline]
-    #[must_use]
-    #[deprecated(since = "0.24.2", note = "Use as_dquat() instead")]
-    pub fn as_f64(self) -> DQuat {
-        self.as_dquat()
-    }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Debug for Quat {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_tuple(stringify!(Quat))
@@ -770,10 +819,17 @@ impl fmt::Debug for Quat {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Display for Quat {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(fmt, "[{}, {}, {}, {}]", self.x, self.y, self.z, self.w)
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(p) = f.precision() {
+            write!(
+                f,
+                "[{:.*}, {:.*}, {:.*}, {:.*}]",
+                p, self.x, p, self.y, p, self.z, p, self.w
+            )
+        } else {
+            write!(f, "[{}, {}, {}, {}]", self.x, self.y, self.z, self.w)
+        }
     }
 }
 
