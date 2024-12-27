@@ -16,6 +16,24 @@
       "message": "Should this license be listed in the `Android.bp` too?",
       "revId": "4a3382c54202b43f825eb7a5c87d1841c33477f8",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2cc78342_fa600a02",
+        "filename": "crates/libz-sys/src/zlib/LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2024-12-27T23:03:25Z",
+      "side": 1,
+      "message": "I think instead we should be filtering the `zlib` directory out of the crate - this directory provides C files we aren\u0027t building, and it\u0027ll make the licensing, build, and future diffs clearer.",
+      "parentUuid": "5aa486ac_d2244188",
+      "revId": "4a3382c54202b43f825eb7a5c87d1841c33477f8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
