@@ -17,7 +17,7 @@ rust_library_host {
     name: "libarc_swap",
     crate_name: "arc_swap",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.6.0",
+    cargo_pkg_version: "1.7.1",
     crate_root: "src/lib.rs",
     edition: "2018",
 }

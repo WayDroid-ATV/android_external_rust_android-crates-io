@@ -17,6 +17,7 @@ MODULE_RUSTFLAGS += \
 
 MODULE_LIBRARY_DEPS := \
 	$(call FIND_CRATE,bit_field) \
+	$(call FIND_CRATE,bitflags) \
 	$(call FIND_CRATE,log) \
 	trusty/user/base/lib/libcompiler_builtins-rust \
 	trusty/user/base/lib/libcore-rust \

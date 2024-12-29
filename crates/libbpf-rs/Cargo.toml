@@ -13,12 +13,12 @@
 edition = "2021"
 rust-version = "1.71"
 name = "libbpf-rs"
-version = "0.24.2"
+version = "0.24.8"
 authors = [
     "Daniel Xu <dxu@dxuuu.xyz>",
     "Daniel Müller <deso@posteo.net>",
 ]
-build = "build.rs"
+build = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -41,6 +41,10 @@ path = "src/lib.rs"
 [[test]]
 name = "test"
 path = "tests/test.rs"
+
+[[test]]
+name = "test_netfilter"
+path = "tests/test_netfilter.rs"
 
 [[test]]
 name = "test_print"

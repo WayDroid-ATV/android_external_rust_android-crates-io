@@ -1,3 +1,28 @@
+## [1.8.1] - 2024-05-28
+
+### Added
+- Added support for `clang` 18.0.x
+
+### Fixed
+- Improve DLL search on Windows to take target architecture into account (e.g., ARM64 vs x86-64)
+- Improved detection of `libclang` installed with Visual Studio on Windows
+
+## [1.8.0] - 2024-05-26
+
+### Changed
+- Bumped minimum supported Rust version (MSRV) to 1.60.0
+- Added error logging when `CLANG_PATH` set but it isn't a full path to an executable
+- Removed reference to `libclang` 3.5 in error message for attempting to call an unsupported function
+
+### Added
+- Added `libcpp` Cargo feature which enables linking to `libc++` instead of `libstdc++` when linking to `libclang` statically on Linux or Haiku
+
+### Fixed
+- Fixed handling of paths that contain characters that have special meaning in
+glob patterns (e.g., `[` or `]`)
+- Fixed `Clang::find` to support both the `-target` and `--target` arguments
+when using target-prefixed `clang` binaries
+
 ## [1.7.0] - 2023-12-31
 
 ### Added

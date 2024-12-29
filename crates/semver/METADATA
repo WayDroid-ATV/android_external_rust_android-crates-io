@@ -1,17 +1,17 @@
 name: "semver"
 description: "Parser and evaluator for Cargo\'s flavor of Semantic Versioning"
 third_party {
-  version: "1.0.23"
+  version: "1.0.24"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024
-    month: 9
-    day: 30
+    month: 12
+    day: 20
   }
   homepage: "https://crates.io/crates/semver"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/semver/semver-1.0.23.crate"
-    version: "1.0.23"
+    value: "https://static.crates.io/crates/semver/semver-1.0.24.crate"
+    version: "1.0.24"
   }
 }

@@ -3,15 +3,15 @@ mod support;
 
 macro_rules! impl_mat3_tests {
     ($t:ident, $newmat3:ident, $mat3:ident, $mat2:ident, $mat4:ident, $quat:ident, $newvec3:ident, $vec3:ident, $vec2:ident) => {
-        use core::$t::INFINITY;
-        use core::$t::NAN;
-        use core::$t::NEG_INFINITY;
-
         const IDENTITY: [[$t; 3]; 3] = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]];
-
-        const MATRIX: [[$t; 3]; 3] = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]];
-
-        const MATRIX1D: [$t; 9] = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0];
+        const ARRAY3X3: [[$t; 3]; 3] = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]];
+        const ARRAY1X9: [$t; 9] = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0];
+        const ARRAY4X4: [[$t; 4]; 4] = [
+            [1.0, 2.0, 3.0, 4.0],
+            [5.0, 6.0, 7.0, 8.0],
+            [9.0, 10.0, 11.0, 12.0],
+            [13.0, 14.0, 15.0, 16.0],
+        ];
 
         glam_test!(test_const, {
             const M0: $mat3 = $mat3::from_cols(
@@ -19,12 +19,12 @@ macro_rules! impl_mat3_tests {
                 $newvec3(4.0, 5.0, 6.0),
                 $newvec3(7.0, 8.0, 9.0),
             );
-            const M1: $mat3 = $mat3::from_cols_array(&MATRIX1D);
-            const M2: $mat3 = $mat3::from_cols_array_2d(&MATRIX);
+            const M1: $mat3 = $mat3::from_cols_array(&ARRAY1X9);
+            const M2: $mat3 = $mat3::from_cols_array_2d(&ARRAY3X3);
 
-            assert_eq!(MATRIX1D, M0.to_cols_array());
-            assert_eq!(MATRIX1D, M1.to_cols_array());
-            assert_eq!(MATRIX1D, M2.to_cols_array());
+            assert_eq!(ARRAY1X9, M0.to_cols_array());
+            assert_eq!(ARRAY1X9, M1.to_cols_array());
+            assert_eq!(ARRAY1X9, M2.to_cols_array());
         });
 
         glam_test!(test_mat3_identity, {
@@ -61,7 +61,7 @@ macro_rules! impl_mat3_tests {
             m.x_axis = $newvec3(1.0, 2.0, 3.0);
             m.y_axis = $newvec3(4.0, 5.0, 6.0);
             m.z_axis = $newvec3(7.0, 8.0, 9.0);
-            assert_eq!($mat3::from_cols_array_2d(&MATRIX), m);
+            assert_eq!($mat3::from_cols_array_2d(&ARRAY3X3), m);
             assert_eq!($newvec3(1.0, 2.0, 3.0), m.x_axis);
             assert_eq!($newvec3(4.0, 5.0, 6.0), m.y_axis);
             assert_eq!($newvec3(7.0, 8.0, 9.0), m.z_axis);
@@ -91,7 +91,7 @@ macro_rules! impl_mat3_tests {
 
         glam_test!(test_mat3_from_axes, {
             let a = $mat3::from_cols_array_2d(&[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
-            assert_eq!(MATRIX, a.to_cols_array_2d());
+            assert_eq!(ARRAY3X3, a.to_cols_array_2d());
             let b = $mat3::from_cols(
                 $newvec3(1.0, 2.0, 3.0),
                 $newvec3(4.0, 5.0, 6.0),
@@ -218,17 +218,24 @@ macro_rules! impl_mat3_tests {
         });
 
         glam_test!(test_from_mat4, {
-            let m4 = $mat4::from_cols_array_2d(&[
-                [1.0, 2.0, 3.0, 4.0],
-                [5.0, 6.0, 7.0, 8.0],
-                [9.0, 10.0, 11.0, 12.0],
-                [13.0, 14.0, 15.0, 16.0],
-            ]);
+            let m4 = $mat4::from_cols_array_2d(&ARRAY4X4);
             let m3 = $mat3::from_mat4(m4);
             assert_eq!(
                 $mat3::from_cols_array_2d(&[[1.0, 2.0, 3.0], [5.0, 6.0, 7.0], [9.0, 10.0, 11.0]]),
                 m3
             );
+        });
+
+        glam_test!(test_from_mat4_minor, {
+            let m4 = $mat4::from_cols_array_2d(&ARRAY4X4);
+            for i in 0..4 {
+                for j in 0..4 {
+                    let m3 = $mat3::from_mat4_minor(m4, i, j);
+                    test_matrix_minor!(4, m3, m4, i, j);
+                }
+            }
+            should_panic!({ $mat3::from_mat4_minor(m4, 4, 0) });
+            should_panic!({ $mat3::from_mat4_minor(m4, 0, 4) });
         });
 
         glam_test!(test_mat3_transpose, {
@@ -287,7 +294,7 @@ macro_rules! impl_mat3_tests {
         });
 
         glam_test!(test_mat3_ops, {
-            let m0 = $mat3::from_cols_array_2d(&MATRIX);
+            let m0 = $mat3::from_cols_array_2d(&ARRAY3X3);
             let m0x2 = $mat3::from_cols_array_2d(&[
                 [2.0, 4.0, 6.0],
                 [8.0, 10.0, 12.0],
@@ -300,6 +307,8 @@ macro_rules! impl_mat3_tests {
             ]);
             assert_eq!(m0x2, m0 * 2.0);
             assert_eq!(m0x2, 2.0 * m0);
+            assert_eq!(m0, m0x2 / 2.0);
+            assert_eq!(m0, 2.0 / m0x2);
             assert_eq!(m0x2, m0 + m0);
             assert_eq!($mat3::ZERO, m0 - m0);
             assert_eq!(m0_neg, -m0);
@@ -309,6 +318,10 @@ macro_rules! impl_mat3_tests {
             let mut m1 = m0;
             m1 *= 2.0;
             assert_eq!(m0x2, m1);
+
+            let mut m1 = m0x2;
+            m1 /= 2.0;
+            assert_eq!(m0, m1);
 
             let mut m1 = m0;
             m1 += m0;
@@ -324,16 +337,20 @@ macro_rules! impl_mat3_tests {
         });
 
         glam_test!(test_mat3_fmt, {
-            let a = $mat3::from_cols_array_2d(&MATRIX);
+            let a = $mat3::from_cols_array_2d(&ARRAY3X3);
             assert_eq!(format!("{}", a), "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]");
+            assert_eq!(
+                format!("{:.1}", a),
+                "[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]"
+            );
         });
 
         glam_test!(test_mat3_to_from_slice, {
-            let m = $mat3::from_cols_slice(&MATRIX1D);
-            assert_eq!($mat3::from_cols_array(&MATRIX1D), m);
+            let m = $mat3::from_cols_slice(&ARRAY1X9);
+            assert_eq!($mat3::from_cols_array(&ARRAY1X9), m);
             let mut out: [$t; 9] = Default::default();
             m.write_cols_to_slice(&mut out);
-            assert_eq!(MATRIX1D, out);
+            assert_eq!(ARRAY1X9, out);
 
             should_panic!({ $mat3::from_cols_slice(&[0.0; 8]) });
             should_panic!({ $mat3::IDENTITY.write_cols_to_slice(&mut [0.0; 8]) });
@@ -353,9 +370,9 @@ macro_rules! impl_mat3_tests {
 
         glam_test!(test_mat3_is_finite, {
             assert!($mat3::IDENTITY.is_finite());
-            assert!(!($mat3::IDENTITY * INFINITY).is_finite());
-            assert!(!($mat3::IDENTITY * NEG_INFINITY).is_finite());
-            assert!(!($mat3::IDENTITY * NAN).is_finite());
+            assert!(!($mat3::IDENTITY * $t::INFINITY).is_finite());
+            assert!(!($mat3::IDENTITY * $t::NEG_INFINITY).is_finite());
+            assert!(!($mat3::IDENTITY * $t::NAN).is_finite());
         });
     };
 }
@@ -363,13 +380,13 @@ macro_rules! impl_mat3_tests {
 macro_rules! impl_as_ref_tests {
     ($mat:ident) => {
         glam_test!(test_as_ref, {
-            let m = $mat::from_cols_array_2d(&MATRIX);
-            assert_eq!(MATRIX1D, *m.as_ref());
+            let m = $mat::from_cols_array_2d(&ARRAY3X3);
+            assert_eq!(ARRAY1X9, *m.as_ref());
         });
         glam_test!(test_as_mut, {
             let mut m = $mat::ZERO;
-            *m.as_mut() = MATRIX1D;
-            assert_eq!($mat::from_cols_array_2d(&MATRIX), m);
+            *m.as_mut() = ARRAY1X9;
+            assert_eq!($mat::from_cols_array_2d(&ARRAY3X3), m);
         });
     };
 }

@@ -12,8 +12,13 @@
 [package]
 edition = "2021"
 name = "googletest_macro"
-version = "0.11.0"
+version = "0.13.0"
 authors = ["Bradford Hovinen <hovinen@google.com>"]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Procedural macros for GoogleTest Rust"
 readme = "README.md"
 keywords = [
@@ -31,7 +36,11 @@ repository = "https://github.com/google/googletest-rust"
 
 [lib]
 name = "googletest_macro"
+path = "src/lib.rs"
 proc-macro = true
+
+[dependencies.proc-macro2]
+version = "1.0.85"
 
 [dependencies.quote]
 version = "1.0.33"

@@ -5,6 +5,154 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to
 [Semantic Versioning].
 
+## [0.29.2] - 2024-11-05
+
+### Fixed
+
+* Fix regression in vector `write_to_slice` methods where the destination had to
+  be the same size as the input, but it should support writing to a slice that
+  is the same size or larger than the input.
+
+## [0.29.1] - 2024-10-30
+
+### Added
+
+* Added `i8` and `u8` vector types, `I8Vec2`, `I8Vec3`, `I8Vec4`,
+  `U8Vec2`, `U8Vec3` and `U8Vec4`.
+
+* Added `Mat4::project_point3a(Vec3A)` method transforming points by
+  perspective projections.
+
+### Changed
+
+* Removed normalized assertions from quaternion multiplies as sometimes this is
+  valid.
+
+* Include `Debug` and `Display` implementations on `spirv` targets.
+
+* Optimized vector `from_slice` and `write_to_slice` methods.
+
+* Improved serde error messages.
+
+## [0.29.0] - 2024-08-20
+
+### Breaking changes
+
+* `EulerRot` has been reimplemented and now has support for 24 different
+  rotation order enum values.
+
+### Fixed
+
+* Reduced the dot threshold at which quaternion slerp uses lerp to improve
+  accuracy.
+
+### Added
+
+* Added 3x3 matrix `from_mat4_minor()` and 2x2 matrix `from_mat3_minor()`
+  methods.
+
+* Added `bvec2`, `bvec3`, `bvec3a`, `bvec4` and `bvec4a` vector mask creation
+  functions.
+
+* Added all 24 possible intrinsic and extrinsic Euler angle rotation
+  combinations to `EulerRot` enum.
+
+* Added `is_finite_mask` method to vector types which returns a vector mask.
+
+* Added `reflect` and `refract` methods to vector types.
+
+* Added `to_euler` methods to matrix types which extracts Euler angles from a
+  rotation matrix for a given `EulerRot`.
+
+* Added generic `map` method to vector types which applies a functor to all
+  vector elements.
+
+* Vector arithmetic ops are now implemented on references.
+
+### Changed
+
+* Vector and quaternion lerp now uses a precise lerp algorithm.
+
+## [0.28.0] - 2024-06-10
+
+### Breaking changes
+
+* Removed derives from `glam::deref` types used by `Deref` on SIMD vector
+  types.  These unintentionally added support for traits like `PartialOrd` to
+  SIMD vector types. This may break existing code that was depending on this.
+  Please use `cmple().all()` etc. instead of `PartialOrd` methods.
+
+* Removed `impl From<Vec4> for Vec3A` as this violated the `From` trait
+  contract that conversions should be lossless. Please use the explicit
+  `Vec3A::from_vec4` method instead.
+
+* Renamed 2D vector `angle_between` to `angle_to` to differentiate from the 3D
+  `angle_between` which has different semantics to the 2D version.
+
+### Added
+
+* Added aarch64 neon support.
+
+* Added `rotate_towards` methods for 2D vectors and quaternions.
+
+* Added `Vec3A::from_vec4` method which can perform a no-op conversion when
+  SIMD is used. This replaces the `impl From<Vec4> for Vec3A` implementation.
+
+## [0.27.0] - 2024-03-23
+
+### Breaking changes
+
+* Changed implementation of vector `fract` method to match the Rust
+  implementation instead of the GLSL implementation, that is `self -
+  self.trunc()` instead of `self - self.floor()`.
+
+### Added
+
+* Added vector `fract_gl` which uses the GLSL specification of fract,
+ `self - self.floor()`.
+
+## [0.26.0] - 2024-03-18
+
+### Breaking changes
+
+* Minimum Supported Rust Version bumped to 1.68.2 for
+ `impl From<bool> for {f32,f64}` support.
+
+### Fixed
+
+* Respect precision format specifier in Display implementations. Previously it
+  was ignored.
+
+* Corrected precision documentation for vector `is_normalized` methods and
+  changed the internal check to use `2e-4` to better match the documented
+  precision value of `1e-4`.
+
+### Added
+
+ * Added `with_x`, `with_y`, etc. to vector types which returns a copy of
+   the vector with the new component value.
+
+ * Added `midpoint` method to vector types that returns the point between two
+   points.
+
+ * Added `move_towards` for float vector types.
+
+ * Added saturating add and sub methods for signed and unsigned integer vector
+   types.
+
+ * Added element wise sum and product methods for vector types.
+
+ * Added element wise absolute values method for matrix types.
+
+ * Added `from_array` method for boolean vector types.
+
+ * Added `normalize_or` method to vector types that returns the specified value
+   if normalization failed.
+
+ * Added `From<BVecN>` support for all vector types.
+
+ * Added `Div` and `DivAssign` by scalar implementations to matrix types.
+
 ## [0.25.0] - 2023-12-19
 
 ### Breaking changes
@@ -1001,7 +1149,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 [Keep a Changelog]: https://keepachangelog.com/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[Unreleased]: https://github.com/bitshifter/glam-rs/compare/0.25.0...HEAD
+[Unreleased]: https://github.com/bitshifter/glam-rs/compare/0.29.2...HEAD
+[0.29.2]: https://github.com/bitshifter/glam-rs/compare/0.29.1...0.29.2
+[0.29.1]: https://github.com/bitshifter/glam-rs/compare/0.29.0...0.29.1
+[0.29.0]: https://github.com/bitshifter/glam-rs/compare/0.28.0...0.29.0
+[0.28.0]: https://github.com/bitshifter/glam-rs/compare/0.27.0...0.28.0
+[0.27.0]: https://github.com/bitshifter/glam-rs/compare/0.26.0...0.27.0
+[0.26.0]: https://github.com/bitshifter/glam-rs/compare/0.25.0...0.26.0
 [0.25.0]: https://github.com/bitshifter/glam-rs/compare/0.24.2...0.25.0
 [0.24.2]: https://github.com/bitshifter/glam-rs/compare/0.24.1...0.24.2
 [0.24.1]: https://github.com/bitshifter/glam-rs/compare/0.24.0...0.24.1

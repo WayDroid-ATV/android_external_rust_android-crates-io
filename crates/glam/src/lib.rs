@@ -15,6 +15,10 @@
   * square matrices: [`DMat2`], [`DMat3`] and [`DMat4`]
   * a quaternion type: [`DQuat`]
   * affine transformation types: [`DAffine2`] and [`DAffine3`]
+* [`i8`](mod@i8) types
+  * vectors: [`I8Vec2`], [`I8Vec3`] and [`I8Vec4`]
+* [`u8`](mod@u8) types
+  * vectors: [`U8Vec2`], [`U8Vec3`] and [`U8Vec4`]
 * [`i16`](mod@i16) types
   * vectors: [`I16Vec2`], [`I16Vec3`] and [`I16Vec4`]
 * [`u16`](mod@u16) types
@@ -46,7 +50,7 @@ padding so that object sizes and layouts will not change between architectures. 
 math fallback implementations exist when SIMD is not available. It is intended to add support for
 other SIMD architectures once they appear in stable Rust.
 
-Currently only SSE2 on x86/x86_64 is supported as this is what stable Rust supports.
+Currently only SSE2 on x86/x86_64, NEON on Aarch64, and simd128 on WASM are supported.
 
 ## Vec3A and Mat3A
 
@@ -76,7 +80,8 @@ use glam::{Vec3, Vec3A, Vec4};
 let v4 = Vec4::new(1.0, 2.0, 3.0, 4.0);
 
 // Convert from `Vec4` to `Vec3A`, this is a no-op if SIMD is supported.
-let v3a = Vec3A::from(v4);
+// We use an explicit method here instead of a From impl as data is lost in the conversion.
+let v3a = Vec3A::from_vec4(v4);
 assert_eq!(Vec3A::new(1.0, 2.0, 3.0), v3a);
 
 // Convert from `Vec3A` to `Vec3`.
@@ -187,7 +192,7 @@ assert_eq!(Vec3::new(2.0, 3.0, 4.0), yzw);
 // To swizzle a `Vec4` into a `Vec3A` swizzle the `Vec4` first then convert to
 // `Vec3A`. If SIMD is supported this will use a vector shuffle. The last
 // element of the shuffled `Vec4` is ignored by the `Vec3A`.
-let yzw = Vec3A::from(v.yzwx());
+let yzw = Vec3A::from_vec4(v.yzwx());
 assert_eq!(Vec3A::new(2.0, 3.0, 4.0), yzw);
 
 // You can swizzle from a `Vec4` to a `Vec2`
@@ -248,10 +253,10 @@ and benchmarks.
 
 ## Minimum Supported Rust Version (MSRV)
 
-The minimum supported Rust version is `1.58.1`.
+The minimum supported Rust version is `1.68.2`.
 
 */
-#![doc(html_root_url = "https://docs.rs/glam/0.25.0")]
+#![doc(html_root_url = "https://docs.rs/glam/0.29.2")]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(target_arch = "spirv", feature(repr_simd))]
 #![deny(
@@ -274,6 +279,12 @@ mod align16;
 mod deref;
 mod euler;
 mod features;
+
+#[cfg(all(
+    target_arch = "aarch64",
+    not(any(feature = "core-simd", feature = "scalar-math"))
+))]
+mod neon;
 
 #[cfg(target_arch = "spirv")]
 mod spirv;
@@ -310,6 +321,14 @@ pub use self::f32::*;
 /** `f64` vector, quaternion and matrix types. */
 pub mod f64;
 pub use self::f64::*;
+
+/** `i8` vector types. */
+pub mod i8;
+pub use self::i8::*;
+
+/** `u8` vector types. */
+pub mod u8;
+pub use self::u8::*;
 
 /** `i16` vector types. */
 pub mod i16;

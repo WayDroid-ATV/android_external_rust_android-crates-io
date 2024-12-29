@@ -1,20 +1,17 @@
 name: "libbpf-rs"
 description: "libbpf-rs is a safe, idiomatic, and opinionated wrapper around libbpf-sys"
 third_party {
-  identifier {
-    type: "crates.io"
-    value: "libbpf-rs"
-  }
-  identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/libbpf-rs/libbpf-rs-0.24.2.crate"
-    primary_source: true
-  }
-  version: "0.24.2"
+  version: "0.24.8"
   license_type: NOTICE
   last_upgrade_date {
     year: 2024
-    month: 8
-    day: 22
+    month: 12
+    day: 20
+  }
+  homepage: "https://crates.io/crates/libbpf-rs"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/libbpf-rs/libbpf-rs-0.24.8.crate"
+    version: "0.24.8"
   }
 }

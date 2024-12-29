@@ -1,8 +1,9 @@
 // Generated from vec.rs.tera template. Edit the template, not the generated file.
 
-use crate::{BVec3, I16Vec3, I64Vec2, I64Vec4, IVec3, U16Vec3, U64Vec3, UVec3};
+use crate::{
+    BVec3, BVec3A, I16Vec3, I64Vec2, I64Vec4, I8Vec3, IVec3, U16Vec3, U64Vec3, U8Vec3, UVec3,
+};
 
-#[cfg(not(target_arch = "spirv"))]
 use core::fmt;
 use core::iter::{Product, Sum};
 use core::{f32, ops::*};
@@ -76,6 +77,16 @@ impl I64Vec3 {
         Self { x: v, y: v, z: v }
     }
 
+    /// Returns a vector containing each element of `self` modified by a mapping function `f`.
+    #[inline]
+    #[must_use]
+    pub fn map<F>(self, f: F) -> Self
+    where
+        F: Fn(i64) -> i64,
+    {
+        Self::new(f(self.x), f(self.y), f(self.z))
+    }
+
     /// Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
     /// for each element of `self`.
     ///
@@ -113,6 +124,7 @@ impl I64Vec3 {
     #[inline]
     #[must_use]
     pub const fn from_slice(slice: &[i64]) -> Self {
+        assert!(slice.len() >= 3);
         Self::new(slice[0], slice[1], slice[2])
     }
 
@@ -123,9 +135,7 @@ impl I64Vec3 {
     /// Panics if `slice` is less than 3 elements long.
     #[inline]
     pub fn write_to_slice(self, slice: &mut [i64]) {
-        slice[0] = self.x;
-        slice[1] = self.y;
-        slice[2] = self.z;
+        slice[..3].copy_from_slice(&self.to_array());
     }
 
     /// Internal method for creating a 3D vector from a 4D vector, discarding `w`.
@@ -155,6 +165,30 @@ impl I64Vec3 {
     pub fn truncate(self) -> I64Vec2 {
         use crate::swizzles::Vec3Swizzles;
         self.xy()
+    }
+
+    /// Creates a 3D vector from `self` with the given value of `x`.
+    #[inline]
+    #[must_use]
+    pub fn with_x(mut self, x: i64) -> Self {
+        self.x = x;
+        self
+    }
+
+    /// Creates a 3D vector from `self` with the given value of `y`.
+    #[inline]
+    #[must_use]
+    pub fn with_y(mut self, y: i64) -> Self {
+        self.y = y;
+        self
+    }
+
+    /// Creates a 3D vector from `self` with the given value of `z`.
+    #[inline]
+    #[must_use]
+    pub fn with_z(mut self, z: i64) -> Self {
+        self.z = z;
+        self
     }
 
     /// Computes the dot product of `self` and `rhs`.
@@ -238,6 +272,24 @@ impl I64Vec3 {
     #[must_use]
     pub fn max_element(self) -> i64 {
         self.x.max(self.y.max(self.z))
+    }
+
+    /// Returns the sum of all elements of `self`.
+    ///
+    /// In other words, this computes `self.x + self.y + ..`.
+    #[inline]
+    #[must_use]
+    pub fn element_sum(self) -> i64 {
+        self.x + self.y + self.z
+    }
+
+    /// Returns the product of all elements of `self`.
+    ///
+    /// In other words, this computes `self.x * self.y * ..`.
+    #[inline]
+    #[must_use]
+    pub fn element_product(self) -> i64 {
+        self.x * self.y * self.z
     }
 
     /// Returns a vector mask containing the result of a `==` comparison for each element of
@@ -410,6 +462,20 @@ impl I64Vec3 {
         crate::DVec3::new(self.x as f64, self.y as f64, self.z as f64)
     }
 
+    /// Casts all elements of `self` to `i8`.
+    #[inline]
+    #[must_use]
+    pub fn as_i8vec3(&self) -> crate::I8Vec3 {
+        crate::I8Vec3::new(self.x as i8, self.y as i8, self.z as i8)
+    }
+
+    /// Casts all elements of `self` to `u8`.
+    #[inline]
+    #[must_use]
+    pub fn as_u8vec3(&self) -> crate::U8Vec3 {
+        crate::U8Vec3::new(self.x as u8, self.y as u8, self.z as u8)
+    }
+
     /// Casts all elements of `self` to `i16`.
     #[inline]
     #[must_use]
@@ -548,6 +614,58 @@ impl I64Vec3 {
             z: self.z.saturating_div(rhs.z),
         }
     }
+
+    /// Returns a vector containing the wrapping addition of `self` and unsigned vector `rhs`.
+    ///
+    /// In other words this computes `[self.x.wrapping_add_unsigned(rhs.x), self.y.wrapping_add_unsigned(rhs.y), ..]`.
+    #[inline]
+    #[must_use]
+    pub const fn wrapping_add_unsigned(self, rhs: U64Vec3) -> Self {
+        Self {
+            x: self.x.wrapping_add_unsigned(rhs.x),
+            y: self.y.wrapping_add_unsigned(rhs.y),
+            z: self.z.wrapping_add_unsigned(rhs.z),
+        }
+    }
+
+    /// Returns a vector containing the wrapping subtraction of `self` and unsigned vector `rhs`.
+    ///
+    /// In other words this computes `[self.x.wrapping_sub_unsigned(rhs.x), self.y.wrapping_sub_unsigned(rhs.y), ..]`.
+    #[inline]
+    #[must_use]
+    pub const fn wrapping_sub_unsigned(self, rhs: U64Vec3) -> Self {
+        Self {
+            x: self.x.wrapping_sub_unsigned(rhs.x),
+            y: self.y.wrapping_sub_unsigned(rhs.y),
+            z: self.z.wrapping_sub_unsigned(rhs.z),
+        }
+    }
+
+    // Returns a vector containing the saturating addition of `self` and unsigned vector `rhs`.
+    ///
+    /// In other words this computes `[self.x.saturating_add_unsigned(rhs.x), self.y.saturating_add_unsigned(rhs.y), ..]`.
+    #[inline]
+    #[must_use]
+    pub const fn saturating_add_unsigned(self, rhs: U64Vec3) -> Self {
+        Self {
+            x: self.x.saturating_add_unsigned(rhs.x),
+            y: self.y.saturating_add_unsigned(rhs.y),
+            z: self.z.saturating_add_unsigned(rhs.z),
+        }
+    }
+
+    /// Returns a vector containing the saturating subtraction of `self` and unsigned vector `rhs`.
+    ///
+    /// In other words this computes `[self.x.saturating_sub_unsigned(rhs.x), self.y.saturating_sub_unsigned(rhs.y), ..]`.
+    #[inline]
+    #[must_use]
+    pub const fn saturating_sub_unsigned(self, rhs: U64Vec3) -> Self {
+        Self {
+            x: self.x.saturating_sub_unsigned(rhs.x),
+            y: self.y.saturating_sub_unsigned(rhs.y),
+            z: self.z.saturating_sub_unsigned(rhs.z),
+        }
+    }
 }
 
 impl Default for I64Vec3 {
@@ -569,12 +687,43 @@ impl Div<I64Vec3> for I64Vec3 {
     }
 }
 
+impl Div<&I64Vec3> for I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn div(self, rhs: &I64Vec3) -> I64Vec3 {
+        self.div(*rhs)
+    }
+}
+
+impl Div<&I64Vec3> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn div(self, rhs: &I64Vec3) -> I64Vec3 {
+        (*self).div(*rhs)
+    }
+}
+
+impl Div<I64Vec3> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn div(self, rhs: I64Vec3) -> I64Vec3 {
+        (*self).div(rhs)
+    }
+}
+
 impl DivAssign<I64Vec3> for I64Vec3 {
     #[inline]
     fn div_assign(&mut self, rhs: Self) {
         self.x.div_assign(rhs.x);
         self.y.div_assign(rhs.y);
         self.z.div_assign(rhs.z);
+    }
+}
+
+impl DivAssign<&Self> for I64Vec3 {
+    #[inline]
+    fn div_assign(&mut self, rhs: &Self) {
+        self.div_assign(*rhs)
     }
 }
 
@@ -590,12 +739,43 @@ impl Div<i64> for I64Vec3 {
     }
 }
 
+impl Div<&i64> for I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn div(self, rhs: &i64) -> I64Vec3 {
+        self.div(*rhs)
+    }
+}
+
+impl Div<&i64> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn div(self, rhs: &i64) -> I64Vec3 {
+        (*self).div(*rhs)
+    }
+}
+
+impl Div<i64> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn div(self, rhs: i64) -> I64Vec3 {
+        (*self).div(rhs)
+    }
+}
+
 impl DivAssign<i64> for I64Vec3 {
     #[inline]
     fn div_assign(&mut self, rhs: i64) {
         self.x.div_assign(rhs);
         self.y.div_assign(rhs);
         self.z.div_assign(rhs);
+    }
+}
+
+impl DivAssign<&i64> for I64Vec3 {
+    #[inline]
+    fn div_assign(&mut self, rhs: &i64) {
+        self.div_assign(*rhs)
     }
 }
 
@@ -611,6 +791,30 @@ impl Div<I64Vec3> for i64 {
     }
 }
 
+impl Div<&I64Vec3> for i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn div(self, rhs: &I64Vec3) -> I64Vec3 {
+        self.div(*rhs)
+    }
+}
+
+impl Div<&I64Vec3> for &i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn div(self, rhs: &I64Vec3) -> I64Vec3 {
+        (*self).div(*rhs)
+    }
+}
+
+impl Div<I64Vec3> for &i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn div(self, rhs: I64Vec3) -> I64Vec3 {
+        (*self).div(rhs)
+    }
+}
+
 impl Mul<I64Vec3> for I64Vec3 {
     type Output = Self;
     #[inline]
@@ -623,12 +827,43 @@ impl Mul<I64Vec3> for I64Vec3 {
     }
 }
 
+impl Mul<&I64Vec3> for I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn mul(self, rhs: &I64Vec3) -> I64Vec3 {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&I64Vec3> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn mul(self, rhs: &I64Vec3) -> I64Vec3 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<I64Vec3> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn mul(self, rhs: I64Vec3) -> I64Vec3 {
+        (*self).mul(rhs)
+    }
+}
+
 impl MulAssign<I64Vec3> for I64Vec3 {
     #[inline]
     fn mul_assign(&mut self, rhs: Self) {
         self.x.mul_assign(rhs.x);
         self.y.mul_assign(rhs.y);
         self.z.mul_assign(rhs.z);
+    }
+}
+
+impl MulAssign<&Self> for I64Vec3 {
+    #[inline]
+    fn mul_assign(&mut self, rhs: &Self) {
+        self.mul_assign(*rhs)
     }
 }
 
@@ -644,12 +879,43 @@ impl Mul<i64> for I64Vec3 {
     }
 }
 
+impl Mul<&i64> for I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn mul(self, rhs: &i64) -> I64Vec3 {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&i64> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn mul(self, rhs: &i64) -> I64Vec3 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<i64> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn mul(self, rhs: i64) -> I64Vec3 {
+        (*self).mul(rhs)
+    }
+}
+
 impl MulAssign<i64> for I64Vec3 {
     #[inline]
     fn mul_assign(&mut self, rhs: i64) {
         self.x.mul_assign(rhs);
         self.y.mul_assign(rhs);
         self.z.mul_assign(rhs);
+    }
+}
+
+impl MulAssign<&i64> for I64Vec3 {
+    #[inline]
+    fn mul_assign(&mut self, rhs: &i64) {
+        self.mul_assign(*rhs)
     }
 }
 
@@ -665,6 +931,30 @@ impl Mul<I64Vec3> for i64 {
     }
 }
 
+impl Mul<&I64Vec3> for i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn mul(self, rhs: &I64Vec3) -> I64Vec3 {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&I64Vec3> for &i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn mul(self, rhs: &I64Vec3) -> I64Vec3 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<I64Vec3> for &i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn mul(self, rhs: I64Vec3) -> I64Vec3 {
+        (*self).mul(rhs)
+    }
+}
+
 impl Add<I64Vec3> for I64Vec3 {
     type Output = Self;
     #[inline]
@@ -677,12 +967,43 @@ impl Add<I64Vec3> for I64Vec3 {
     }
 }
 
+impl Add<&I64Vec3> for I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn add(self, rhs: &I64Vec3) -> I64Vec3 {
+        self.add(*rhs)
+    }
+}
+
+impl Add<&I64Vec3> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn add(self, rhs: &I64Vec3) -> I64Vec3 {
+        (*self).add(*rhs)
+    }
+}
+
+impl Add<I64Vec3> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn add(self, rhs: I64Vec3) -> I64Vec3 {
+        (*self).add(rhs)
+    }
+}
+
 impl AddAssign<I64Vec3> for I64Vec3 {
     #[inline]
     fn add_assign(&mut self, rhs: Self) {
         self.x.add_assign(rhs.x);
         self.y.add_assign(rhs.y);
         self.z.add_assign(rhs.z);
+    }
+}
+
+impl AddAssign<&Self> for I64Vec3 {
+    #[inline]
+    fn add_assign(&mut self, rhs: &Self) {
+        self.add_assign(*rhs)
     }
 }
 
@@ -698,12 +1019,43 @@ impl Add<i64> for I64Vec3 {
     }
 }
 
+impl Add<&i64> for I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn add(self, rhs: &i64) -> I64Vec3 {
+        self.add(*rhs)
+    }
+}
+
+impl Add<&i64> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn add(self, rhs: &i64) -> I64Vec3 {
+        (*self).add(*rhs)
+    }
+}
+
+impl Add<i64> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn add(self, rhs: i64) -> I64Vec3 {
+        (*self).add(rhs)
+    }
+}
+
 impl AddAssign<i64> for I64Vec3 {
     #[inline]
     fn add_assign(&mut self, rhs: i64) {
         self.x.add_assign(rhs);
         self.y.add_assign(rhs);
         self.z.add_assign(rhs);
+    }
+}
+
+impl AddAssign<&i64> for I64Vec3 {
+    #[inline]
+    fn add_assign(&mut self, rhs: &i64) {
+        self.add_assign(*rhs)
     }
 }
 
@@ -719,6 +1071,30 @@ impl Add<I64Vec3> for i64 {
     }
 }
 
+impl Add<&I64Vec3> for i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn add(self, rhs: &I64Vec3) -> I64Vec3 {
+        self.add(*rhs)
+    }
+}
+
+impl Add<&I64Vec3> for &i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn add(self, rhs: &I64Vec3) -> I64Vec3 {
+        (*self).add(*rhs)
+    }
+}
+
+impl Add<I64Vec3> for &i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn add(self, rhs: I64Vec3) -> I64Vec3 {
+        (*self).add(rhs)
+    }
+}
+
 impl Sub<I64Vec3> for I64Vec3 {
     type Output = Self;
     #[inline]
@@ -731,12 +1107,43 @@ impl Sub<I64Vec3> for I64Vec3 {
     }
 }
 
+impl Sub<&I64Vec3> for I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn sub(self, rhs: &I64Vec3) -> I64Vec3 {
+        self.sub(*rhs)
+    }
+}
+
+impl Sub<&I64Vec3> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn sub(self, rhs: &I64Vec3) -> I64Vec3 {
+        (*self).sub(*rhs)
+    }
+}
+
+impl Sub<I64Vec3> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn sub(self, rhs: I64Vec3) -> I64Vec3 {
+        (*self).sub(rhs)
+    }
+}
+
 impl SubAssign<I64Vec3> for I64Vec3 {
     #[inline]
     fn sub_assign(&mut self, rhs: I64Vec3) {
         self.x.sub_assign(rhs.x);
         self.y.sub_assign(rhs.y);
         self.z.sub_assign(rhs.z);
+    }
+}
+
+impl SubAssign<&Self> for I64Vec3 {
+    #[inline]
+    fn sub_assign(&mut self, rhs: &Self) {
+        self.sub_assign(*rhs)
     }
 }
 
@@ -752,12 +1159,43 @@ impl Sub<i64> for I64Vec3 {
     }
 }
 
+impl Sub<&i64> for I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn sub(self, rhs: &i64) -> I64Vec3 {
+        self.sub(*rhs)
+    }
+}
+
+impl Sub<&i64> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn sub(self, rhs: &i64) -> I64Vec3 {
+        (*self).sub(*rhs)
+    }
+}
+
+impl Sub<i64> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn sub(self, rhs: i64) -> I64Vec3 {
+        (*self).sub(rhs)
+    }
+}
+
 impl SubAssign<i64> for I64Vec3 {
     #[inline]
     fn sub_assign(&mut self, rhs: i64) {
         self.x.sub_assign(rhs);
         self.y.sub_assign(rhs);
         self.z.sub_assign(rhs);
+    }
+}
+
+impl SubAssign<&i64> for I64Vec3 {
+    #[inline]
+    fn sub_assign(&mut self, rhs: &i64) {
+        self.sub_assign(*rhs)
     }
 }
 
@@ -773,6 +1211,30 @@ impl Sub<I64Vec3> for i64 {
     }
 }
 
+impl Sub<&I64Vec3> for i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn sub(self, rhs: &I64Vec3) -> I64Vec3 {
+        self.sub(*rhs)
+    }
+}
+
+impl Sub<&I64Vec3> for &i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn sub(self, rhs: &I64Vec3) -> I64Vec3 {
+        (*self).sub(*rhs)
+    }
+}
+
+impl Sub<I64Vec3> for &i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn sub(self, rhs: I64Vec3) -> I64Vec3 {
+        (*self).sub(rhs)
+    }
+}
+
 impl Rem<I64Vec3> for I64Vec3 {
     type Output = Self;
     #[inline]
@@ -785,12 +1247,43 @@ impl Rem<I64Vec3> for I64Vec3 {
     }
 }
 
+impl Rem<&I64Vec3> for I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn rem(self, rhs: &I64Vec3) -> I64Vec3 {
+        self.rem(*rhs)
+    }
+}
+
+impl Rem<&I64Vec3> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn rem(self, rhs: &I64Vec3) -> I64Vec3 {
+        (*self).rem(*rhs)
+    }
+}
+
+impl Rem<I64Vec3> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn rem(self, rhs: I64Vec3) -> I64Vec3 {
+        (*self).rem(rhs)
+    }
+}
+
 impl RemAssign<I64Vec3> for I64Vec3 {
     #[inline]
     fn rem_assign(&mut self, rhs: Self) {
         self.x.rem_assign(rhs.x);
         self.y.rem_assign(rhs.y);
         self.z.rem_assign(rhs.z);
+    }
+}
+
+impl RemAssign<&Self> for I64Vec3 {
+    #[inline]
+    fn rem_assign(&mut self, rhs: &Self) {
+        self.rem_assign(*rhs)
     }
 }
 
@@ -806,12 +1299,43 @@ impl Rem<i64> for I64Vec3 {
     }
 }
 
+impl Rem<&i64> for I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn rem(self, rhs: &i64) -> I64Vec3 {
+        self.rem(*rhs)
+    }
+}
+
+impl Rem<&i64> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn rem(self, rhs: &i64) -> I64Vec3 {
+        (*self).rem(*rhs)
+    }
+}
+
+impl Rem<i64> for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn rem(self, rhs: i64) -> I64Vec3 {
+        (*self).rem(rhs)
+    }
+}
+
 impl RemAssign<i64> for I64Vec3 {
     #[inline]
     fn rem_assign(&mut self, rhs: i64) {
         self.x.rem_assign(rhs);
         self.y.rem_assign(rhs);
         self.z.rem_assign(rhs);
+    }
+}
+
+impl RemAssign<&i64> for I64Vec3 {
+    #[inline]
+    fn rem_assign(&mut self, rhs: &i64) {
+        self.rem_assign(*rhs)
     }
 }
 
@@ -824,6 +1348,30 @@ impl Rem<I64Vec3> for i64 {
             y: self.rem(rhs.y),
             z: self.rem(rhs.z),
         }
+    }
+}
+
+impl Rem<&I64Vec3> for i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn rem(self, rhs: &I64Vec3) -> I64Vec3 {
+        self.rem(*rhs)
+    }
+}
+
+impl Rem<&I64Vec3> for &i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn rem(self, rhs: &I64Vec3) -> I64Vec3 {
+        (*self).rem(*rhs)
+    }
+}
+
+impl Rem<I64Vec3> for &i64 {
+    type Output = I64Vec3;
+    #[inline]
+    fn rem(self, rhs: I64Vec3) -> I64Vec3 {
+        (*self).rem(rhs)
     }
 }
 
@@ -892,6 +1440,14 @@ impl Neg for I64Vec3 {
             y: self.y.neg(),
             z: self.z.neg(),
         }
+    }
+}
+
+impl Neg for &I64Vec3 {
+    type Output = I64Vec3;
+    #[inline]
+    fn neg(self) -> I64Vec3 {
+        (*self).neg()
     }
 }
 
@@ -1244,14 +1800,12 @@ impl IndexMut<usize> for I64Vec3 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Display for I64Vec3 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "[{}, {}, {}]", self.x, self.y, self.z)
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Debug for I64Vec3 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_tuple(stringify!(I64Vec3))
@@ -1297,6 +1851,20 @@ impl From<(I64Vec2, i64)> for I64Vec3 {
     }
 }
 
+impl From<I8Vec3> for I64Vec3 {
+    #[inline]
+    fn from(v: I8Vec3) -> Self {
+        Self::new(i64::from(v.x), i64::from(v.y), i64::from(v.z))
+    }
+}
+
+impl From<U8Vec3> for I64Vec3 {
+    #[inline]
+    fn from(v: U8Vec3) -> Self {
+        Self::new(i64::from(v.x), i64::from(v.y), i64::from(v.z))
+    }
+}
+
 impl From<I16Vec3> for I64Vec3 {
     #[inline]
     fn from(v: I16Vec3) -> Self {
@@ -1335,5 +1903,24 @@ impl TryFrom<U64Vec3> for I64Vec3 {
             i64::try_from(v.y)?,
             i64::try_from(v.z)?,
         ))
+    }
+}
+
+impl From<BVec3> for I64Vec3 {
+    #[inline]
+    fn from(v: BVec3) -> Self {
+        Self::new(i64::from(v.x), i64::from(v.y), i64::from(v.z))
+    }
+}
+
+impl From<BVec3A> for I64Vec3 {
+    #[inline]
+    fn from(v: BVec3A) -> Self {
+        let bool_array: [bool; 3] = v.into();
+        Self::new(
+            i64::from(bool_array[0]),
+            i64::from(bool_array[1]),
+            i64::from(bool_array[2]),
+        )
     }
 }

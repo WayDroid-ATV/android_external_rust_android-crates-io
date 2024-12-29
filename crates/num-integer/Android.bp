@@ -18,14 +18,13 @@ rust_library {
     host_supported: true,
     crate_name: "num_integer",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.45",
+    cargo_pkg_version: "0.1.46",
     crate_root: "src/lib.rs",
-    edition: "2015",
+    edition: "2018",
     features: [
         "default",
         "std",
     ],
-    cfgs: ["has_i128"],
     rustlibs: ["libnum_traits"],
     apex_available: [
         "//apex_available:platform",
@@ -40,19 +39,18 @@ rust_test {
     host_supported: true,
     crate_name: "num_integer",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.45",
+    cargo_pkg_version: "0.1.46",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2015",
+    edition: "2018",
     features: [
         "default",
         "std",
     ],
-    cfgs: ["has_i128"],
     rustlibs: ["libnum_traits"],
 }
 
@@ -61,19 +59,18 @@ rust_test {
     host_supported: true,
     crate_name: "average",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.45",
+    cargo_pkg_version: "0.1.46",
     crate_root: "tests/average.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2015",
+    edition: "2018",
     features: [
         "default",
         "std",
     ],
-    cfgs: ["has_i128"],
     rustlibs: [
         "libnum_integer",
         "libnum_traits",
@@ -85,19 +82,18 @@ rust_test {
     host_supported: true,
     crate_name: "roots",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.45",
+    cargo_pkg_version: "0.1.46",
     crate_root: "tests/roots.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2015",
+    edition: "2018",
     features: [
         "default",
         "std",
     ],
-    cfgs: ["has_i128"],
     rustlibs: [
         "libnum_integer",
         "libnum_traits",

@@ -4,7 +4,8 @@
     {
       "features": [
         "derive",
-        "simd"
+        "simd",
+        "std"
       ]
     },
     {

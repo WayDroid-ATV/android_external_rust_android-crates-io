@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "lz4_flex"
-version = "0.11.2"
+version = "0.11.3"
 authors = [
     "Pascal Seitz <pascal.seitz@gmail.com>",
     "Arthur Silva <arthurprs@gmail.com>",
