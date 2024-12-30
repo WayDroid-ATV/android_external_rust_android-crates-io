@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8b79bee1_b6c8c364",
+        "filename": "pseudo_crate/Cargo.lock",
+        "patchSetId": 1
+      },
+      "lineNbr": 3379,
+      "author": {
+        "id": 1809582
+      },
+      "writtenOn": "2024-12-30T06:58:42Z",
+      "side": 1,
+      "message": "This seems like a separate change from the addition of `rules.mk`.",
+      "revId": "325c8b600c62312534daad5f1a934451b67a5234",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
