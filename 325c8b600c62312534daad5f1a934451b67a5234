@@ -3,6 +3,52 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "faa56c2b_3c86669c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2025-01-03T04:28:48Z",
+      "side": 1,
+      "message": "nit: `Generate rules.mk for ring` would be consistent with similar CLs adding rules.mk. If you keep the current title, could you remove the extra space?",
+      "range": {
+        "startLine": 7,
+        "startChar": 16,
+        "endLine": 7,
+        "endChar": 17
+      },
+      "revId": "325c8b600c62312534daad5f1a934451b67a5234",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2b7c856e_747ccd77",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2025-01-03T04:28:48Z",
+      "side": 1,
+      "message": "nit: this CL is only tested if aosp/3431068 is applied.",
+      "range": {
+        "startLine": 10,
+        "startChar": 6,
+        "endLine": 10,
+        "endChar": 18
+      },
+      "revId": "325c8b600c62312534daad5f1a934451b67a5234",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "d6b65e6d_75497a47",
         "filename": "crates/ring/cargo_embargo.json",
         "patchSetId": 1
@@ -14,6 +60,29 @@
       "writtenOn": "2024-12-30T21:59:23Z",
       "side": 1,
       "message": "@perlarsen@google.com Do we have anything like this for `rules.mk`? This line copies the whole file verbatim into `Android.bp`.\n\nAlternatively, we could use a patch file, but those can be brittle.",
+      "revId": "325c8b600c62312534daad5f1a934451b67a5234",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7f81e5d6_5674ff37",
+        "filename": "crates/ring/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2025-01-03T04:28:48Z",
+      "side": 1,
+      "message": "is this needed? it generates code like\n\n```\n$(call FIND_CRATE,spin_nostd) \\\n``` \n\nbut I think we want the argument to `FIND_CRATE` to be `spin` (not `spin_nostd`).",
+      "range": {
+        "startLine": 35,
+        "startChar": 6,
+        "endLine": 40,
+        "endChar": 8
+      },
       "revId": "325c8b600c62312534daad5f1a934451b67a5234",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
