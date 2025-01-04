@@ -462,7 +462,7 @@ dependencies = [
  "vhost-user-backend",
  "virtio-bindings",
  "virtio-drivers",
- "virtio-queue 0.12.0",
+ "virtio-queue 0.14.0",
  "virtio-vsock",
  "vm-memory 0.16.0",
  "vmm-sys-util 0.12.1",
@@ -5909,13 +5909,13 @@ dependencies = [
 
 [[package]]
 name = "virtio-queue"
-version = "0.12.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07d8406e7250c934462de585d8f2d2781c31819bca1fbb7c5e964ca6bbaabfe8"
+checksum = "872e2f3fbd70a7e6f01689720cce3d5c2c5efe52b484dd07b674246ada0e9a8d"
 dependencies = [
  "log",
  "virtio-bindings",
- "vm-memory 0.14.1",
+ "vm-memory 0.16.0",
  "vmm-sys-util 0.12.1",
 ]
 
