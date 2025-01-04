@@ -9,7 +9,10 @@ package {
 license {
     name: "external_rust_crates_virtio-queue_license",
     visibility: [":__subpackages__"],
-    license_kinds: ["SPDX-license-identifier-Apache-2.0"],
+    license_kinds: [
+        "SPDX-license-identifier-Apache-2.0",
+        "SPDX-license-identifier-BSD-3-Clause",
+    ],
     license_text: ["LICENSE"],
 }
 
@@ -17,7 +20,7 @@ rust_library_host {
     name: "libvirtio_queue",
     crate_name: "virtio_queue",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.0",
+    cargo_pkg_version: "0.14.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
@@ -26,4 +29,5 @@ rust_library_host {
         "libvm_memory_android",
         "libvmm_sys_util",
     ],
+    compile_multilib: "first",
 }
