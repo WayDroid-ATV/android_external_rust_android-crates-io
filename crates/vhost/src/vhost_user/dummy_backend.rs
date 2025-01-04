@@ -8,11 +8,11 @@ use super::*;
 
 pub const MAX_QUEUE_NUM: usize = 2;
 pub const MAX_VRING_NUM: usize = 256;
-pub const MAX_MEM_SLOTS: usize = 32;
+pub const MAX_MEM_SLOTS: usize = 509;
 pub const VIRTIO_FEATURES: u64 = 0x40000003;
 
 #[derive(Default)]
-pub struct DummySlaveReqHandler {
+pub struct DummyBackendReqHandler {
     pub owned: bool,
     pub features_acked: bool,
     pub acked_features: u64,
@@ -28,9 +28,9 @@ pub struct DummySlaveReqHandler {
     pub inflight_file: Option<File>,
 }
 
-impl DummySlaveReqHandler {
+impl DummyBackendReqHandler {
     pub fn new() -> Self {
-        DummySlaveReqHandler {
+        DummyBackendReqHandler {
             queue_num: MAX_QUEUE_NUM,
             ..Default::default()
         }
@@ -55,7 +55,7 @@ impl DummySlaveReqHandler {
     }
 }
 
-impl VhostUserSlaveReqHandlerMut for DummySlaveReqHandler {
+impl VhostUserBackendReqHandlerMut for DummyBackendReqHandler {
     fn set_owner(&mut self) -> Result<()> {
         if self.owned {
             return Err(Error::InvalidOperation("already claimed"));
@@ -69,6 +69,12 @@ impl VhostUserSlaveReqHandlerMut for DummySlaveReqHandler {
         self.features_acked = false;
         self.acked_features = 0;
         self.acked_protocol_features = 0;
+        Ok(())
+    }
+
+    fn reset_device(&mut self) -> Result<()> {
+        self.features_acked = false;
+        self.acked_features = 0;
         Ok(())
     }
 
@@ -193,10 +199,10 @@ impl VhostUserSlaveReqHandlerMut for DummySlaveReqHandler {
     }
 
     fn set_protocol_features(&mut self, features: u64) -> Result<()> {
-        // Note: slave that reported VHOST_USER_F_PROTOCOL_FEATURES must
+        // Note: backend that reported VHOST_USER_F_PROTOCOL_FEATURES must
         // support this message even before VHOST_USER_SET_FEATURES was
         // called.
-        // What happens if the master calls set_features() with
+        // What happens if the frontend calls set_features() with
         // VHOST_USER_F_PROTOCOL_FEATURES cleared after calling this
         // interface?
         self.acked_protocol_features = features;
@@ -216,7 +222,7 @@ impl VhostUserSlaveReqHandlerMut for DummySlaveReqHandler {
             return Err(Error::InvalidParam);
         }
 
-        // Slave must not pass data to/from the backend until ring is
+        // Backend must not pass data to/from the backend until ring is
         // enabled by VHOST_USER_SET_VRING_ENABLE with parameter 1,
         // or after it has been disabled by VHOST_USER_SET_VRING_ENABLE
         // with parameter 0.
@@ -259,6 +265,10 @@ impl VhostUserSlaveReqHandlerMut for DummySlaveReqHandler {
         Ok(())
     }
 
+    fn set_gpu_socket(&mut self, _gpu_backend: GpuBackend) -> Result<()> {
+        Ok(())
+    }
+
     fn get_inflight_fd(
         &mut self,
         inflight: &VhostUserInflight,
@@ -290,5 +300,43 @@ impl VhostUserSlaveReqHandlerMut for DummySlaveReqHandler {
 
     fn remove_mem_region(&mut self, _region: &VhostUserSingleMemoryRegion) -> Result<()> {
         Ok(())
+    }
+
+    fn set_device_state_fd(
+        &mut self,
+        _direction: VhostTransferStateDirection,
+        _phase: VhostTransferStatePhase,
+        _fd: File,
+    ) -> Result<Option<File>> {
+        Err(Error::ReqHandlerError(std::io::Error::new(
+            std::io::ErrorKind::Unsupported,
+            "dummy back end does not support state transfer",
+        )))
+    }
+
+    fn check_device_state(&mut self) -> Result<()> {
+        Err(Error::ReqHandlerError(std::io::Error::new(
+            std::io::ErrorKind::Unsupported,
+            "dummy back end does not support state transfer",
+        )))
+    }
+
+    #[cfg(feature = "postcopy")]
+    fn postcopy_advice(&mut self) -> Result<File> {
+        let file = tempfile::tempfile().unwrap();
+        Ok(file)
+    }
+
+    #[cfg(feature = "postcopy")]
+    fn postcopy_listen(&mut self) -> Result<()> {
+        Ok(())
+    }
+
+    #[cfg(feature = "postcopy")]
+    fn postcopy_end(&mut self) -> Result<()> {
+        Ok(())
+    }
+    fn set_log_base(&mut self, _log: &VhostUserLog, _file: File) -> Result<()> {
+        Err(Error::InvalidMessage)
     }
 }
