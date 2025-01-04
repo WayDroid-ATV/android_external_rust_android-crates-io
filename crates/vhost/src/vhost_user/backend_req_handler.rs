@@ -10,35 +10,37 @@ use std::sync::{Arc, Mutex};
 
 use vm_memory::ByteValued;
 
+use super::backend_req::Backend;
 use super::connection::Endpoint;
+use super::gpu_backend_req::GpuBackend;
 use super::message::*;
-use super::slave_req::Slave;
 use super::{take_single_file, Error, Result};
 
-/// Services provided to the master by the slave with interior mutability.
+/// Services provided to the frontend by the backend with interior mutability.
 ///
-/// The [VhostUserSlaveReqHandler] trait defines the services provided to the master by the slave.
-/// And the [VhostUserSlaveReqHandlerMut] trait is a helper mirroring [VhostUserSlaveReqHandler],
+/// The [VhostUserBackendReqHandler] trait defines the services provided to the frontend by the backend.
+/// And the [VhostUserBackendReqHandlerMut] trait is a helper mirroring [VhostUserBackendReqHandler],
 /// but without interior mutability.
-/// The vhost-user specification defines a master communication channel, by which masters could
-/// request services from slaves. The [VhostUserSlaveReqHandler] trait defines services provided by
-/// slaves, and it's used both on the master side and slave side.
+/// The vhost-user specification defines a frontend communication channel, by which frontends could
+/// request services from backends. The [VhostUserBackendReqHandler] trait defines services provided by
+/// backends, and it's used both on the frontend side and backend side.
 ///
-/// - on the master side, a stub forwarder implementing [VhostUserSlaveReqHandler] will proxy
-///   service requests to slaves.
-/// - on the slave side, the [SlaveReqHandler] will forward service requests to a handler
-///   implementing [VhostUserSlaveReqHandler].
+/// - on the frontend side, a stub forwarder implementing [VhostUserBackendReqHandler] will proxy
+///   service requests to backends.
+/// - on the backend side, the [BackendReqHandler] will forward service requests to a handler
+///   implementing [VhostUserBackendReqHandler].
 ///
-/// The [VhostUserSlaveReqHandler] trait is design with interior mutability to improve performance
+/// The [VhostUserBackendReqHandler] trait is design with interior mutability to improve performance
 /// for multi-threading.
 ///
-/// [VhostUserSlaveReqHandler]: trait.VhostUserSlaveReqHandler.html
-/// [VhostUserSlaveReqHandlerMut]: trait.VhostUserSlaveReqHandlerMut.html
-/// [SlaveReqHandler]: struct.SlaveReqHandler.html
+/// [VhostUserBackendReqHandler]: trait.VhostUserBackendReqHandler.html
+/// [VhostUserBackendReqHandlerMut]: trait.VhostUserBackendReqHandlerMut.html
+/// [BackendReqHandler]: struct.BackendReqHandler.html
 #[allow(missing_docs)]
-pub trait VhostUserSlaveReqHandler {
+pub trait VhostUserBackendReqHandler {
     fn set_owner(&self) -> Result<()>;
     fn reset_owner(&self) -> Result<()>;
+    fn reset_device(&self) -> Result<()>;
     fn get_features(&self) -> Result<u64>;
     fn set_features(&self, features: u64) -> Result<()>;
     fn set_mem_table(&self, ctx: &[VhostUserMemoryRegion], files: Vec<File>) -> Result<()>;
@@ -64,21 +66,37 @@ pub trait VhostUserSlaveReqHandler {
     fn set_vring_enable(&self, index: u32, enable: bool) -> Result<()>;
     fn get_config(&self, offset: u32, size: u32, flags: VhostUserConfigFlags) -> Result<Vec<u8>>;
     fn set_config(&self, offset: u32, buf: &[u8], flags: VhostUserConfigFlags) -> Result<()>;
-    fn set_slave_req_fd(&self, _slave: Slave) {}
+    fn set_backend_req_fd(&self, _backend: Backend) {}
+    fn set_gpu_socket(&self, _gpu_backend: GpuBackend) -> Result<()>;
     fn get_inflight_fd(&self, inflight: &VhostUserInflight) -> Result<(VhostUserInflight, File)>;
     fn set_inflight_fd(&self, inflight: &VhostUserInflight, file: File) -> Result<()>;
     fn get_max_mem_slots(&self) -> Result<u64>;
     fn add_mem_region(&self, region: &VhostUserSingleMemoryRegion, fd: File) -> Result<()>;
     fn remove_mem_region(&self, region: &VhostUserSingleMemoryRegion) -> Result<()>;
+    fn set_device_state_fd(
+        &self,
+        direction: VhostTransferStateDirection,
+        phase: VhostTransferStatePhase,
+        fd: File,
+    ) -> Result<Option<File>>;
+    fn check_device_state(&self) -> Result<()>;
+    #[cfg(feature = "postcopy")]
+    fn postcopy_advice(&self) -> Result<File>;
+    #[cfg(feature = "postcopy")]
+    fn postcopy_listen(&self) -> Result<()>;
+    #[cfg(feature = "postcopy")]
+    fn postcopy_end(&self) -> Result<()>;
+    fn set_log_base(&self, log: &VhostUserLog, file: File) -> Result<()>;
 }
 
-/// Services provided to the master by the slave without interior mutability.
+/// Services provided to the frontend by the backend without interior mutability.
 ///
-/// This is a helper trait mirroring the [VhostUserSlaveReqHandler] trait.
+/// This is a helper trait mirroring the [VhostUserBackendReqHandler] trait.
 #[allow(missing_docs)]
-pub trait VhostUserSlaveReqHandlerMut {
+pub trait VhostUserBackendReqHandlerMut {
     fn set_owner(&mut self) -> Result<()>;
     fn reset_owner(&mut self) -> Result<()>;
+    fn reset_device(&mut self) -> Result<()>;
     fn get_features(&mut self) -> Result<u64>;
     fn set_features(&mut self, features: u64) -> Result<()>;
     fn set_mem_table(&mut self, ctx: &[VhostUserMemoryRegion], files: Vec<File>) -> Result<()>;
@@ -109,7 +127,8 @@ pub trait VhostUserSlaveReqHandlerMut {
         flags: VhostUserConfigFlags,
     ) -> Result<Vec<u8>>;
     fn set_config(&mut self, offset: u32, buf: &[u8], flags: VhostUserConfigFlags) -> Result<()>;
-    fn set_slave_req_fd(&mut self, _slave: Slave) {}
+    fn set_backend_req_fd(&mut self, _backend: Backend) {}
+    fn set_gpu_socket(&mut self, _gpu_backend: GpuBackend) -> Result<()>;
     fn get_inflight_fd(
         &mut self,
         inflight: &VhostUserInflight,
@@ -118,15 +137,33 @@ pub trait VhostUserSlaveReqHandlerMut {
     fn get_max_mem_slots(&mut self) -> Result<u64>;
     fn add_mem_region(&mut self, region: &VhostUserSingleMemoryRegion, fd: File) -> Result<()>;
     fn remove_mem_region(&mut self, region: &VhostUserSingleMemoryRegion) -> Result<()>;
+    fn set_device_state_fd(
+        &mut self,
+        direction: VhostTransferStateDirection,
+        phase: VhostTransferStatePhase,
+        fd: File,
+    ) -> Result<Option<File>>;
+    fn check_device_state(&mut self) -> Result<()>;
+    #[cfg(feature = "postcopy")]
+    fn postcopy_advice(&mut self) -> Result<File>;
+    #[cfg(feature = "postcopy")]
+    fn postcopy_listen(&mut self) -> Result<()>;
+    #[cfg(feature = "postcopy")]
+    fn postcopy_end(&mut self) -> Result<()>;
+    fn set_log_base(&mut self, log: &VhostUserLog, file: File) -> Result<()>;
 }
 
-impl<T: VhostUserSlaveReqHandlerMut> VhostUserSlaveReqHandler for Mutex<T> {
+impl<T: VhostUserBackendReqHandlerMut> VhostUserBackendReqHandler for Mutex<T> {
     fn set_owner(&self) -> Result<()> {
         self.lock().unwrap().set_owner()
     }
 
     fn reset_owner(&self) -> Result<()> {
         self.lock().unwrap().reset_owner()
+    }
+
+    fn reset_device(&self) -> Result<()> {
+        self.lock().unwrap().reset_device()
     }
 
     fn get_features(&self) -> Result<u64> {
@@ -203,8 +240,12 @@ impl<T: VhostUserSlaveReqHandlerMut> VhostUserSlaveReqHandler for Mutex<T> {
         self.lock().unwrap().set_config(offset, buf, flags)
     }
 
-    fn set_slave_req_fd(&self, slave: Slave) {
-        self.lock().unwrap().set_slave_req_fd(slave)
+    fn set_backend_req_fd(&self, backend: Backend) {
+        self.lock().unwrap().set_backend_req_fd(backend)
+    }
+
+    fn set_gpu_socket(&self, gpu_backend: GpuBackend) -> Result<()> {
+        self.lock().unwrap().set_gpu_socket(gpu_backend)
     }
 
     fn get_inflight_fd(&self, inflight: &VhostUserInflight) -> Result<(VhostUserInflight, File)> {
@@ -226,22 +267,55 @@ impl<T: VhostUserSlaveReqHandlerMut> VhostUserSlaveReqHandler for Mutex<T> {
     fn remove_mem_region(&self, region: &VhostUserSingleMemoryRegion) -> Result<()> {
         self.lock().unwrap().remove_mem_region(region)
     }
+
+    fn set_device_state_fd(
+        &self,
+        direction: VhostTransferStateDirection,
+        phase: VhostTransferStatePhase,
+        fd: File,
+    ) -> Result<Option<File>> {
+        self.lock()
+            .unwrap()
+            .set_device_state_fd(direction, phase, fd)
+    }
+
+    fn check_device_state(&self) -> Result<()> {
+        self.lock().unwrap().check_device_state()
+    }
+
+    #[cfg(feature = "postcopy")]
+    fn postcopy_advice(&self) -> Result<File> {
+        self.lock().unwrap().postcopy_advice()
+    }
+
+    #[cfg(feature = "postcopy")]
+    fn postcopy_listen(&self) -> Result<()> {
+        self.lock().unwrap().postcopy_listen()
+    }
+
+    #[cfg(feature = "postcopy")]
+    fn postcopy_end(&self) -> Result<()> {
+        self.lock().unwrap().postcopy_end()
+    }
+    fn set_log_base(&self, log: &VhostUserLog, file: File) -> Result<()> {
+        self.lock().unwrap().set_log_base(log, file)
+    }
 }
 
-/// Server to handle service requests from masters from the master communication channel.
+/// Server to handle service requests from frontends from the frontend communication channel.
 ///
-/// The [SlaveReqHandler] acts as a server on the slave side, to handle service requests from
-/// masters on the master communication channel. It's actually a proxy invoking the registered
-/// handler implementing [VhostUserSlaveReqHandler] to do the real work.
+/// The [BackendReqHandler] acts as a server on the backend side, to handle service requests from
+/// frontends on the frontend communication channel. It's actually a proxy invoking the registered
+/// handler implementing [VhostUserBackendReqHandler] to do the real work.
 ///
-/// The lifetime of the SlaveReqHandler object should be the same as the underline Unix Domain
+/// The lifetime of the BackendReqHandler object should be the same as the underline Unix Domain
 /// Socket, so it gets simpler to recover from disconnect.
 ///
-/// [VhostUserSlaveReqHandler]: trait.VhostUserSlaveReqHandler.html
-/// [SlaveReqHandler]: struct.SlaveReqHandler.html
-pub struct SlaveReqHandler<S: VhostUserSlaveReqHandler> {
+/// [VhostUserBackendReqHandler]: trait.VhostUserBackendReqHandler.html
+/// [BackendReqHandler]: struct.BackendReqHandler.html
+pub struct BackendReqHandler<S: VhostUserBackendReqHandler> {
     // underlying Unix domain socket for communication
-    main_sock: Endpoint<MasterReq>,
+    main_sock: Endpoint<VhostUserMsgHeader<FrontendReq>>,
     // the vhost-user backend device object
     backend: Arc<S>,
 
@@ -256,10 +330,13 @@ pub struct SlaveReqHandler<S: VhostUserSlaveReqHandler> {
     error: Option<i32>,
 }
 
-impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
-    /// Create a vhost-user slave endpoint.
-    pub(super) fn new(main_sock: Endpoint<MasterReq>, backend: Arc<S>) -> Self {
-        SlaveReqHandler {
+impl<S: VhostUserBackendReqHandler> BackendReqHandler<S> {
+    /// Create a vhost-user backend endpoint.
+    pub(super) fn new(
+        main_sock: Endpoint<VhostUserMsgHeader<FrontendReq>>,
+        backend: Arc<S>,
+    ) -> Self {
+        BackendReqHandler {
             main_sock,
             backend,
             virtio_features: 0,
@@ -287,18 +364,21 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
         }
     }
 
-    /// Create a vhost-user slave endpoint from a connected socket.
+    /// Create a vhost-user backend endpoint from a connected socket.
     pub fn from_stream(socket: UnixStream, backend: Arc<S>) -> Self {
         Self::new(Endpoint::from_stream(socket), backend)
     }
 
-    /// Create a new vhost-user slave endpoint.
+    /// Create a new vhost-user backend endpoint.
     ///
     /// # Arguments
     /// * - `path` - path of Unix domain socket listener to connect to
-    /// * - `backend` - handler for requests from the master to the slave
+    /// * - `backend` - handler for requests from the frontend to the backend
     pub fn connect(path: &str, backend: Arc<S>) -> Result<Self> {
-        Ok(Self::new(Endpoint::<MasterReq>::connect(path)?, backend))
+        Ok(Self::new(
+            Endpoint::<VhostUserMsgHeader<FrontendReq>>::connect(path)?,
+            backend,
+        ))
     }
 
     /// Mark endpoint as failed with specified error code.
@@ -306,9 +386,9 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
         self.error = Some(error);
     }
 
-    /// Main entrance to server slave request from the slave communication channel.
+    /// Main entrance to server backend request from the backend communication channel.
     ///
-    /// Receive and handle one incoming request message from the master. The caller needs to:
+    /// Receive and handle one incoming request message from the frontend. The caller needs to:
     /// - serialize calls to this function
     /// - decide what to do when error happens
     /// - optional recover from failure
@@ -340,17 +420,23 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
         };
 
         match hdr.get_code() {
-            Ok(MasterReq::SET_OWNER) => {
+            Ok(FrontendReq::SET_OWNER) => {
                 self.check_request_size(&hdr, size, 0)?;
                 let res = self.backend.set_owner();
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::RESET_OWNER) => {
+            Ok(FrontendReq::RESET_OWNER) => {
                 self.check_request_size(&hdr, size, 0)?;
                 let res = self.backend.reset_owner();
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::GET_FEATURES) => {
+            Ok(FrontendReq::RESET_DEVICE) => {
+                self.check_proto_feature(VhostUserProtocolFeatures::RESET_DEVICE)?;
+                self.check_request_size(&hdr, size, 0)?;
+                let res = self.backend.reset_device();
+                self.send_ack_message(&hdr, res)?;
+            }
+            Ok(FrontendReq::GET_FEATURES) => {
                 self.check_request_size(&hdr, size, 0)?;
                 let features = self.backend.get_features()?;
                 let msg = VhostUserU64::new(features);
@@ -358,23 +444,23 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
                 self.virtio_features = features;
                 self.update_reply_ack_flag();
             }
-            Ok(MasterReq::SET_FEATURES) => {
+            Ok(FrontendReq::SET_FEATURES) => {
                 let msg = self.extract_request_body::<VhostUserU64>(&hdr, size, &buf)?;
                 let res = self.backend.set_features(msg.value);
                 self.acked_virtio_features = msg.value;
                 self.update_reply_ack_flag();
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::SET_MEM_TABLE) => {
+            Ok(FrontendReq::SET_MEM_TABLE) => {
                 let res = self.set_mem_table(&hdr, size, &buf, files);
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::SET_VRING_NUM) => {
+            Ok(FrontendReq::SET_VRING_NUM) => {
                 let msg = self.extract_request_body::<VhostUserVringState>(&hdr, size, &buf)?;
                 let res = self.backend.set_vring_num(msg.index, msg.num);
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::SET_VRING_ADDR) => {
+            Ok(FrontendReq::SET_VRING_ADDR) => {
                 let msg = self.extract_request_body::<VhostUserVringAddr>(&hdr, size, &buf)?;
                 let flags = match VhostUserVringAddrFlags::from_bits(msg.flags) {
                     Some(val) => val,
@@ -390,35 +476,35 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
                 );
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::SET_VRING_BASE) => {
+            Ok(FrontendReq::SET_VRING_BASE) => {
                 let msg = self.extract_request_body::<VhostUserVringState>(&hdr, size, &buf)?;
                 let res = self.backend.set_vring_base(msg.index, msg.num);
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::GET_VRING_BASE) => {
+            Ok(FrontendReq::GET_VRING_BASE) => {
                 let msg = self.extract_request_body::<VhostUserVringState>(&hdr, size, &buf)?;
                 let reply = self.backend.get_vring_base(msg.index)?;
                 self.send_reply_message(&hdr, &reply)?;
             }
-            Ok(MasterReq::SET_VRING_CALL) => {
+            Ok(FrontendReq::SET_VRING_CALL) => {
                 self.check_request_size(&hdr, size, mem::size_of::<VhostUserU64>())?;
                 let (index, file) = self.handle_vring_fd_request(&buf, files)?;
                 let res = self.backend.set_vring_call(index, file);
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::SET_VRING_KICK) => {
+            Ok(FrontendReq::SET_VRING_KICK) => {
                 self.check_request_size(&hdr, size, mem::size_of::<VhostUserU64>())?;
                 let (index, file) = self.handle_vring_fd_request(&buf, files)?;
                 let res = self.backend.set_vring_kick(index, file);
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::SET_VRING_ERR) => {
+            Ok(FrontendReq::SET_VRING_ERR) => {
                 self.check_request_size(&hdr, size, mem::size_of::<VhostUserU64>())?;
                 let (index, file) = self.handle_vring_fd_request(&buf, files)?;
                 let res = self.backend.set_vring_err(index, file);
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::GET_PROTOCOL_FEATURES) => {
+            Ok(FrontendReq::GET_PROTOCOL_FEATURES) => {
                 self.check_request_size(&hdr, size, 0)?;
                 let features = self.backend.get_protocol_features()?;
 
@@ -431,7 +517,7 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
                 self.protocol_features = features;
                 self.update_reply_ack_flag();
             }
-            Ok(MasterReq::SET_PROTOCOL_FEATURES) => {
+            Ok(FrontendReq::SET_PROTOCOL_FEATURES) => {
                 let msg = self.extract_request_body::<VhostUserU64>(&hdr, size, &buf)?;
                 let res = self.backend.set_protocol_features(msg.value);
                 self.acked_protocol_features = msg.value;
@@ -441,14 +527,14 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
                 #[cfg(feature = "xen")]
                 self.check_proto_feature(VhostUserProtocolFeatures::XEN_MMAP)?;
             }
-            Ok(MasterReq::GET_QUEUE_NUM) => {
+            Ok(FrontendReq::GET_QUEUE_NUM) => {
                 self.check_proto_feature(VhostUserProtocolFeatures::MQ)?;
                 self.check_request_size(&hdr, size, 0)?;
                 let num = self.backend.get_queue_num()?;
                 let msg = VhostUserU64::new(num);
                 self.send_reply_message(&hdr, &msg)?;
             }
-            Ok(MasterReq::SET_VRING_ENABLE) => {
+            Ok(FrontendReq::SET_VRING_ENABLE) => {
                 let msg = self.extract_request_body::<VhostUserVringState>(&hdr, size, &buf)?;
                 self.check_feature(VhostUserVirtioFeatures::PROTOCOL_FEATURES)?;
                 let enable = match msg.num {
@@ -460,24 +546,24 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
                 let res = self.backend.set_vring_enable(msg.index, enable);
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::GET_CONFIG) => {
+            Ok(FrontendReq::GET_CONFIG) => {
                 self.check_proto_feature(VhostUserProtocolFeatures::CONFIG)?;
                 self.check_request_size(&hdr, size, hdr.get_size() as usize)?;
                 self.get_config(&hdr, &buf)?;
             }
-            Ok(MasterReq::SET_CONFIG) => {
+            Ok(FrontendReq::SET_CONFIG) => {
                 self.check_proto_feature(VhostUserProtocolFeatures::CONFIG)?;
                 self.check_request_size(&hdr, size, hdr.get_size() as usize)?;
                 let res = self.set_config(size, &buf);
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::SET_SLAVE_REQ_FD) => {
-                self.check_proto_feature(VhostUserProtocolFeatures::SLAVE_REQ)?;
+            Ok(FrontendReq::SET_BACKEND_REQ_FD) => {
+                self.check_proto_feature(VhostUserProtocolFeatures::BACKEND_REQ)?;
                 self.check_request_size(&hdr, size, hdr.get_size() as usize)?;
-                let res = self.set_slave_req_fd(files);
+                let res = self.set_backend_req_fd(files);
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::GET_INFLIGHT_FD) => {
+            Ok(FrontendReq::GET_INFLIGHT_FD) => {
                 self.check_proto_feature(VhostUserProtocolFeatures::INFLIGHT_SHMFD)?;
 
                 let msg = self.extract_request_body::<VhostUserInflight>(&hdr, size, &buf)?;
@@ -486,21 +572,25 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
                 self.main_sock
                     .send_message(&reply_hdr, &inflight, Some(&[file.as_raw_fd()]))?;
             }
-            Ok(MasterReq::SET_INFLIGHT_FD) => {
+            Ok(FrontendReq::SET_INFLIGHT_FD) => {
                 self.check_proto_feature(VhostUserProtocolFeatures::INFLIGHT_SHMFD)?;
                 let file = take_single_file(files).ok_or(Error::IncorrectFds)?;
                 let msg = self.extract_request_body::<VhostUserInflight>(&hdr, size, &buf)?;
                 let res = self.backend.set_inflight_fd(&msg, file);
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::GET_MAX_MEM_SLOTS) => {
+            Ok(FrontendReq::GPU_SET_SOCKET) => {
+                let res = self.set_gpu_socket(files);
+                self.send_ack_message(&hdr, res)?;
+            }
+            Ok(FrontendReq::GET_MAX_MEM_SLOTS) => {
                 self.check_proto_feature(VhostUserProtocolFeatures::CONFIGURE_MEM_SLOTS)?;
                 self.check_request_size(&hdr, size, 0)?;
                 let num = self.backend.get_max_mem_slots()?;
                 let msg = VhostUserU64::new(num);
                 self.send_reply_message(&hdr, &msg)?;
             }
-            Ok(MasterReq::ADD_MEM_REG) => {
+            Ok(FrontendReq::ADD_MEM_REG) => {
                 self.check_proto_feature(VhostUserProtocolFeatures::CONFIGURE_MEM_SLOTS)?;
                 let mut files = files.ok_or(Error::InvalidParam)?;
                 if files.len() != 1 {
@@ -511,13 +601,99 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
                 let res = self.backend.add_mem_region(&msg, files.swap_remove(0));
                 self.send_ack_message(&hdr, res)?;
             }
-            Ok(MasterReq::REM_MEM_REG) => {
+            Ok(FrontendReq::REM_MEM_REG) => {
                 self.check_proto_feature(VhostUserProtocolFeatures::CONFIGURE_MEM_SLOTS)?;
 
                 let msg =
                     self.extract_request_body::<VhostUserSingleMemoryRegion>(&hdr, size, &buf)?;
                 let res = self.backend.remove_mem_region(&msg);
                 self.send_ack_message(&hdr, res)?;
+            }
+            Ok(FrontendReq::SET_DEVICE_STATE_FD) => {
+                let file = take_single_file(files).ok_or(Error::IncorrectFds)?;
+                let msg =
+                    self.extract_request_body::<VhostUserTransferDeviceState>(&hdr, size, &buf)?;
+                let reply_hdr = self.new_reply_header::<VhostUserU64>(&hdr, 0)?;
+
+                let direction: VhostTransferStateDirection = msg
+                    .direction
+                    .try_into()
+                    .map_err(|_| Error::InvalidMessage)?;
+                let phase: VhostTransferStatePhase =
+                    msg.phase.try_into().map_err(|_| Error::InvalidMessage)?;
+                let res = self.backend.set_device_state_fd(direction, phase, file);
+
+                // The value returned is both an indication for success, and whether a file
+                // descriptor for a back-end-provided channel is returned: Bits 0–7 are 0 on
+                // success, and non-zero on error. Bit 8 is the invalid FD flag; this flag is
+                // set when there is no file descriptor returned.
+                match res {
+                    Ok(None) => {
+                        let msg = VhostUserU64::new(0x100); // set invalid FD flag
+                        self.main_sock.send_message(&reply_hdr, &msg, None)?;
+                    }
+                    Ok(Some(file)) => {
+                        let msg = VhostUserU64::new(0);
+                        self.main_sock
+                            .send_message(&reply_hdr, &msg, Some(&[file.as_raw_fd()]))?;
+                    }
+                    Err(_) => {
+                        let msg = VhostUserU64::new(0x101);
+                        self.main_sock.send_message(&reply_hdr, &msg, None)?;
+                    }
+                }
+            }
+            Ok(FrontendReq::CHECK_DEVICE_STATE) => {
+                let res = self.backend.check_device_state();
+
+                // We must return a value in the payload to indicate success or error:
+                // 0 is success, any non-zero value is an error.
+                let msg = match res {
+                    Ok(_) => VhostUserU64::new(0),
+                    Err(_) => VhostUserU64::new(1),
+                };
+                self.send_reply_message(&hdr, &msg)?;
+            }
+            #[cfg(feature = "postcopy")]
+            Ok(FrontendReq::POSTCOPY_ADVISE) => {
+                self.check_proto_feature(VhostUserProtocolFeatures::PAGEFAULT)?;
+
+                let res = self.backend.postcopy_advice();
+                match res {
+                    Ok(uffd_file) => {
+                        let hdr = self.new_reply_header::<VhostUserEmpty>(&hdr, 0)?;
+                        self.main_sock.send_message(
+                            &hdr,
+                            &VhostUserEmpty,
+                            Some(&[uffd_file.as_raw_fd()]),
+                        )?
+                    }
+                    Err(_) => self.main_sock.send_message(&hdr, &VhostUserEmpty, None)?,
+                }
+            }
+            #[cfg(feature = "postcopy")]
+            Ok(FrontendReq::POSTCOPY_LISTEN) => {
+                self.check_proto_feature(VhostUserProtocolFeatures::PAGEFAULT)?;
+                let res = self.backend.postcopy_listen();
+                self.send_ack_message(&hdr, res)?;
+            }
+            #[cfg(feature = "postcopy")]
+            Ok(FrontendReq::POSTCOPY_END) => {
+                self.check_proto_feature(VhostUserProtocolFeatures::PAGEFAULT)?;
+                let res = self.backend.postcopy_end();
+                self.send_ack_message(&hdr, res)?;
+            }
+            // Sets logging shared memory space.
+            // When the back-end has `VHOST_USER_PROTOCOL_F_LOG_SHMFD` protocol feature, the log
+            // memory `fd` is provided in the ancillary data of `VHOST_USER_SET_LOG_BASE` message,
+            // the size and offset of shared memory area provided in the message.
+            // See https://qemu-project.gitlab.io/qemu/interop/vhost-user.html#migration.
+            Ok(FrontendReq::SET_LOG_BASE) => {
+                self.check_proto_feature(VhostUserProtocolFeatures::LOG_SHMFD)?;
+                let file = take_single_file(files).ok_or(Error::IncorrectFds)?;
+                let msg = self.extract_request_body::<VhostUserLog>(&hdr, size, &buf)?;
+                self.backend.set_log_base(&msg, file)?;
+                self.send_reply_message(&hdr, &msg)?;
             }
             _ => {
                 return Err(Error::InvalidMessage);
@@ -528,7 +704,7 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
 
     fn set_mem_table(
         &mut self,
-        hdr: &VhostUserMsgHeader<MasterReq>,
+        hdr: &VhostUserMsgHeader<FrontendReq>,
         size: usize,
         buf: &[u8],
         files: Option<Vec<File>>,
@@ -575,7 +751,7 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
         self.backend.set_mem_table(regions, files)
     }
 
-    fn get_config(&mut self, hdr: &VhostUserMsgHeader<MasterReq>, buf: &[u8]) -> Result<()> {
+    fn get_config(&mut self, hdr: &VhostUserMsgHeader<FrontendReq>, buf: &[u8]) -> Result<()> {
         let payload_offset = mem::size_of::<VhostUserConfig>();
         if buf.len() > MAX_MSG_SIZE || buf.len() < payload_offset {
             return Err(Error::InvalidMessage);
@@ -594,9 +770,9 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
         };
         let res = self.backend.get_config(msg.offset, msg.size, flags);
 
-        // vhost-user slave's payload size MUST match master's request
+        // vhost-user backend's payload size MUST match frontend's request
         // on success, uses zero length of payload to indicate an error
-        // to vhost-user master.
+        // to vhost-user frontend.
         match res {
             Ok(ref buf) if buf.len() == msg.size as usize => {
                 let reply = VhostUserConfig::new(msg.offset, buf.len() as u32, flags);
@@ -632,15 +808,25 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
             .set_config(msg.offset, &buf[mem::size_of::<VhostUserConfig>()..], flags)
     }
 
-    fn set_slave_req_fd(&mut self, files: Option<Vec<File>>) -> Result<()> {
+    fn set_backend_req_fd(&mut self, files: Option<Vec<File>>) -> Result<()> {
         let file = take_single_file(files).ok_or(Error::InvalidMessage)?;
         // SAFETY: Safe because we have ownership of the files that were
         // checked when received. We have to trust that they are Unix sockets
         // since we have no way to check this. If not, it will fail later.
         let sock = unsafe { UnixStream::from_raw_fd(file.into_raw_fd()) };
-        let slave = Slave::from_stream(sock);
-        self.backend.set_slave_req_fd(slave);
+        let backend = Backend::from_stream(sock);
+        self.backend.set_backend_req_fd(backend);
         Ok(())
+    }
+
+    fn set_gpu_socket(&mut self, files: Option<Vec<File>>) -> Result<()> {
+        let file = take_single_file(files).ok_or(Error::InvalidMessage)?;
+        // SAFETY: Safe because we have ownership of the files that were
+        // checked when received. We have to trust that they are Unix sockets
+        // since we have no way to check this. If not, it will fail later.
+        let sock = unsafe { UnixStream::from_raw_fd(file.into_raw_fd()) };
+        let gpu_backend = GpuBackend::from_stream(sock);
+        self.backend.set_gpu_socket(gpu_backend)
     }
 
     fn handle_vring_fd_request(
@@ -682,7 +868,7 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
 
     fn check_request_size(
         &self,
-        hdr: &VhostUserMsgHeader<MasterReq>,
+        hdr: &VhostUserMsgHeader<FrontendReq>,
         size: usize,
         expected: usize,
     ) -> Result<()> {
@@ -698,20 +884,22 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
 
     fn check_attached_files(
         &self,
-        hdr: &VhostUserMsgHeader<MasterReq>,
+        hdr: &VhostUserMsgHeader<FrontendReq>,
         files: &Option<Vec<File>>,
     ) -> Result<()> {
         match hdr.get_code() {
             Ok(
-                MasterReq::SET_MEM_TABLE
-                | MasterReq::SET_VRING_CALL
-                | MasterReq::SET_VRING_KICK
-                | MasterReq::SET_VRING_ERR
-                | MasterReq::SET_LOG_BASE
-                | MasterReq::SET_LOG_FD
-                | MasterReq::SET_SLAVE_REQ_FD
-                | MasterReq::SET_INFLIGHT_FD
-                | MasterReq::ADD_MEM_REG,
+                FrontendReq::SET_MEM_TABLE
+                | FrontendReq::SET_VRING_CALL
+                | FrontendReq::SET_VRING_KICK
+                | FrontendReq::SET_VRING_ERR
+                | FrontendReq::SET_LOG_BASE
+                | FrontendReq::SET_LOG_FD
+                | FrontendReq::SET_BACKEND_REQ_FD
+                | FrontendReq::SET_INFLIGHT_FD
+                | FrontendReq::ADD_MEM_REG
+                | FrontendReq::SET_DEVICE_STATE_FD
+                | FrontendReq::GPU_SET_SOCKET,
             ) => Ok(()),
             _ if files.is_some() => Err(Error::InvalidMessage),
             _ => Ok(()),
@@ -720,7 +908,7 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
 
     fn extract_request_body<T: Sized + VhostUserMsgValidator>(
         &self,
-        hdr: &VhostUserMsgHeader<MasterReq>,
+        hdr: &VhostUserMsgHeader<FrontendReq>,
         size: usize,
         buf: &[u8],
     ) -> Result<T> {
@@ -736,21 +924,17 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
     fn update_reply_ack_flag(&mut self) {
         let vflag = VhostUserVirtioFeatures::PROTOCOL_FEATURES.bits();
         let pflag = VhostUserProtocolFeatures::REPLY_ACK;
-        if (self.virtio_features & vflag) != 0
+
+        self.reply_ack_enabled = (self.virtio_features & vflag) != 0
             && self.protocol_features.contains(pflag)
-            && (self.acked_protocol_features & pflag.bits()) != 0
-        {
-            self.reply_ack_enabled = true;
-        } else {
-            self.reply_ack_enabled = false;
-        }
+            && (self.acked_protocol_features & pflag.bits()) != 0;
     }
 
     fn new_reply_header<T: Sized>(
         &self,
-        req: &VhostUserMsgHeader<MasterReq>,
+        req: &VhostUserMsgHeader<FrontendReq>,
         payload_size: usize,
-    ) -> Result<VhostUserMsgHeader<MasterReq>> {
+    ) -> Result<VhostUserMsgHeader<FrontendReq>> {
         if mem::size_of::<T>() > MAX_MSG_SIZE
             || payload_size > MAX_MSG_SIZE
             || mem::size_of::<T>() + payload_size > MAX_MSG_SIZE
@@ -767,7 +951,7 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
 
     fn send_ack_message(
         &mut self,
-        req: &VhostUserMsgHeader<MasterReq>,
+        req: &VhostUserMsgHeader<FrontendReq>,
         res: Result<()>,
     ) -> Result<()> {
         if self.reply_ack_enabled && req.is_need_reply() {
@@ -784,7 +968,7 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
 
     fn send_reply_message<T: ByteValued>(
         &mut self,
-        req: &VhostUserMsgHeader<MasterReq>,
+        req: &VhostUserMsgHeader<FrontendReq>,
         msg: &T,
     ) -> Result<()> {
         let hdr = self.new_reply_header::<T>(req, 0)?;
@@ -794,7 +978,7 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
 
     fn send_reply_with_payload<T: ByteValued>(
         &mut self,
-        req: &VhostUserMsgHeader<MasterReq>,
+        req: &VhostUserMsgHeader<FrontendReq>,
         msg: &T,
         payload: &[u8],
     ) -> Result<()> {
@@ -805,7 +989,7 @@ impl<S: VhostUserSlaveReqHandler> SlaveReqHandler<S> {
     }
 }
 
-impl<S: VhostUserSlaveReqHandler> AsRawFd for SlaveReqHandler<S> {
+impl<S: VhostUserBackendReqHandler> AsRawFd for BackendReqHandler<S> {
     fn as_raw_fd(&self) -> RawFd {
         self.main_sock.as_raw_fd()
     }
@@ -816,14 +1000,14 @@ mod tests {
     use std::os::unix::io::AsRawFd;
 
     use super::*;
-    use crate::vhost_user::dummy_slave::DummySlaveReqHandler;
+    use crate::vhost_user::dummy_backend::DummyBackendReqHandler;
 
     #[test]
-    fn test_slave_req_handler_new() {
+    fn test_backend_req_handler_new() {
         let (p1, _p2) = UnixStream::pair().unwrap();
-        let endpoint = Endpoint::<MasterReq>::from_stream(p1);
-        let backend = Arc::new(Mutex::new(DummySlaveReqHandler::new()));
-        let mut handler = SlaveReqHandler::new(endpoint, backend);
+        let endpoint = Endpoint::<VhostUserMsgHeader<FrontendReq>>::from_stream(p1);
+        let backend = Arc::new(Mutex::new(DummyBackendReqHandler::new()));
+        let mut handler = BackendReqHandler::new(endpoint, backend);
 
         handler.check_state().unwrap();
         handler.set_failed(libc::EAGAIN);
