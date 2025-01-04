@@ -12,14 +12,22 @@
 [package]
 edition = "2021"
 name = "virtio-bindings"
-version = "0.2.2"
+version = "0.2.4"
 authors = ["Sergio Lopez <slp@redhat.com>"]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Rust FFI bindings to virtio generated using bindgen."
 readme = "README.md"
 keywords = ["virtio"]
 license = "BSD-3-Clause OR Apache-2.0"
 repository = "https://github.com/rust-vmm/vm-virtio"
-resolver = "1"
+
+[lib]
+name = "virtio_bindings"
+path = "src/lib.rs"
 
 [dependencies]
 
