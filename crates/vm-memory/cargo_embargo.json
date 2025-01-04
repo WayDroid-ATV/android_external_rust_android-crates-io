@@ -14,16 +14,5 @@
       "device_supported": false
     }
   },
-  "run_cargo": false,
-  "variants": [
-    {
-      "features": [
-        "default"
-      ],
-      "generate_rulesmk": true,
-      "generate_androidbp": false
-    },
-    {
-    }
-  ]
+  "run_cargo": false
 }
