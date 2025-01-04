@@ -19,12 +19,12 @@
 //! Traits and Structs
 //! - [`GuestAddress`](struct.GuestAddress.html): represents a guest physical address (GPA).
 //! - [`MemoryRegionAddress`](struct.MemoryRegionAddress.html): represents an offset inside a
-//! region.
+//!   region.
 //! - [`GuestMemoryRegion`](trait.GuestMemoryRegion.html): represent a continuous region of guest's
-//! physical memory.
+//!   physical memory.
 //! - [`GuestMemory`](trait.GuestMemory.html): represent a collection of `GuestMemoryRegion`
-//! objects.
-//! The main responsibilities of the `GuestMemory` trait are:
+//!   objects.
+//!   The main responsibilities of the `GuestMemory` trait are:
 //!     - hide the detail of accessing guest's physical address.
 //!     - map a request address to a `GuestMemoryRegion` object and relay the request to it.
 //!     - handle cases where an access request spanning two or more `GuestMemoryRegion` objects.
@@ -52,7 +52,9 @@ use std::sync::Arc;
 use crate::address::{Address, AddressValue};
 use crate::bitmap::{Bitmap, BS, MS};
 use crate::bytes::{AtomicAccess, Bytes};
+use crate::io::{ReadVolatile, WriteVolatile};
 use crate::volatile_memory::{self, VolatileSlice};
+use crate::GuestMemoryError;
 
 static MAX_ACCESS_CHUNK: usize = 4096;
 
@@ -75,6 +77,14 @@ pub enum Error {
     /// Host virtual address not available.
     #[error("Guest memory error: host virtual address not available")]
     HostAddressNotAvailable,
+    /// The length returned by the callback passed to `try_access` is outside the address range.
+    #[error(
+        "The length returned by the callback passed to `try_access` is outside the address range."
+    )]
+    CallbackOutOfRange,
+    /// The address to be read by `try_access` is outside the address range.
+    #[error("The address to be read by `try_access` is outside the address range")]
+    GuestAddressOverflow,
 }
 
 impl From<volatile_memory::Error> for Error {
@@ -412,42 +422,6 @@ impl<M: GuestMemory> GuestAddressSpace for Arc<M> {
     }
 }
 
-/// Lifetime generic associated iterators. The actual iterator type is defined through associated
-/// item `Iter`, for example:
-///
-/// ```
-/// # use std::marker::PhantomData;
-/// # use vm_memory::guest_memory::GuestMemoryIterator;
-/// #
-/// // Declare the relevant Region and Memory types
-/// struct MyGuestRegion {/* fields omitted */}
-/// struct MyGuestMemory {/* fields omitted */}
-///
-/// // Make an Iterator type to iterate over the Regions
-/// # /*
-/// struct MyGuestMemoryIter<'a> {/* fields omitted */}
-/// # */
-/// # struct MyGuestMemoryIter<'a> {
-/// #   _marker: PhantomData<&'a MyGuestRegion>,
-/// # }
-/// impl<'a> Iterator for MyGuestMemoryIter<'a> {
-///     type Item = &'a MyGuestRegion;
-///     fn next(&mut self) -> Option<&'a MyGuestRegion> {
-///         // ...
-/// #       None
-///     }
-/// }
-///
-/// // Associate the Iter type with the Memory type
-/// impl<'a> GuestMemoryIterator<'a, MyGuestRegion> for MyGuestMemory {
-///     type Iter = MyGuestMemoryIter<'a>;
-/// }
-/// ```
-pub trait GuestMemoryIterator<'a, R: 'a> {
-    /// Type of the `iter` method's return value.
-    type Iter: Iterator<Item = &'a R>;
-}
-
 /// `GuestMemory` represents a container for an *immutable* collection of
 /// `GuestMemoryRegion` objects.  `GuestMemory` provides the `Bytes<GuestAddress>`
 /// trait to hide the details of accessing guest memory by physical address.
@@ -460,9 +434,6 @@ pub trait GuestMemoryIterator<'a, R: 'a> {
 pub trait GuestMemory {
     /// Type of objects hosted by the address space.
     type R: GuestMemoryRegion;
-
-    /// Lifetime generic associated iterators. Usually this is just `Self`.
-    type I: for<'a> GuestMemoryIterator<'a, Self::R>;
 
     /// Returns the number of regions in the collection.
     fn num_regions(&self) -> usize;
@@ -504,7 +475,7 @@ pub trait GuestMemory {
     ///
     /// * Compute the total size of all memory mappings in KB by iterating over the memory regions
     ///   and dividing their sizes to 1024, then summing up the values in an accumulator. (uses the
-    ///  `backend-mmap` feature)
+    ///   `backend-mmap` feature)
     ///
     /// ```
     /// # #[cfg(feature = "backend-mmap")]
@@ -523,7 +494,7 @@ pub trait GuestMemory {
     /// assert_eq!(3, total_size)
     /// # }
     /// ```
-    fn iter(&self) -> <Self::I as GuestMemoryIterator<Self::R>>::Iter;
+    fn iter(&self) -> impl Iterator<Item = &Self::R>;
 
     /// Applies two functions, specified as callbacks, on the inner memory regions.
     ///
@@ -540,7 +511,7 @@ pub trait GuestMemory {
     ///
     /// * Compute the total size of all memory mappings in KB by iterating over the memory regions
     ///   and dividing their sizes to 1024, then summing up the values in an accumulator. (uses the
-    ///  `backend-mmap` feature)
+    ///   `backend-mmap` feature)
     ///
     /// ```
     /// # #[cfg(feature = "backend-mmap")]
@@ -644,15 +615,15 @@ pub trait GuestMemory {
                 Ok(0) => return Ok(total),
                 // made some progress
                 Ok(len) => {
-                    total += len;
-                    if total == count {
-                        break;
-                    }
+                    total = match total.checked_add(len) {
+                        Some(x) if x < count => x,
+                        Some(x) if x == count => return Ok(x),
+                        _ => return Err(Error::CallbackOutOfRange),
+                    };
                     cur = match cur.overflowing_add(len as GuestUsize) {
-                        (GuestAddress(0), _) => GuestAddress(0),
-                        (result, false) => result,
-                        (_, true) => panic!("guest address overflow"),
-                    }
+                        (x @ GuestAddress(0), _) | (x, false) => x,
+                        (_, true) => return Err(Error::GuestAddressOverflow),
+                    };
                 }
                 // error happened
                 e => return e,
@@ -663,6 +634,143 @@ pub trait GuestMemory {
         } else {
             Ok(total)
         }
+    }
+
+    /// Reads up to `count` bytes from an object and writes them into guest memory at `addr`.
+    ///
+    /// Returns the number of bytes written into guest memory.
+    ///
+    /// # Arguments
+    /// * `addr` - Begin writing at this address.
+    /// * `src` - Copy from `src` into the container.
+    /// * `count` - Copy `count` bytes from `src` into the container.
+    ///
+    /// # Examples
+    ///
+    /// * Read bytes from /dev/urandom (uses the `backend-mmap` feature)
+    ///
+    /// ```
+    /// # #[cfg(feature = "backend-mmap")]
+    /// # {
+    /// # use vm_memory::{Address, GuestMemory, Bytes, GuestAddress, GuestMemoryMmap};
+    /// # use std::fs::File;
+    /// # use std::path::Path;
+    /// #
+    /// # let start_addr = GuestAddress(0x1000);
+    /// # let gm = GuestMemoryMmap::<()>::from_ranges(&vec![(start_addr, 0x400)])
+    /// #    .expect("Could not create guest memory");
+    /// # let addr = GuestAddress(0x1010);
+    /// # let mut file = if cfg!(unix) {
+    /// let mut file = File::open(Path::new("/dev/urandom")).expect("Could not open /dev/urandom");
+    /// #   file
+    /// # } else {
+    /// #   File::open(Path::new("c:\\Windows\\system32\\ntoskrnl.exe"))
+    /// #       .expect("Could not open c:\\Windows\\system32\\ntoskrnl.exe")
+    /// # };
+    ///
+    /// gm.read_volatile_from(addr, &mut file, 128)
+    ///     .expect("Could not read from /dev/urandom into guest memory");
+    ///
+    /// let read_addr = addr.checked_add(8).expect("Could not compute read address");
+    /// let rand_val: u32 = gm
+    ///     .read_obj(read_addr)
+    ///     .expect("Could not read u32 val from /dev/urandom");
+    /// # }
+    /// ```
+    fn read_volatile_from<F>(&self, addr: GuestAddress, src: &mut F, count: usize) -> Result<usize>
+    where
+        F: ReadVolatile,
+    {
+        self.try_access(count, addr, |offset, len, caddr, region| -> Result<usize> {
+            // Check if something bad happened before doing unsafe things.
+            assert!(offset <= count);
+
+            let mut vslice = region.get_slice(caddr, len)?;
+
+            src.read_volatile(&mut vslice)
+                .map_err(GuestMemoryError::from)
+        })
+    }
+
+    /// Reads up to `count` bytes from guest memory at `addr` and writes them it into an object.
+    ///
+    /// Returns the number of bytes copied from guest memory.
+    ///
+    /// # Arguments
+    /// * `addr` - Begin reading from this address.
+    /// * `dst` - Copy from guest memory to `dst`.
+    /// * `count` - Copy `count` bytes from guest memory to `dst`.
+    fn write_volatile_to<F>(&self, addr: GuestAddress, dst: &mut F, count: usize) -> Result<usize>
+    where
+        F: WriteVolatile,
+    {
+        self.try_access(count, addr, |offset, len, caddr, region| -> Result<usize> {
+            // Check if something bad happened before doing unsafe things.
+            assert!(offset <= count);
+
+            let vslice = region.get_slice(caddr, len)?;
+
+            // For a non-RAM region, reading could have side effects, so we
+            // must use write_all().
+            dst.write_all_volatile(&vslice)?;
+
+            Ok(len)
+        })
+    }
+
+    /// Reads exactly `count` bytes from an object and writes them into guest memory at `addr`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `count` bytes couldn't have been copied from `src` to guest memory.
+    /// Part of the data may have been copied nevertheless.
+    ///
+    /// # Arguments
+    /// * `addr` - Begin writing at this address.
+    /// * `src` - Copy from `src` into guest memory.
+    /// * `count` - Copy exactly `count` bytes from `src` into guest memory.
+    fn read_exact_volatile_from<F>(
+        &self,
+        addr: GuestAddress,
+        src: &mut F,
+        count: usize,
+    ) -> Result<()>
+    where
+        F: ReadVolatile,
+    {
+        let res = self.read_volatile_from(addr, src, count)?;
+        if res != count {
+            return Err(Error::PartialBuffer {
+                expected: count,
+                completed: res,
+            });
+        }
+        Ok(())
+    }
+
+    /// Reads exactly `count` bytes from guest memory at `addr` and writes them into an object.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `count` bytes couldn't have been copied from guest memory to `dst`.
+    /// Part of the data may have been copied nevertheless.
+    ///
+    /// # Arguments
+    /// * `addr` - Begin reading from this address.
+    /// * `dst` - Copy from guest memory to `dst`.
+    /// * `count` - Copy exactly `count` bytes from guest memory to `dst`.
+    fn write_all_volatile_to<F>(&self, addr: GuestAddress, dst: &mut F, count: usize) -> Result<()>
+    where
+        F: WriteVolatile,
+    {
+        let res = self.write_volatile_to(addr, dst, count)?;
+        if res != count {
+            return Err(Error::PartialBuffer {
+                expected: count,
+                completed: res,
+            });
+        }
+        Ok(())
     }
 
     /// Get the host virtual address corresponding to the guest address.
@@ -856,6 +964,7 @@ impl<T: GuestMemory + ?Sized> Bytes<GuestAddress> for T {
     where
         F: Read,
     {
+        #[allow(deprecated)] // this function itself is deprecated
         let res = self.read_from(addr, src, count)?;
         if res != count {
             return Err(Error::PartialBuffer {
@@ -949,6 +1058,7 @@ impl<T: GuestMemory + ?Sized> Bytes<GuestAddress> for T {
     where
         F: Write,
     {
+        #[allow(deprecated)] // this function itself is deprecated
         let res = self.write_to(addr, dst, count)?;
         if res != count {
             return Err(Error::PartialBuffer {
@@ -982,8 +1092,6 @@ mod tests {
     use crate::bytes::ByteValued;
     #[cfg(feature = "backend-mmap")]
     use crate::GuestAddress;
-    #[cfg(feature = "backend-mmap")]
-    use std::io::Cursor;
     #[cfg(feature = "backend-mmap")]
     use std::time::{Duration, Instant};
 
@@ -1024,7 +1132,7 @@ mod tests {
         let count: usize = 0x20;
         assert_eq!(
             0x20_usize,
-            mem.read_from(offset, &mut Cursor::new(&image), count)
+            mem.read_volatile_from(offset, &mut image.as_slice(), count)
                 .unwrap()
         );
     }
@@ -1179,19 +1287,24 @@ mod tests {
         assert!(mem.write_obj(obj, addr).is_ok());
         assert!(mem.read_obj::<ZeroSizedStruct>(addr).is_ok());
 
-        assert_eq!(mem.read_from(addr, &mut Cursor::new(&image), 0).unwrap(), 0);
-
-        assert!(mem
-            .read_exact_from(addr, &mut Cursor::new(&image), 0)
-            .is_ok());
-
         assert_eq!(
-            mem.write_to(addr, &mut Cursor::new(&mut image), 0).unwrap(),
+            mem.read_volatile_from(addr, &mut image.as_slice(), 0)
+                .unwrap(),
             0
         );
 
         assert!(mem
-            .write_all_to(addr, &mut Cursor::new(&mut image), 0)
+            .read_exact_volatile_from(addr, &mut image.as_slice(), 0)
+            .is_ok());
+
+        assert_eq!(
+            mem.write_volatile_to(addr, &mut image.as_mut_slice(), 0)
+                .unwrap(),
+            0
+        );
+
+        assert!(mem
+            .write_all_volatile_to(addr, &mut image.as_mut_slice(), 0)
             .is_ok());
     }
 
