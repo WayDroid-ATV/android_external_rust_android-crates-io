@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8860b290_6037f684",
+        "filename": "crates/spki/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-06T12:17:39Z",
+      "side": 1,
+      "message": "As the comment says, this build file is automatically generated. Please edit `cargo_embargo.json` and run `./crate_tool regenerate spki`.",
+      "revId": "a3a9ab7c13d4e584b9eacc9db04cb9b11e51f2d5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dd9d30a8_a258708d",
+        "filename": "crates/x509-cert/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-06T12:17:39Z",
+      "side": 1,
+      "message": "Ditto.",
+      "revId": "a3a9ab7c13d4e584b9eacc9db04cb9b11e51f2d5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
