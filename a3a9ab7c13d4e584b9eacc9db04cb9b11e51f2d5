@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9ff4217f_26216508",
+        "filename": "crates/spki/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1836235
+      },
+      "writtenOn": "2025-01-06T13:07:23Z",
+      "side": 1,
+      "message": "Doh, forgot about that -- done (and thanks for the help with the new versions of the tools).",
+      "parentUuid": "8860b290_6037f684",
+      "revId": "a3a9ab7c13d4e584b9eacc9db04cb9b11e51f2d5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "dd9d30a8_a258708d",
@@ -31,6 +49,24 @@
       "writtenOn": "2025-01-06T12:17:39Z",
       "side": 1,
       "message": "Ditto.",
+      "revId": "a3a9ab7c13d4e584b9eacc9db04cb9b11e51f2d5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "93122875_aedd47ec",
+        "filename": "crates/x509-cert/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1836235
+      },
+      "writtenOn": "2025-01-06T13:07:23Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dd9d30a8_a258708d",
       "revId": "a3a9ab7c13d4e584b9eacc9db04cb9b11e51f2d5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
