@@ -34,6 +34,24 @@
       "parentUuid": "635f7dee_52b8a4c6",
       "revId": "da6f2c218f45564f111aa9535577cd309e8cb885",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "edbaf117_3e5e3d34",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-07T23:29:07Z",
+      "side": 1,
+      "message": "Yes. If the Cargo.toml is incorrect, then a patch seems appropriate. Basically, correct the Cargo.toml, then do \"git diff\" and pipe the output to a file in the patches/ directory. The details are in the link I sent you.",
+      "parentUuid": "c9a66a7f_c987cf69",
+      "revId": "da6f2c218f45564f111aa9535577cd309e8cb885",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
