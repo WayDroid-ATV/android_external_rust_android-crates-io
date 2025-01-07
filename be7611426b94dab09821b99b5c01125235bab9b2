@@ -74,6 +74,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "96d7a768_8ffd8b2b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-01-07T18:09:21Z",
+      "side": 1,
+      "message": "@qwandor : I created https://android-review.git.corp.google.com/c/platform/development/+/3439822 to avoid having as much noise in future regenerations",
+      "parentUuid": "b6db35a5_2995b4a7",
+      "revId": "be7611426b94dab09821b99b5c01125235bab9b2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c2ddc883_c2905fbe",
         "filename": "crates/bitflags/src/lib.rs",
         "patchSetId": 1
