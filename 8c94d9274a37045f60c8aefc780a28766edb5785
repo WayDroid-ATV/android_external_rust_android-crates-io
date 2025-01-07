@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "82cd1ba7_8ba59a29",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1110304
+      },
+      "writtenOn": "2025-01-07T01:22:53Z",
+      "side": 1,
+      "message": "I filed a bug with the developers of the project on github (https://github.com/rust-vmm/vm-virtio/issues/321) and they acknowledged the inconsisntency exists and that it should be OR instead of AND, but they don\u0027t seem too eager to fix it anytime soon.\n\nGiven that crate_tool is currently unable to update this crate because of this, updating (semi-)manually like I did here seems reasonable to me since the end result is the same (crate_tool can\u0027t update it).",
+      "range": {
+        "startLine": 11,
+        "startChar": 55,
+        "endLine": 15,
+        "endChar": 14
+      },
+      "revId": "8c94d9274a37045f60c8aefc780a28766edb5785",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
