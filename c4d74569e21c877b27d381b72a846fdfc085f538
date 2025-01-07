@@ -16,6 +16,24 @@
       "message": "Hmm, I wonder if this should be in the previous patch because you edited the cargo_embargo.json to remove tests, but then combined that with the upgrade.",
       "revId": "c4d74569e21c877b27d381b72a846fdfc085f538",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "59df593a_8e502975",
+        "filename": "crates/arbitrary/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-01-07T21:53:54Z",
+      "side": 0,
+      "message": "Without the upgrade, I can\u0027t run `regenerate` - the impetus for the upgrade is that `regenerate` is broken for 1.2.3 due to an upstream bug - see the bug linked to this commit.",
+      "parentUuid": "40808d9b_af139af6",
+      "revId": "c4d74569e21c877b27d381b72a846fdfc085f538",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
