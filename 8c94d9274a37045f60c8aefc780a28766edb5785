@@ -22,6 +22,30 @@
       },
       "revId": "8c94d9274a37045f60c8aefc780a28766edb5785",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f7748b69_473acc4f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-07T01:57:00Z",
+      "side": 1,
+      "message": "https://github.com/rust-vmm/vm-virtio/issues/283 changed the licensing to \"AND\". @iankaz@google.com, we probably need this to go through 3p review again (once we update cargo_embargo to \"accept\" and understand that license type). I assume that this will probably be ok, but wanted to run things by you. Also, if you have a suggestion for who we might need to talk to on the 3p/licensing side, that would be appreciated. I think we just need to edit https://android.googlesource.com/platform//development/+/refs/heads/main/tools/cargo_embargo/src/main.rs#769 with the \"AND\" combination.",
+      "parentUuid": "82cd1ba7_8ba59a29",
+      "range": {
+        "startLine": 11,
+        "startChar": 55,
+        "endLine": 15,
+        "endChar": 14
+      },
+      "revId": "8c94d9274a37045f60c8aefc780a28766edb5785",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
