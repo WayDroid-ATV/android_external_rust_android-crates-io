@@ -56,6 +56,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "b6db35a5_2995b4a7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-01-07T17:53:03Z",
+      "side": 1,
+      "message": "The changes to the source file come form running `./crate_tool regenerate`. The changes to the `.android-checksum.json` come from the same place. The checksum noise was thus going to be next to the source edit noise, which is why I split out the configuration modification commit (delete patchfiles) from the build-action commit (rebuild the repo).",
+      "parentUuid": "f1316e2f_8b68a481",
+      "revId": "be7611426b94dab09821b99b5c01125235bab9b2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c2ddc883_c2905fbe",
         "filename": "crates/bitflags/src/lib.rs",
         "patchSetId": 1
