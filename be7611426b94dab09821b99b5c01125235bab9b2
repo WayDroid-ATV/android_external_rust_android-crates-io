@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2fef0029_7c8ee160",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-07T10:09:16Z",
+      "side": 1,
+      "message": "There are a bunch of code changes here which are hard to spot among all the generted changes. Can they be made in a separate commit instead?",
+      "revId": "be7611426b94dab09821b99b5c01125235bab9b2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c2ddc883_c2905fbe",
+        "filename": "crates/bitflags/src/lib.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-07T10:09:16Z",
+      "side": 1,
+      "message": "It\u0027s not obvious from the commit message why this is being changed, maybe this should be in a separate commit?",
+      "revId": "be7611426b94dab09821b99b5c01125235bab9b2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2342f705_02a36e01",
+        "filename": "crates/cast/src/lib.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-07T10:09:16Z",
+      "side": 1,
+      "message": "Ditto.",
+      "revId": "be7611426b94dab09821b99b5c01125235bab9b2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6b72309c_01e5cdd6",
+        "filename": "crates/cfg-if/src/lib.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-07T10:09:16Z",
+      "side": 1,
+      "message": "Same here.",
+      "revId": "be7611426b94dab09821b99b5c01125235bab9b2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "51ea7b9b_d467ee63",
+        "filename": "crates/ciborium-io/src/lib.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-07T10:09:16Z",
+      "side": 1,
+      "message": "Another one.",
+      "revId": "be7611426b94dab09821b99b5c01125235bab9b2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
