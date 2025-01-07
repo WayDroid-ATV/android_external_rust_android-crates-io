@@ -34,6 +34,24 @@
       "parentUuid": "40808d9b_af139af6",
       "revId": "c4d74569e21c877b27d381b72a846fdfc085f538",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f477833d_729c82ba",
+        "filename": "crates/arbitrary/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-07T21:58:21Z",
+      "side": 0,
+      "message": "Ah yeah, I missed that part. Thanks for clarifying here.",
+      "parentUuid": "59df593a_8e502975",
+      "revId": "c4d74569e21c877b27d381b72a846fdfc085f538",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
