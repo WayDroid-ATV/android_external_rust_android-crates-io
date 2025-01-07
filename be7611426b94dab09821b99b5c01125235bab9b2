@@ -38,6 +38,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "f1316e2f_8b68a481",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-07T17:51:30Z",
+      "side": 1,
+      "message": "I see. I guess this is a bit of a nit, but I think it would be clearer to have both removing the diffs and making the corresponding changes to the source files in the same commit, separate from all the `.android-checksum.json` changes for unrelated crates.",
+      "parentUuid": "f10c94d0_99efd9c9",
+      "revId": "be7611426b94dab09821b99b5c01125235bab9b2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c2ddc883_c2905fbe",
         "filename": "crates/bitflags/src/lib.rs",
         "patchSetId": 1
