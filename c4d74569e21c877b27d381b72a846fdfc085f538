@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "40808d9b_af139af6",
+        "filename": "crates/arbitrary/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-07T21:52:46Z",
+      "side": 0,
+      "message": "Hmm, I wonder if this should be in the previous patch because you edited the cargo_embargo.json to remove tests, but then combined that with the upgrade.",
+      "revId": "c4d74569e21c877b27d381b72a846fdfc085f538",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
