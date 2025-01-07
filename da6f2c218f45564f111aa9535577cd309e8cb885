@@ -16,6 +16,24 @@
       "message": "Instead of hacking cargo_embargo, please try adding a patch to Cargo.toml to correct the error: https://android.googlesource.com/platform/external/rust/android-crates-io/+/refs/heads/main#how-to-add-a-patch-file\n\nI\u0027ll be back at work next week, and can try to think of a better solution, because this is not the first case of needing to handle weird licensing edge cases.",
       "revId": "da6f2c218f45564f111aa9535577cd309e8cb885",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c9a66a7f_c987cf69",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1110304
+      },
+      "writtenOn": "2025-01-07T18:04:32Z",
+      "side": 1,
+      "message": "I\u0027m not sure I understand how to use a patch for this. The problem is cargo_embargo doesn\u0027t recognize the license string, are you suggesting a patch to change that string?",
+      "parentUuid": "635f7dee_52b8a4c6",
+      "revId": "da6f2c218f45564f111aa9535577cd309e8cb885",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
