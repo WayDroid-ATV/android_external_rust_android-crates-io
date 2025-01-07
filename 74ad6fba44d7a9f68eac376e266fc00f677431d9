@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d29a1f1a_9586240e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-07T08:35:26Z",
+      "side": 1,
+      "message": "Ugh...sorry that you had to clean this up. This is why I had to write a linter to ensure that people are running `crate_tool regenerate`.",
+      "revId": "74ad6fba44d7a9f68eac376e266fc00f677431d9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
