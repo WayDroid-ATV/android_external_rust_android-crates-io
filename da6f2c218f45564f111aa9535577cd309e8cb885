@@ -52,6 +52,24 @@
       "parentUuid": "c9a66a7f_c987cf69",
       "revId": "da6f2c218f45564f111aa9535577cd309e8cb885",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "824a9d56_17325110",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-08T00:52:01Z",
+      "side": 1,
+      "message": "According to upstream, the Cargo.toml is **correct** as they relicensed the software with \"AND\" of the 2 licenses. In order to update, we need a license re-review, and that requires us to update cargo_embargo\u0027s rules to recognize the \"AND\" of these 2 licenses. That\u0027s what I asked for from Ian above.",
+      "parentUuid": "edbaf117_3e5e3d34",
+      "revId": "da6f2c218f45564f111aa9535577cd309e8cb885",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
