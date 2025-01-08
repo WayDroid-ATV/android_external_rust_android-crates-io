@@ -40,7 +40,7 @@ rust_library {
         "libcfg_if",
         "libgetrandom",
         "libonce_cell",
-        "libzerocopy",
+        "libzerocopy-0.7.35",
     ],
     apex_available: [
         "//apex_available:platform",

@@ -81,7 +81,8 @@
 //! notation.
 
 #![no_std]
-#![doc(html_root_url = "https://docs.rs/ryu/1.0.16")]
+#![doc(html_root_url = "https://docs.rs/ryu/1.0.18")]
+#![cfg_attr(not(check_cfg), allow(unexpected_cfgs))]
 #![allow(
     clippy::cast_lossless,
     clippy::cast_possible_truncation,
@@ -115,9 +116,6 @@ mod digit_table;
 mod f2s;
 mod f2s_intrinsics;
 mod pretty;
-
-#[cfg(android_dylib)]
-extern crate std;
 
 pub use crate::buffer::{Buffer, Float};
 

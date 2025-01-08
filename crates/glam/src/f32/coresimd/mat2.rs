@@ -1,10 +1,9 @@
 // Generated from mat.rs.tera template. Edit the template, not the generated file.
 
 use crate::{f32::math, swizzles::*, DMat2, Mat3, Mat3A, Vec2};
-#[cfg(not(target_arch = "spirv"))]
 use core::fmt;
 use core::iter::{Product, Sum};
-use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 use core::simd::*;
 
@@ -114,11 +113,57 @@ impl Mat2 {
         Self::from_cols(m.x_axis.xy(), m.y_axis.xy())
     }
 
+    /// Creates a 2x2 matrix from the minor of the given 3x3 matrix, discarding the `i`th column
+    /// and `j`th row.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `i` or `j` is greater than 2.
+    #[inline]
+    #[must_use]
+    pub fn from_mat3_minor(m: Mat3, i: usize, j: usize) -> Self {
+        match (i, j) {
+            (0, 0) => Self::from_cols(m.y_axis.yz(), m.z_axis.yz()),
+            (0, 1) => Self::from_cols(m.y_axis.xz(), m.z_axis.xz()),
+            (0, 2) => Self::from_cols(m.y_axis.xy(), m.z_axis.xy()),
+            (1, 0) => Self::from_cols(m.x_axis.yz(), m.z_axis.yz()),
+            (1, 1) => Self::from_cols(m.x_axis.xz(), m.z_axis.xz()),
+            (1, 2) => Self::from_cols(m.x_axis.xy(), m.z_axis.xy()),
+            (2, 0) => Self::from_cols(m.x_axis.yz(), m.y_axis.yz()),
+            (2, 1) => Self::from_cols(m.x_axis.xz(), m.y_axis.xz()),
+            (2, 2) => Self::from_cols(m.x_axis.xy(), m.y_axis.xy()),
+            _ => panic!("index out of bounds"),
+        }
+    }
+
     /// Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
     #[inline]
     #[must_use]
     pub fn from_mat3a(m: Mat3A) -> Self {
         Self::from_cols(m.x_axis.xy(), m.y_axis.xy())
+    }
+
+    /// Creates a 2x2 matrix from the minor of the given 3x3 matrix, discarding the `i`th column
+    /// and `j`th row.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `i` or `j` is greater than 2.
+    #[inline]
+    #[must_use]
+    pub fn from_mat3a_minor(m: Mat3A, i: usize, j: usize) -> Self {
+        match (i, j) {
+            (0, 0) => Self::from_cols(m.y_axis.yz(), m.z_axis.yz()),
+            (0, 1) => Self::from_cols(m.y_axis.xz(), m.z_axis.xz()),
+            (0, 2) => Self::from_cols(m.y_axis.xy(), m.z_axis.xy()),
+            (1, 0) => Self::from_cols(m.x_axis.yz(), m.z_axis.yz()),
+            (1, 1) => Self::from_cols(m.x_axis.xz(), m.z_axis.xz()),
+            (1, 2) => Self::from_cols(m.x_axis.xy(), m.z_axis.xy()),
+            (2, 0) => Self::from_cols(m.x_axis.yz(), m.y_axis.yz()),
+            (2, 1) => Self::from_cols(m.x_axis.xz(), m.y_axis.xz()),
+            (2, 2) => Self::from_cols(m.x_axis.xy(), m.y_axis.xy()),
+            _ => panic!("index out of bounds"),
+        }
     }
 
     /// Creates a 2x2 matrix from the first 4 values in `slice`.
@@ -293,6 +338,13 @@ impl Mat2 {
         Self(self.0 * f32x4::splat(rhs))
     }
 
+    /// Divides a 2x2 matrix by a scalar.
+    #[inline]
+    #[must_use]
+    pub fn div_scalar(&self, rhs: f32) -> Self {
+        Self(self.0 / f32x4::splat(rhs))
+    }
+
     /// Returns true if the absolute difference of all elements between `self` and `rhs`
     /// is less than or equal to `max_abs_diff`.
     ///
@@ -307,6 +359,13 @@ impl Mat2 {
     pub fn abs_diff_eq(&self, rhs: Self, max_abs_diff: f32) -> bool {
         self.x_axis.abs_diff_eq(rhs.x_axis, max_abs_diff)
             && self.y_axis.abs_diff_eq(rhs.y_axis, max_abs_diff)
+    }
+
+    /// Takes the absolute value of each element in `self`
+    #[inline]
+    #[must_use]
+    pub fn abs(&self) -> Self {
+        Self::from_cols(self.x_axis.abs(), self.y_axis.abs())
     }
 
     #[inline]
@@ -406,6 +465,29 @@ impl MulAssign<f32> for Mat2 {
     }
 }
 
+impl Div<Mat2> for f32 {
+    type Output = Mat2;
+    #[inline]
+    fn div(self, rhs: Mat2) -> Self::Output {
+        rhs.div_scalar(self)
+    }
+}
+
+impl Div<f32> for Mat2 {
+    type Output = Self;
+    #[inline]
+    fn div(self, rhs: f32) -> Self::Output {
+        self.div_scalar(rhs)
+    }
+}
+
+impl DivAssign<f32> for Mat2 {
+    #[inline]
+    fn div_assign(&mut self, rhs: f32) {
+        *self = self.div_scalar(rhs);
+    }
+}
+
 impl Sum<Self> for Mat2 {
     fn sum<I>(iter: I) -> Self
     where
@@ -480,7 +562,6 @@ impl core::ops::DerefMut for Mat2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Debug for Mat2 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct(stringify!(Mat2))
@@ -490,9 +571,12 @@ impl fmt::Debug for Mat2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Display for Mat2 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}, {}]", self.x_axis, self.y_axis)
+        if let Some(p) = f.precision() {
+            write!(f, "[{:.*}, {:.*}]", p, self.x_axis, p, self.y_axis)
+        } else {
+            write!(f, "[{}, {}]", self.x_axis, self.y_axis)
+        }
     }
 }

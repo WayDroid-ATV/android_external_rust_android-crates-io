@@ -1,8 +1,9 @@
 // Generated from vec.rs.tera template. Edit the template, not the generated file.
 
-use crate::{BVec4, I16Vec4, I64Vec4, IVec2, IVec3, U16Vec4, U64Vec4, UVec4};
+#[cfg(not(feature = "scalar-math"))]
+use crate::BVec4A;
+use crate::{BVec4, I16Vec4, I64Vec4, I8Vec4, IVec2, IVec3, U16Vec4, U64Vec4, U8Vec4, UVec4};
 
-#[cfg(not(target_arch = "spirv"))]
 use core::fmt;
 use core::iter::{Product, Sum};
 use core::{f32, ops::*};
@@ -92,6 +93,16 @@ impl IVec4 {
         }
     }
 
+    /// Returns a vector containing each element of `self` modified by a mapping function `f`.
+    #[inline]
+    #[must_use]
+    pub fn map<F>(self, f: F) -> Self
+    where
+        F: Fn(i32) -> i32,
+    {
+        Self::new(f(self.x), f(self.y), f(self.z), f(self.w))
+    }
+
     /// Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
     /// for each element of `self`.
     ///
@@ -130,6 +141,7 @@ impl IVec4 {
     #[inline]
     #[must_use]
     pub const fn from_slice(slice: &[i32]) -> Self {
+        assert!(slice.len() >= 4);
         Self::new(slice[0], slice[1], slice[2], slice[3])
     }
 
@@ -140,10 +152,7 @@ impl IVec4 {
     /// Panics if `slice` is less than 4 elements long.
     #[inline]
     pub fn write_to_slice(self, slice: &mut [i32]) {
-        slice[0] = self.x;
-        slice[1] = self.y;
-        slice[2] = self.z;
-        slice[3] = self.w;
+        slice[..4].copy_from_slice(&self.to_array());
     }
 
     /// Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
@@ -154,6 +163,38 @@ impl IVec4 {
     pub fn truncate(self) -> IVec3 {
         use crate::swizzles::Vec4Swizzles;
         self.xyz()
+    }
+
+    /// Creates a 4D vector from `self` with the given value of `x`.
+    #[inline]
+    #[must_use]
+    pub fn with_x(mut self, x: i32) -> Self {
+        self.x = x;
+        self
+    }
+
+    /// Creates a 4D vector from `self` with the given value of `y`.
+    #[inline]
+    #[must_use]
+    pub fn with_y(mut self, y: i32) -> Self {
+        self.y = y;
+        self
+    }
+
+    /// Creates a 4D vector from `self` with the given value of `z`.
+    #[inline]
+    #[must_use]
+    pub fn with_z(mut self, z: i32) -> Self {
+        self.z = z;
+        self
+    }
+
+    /// Creates a 4D vector from `self` with the given value of `w`.
+    #[inline]
+    #[must_use]
+    pub fn with_w(mut self, w: i32) -> Self {
+        self.w = w;
+        self
     }
 
     /// Computes the dot product of `self` and `rhs`.
@@ -228,6 +269,24 @@ impl IVec4 {
     #[must_use]
     pub fn max_element(self) -> i32 {
         self.x.max(self.y.max(self.z.max(self.w)))
+    }
+
+    /// Returns the sum of all elements of `self`.
+    ///
+    /// In other words, this computes `self.x + self.y + ..`.
+    #[inline]
+    #[must_use]
+    pub fn element_sum(self) -> i32 {
+        self.x + self.y + self.z + self.w
+    }
+
+    /// Returns the product of all elements of `self`.
+    ///
+    /// In other words, this computes `self.x * self.y * ..`.
+    #[inline]
+    #[must_use]
+    pub fn element_product(self) -> i32 {
+        self.x * self.y * self.z * self.w
     }
 
     /// Returns a vector mask containing the result of a `==` comparison for each element of
@@ -428,6 +487,20 @@ impl IVec4 {
         crate::DVec4::new(self.x as f64, self.y as f64, self.z as f64, self.w as f64)
     }
 
+    /// Casts all elements of `self` to `i8`.
+    #[inline]
+    #[must_use]
+    pub fn as_i8vec4(&self) -> crate::I8Vec4 {
+        crate::I8Vec4::new(self.x as i8, self.y as i8, self.z as i8, self.w as i8)
+    }
+
+    /// Casts all elements of `self` to `u8`.
+    #[inline]
+    #[must_use]
+    pub fn as_u8vec4(&self) -> crate::U8Vec4 {
+        crate::U8Vec4::new(self.x as u8, self.y as u8, self.z as u8, self.w as u8)
+    }
+
     /// Casts all elements of `self` to `i16`.
     #[inline]
     #[must_use]
@@ -574,6 +647,62 @@ impl IVec4 {
             w: self.w.saturating_div(rhs.w),
         }
     }
+
+    /// Returns a vector containing the wrapping addition of `self` and unsigned vector `rhs`.
+    ///
+    /// In other words this computes `[self.x.wrapping_add_unsigned(rhs.x), self.y.wrapping_add_unsigned(rhs.y), ..]`.
+    #[inline]
+    #[must_use]
+    pub const fn wrapping_add_unsigned(self, rhs: UVec4) -> Self {
+        Self {
+            x: self.x.wrapping_add_unsigned(rhs.x),
+            y: self.y.wrapping_add_unsigned(rhs.y),
+            z: self.z.wrapping_add_unsigned(rhs.z),
+            w: self.w.wrapping_add_unsigned(rhs.w),
+        }
+    }
+
+    /// Returns a vector containing the wrapping subtraction of `self` and unsigned vector `rhs`.
+    ///
+    /// In other words this computes `[self.x.wrapping_sub_unsigned(rhs.x), self.y.wrapping_sub_unsigned(rhs.y), ..]`.
+    #[inline]
+    #[must_use]
+    pub const fn wrapping_sub_unsigned(self, rhs: UVec4) -> Self {
+        Self {
+            x: self.x.wrapping_sub_unsigned(rhs.x),
+            y: self.y.wrapping_sub_unsigned(rhs.y),
+            z: self.z.wrapping_sub_unsigned(rhs.z),
+            w: self.w.wrapping_sub_unsigned(rhs.w),
+        }
+    }
+
+    // Returns a vector containing the saturating addition of `self` and unsigned vector `rhs`.
+    ///
+    /// In other words this computes `[self.x.saturating_add_unsigned(rhs.x), self.y.saturating_add_unsigned(rhs.y), ..]`.
+    #[inline]
+    #[must_use]
+    pub const fn saturating_add_unsigned(self, rhs: UVec4) -> Self {
+        Self {
+            x: self.x.saturating_add_unsigned(rhs.x),
+            y: self.y.saturating_add_unsigned(rhs.y),
+            z: self.z.saturating_add_unsigned(rhs.z),
+            w: self.w.saturating_add_unsigned(rhs.w),
+        }
+    }
+
+    /// Returns a vector containing the saturating subtraction of `self` and unsigned vector `rhs`.
+    ///
+    /// In other words this computes `[self.x.saturating_sub_unsigned(rhs.x), self.y.saturating_sub_unsigned(rhs.y), ..]`.
+    #[inline]
+    #[must_use]
+    pub const fn saturating_sub_unsigned(self, rhs: UVec4) -> Self {
+        Self {
+            x: self.x.saturating_sub_unsigned(rhs.x),
+            y: self.y.saturating_sub_unsigned(rhs.y),
+            z: self.z.saturating_sub_unsigned(rhs.z),
+            w: self.w.saturating_sub_unsigned(rhs.w),
+        }
+    }
 }
 
 impl Default for IVec4 {
@@ -596,6 +725,30 @@ impl Div<IVec4> for IVec4 {
     }
 }
 
+impl Div<&IVec4> for IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn div(self, rhs: &IVec4) -> IVec4 {
+        self.div(*rhs)
+    }
+}
+
+impl Div<&IVec4> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn div(self, rhs: &IVec4) -> IVec4 {
+        (*self).div(*rhs)
+    }
+}
+
+impl Div<IVec4> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn div(self, rhs: IVec4) -> IVec4 {
+        (*self).div(rhs)
+    }
+}
+
 impl DivAssign<IVec4> for IVec4 {
     #[inline]
     fn div_assign(&mut self, rhs: Self) {
@@ -603,6 +756,13 @@ impl DivAssign<IVec4> for IVec4 {
         self.y.div_assign(rhs.y);
         self.z.div_assign(rhs.z);
         self.w.div_assign(rhs.w);
+    }
+}
+
+impl DivAssign<&Self> for IVec4 {
+    #[inline]
+    fn div_assign(&mut self, rhs: &Self) {
+        self.div_assign(*rhs)
     }
 }
 
@@ -619,6 +779,30 @@ impl Div<i32> for IVec4 {
     }
 }
 
+impl Div<&i32> for IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn div(self, rhs: &i32) -> IVec4 {
+        self.div(*rhs)
+    }
+}
+
+impl Div<&i32> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn div(self, rhs: &i32) -> IVec4 {
+        (*self).div(*rhs)
+    }
+}
+
+impl Div<i32> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn div(self, rhs: i32) -> IVec4 {
+        (*self).div(rhs)
+    }
+}
+
 impl DivAssign<i32> for IVec4 {
     #[inline]
     fn div_assign(&mut self, rhs: i32) {
@@ -626,6 +810,13 @@ impl DivAssign<i32> for IVec4 {
         self.y.div_assign(rhs);
         self.z.div_assign(rhs);
         self.w.div_assign(rhs);
+    }
+}
+
+impl DivAssign<&i32> for IVec4 {
+    #[inline]
+    fn div_assign(&mut self, rhs: &i32) {
+        self.div_assign(*rhs)
     }
 }
 
@@ -642,6 +833,30 @@ impl Div<IVec4> for i32 {
     }
 }
 
+impl Div<&IVec4> for i32 {
+    type Output = IVec4;
+    #[inline]
+    fn div(self, rhs: &IVec4) -> IVec4 {
+        self.div(*rhs)
+    }
+}
+
+impl Div<&IVec4> for &i32 {
+    type Output = IVec4;
+    #[inline]
+    fn div(self, rhs: &IVec4) -> IVec4 {
+        (*self).div(*rhs)
+    }
+}
+
+impl Div<IVec4> for &i32 {
+    type Output = IVec4;
+    #[inline]
+    fn div(self, rhs: IVec4) -> IVec4 {
+        (*self).div(rhs)
+    }
+}
+
 impl Mul<IVec4> for IVec4 {
     type Output = Self;
     #[inline]
@@ -655,6 +870,30 @@ impl Mul<IVec4> for IVec4 {
     }
 }
 
+impl Mul<&IVec4> for IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn mul(self, rhs: &IVec4) -> IVec4 {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&IVec4> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn mul(self, rhs: &IVec4) -> IVec4 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<IVec4> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn mul(self, rhs: IVec4) -> IVec4 {
+        (*self).mul(rhs)
+    }
+}
+
 impl MulAssign<IVec4> for IVec4 {
     #[inline]
     fn mul_assign(&mut self, rhs: Self) {
@@ -662,6 +901,13 @@ impl MulAssign<IVec4> for IVec4 {
         self.y.mul_assign(rhs.y);
         self.z.mul_assign(rhs.z);
         self.w.mul_assign(rhs.w);
+    }
+}
+
+impl MulAssign<&Self> for IVec4 {
+    #[inline]
+    fn mul_assign(&mut self, rhs: &Self) {
+        self.mul_assign(*rhs)
     }
 }
 
@@ -678,6 +924,30 @@ impl Mul<i32> for IVec4 {
     }
 }
 
+impl Mul<&i32> for IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn mul(self, rhs: &i32) -> IVec4 {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&i32> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn mul(self, rhs: &i32) -> IVec4 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<i32> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn mul(self, rhs: i32) -> IVec4 {
+        (*self).mul(rhs)
+    }
+}
+
 impl MulAssign<i32> for IVec4 {
     #[inline]
     fn mul_assign(&mut self, rhs: i32) {
@@ -685,6 +955,13 @@ impl MulAssign<i32> for IVec4 {
         self.y.mul_assign(rhs);
         self.z.mul_assign(rhs);
         self.w.mul_assign(rhs);
+    }
+}
+
+impl MulAssign<&i32> for IVec4 {
+    #[inline]
+    fn mul_assign(&mut self, rhs: &i32) {
+        self.mul_assign(*rhs)
     }
 }
 
@@ -701,6 +978,30 @@ impl Mul<IVec4> for i32 {
     }
 }
 
+impl Mul<&IVec4> for i32 {
+    type Output = IVec4;
+    #[inline]
+    fn mul(self, rhs: &IVec4) -> IVec4 {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&IVec4> for &i32 {
+    type Output = IVec4;
+    #[inline]
+    fn mul(self, rhs: &IVec4) -> IVec4 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<IVec4> for &i32 {
+    type Output = IVec4;
+    #[inline]
+    fn mul(self, rhs: IVec4) -> IVec4 {
+        (*self).mul(rhs)
+    }
+}
+
 impl Add<IVec4> for IVec4 {
     type Output = Self;
     #[inline]
@@ -714,6 +1015,30 @@ impl Add<IVec4> for IVec4 {
     }
 }
 
+impl Add<&IVec4> for IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn add(self, rhs: &IVec4) -> IVec4 {
+        self.add(*rhs)
+    }
+}
+
+impl Add<&IVec4> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn add(self, rhs: &IVec4) -> IVec4 {
+        (*self).add(*rhs)
+    }
+}
+
+impl Add<IVec4> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn add(self, rhs: IVec4) -> IVec4 {
+        (*self).add(rhs)
+    }
+}
+
 impl AddAssign<IVec4> for IVec4 {
     #[inline]
     fn add_assign(&mut self, rhs: Self) {
@@ -721,6 +1046,13 @@ impl AddAssign<IVec4> for IVec4 {
         self.y.add_assign(rhs.y);
         self.z.add_assign(rhs.z);
         self.w.add_assign(rhs.w);
+    }
+}
+
+impl AddAssign<&Self> for IVec4 {
+    #[inline]
+    fn add_assign(&mut self, rhs: &Self) {
+        self.add_assign(*rhs)
     }
 }
 
@@ -737,6 +1069,30 @@ impl Add<i32> for IVec4 {
     }
 }
 
+impl Add<&i32> for IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn add(self, rhs: &i32) -> IVec4 {
+        self.add(*rhs)
+    }
+}
+
+impl Add<&i32> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn add(self, rhs: &i32) -> IVec4 {
+        (*self).add(*rhs)
+    }
+}
+
+impl Add<i32> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn add(self, rhs: i32) -> IVec4 {
+        (*self).add(rhs)
+    }
+}
+
 impl AddAssign<i32> for IVec4 {
     #[inline]
     fn add_assign(&mut self, rhs: i32) {
@@ -744,6 +1100,13 @@ impl AddAssign<i32> for IVec4 {
         self.y.add_assign(rhs);
         self.z.add_assign(rhs);
         self.w.add_assign(rhs);
+    }
+}
+
+impl AddAssign<&i32> for IVec4 {
+    #[inline]
+    fn add_assign(&mut self, rhs: &i32) {
+        self.add_assign(*rhs)
     }
 }
 
@@ -760,6 +1123,30 @@ impl Add<IVec4> for i32 {
     }
 }
 
+impl Add<&IVec4> for i32 {
+    type Output = IVec4;
+    #[inline]
+    fn add(self, rhs: &IVec4) -> IVec4 {
+        self.add(*rhs)
+    }
+}
+
+impl Add<&IVec4> for &i32 {
+    type Output = IVec4;
+    #[inline]
+    fn add(self, rhs: &IVec4) -> IVec4 {
+        (*self).add(*rhs)
+    }
+}
+
+impl Add<IVec4> for &i32 {
+    type Output = IVec4;
+    #[inline]
+    fn add(self, rhs: IVec4) -> IVec4 {
+        (*self).add(rhs)
+    }
+}
+
 impl Sub<IVec4> for IVec4 {
     type Output = Self;
     #[inline]
@@ -773,6 +1160,30 @@ impl Sub<IVec4> for IVec4 {
     }
 }
 
+impl Sub<&IVec4> for IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn sub(self, rhs: &IVec4) -> IVec4 {
+        self.sub(*rhs)
+    }
+}
+
+impl Sub<&IVec4> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn sub(self, rhs: &IVec4) -> IVec4 {
+        (*self).sub(*rhs)
+    }
+}
+
+impl Sub<IVec4> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn sub(self, rhs: IVec4) -> IVec4 {
+        (*self).sub(rhs)
+    }
+}
+
 impl SubAssign<IVec4> for IVec4 {
     #[inline]
     fn sub_assign(&mut self, rhs: IVec4) {
@@ -780,6 +1191,13 @@ impl SubAssign<IVec4> for IVec4 {
         self.y.sub_assign(rhs.y);
         self.z.sub_assign(rhs.z);
         self.w.sub_assign(rhs.w);
+    }
+}
+
+impl SubAssign<&Self> for IVec4 {
+    #[inline]
+    fn sub_assign(&mut self, rhs: &Self) {
+        self.sub_assign(*rhs)
     }
 }
 
@@ -796,6 +1214,30 @@ impl Sub<i32> for IVec4 {
     }
 }
 
+impl Sub<&i32> for IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn sub(self, rhs: &i32) -> IVec4 {
+        self.sub(*rhs)
+    }
+}
+
+impl Sub<&i32> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn sub(self, rhs: &i32) -> IVec4 {
+        (*self).sub(*rhs)
+    }
+}
+
+impl Sub<i32> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn sub(self, rhs: i32) -> IVec4 {
+        (*self).sub(rhs)
+    }
+}
+
 impl SubAssign<i32> for IVec4 {
     #[inline]
     fn sub_assign(&mut self, rhs: i32) {
@@ -803,6 +1245,13 @@ impl SubAssign<i32> for IVec4 {
         self.y.sub_assign(rhs);
         self.z.sub_assign(rhs);
         self.w.sub_assign(rhs);
+    }
+}
+
+impl SubAssign<&i32> for IVec4 {
+    #[inline]
+    fn sub_assign(&mut self, rhs: &i32) {
+        self.sub_assign(*rhs)
     }
 }
 
@@ -819,6 +1268,30 @@ impl Sub<IVec4> for i32 {
     }
 }
 
+impl Sub<&IVec4> for i32 {
+    type Output = IVec4;
+    #[inline]
+    fn sub(self, rhs: &IVec4) -> IVec4 {
+        self.sub(*rhs)
+    }
+}
+
+impl Sub<&IVec4> for &i32 {
+    type Output = IVec4;
+    #[inline]
+    fn sub(self, rhs: &IVec4) -> IVec4 {
+        (*self).sub(*rhs)
+    }
+}
+
+impl Sub<IVec4> for &i32 {
+    type Output = IVec4;
+    #[inline]
+    fn sub(self, rhs: IVec4) -> IVec4 {
+        (*self).sub(rhs)
+    }
+}
+
 impl Rem<IVec4> for IVec4 {
     type Output = Self;
     #[inline]
@@ -832,6 +1305,30 @@ impl Rem<IVec4> for IVec4 {
     }
 }
 
+impl Rem<&IVec4> for IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn rem(self, rhs: &IVec4) -> IVec4 {
+        self.rem(*rhs)
+    }
+}
+
+impl Rem<&IVec4> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn rem(self, rhs: &IVec4) -> IVec4 {
+        (*self).rem(*rhs)
+    }
+}
+
+impl Rem<IVec4> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn rem(self, rhs: IVec4) -> IVec4 {
+        (*self).rem(rhs)
+    }
+}
+
 impl RemAssign<IVec4> for IVec4 {
     #[inline]
     fn rem_assign(&mut self, rhs: Self) {
@@ -839,6 +1336,13 @@ impl RemAssign<IVec4> for IVec4 {
         self.y.rem_assign(rhs.y);
         self.z.rem_assign(rhs.z);
         self.w.rem_assign(rhs.w);
+    }
+}
+
+impl RemAssign<&Self> for IVec4 {
+    #[inline]
+    fn rem_assign(&mut self, rhs: &Self) {
+        self.rem_assign(*rhs)
     }
 }
 
@@ -855,6 +1359,30 @@ impl Rem<i32> for IVec4 {
     }
 }
 
+impl Rem<&i32> for IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn rem(self, rhs: &i32) -> IVec4 {
+        self.rem(*rhs)
+    }
+}
+
+impl Rem<&i32> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn rem(self, rhs: &i32) -> IVec4 {
+        (*self).rem(*rhs)
+    }
+}
+
+impl Rem<i32> for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn rem(self, rhs: i32) -> IVec4 {
+        (*self).rem(rhs)
+    }
+}
+
 impl RemAssign<i32> for IVec4 {
     #[inline]
     fn rem_assign(&mut self, rhs: i32) {
@@ -862,6 +1390,13 @@ impl RemAssign<i32> for IVec4 {
         self.y.rem_assign(rhs);
         self.z.rem_assign(rhs);
         self.w.rem_assign(rhs);
+    }
+}
+
+impl RemAssign<&i32> for IVec4 {
+    #[inline]
+    fn rem_assign(&mut self, rhs: &i32) {
+        self.rem_assign(*rhs)
     }
 }
 
@@ -875,6 +1410,30 @@ impl Rem<IVec4> for i32 {
             z: self.rem(rhs.z),
             w: self.rem(rhs.w),
         }
+    }
+}
+
+impl Rem<&IVec4> for i32 {
+    type Output = IVec4;
+    #[inline]
+    fn rem(self, rhs: &IVec4) -> IVec4 {
+        self.rem(*rhs)
+    }
+}
+
+impl Rem<&IVec4> for &i32 {
+    type Output = IVec4;
+    #[inline]
+    fn rem(self, rhs: &IVec4) -> IVec4 {
+        (*self).rem(*rhs)
+    }
+}
+
+impl Rem<IVec4> for &i32 {
+    type Output = IVec4;
+    #[inline]
+    fn rem(self, rhs: IVec4) -> IVec4 {
+        (*self).rem(rhs)
     }
 }
 
@@ -944,6 +1503,14 @@ impl Neg for IVec4 {
             z: self.z.neg(),
             w: self.w.neg(),
         }
+    }
+}
+
+impl Neg for &IVec4 {
+    type Output = IVec4;
+    #[inline]
+    fn neg(self) -> IVec4 {
+        (*self).neg()
     }
 }
 
@@ -1325,14 +1892,12 @@ impl IndexMut<usize> for IVec4 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Display for IVec4 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "[{}, {}, {}, {}]", self.x, self.y, self.z, self.w)
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Debug for IVec4 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_tuple(stringify!(IVec4))
@@ -1400,6 +1965,30 @@ impl From<(IVec2, IVec2)> for IVec4 {
     }
 }
 
+impl From<I8Vec4> for IVec4 {
+    #[inline]
+    fn from(v: I8Vec4) -> Self {
+        Self::new(
+            i32::from(v.x),
+            i32::from(v.y),
+            i32::from(v.z),
+            i32::from(v.w),
+        )
+    }
+}
+
+impl From<U8Vec4> for IVec4 {
+    #[inline]
+    fn from(v: U8Vec4) -> Self {
+        Self::new(
+            i32::from(v.x),
+            i32::from(v.y),
+            i32::from(v.z),
+            i32::from(v.w),
+        )
+    }
+}
+
 impl From<I16Vec4> for IVec4 {
     #[inline]
     fn from(v: I16Vec4) -> Self {
@@ -1463,5 +2052,32 @@ impl TryFrom<U64Vec4> for IVec4 {
             i32::try_from(v.z)?,
             i32::try_from(v.w)?,
         ))
+    }
+}
+
+impl From<BVec4> for IVec4 {
+    #[inline]
+    fn from(v: BVec4) -> Self {
+        Self::new(
+            i32::from(v.x),
+            i32::from(v.y),
+            i32::from(v.z),
+            i32::from(v.w),
+        )
+    }
+}
+
+#[cfg(not(feature = "scalar-math"))]
+
+impl From<BVec4A> for IVec4 {
+    #[inline]
+    fn from(v: BVec4A) -> Self {
+        let bool_array: [bool; 4] = v.into();
+        Self::new(
+            i32::from(bool_array[0]),
+            i32::from(bool_array[1]),
+            i32::from(bool_array[2]),
+            i32::from(bool_array[3]),
+        )
     }
 }

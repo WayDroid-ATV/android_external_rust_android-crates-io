@@ -7,13 +7,10 @@
       "path": "external/rust/android-crates-io/crates/gdbstub_arch"
     },
     {
-      "path": "external/rust/crates/num-bigint"
+      "path": "external/rust/android-crates-io/crates/num-bigint"
     },
     {
       "path": "external/rust/android-crates-io/crates/num-integer"
-    },
-    {
-      "path": "external/rust/crates/oid-registry"
     },
     {
       "path": "external/rust/android-crates-io/crates/tinytemplate"

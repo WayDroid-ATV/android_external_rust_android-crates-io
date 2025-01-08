@@ -20,6 +20,8 @@ use std::path::PathBuf;
 use std::ptr;
 use std::ptr::addr_of;
 use std::slice;
+use std::sync::atomic::AtomicI32;
+use std::sync::atomic::Ordering;
 use std::sync::mpsc::channel;
 use std::time::Duration;
 
@@ -27,7 +29,6 @@ use libbpf_rs::num_possible_cpus;
 use libbpf_rs::AsRawLibbpf;
 use libbpf_rs::Iter;
 use libbpf_rs::Linker;
-use libbpf_rs::Map;
 use libbpf_rs::MapCore;
 use libbpf_rs::MapFlags;
 use libbpf_rs::MapHandle;
@@ -55,33 +56,8 @@ use crate::common::get_prog_mut;
 use crate::common::get_test_object;
 use crate::common::get_test_object_path;
 use crate::common::open_test_object;
+use crate::common::with_ringbuffer;
 
-
-/// A helper function for instantiating a `RingBuffer` with a callback meant to
-/// be invoked when `action` is executed and that is intended to trigger a write
-/// to said `RingBuffer` from kernel space, which then reads a single `i32` from
-/// this buffer from user space and returns it.
-fn with_ringbuffer<F>(map: &Map, action: F) -> i32
-where
-    F: FnOnce(),
-{
-    let mut value = 0i32;
-    {
-        let callback = |data: &[u8]| {
-            plain::copy_from_bytes(&mut value, data).expect("Wrong size");
-            0
-        };
-
-        let mut builder = libbpf_rs::RingBufferBuilder::new();
-        builder.add(map, callback).expect("failed to add ringbuf");
-        let mgr = builder.build().expect("failed to build");
-
-        action();
-        mgr.consume().expect("failed to consume ringbuf");
-    }
-
-    value
-}
 
 #[tag(root)]
 #[test]
@@ -750,6 +726,47 @@ fn test_object_loading_pinned_map_from_path() {
 
 #[tag(root)]
 #[test]
+fn test_program_loading_fd_from_pinned_path() {
+    bump_rlimit_mlock();
+
+    let path = "/sys/fs/bpf/myprog_test_pin_to_load_from_path";
+    let prog_name = "handle__sched_switch";
+
+    let mut obj = get_test_object("runqslower.bpf.o");
+    let mut prog = get_prog_mut(&mut obj, prog_name);
+    prog.pin(path).expect("pinning prog failed");
+    let prog_id = Program::id_from_fd(prog.as_fd()).expect("failed to determine prog id");
+
+    let pinned_prog_fd =
+        Program::fd_from_pinned_path(path).expect("failed to get fd of pinned prog");
+    let pinned_prog_id =
+        Program::id_from_fd(pinned_prog_fd.as_fd()).expect("failed to determine pinned prog id");
+
+    assert_eq!(prog_id, pinned_prog_id);
+
+    prog.unpin(path).expect("unpinning program failed");
+}
+
+#[tag(root)]
+#[test]
+fn test_program_loading_fd_from_pinned_path_with_wrong_pin_type() {
+    bump_rlimit_mlock();
+
+    let path = "/sys/fs/bpf/mymap_test_pin_to_load_from_path";
+    let map_name = "events";
+
+    let mut obj = get_test_object("runqslower.bpf.o");
+    let mut map = get_map_mut(&mut obj, map_name);
+    map.pin(path).expect("pinning map failed");
+
+    // Must fail, as the pinned path points to a map, not program.
+    let _ = Program::fd_from_pinned_path(path).expect_err("program fd obtained from pinned map");
+
+    map.unpin(path).expect("unpinning program failed");
+}
+
+#[tag(root)]
+#[test]
 fn test_object_loading_loaded_map_from_id() {
     bump_rlimit_mlock();
 
@@ -820,7 +837,7 @@ fn test_object_link_pin() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("runqslower.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__sched_wakeup");
+    let prog = get_prog_mut(&mut obj, "handle__sched_wakeup");
     let mut link = prog.attach().expect("failed to attach prog");
 
     let path = "/sys/fs/bpf/mylink";
@@ -900,20 +917,17 @@ fn test_object_ringbuf_raw() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("ringbuf.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
+    let prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
     let _link = prog.attach().expect("failed to attach prog");
 
-    static mut V1: i32 = 0;
-    static mut V2: i32 = 0;
+    static V1: AtomicI32 = AtomicI32::new(0);
+    static V2: AtomicI32 = AtomicI32::new(0);
 
     fn callback1(data: &[u8]) -> i32 {
         let mut value: i32 = 0;
         plain::copy_from_bytes(&mut value, data).expect("Wrong size");
 
-        unsafe {
-            V1 = value;
-        }
-
+        V1.store(value, Ordering::SeqCst);
         0
     }
 
@@ -921,10 +935,7 @@ fn test_object_ringbuf_raw() {
         let mut value: i32 = 0;
         plain::copy_from_bytes(&mut value, data).expect("Wrong size");
 
-        unsafe {
-            V2 = value;
-        }
-
+        V2.store(value, Ordering::SeqCst);
         0
     }
 
@@ -963,8 +974,8 @@ fn test_object_ringbuf_raw() {
     // triggering the BPF program
     assert!(ret >= 2);
 
-    unsafe { assert_eq!(V1, 1) };
-    unsafe { assert_eq!(V2, 2) };
+    assert_eq!(V1.load(Ordering::SeqCst), 1);
+    assert_eq!(V2.load(Ordering::SeqCst), 2);
 
     // Consume from a (potentially) empty ring buffer
     let ret = mgr.consume_raw();
@@ -981,7 +992,7 @@ fn test_object_ringbuf_err_callback() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("ringbuf.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
+    let prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
     let _link = prog.attach().expect("failed to attach prog");
 
     // Immediately trigger an error that should be reported back to the consume_raw() or poll_raw()
@@ -1043,20 +1054,17 @@ fn test_object_ringbuf() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("ringbuf.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
+    let prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
     let _link = prog.attach().expect("failed to attach prog");
 
-    static mut V1: i32 = 0;
-    static mut V2: i32 = 0;
+    static V1: AtomicI32 = AtomicI32::new(0);
+    static V2: AtomicI32 = AtomicI32::new(0);
 
     fn callback1(data: &[u8]) -> i32 {
         let mut value: i32 = 0;
         plain::copy_from_bytes(&mut value, data).expect("Wrong size");
 
-        unsafe {
-            V1 = value;
-        }
-
+        V1.store(value, Ordering::SeqCst);
         0
     }
 
@@ -1064,10 +1072,7 @@ fn test_object_ringbuf() {
         let mut value: i32 = 0;
         plain::copy_from_bytes(&mut value, data).expect("Wrong size");
 
-        unsafe {
-            V2 = value;
-        }
-
+        V2.store(value, Ordering::SeqCst);
         0
     }
 
@@ -1103,12 +1108,12 @@ fn test_object_ringbuf() {
     mgr.consume().expect("failed to consume ringbuf");
 
     // Our values should both reflect that the callbacks have been called
-    unsafe { assert_eq!(V1, 1) };
-    unsafe { assert_eq!(V2, 2) };
+    assert_eq!(V1.load(Ordering::SeqCst), 1);
+    assert_eq!(V2.load(Ordering::SeqCst), 2);
 
     // Reset both values
-    unsafe { V1 = 0 };
-    unsafe { V2 = 0 };
+    V1.store(0, Ordering::SeqCst);
+    V2.store(0, Ordering::SeqCst);
 
     // Call getpid to ensure the BPF program runs
     unsafe { libc::getpid() };
@@ -1118,8 +1123,8 @@ fn test_object_ringbuf() {
         .expect("failed to poll ringbuf");
 
     // Our values should both reflect that the callbacks have been called
-    unsafe { assert_eq!(V1, 1) };
-    unsafe { assert_eq!(V2, 2) };
+    assert_eq!(V1.load(Ordering::SeqCst), 1);
+    assert_eq!(V2.load(Ordering::SeqCst), 2);
 }
 
 #[tag(root)]
@@ -1128,7 +1133,7 @@ fn test_object_ringbuf_closure() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("ringbuf.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
+    let prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
     let _link = prog.attach().expect("failed to attach prog");
 
     let (sender1, receiver1) = channel();
@@ -1202,7 +1207,7 @@ fn test_object_ringbuf_with_closed_map() {
 
         {
             let mut obj = get_test_object("tracepoint.bpf.o");
-            let mut prog = get_prog_mut(&mut obj, "handle__tracepoint");
+            let prog = get_prog_mut(&mut obj, "handle__tracepoint");
             let _link = prog
                 .attach_tracepoint("syscalls", "sys_enter_getpid")
                 .expect("failed to attach prog");
@@ -1252,7 +1257,7 @@ fn test_object_user_ringbuf() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("user_ringbuf.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
+    let prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
     let _link = prog.attach().expect("failed to attach prog");
     let urb_map = get_map_mut(&mut obj, "user_ringbuf");
     let user_ringbuf = UserRingBuffer::new(&urb_map).expect("failed to create user ringbuf");
@@ -1293,7 +1298,7 @@ fn test_object_user_ringbuf_reservation_too_big() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("user_ringbuf.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
+    let prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
     let _link = prog.attach().expect("failed to attach prog");
     let urb_map = get_map_mut(&mut obj, "user_ringbuf");
     let user_ringbuf = UserRingBuffer::new(&urb_map).expect("failed to create user ringbuf");
@@ -1310,7 +1315,7 @@ fn test_object_user_ringbuf_not_enough_space() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("user_ringbuf.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
+    let prog = get_prog_mut(&mut obj, "handle__sys_enter_getpid");
     let _link = prog.attach().expect("failed to attach prog");
     let urb_map = get_map_mut(&mut obj, "user_ringbuf");
     let user_ringbuf = UserRingBuffer::new(&urb_map).expect("failed to create user ringbuf");
@@ -1331,7 +1336,7 @@ fn test_object_task_iter() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("taskiter.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "dump_pid");
+    let prog = get_prog_mut(&mut obj, "dump_pid");
     let link = prog.attach().expect("failed to attach prog");
     let mut iter = Iter::new(&link).expect("failed to create iterator");
 
@@ -1392,7 +1397,7 @@ fn test_object_map_iter() {
     }
 
     let mut obj = get_test_object("mapiter.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "map_iter");
+    let prog = get_prog_mut(&mut obj, "map_iter");
     let link = prog
         .attach_iter(map.as_fd())
         .expect("failed to attach map iter prog");
@@ -1530,7 +1535,7 @@ fn test_object_usdt() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("usdt.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__usdt");
+    let prog = get_prog_mut(&mut obj, "handle__usdt");
 
     let path = current_exe().expect("failed to find executable name");
     let _link = prog
@@ -1559,7 +1564,7 @@ fn test_object_usdt_cookie() {
 
     let cookie_val = 1337u16;
     let mut obj = get_test_object("usdt.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__usdt_with_cookie");
+    let prog = get_prog_mut(&mut obj, "handle__usdt_with_cookie");
 
     let path = current_exe().expect("failed to find executable name");
     let _link = prog
@@ -1662,7 +1667,7 @@ fn test_object_tracepoint() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("tracepoint.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__tracepoint");
+    let prog = get_prog_mut(&mut obj, "handle__tracepoint");
     let _link = prog
         .attach_tracepoint("syscalls", "sys_enter_getpid")
         .expect("failed to attach prog");
@@ -1685,7 +1690,7 @@ fn test_object_tracepoint_with_opts() {
 
     let cookie_val = 42u16;
     let mut obj = get_test_object("tracepoint.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__tracepoint_with_cookie");
+    let prog = get_prog_mut(&mut obj, "handle__tracepoint_with_cookie");
 
     let opts = TracepointOpts {
         cookie: cookie_val.into(),
@@ -1718,7 +1723,7 @@ fn test_object_uprobe_with_opts() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("uprobe.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__uprobe");
+    let prog = get_prog_mut(&mut obj, "handle__uprobe");
 
     let pid = unsafe { libc::getpid() };
     let path = current_exe().expect("failed to find executable name");
@@ -1749,7 +1754,7 @@ fn test_object_uprobe_with_cookie() {
 
     let cookie_val = 5u16;
     let mut obj = get_test_object("uprobe.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__uprobe_with_cookie");
+    let prog = get_prog_mut(&mut obj, "handle__uprobe_with_cookie");
 
     let pid = unsafe { libc::getpid() };
     let path = current_exe().expect("failed to find executable name");
@@ -1828,7 +1833,7 @@ fn test_object_perf_buffer_raw() {
 
     let cookie_val = 42u16;
     let mut obj = get_test_object("tracepoint.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__tracepoint_with_cookie_pb");
+    let prog = get_prog_mut(&mut obj, "handle__tracepoint_with_cookie_pb");
 
     let opts = TracepointOpts {
         cookie: cookie_val.into(),
@@ -1910,8 +1915,8 @@ fn test_program_get_fd_and_id() {
     let mut obj = get_test_object("runqslower.bpf.o");
     let prog = get_prog_mut(&mut obj, "handle__sched_wakeup");
     let prog_fd = prog.as_fd();
-    let prog_id = Program::get_id_by_fd(prog_fd).expect("failed to get program id by fd");
-    let _owned_prog_fd = Program::get_fd_by_id(prog_id).expect("failed to get program fd by id");
+    let prog_id = Program::id_from_fd(prog_fd).expect("failed to get program id from fd");
+    let _owned_prog_fd = Program::fd_from_id(prog_id).expect("failed to get program fd from id");
 }
 
 /// Check that autocreate disabled maps don't prevent object loading
@@ -1961,7 +1966,7 @@ fn test_attach_ksyscall() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("ksyscall.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "handle__ksyscall");
+    let prog = get_prog_mut(&mut obj, "handle__ksyscall");
     let _link = prog
         .attach_ksyscall(false, "kill")
         .expect("failed to attach prog");
@@ -1986,7 +1991,7 @@ fn test_run_prog_success() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("run_prog.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "test_1");
+    let prog = get_prog_mut(&mut obj, "test_1");
 
     #[repr(C)]
     struct bpf_dummy_ops_state {
@@ -2013,7 +2018,7 @@ fn test_run_prog_fail() {
     bump_rlimit_mlock();
 
     let mut obj = get_test_object("run_prog.bpf.o");
-    let mut prog = get_prog_mut(&mut obj, "test_2");
+    let prog = get_prog_mut(&mut obj, "test_2");
 
     let input = ProgramInput::default();
     let _err = prog.test_run(input).unwrap_err();

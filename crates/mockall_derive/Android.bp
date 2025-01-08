@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libmockall_derive",
     crate_name: "mockall_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.1",
+    cargo_pkg_version: "0.13.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
@@ -33,7 +33,7 @@ rust_test_host {
     host_cross_supported: false,
     crate_name: "mockall_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.1",
+    cargo_pkg_version: "0.13.1",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,

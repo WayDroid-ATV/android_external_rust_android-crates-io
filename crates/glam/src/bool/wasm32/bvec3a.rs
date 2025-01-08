@@ -1,10 +1,16 @@
 // Generated from vec_mask.rs.tera template. Edit the template, not the generated file.
 
-#[cfg(not(target_arch = "spirv"))]
 use core::fmt;
 use core::ops::*;
 
 use core::arch::wasm32::*;
+
+/// Creates a 3-dimensional `bool` vector mask.
+#[inline(always)]
+#[must_use]
+pub const fn bvec3a(x: bool, y: bool, z: bool) -> BVec3A {
+    BVec3A::new(x, y, z)
+}
 
 /// A 3-dimensional SIMD vector mask.
 ///
@@ -34,11 +40,18 @@ impl BVec3A {
         ))
     }
 
-    /// Creates a vector with all elements set to `v`.
+    /// Creates a vector mask with all elements set to `v`.
     #[inline]
     #[must_use]
     pub const fn splat(v: bool) -> Self {
         Self::new(v, v, v)
+    }
+
+    /// Creates a new vector mask from a bool array.
+    #[inline]
+    #[must_use]
+    pub const fn from_array(a: [bool; 3]) -> Self {
+        Self::new(a[0], a[1], a[2])
     }
 
     /// Returns a bitmask with the lowest 3 bits set from the elements of `self`.
@@ -87,7 +100,7 @@ impl BVec3A {
         use crate::Vec3A;
         let mut v = Vec3A(self.0);
         v[index] = f32::from_bits(MASK[value as usize]);
-        *self = Self(v.0);
+        self.0 = v.0;
     }
 
     #[inline]
@@ -192,7 +205,6 @@ impl From<BVec3A> for v128 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Debug for BVec3A {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let arr = self.into_u32_array();
@@ -207,11 +219,17 @@ impl fmt::Debug for BVec3A {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl fmt::Display for BVec3A {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let arr = self.into_bool_array();
         write!(f, "[{}, {}, {}]", arr[0], arr[1], arr[2])
+    }
+}
+
+impl From<[bool; 3]> for BVec3A {
+    #[inline]
+    fn from(a: [bool; 3]) -> Self {
+        Self::from_array(a)
     }
 }
 

@@ -22,7 +22,7 @@
       "path": "external/rust/android-crates-io/crates/unicode-xid"
     },
     {
-      "path": "external/rust/crates/vulkano"
+      "path": "external/rust/android-crates-io/crates/vulkano"
     },
     {
       "path": "packages/modules/Virtualization/avmd"

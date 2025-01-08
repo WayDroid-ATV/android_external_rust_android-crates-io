@@ -2,5 +2,6 @@
   "features": [
     "std"
   ],
+  "min_sdk_version": "29",
   "tests": true
 }

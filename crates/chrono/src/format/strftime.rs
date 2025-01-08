@@ -99,6 +99,8 @@ Notes:
 
 [^1]: `%C`, `%y`:
    This is floor division, so 100 BCE (year number -99) will print `-1` and `99` respectively.
+   For `%y`, values greater or equal to 70 are interpreted as being in the 20th century,
+   values smaller than 70 in the 21st century.
 
 [^2]: `%U`:
    Week 1 starts with the first Sunday in that year.
@@ -165,7 +167,7 @@ use super::{locales, Locale};
 use super::{Fixed, InternalInternal, Item, Numeric, Pad};
 #[cfg(any(feature = "alloc", feature = "std"))]
 use super::{ParseError, BAD_FORMAT};
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "std"), not(test)))]
 use alloc::vec::Vec;
 
 /// Parsing iterator for `strftime`-like format strings.
@@ -208,8 +210,7 @@ impl<'a> StrftimeItems<'a> {
     ///
     /// # Example
     ///
-    #[cfg_attr(not(any(feature = "alloc", feature = "std")), doc = "```ignore")]
-    #[cfg_attr(any(feature = "alloc", feature = "std"), doc = "```rust")]
+    /// ```
     /// use chrono::format::*;
     ///
     /// let strftime_parser = StrftimeItems::new("%F"); // %F: year-month-day (ISO 8601)
@@ -259,8 +260,8 @@ impl<'a> StrftimeItems<'a> {
     ///
     /// # Example
     ///
-    #[cfg_attr(not(any(feature = "alloc", feature = "std")), doc = "```ignore")]
-    #[cfg_attr(any(feature = "alloc", feature = "std"), doc = "```rust")]
+    /// ```
+    /// # #[cfg(feature = "alloc")] {
     /// use chrono::format::{Locale, StrftimeItems};
     /// use chrono::{FixedOffset, TimeZone};
     ///
@@ -279,6 +280,7 @@ impl<'a> StrftimeItems<'a> {
     /// assert_eq!(fmtr.to_string(), "2023년 07월 11일");
     /// let fmtr = dt.format_with_items(StrftimeItems::new_with_locale("%x", Locale::ja_JP));
     /// assert_eq!(fmtr.to_string(), "2023年07月11日");
+    /// # }
     /// ```
     #[cfg(feature = "unstable-locales")]
     #[must_use]

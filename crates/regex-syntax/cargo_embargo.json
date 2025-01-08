@@ -2,8 +2,10 @@
   "apex_available": [
     "//apex_available:platform",
     "com.android.compos",
+    "com.android.configinfrastructure",
     "com.android.virt"
   ],
   "run_cargo": false,
-  "tests": true
+  "tests": true,
+  "min_sdk_version": "29"
 }

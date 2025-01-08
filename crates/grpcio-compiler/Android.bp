@@ -17,7 +17,7 @@ rust_binary_host {
     name: "grpc_rust_plugin",
     crate_name: "grpc_rust_plugin",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.1",
+    cargo_pkg_version: "0.13.0",
     crate_root: "src/bin/grpc_rust_plugin.rs",
     edition: "2018",
     features: [
@@ -35,7 +35,7 @@ rust_test_host {
     name: "grpcio-compiler_test_src_lib",
     crate_name: "grpcio_compiler",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.1",
+    cargo_pkg_version: "0.13.0",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -55,7 +55,7 @@ rust_library_host {
     name: "libgrpcio_compiler",
     crate_name: "grpcio_compiler",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.1",
+    cargo_pkg_version: "0.13.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [

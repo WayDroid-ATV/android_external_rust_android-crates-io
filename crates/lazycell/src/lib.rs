@@ -45,10 +45,9 @@
 //! is that after it is initialized, it can't be modified.
 
 
-// ANDROID: Unconditionally use std to allow building as a dylib.
 #[cfg(not(test))]
 #[macro_use]
-extern crate std;
+extern crate core as std;
 #[cfg(feature = "serde")]
 extern crate serde;
 

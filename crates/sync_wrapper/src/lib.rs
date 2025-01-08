@@ -20,10 +20,6 @@
 #![doc(html_favicon_url = "https://developer.actyx.com/img/favicon.ico")]
 #![no_std]
 
-// ANDROID: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 use core::{
     fmt::{self, Debug, Formatter},
     pin::Pin,
@@ -216,6 +212,11 @@ impl <F: Future> Future for SyncFuture<F> {
         inner.poll(cx)
     }
 }
+impl<T> Debug for SyncFuture<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.pad("SyncFuture")
+    }
+}
 
 /// `Stream` which is `Sync`.
 ///
@@ -249,4 +250,9 @@ impl <S: futures_core::Stream> futures_core::Stream for SyncStream<S> {
         inner.poll_next(cx)
     }
 }
-
+#[cfg(feature = "futures")]
+impl<T> Debug for SyncStream<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.pad("SyncStream")
+    }
+}

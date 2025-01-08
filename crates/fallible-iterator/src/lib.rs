@@ -67,9 +67,6 @@
 #![warn(missing_docs)]
 #![no_std]
 
-#[cfg(android_dylib)]
-extern crate std;
-
 use core::cmp::{self, Ordering};
 use core::convert::Infallible;
 use core::iter;

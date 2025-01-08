@@ -29,7 +29,7 @@ use std::fmt::Debug;
 ///     ],
 /// );
 /// ```
-#[cfg_attr(not(no_track_caller), track_caller)]
+#[track_caller]
 pub fn assert_tokens<'de, T>(value: &T, tokens: &'de [Token])
 where
     T: Serialize + Deserialize<'de> + PartialEq + Debug,
@@ -63,14 +63,14 @@ where
 ///     ],
 /// );
 /// ```
-#[cfg_attr(not(no_track_caller), track_caller)]
-pub fn assert_ser_tokens<T: ?Sized>(value: &T, tokens: &[Token])
+#[track_caller]
+pub fn assert_ser_tokens<T>(value: &T, tokens: &[Token])
 where
-    T: Serialize,
+    T: ?Sized + Serialize,
 {
     let mut ser = Serializer::new(tokens);
     match value.serialize(&mut ser) {
-        Ok(_) => {}
+        Ok(()) => {}
         Err(err) => panic!("value failed to serialize: {}", err),
     }
 
@@ -121,14 +121,14 @@ where
 ///     assert_ser_tokens_error(&example, expected, error);
 /// }
 /// ```
-#[cfg_attr(not(no_track_caller), track_caller)]
-pub fn assert_ser_tokens_error<T: ?Sized>(value: &T, tokens: &[Token], error: &str)
+#[track_caller]
+pub fn assert_ser_tokens_error<T>(value: &T, tokens: &[Token], error: &str)
 where
-    T: Serialize,
+    T: ?Sized + Serialize,
 {
     let mut ser = Serializer::new(tokens);
     match value.serialize(&mut ser) {
-        Ok(_) => panic!("value serialized successfully"),
+        Ok(()) => panic!("value serialized successfully"),
         Err(e) => assert_eq!(e, *error),
     }
 
@@ -162,7 +162,7 @@ where
 ///     ],
 /// );
 /// ```
-#[cfg_attr(not(no_track_caller), track_caller)]
+#[track_caller]
 pub fn assert_de_tokens<'de, T>(value: &T, tokens: &'de [Token])
 where
     T: Deserialize<'de> + PartialEq + Debug,
@@ -215,7 +215,7 @@ where
 ///     "unknown field `x`, expected `a` or `b`",
 /// );
 /// ```
-#[cfg_attr(not(no_track_caller), track_caller)]
+#[track_caller]
 pub fn assert_de_tokens_error<'de, T>(tokens: &'de [Token], error: &str)
 where
     T: Deserialize<'de>,

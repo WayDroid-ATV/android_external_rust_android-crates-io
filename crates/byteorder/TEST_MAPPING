@@ -7,7 +7,7 @@
       "path": "external/rust/android-crates-io/crates/virtio-drivers"
     },
     {
-      "path": "external/rust/crates/zerocopy"
+      "path": "external/rust/android-crates-io/crates/zerocopy"
     },
     {
       "path": "packages/modules/Virtualization/apkdmverity"

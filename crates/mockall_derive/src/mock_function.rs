@@ -1,7 +1,31 @@
 // vim: tw=80
-use super::*;
+use proc_macro2::{Span, TokenStream};
+use quote::{ToTokens, format_ident, quote};
+use syn::{
+    *,
+    punctuated::Punctuated,
+    spanned::Spanned
+};
 
-use quote::ToTokens;
+
+use crate::{
+    AttrFormatter,
+    HashSet,
+    compile_error,
+    concretize_args,
+    declosurefy,
+    expectation_visibility,
+    gen_keyid,
+    is_concretize,
+    lifetimes_to_generic_params,
+    lifetimes_to_generics,
+    merge_generics,
+    pat_is_self,
+    split_lifetimes,
+    staticize,
+    supersuperfy,
+    supersuperfy_generics,
+};
 
 /// Convert a trait object reference into a reference to a Boxed trait
 ///
@@ -100,7 +124,7 @@ fn destrify(ty: &mut Type) {
 /// Return the owned version of the input.
 fn ownify(ty: &Type) -> Type {
     if let Type::Reference(ref tr) = &ty {
-        if tr.lifetime.as_ref().map_or(false, |lt| lt.ident == "static")
+        if tr.lifetime.as_ref().is_some_and(|lt| lt.ident == "static")
         {
             // Just a static expectation
             ty.clone()
@@ -180,11 +204,13 @@ impl<'a> Builder<'a> {
         let mut predty = Vec::new();
         let mut refpredty = Vec::new();
 
-        let (mut declosured_generics, declosured_inputs, call_exprs) =
+        let (mut declosured_generics, declosured_inputs, call_exprs, sig) =
             if self.concretize {
-                concretize_args(&self.sig.generics, &self.sig.inputs)
+                let (x, y, z, sig) = concretize_args(&self.sig.generics, self.sig);
+                (x, y, z, sig)
             } else {
-                declosurefy(&self.sig.generics, &self.sig.inputs)
+                let (x, y, z) = declosurefy(&self.sig.generics, &self.sig.inputs);
+                (x, y, z, self.sig.clone())
             };
         // TODO: make concretize and declosurefy work for the same function
 
@@ -306,7 +332,7 @@ impl<'a> Builder<'a> {
             refpredty,
             return_ref,
             return_refmut,
-            sig: self.sig.clone(),
+            sig,
             struct_: self.struct_.cloned(),
             struct_generics,
             trait_: self.trait_.cloned(),
@@ -445,7 +471,9 @@ impl MockFunction {
     // Supplying modname is an unfortunately hack.  Ideally MockFunction
     // wouldn't need to know that.
     pub fn call(&self, modname: Option<&Ident>) -> impl ToTokens {
-        let attrs = AttrFormatter::new(&self.attrs).format();
+        let attrs = AttrFormatter::new(&self.attrs)
+            .must_use(true)
+            .format();
         let call_exprs = &self.call_exprs;
         let (_, tg, _) = if self.is_method_generic() || self.is_static() {
             &self.egenerics
@@ -518,7 +546,7 @@ impl MockFunction {
                     use ::mockall::{ViaDebug, ViaNothing};
                     let no_match_msg = #no_match_msg;
                     #deref {
-                        let __mockall_guard = #outer_mod_path::EXPECTATIONS
+                        let __mockall_guard = #outer_mod_path::get_expectations()
                             .lock().unwrap();
                         /*
                          * TODO: catch panics, then gracefully release the mutex
@@ -558,7 +586,7 @@ impl MockFunction {
             quote!(
                 #(#attrs)*
                 {
-                    let __mockall_timeses = #inner_mod_ident::EXPECTATIONS.lock()
+                    let __mockall_timeses = #inner_mod_ident::get_expectations().lock()
                         .unwrap()
                         .checkpoint()
                         .collect::<Vec<_>>();
@@ -834,7 +862,7 @@ impl MockFunction {
         quote!(
             #(#attrs)*
             #[allow(missing_docs)]
-            #[allow(clippy::too_many_arguments)]
+            #[allow(clippy::too_many_arguments, clippy::indexing_slicing)]
             pub mod #inner_mod_ident {
                 use super::*;
                 use ::mockall::CaseTreeExt;
@@ -864,7 +892,7 @@ struct Common<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for Common<'a> {
+impl ToTokens for Common<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let argnames = &self.f.argnames;
         let predty = &self.f.predty;
@@ -951,6 +979,7 @@ impl<'a> ToTokens for Common<'a> {
                 }
 
                 #[allow(clippy::ptr_arg)]
+                #[allow(clippy::ref_option)]
                 fn matches #lg (&self, #( #argnames: &#predty, )*) -> bool {
                     self.matcher.lock().unwrap().matches(#(#argnames, )*)
                 }
@@ -1037,7 +1066,7 @@ struct CommonExpectationMethods<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for CommonExpectationMethods<'a> {
+impl ToTokens for CommonExpectationMethods<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let argnames = &self.f.argnames;
         let hrtb = self.f.hrtb();
@@ -1090,6 +1119,7 @@ impl<'a> ToTokens for CommonExpectationMethods<'a> {
 
             /// Validate this expectation's matcher.
             #[allow(clippy::ptr_arg)]
+            #[allow(clippy::ref_option)]
             fn matches #lg (&self, #(#argnames: &#predty, )*) -> bool {
                 self.common.matches(#(#argnames, )*)
             }
@@ -1162,7 +1192,7 @@ struct CommonExpectationsMethods<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for CommonExpectationsMethods<'a> {
+impl ToTokens for CommonExpectationsMethods<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let (ig, tg, wc) = self.f.egenerics.split_for_impl();
         let v = &self.f.privmod_vis;
@@ -1188,14 +1218,14 @@ impl<'a> ToTokens for CommonExpectationsMethods<'a> {
                     &mut self.0[__mockall_l - 1]
                 }
 
-                #v fn new() -> Self {
-                    Self::default()
+                #v const fn new() -> Self {
+                    Self(Vec::new())
                 }
             }
             impl #ig Default for Expectations #tg #wc
             {
                 fn default() -> Self {
-                    Expectations(Vec::new())
+                    Expectations::new()
                 }
             }
         ).to_tokens(tokens);
@@ -1207,7 +1237,7 @@ struct ExpectationGuardCommonMethods<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for ExpectationGuardCommonMethods<'a> {
+impl ToTokens for ExpectationGuardCommonMethods<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         if !self.f.is_static {
             return;
@@ -1378,7 +1408,7 @@ struct ConcreteExpectationGuard<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for ConcreteExpectationGuard<'a> {
+impl ToTokens for ConcreteExpectationGuard<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         if !self.f.is_static {
             return;
@@ -1397,12 +1427,14 @@ impl<'a> ToTokens for ConcreteExpectationGuard<'a> {
         let (ei_ig, _, _) = e_generics.split_for_impl();
         let v = &self.f.privmod_vis;
         quote!(
-            ::mockall::lazy_static! {
-                #[doc(hidden)]
-                #v static ref EXPECTATIONS:
+            #[doc(hidden)]
+            #v fn get_expectations() -> &'static ::std::sync::Mutex<Expectations> {
+                static EXPECTATIONS:
                     ::std::sync::Mutex<Expectations #tg> =
                     ::std::sync::Mutex::new(Expectations::new());
+                &EXPECTATIONS
             }
+
             /// Like an [`&Expectation`](struct.Expectation.html) but
             /// protected by a Mutex guard.  Useful for mocking static
             /// methods.  Forwards accesses to an `Expectation` object.
@@ -1445,7 +1477,7 @@ struct GenericExpectationGuard<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for GenericExpectationGuard<'a> {
+impl ToTokens for GenericExpectationGuard<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         if !self.f.is_static {
             return;
@@ -1466,11 +1498,12 @@ impl<'a> ToTokens for GenericExpectationGuard<'a> {
         let tbf = tg.as_turbofish();
         let v = &self.f.privmod_vis;
         quote!(
-            ::mockall::lazy_static! {
-                #v static ref EXPECTATIONS:
-                    ::std::sync::Mutex<GenericExpectations> =
-                    ::std::sync::Mutex::new(GenericExpectations::new());
+            #[doc(hidden)]
+            #v fn get_expectations() -> &'static ::std::sync::Mutex<GenericExpectations> {
+                static CELL: ::std::sync::OnceLock<::std::sync::Mutex<GenericExpectations>> = ::std::sync::OnceLock::new();
+                CELL.get_or_init(|| ::std::sync::Mutex::new(GenericExpectations::new()))
             }
+
             /// Like an [`&Expectation`](struct.Expectation.html) but
             /// protected by a Mutex guard.  Useful for mocking static
             /// methods.  Forwards accesses to an `Expectation` object.
@@ -1514,7 +1547,7 @@ struct Context<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for Context<'a> {
+impl ToTokens for Context<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         if !self.f.is_static {
             return;
@@ -1547,6 +1580,14 @@ impl<'a> ToTokens for Context<'a> {
         #[cfg(feature = "nightly_derive")]
         let must_use = quote!();
 
+        #[cfg(not(feature = "nightly_derive"))]
+        let clear_poison = quote!();
+        #[cfg(feature = "nightly_derive")]
+        let clear_poison = quote!(
+            #[allow(clippy::incompatible_msrv)]
+            get_expectations().clear_poison();
+        );
+
         quote!(
             /// Manages the context for expectations of static methods.
             ///
@@ -1571,7 +1612,7 @@ impl<'a> ToTokens for Context<'a> {
                 }
                 #[doc(hidden)]
                 #v fn do_checkpoint() {
-                    let __mockall_timeses = EXPECTATIONS
+                    let __mockall_timeses = get_expectations()
                         .lock()
                         .unwrap()
                         .checkpoint()
@@ -1583,7 +1624,7 @@ impl<'a> ToTokens for Context<'a> {
                 #v fn expect #meth_ig ( &self,) -> ExpectationGuard #e_tg
                     #meth_wc
                 {
-                    ExpectationGuard::new(EXPECTATIONS.lock().unwrap())
+                    ExpectationGuard::new(get_expectations().lock().unwrap())
                 }
             }
             impl #ty_ig Default for Context #ty_tg #ty_wc {
@@ -1594,10 +1635,13 @@ impl<'a> ToTokens for Context<'a> {
             impl #ty_ig Drop for Context #ty_tg #ty_wc {
                 fn drop(&mut self) {
                     if ::std::thread::panicking() {
+                        // Clear poison since we're about to clear the Mutex's
+                        // contents anyway.
+                        #clear_poison
                         // Drain all expectations so other tests can run with a
                         // blank slate.  But ignore errors so we don't
                         // double-panic.
-                        let _ = EXPECTATIONS
+                        let _ = get_expectations()
                             .lock()
                             .map(|mut g| g.checkpoint().collect::<Vec<_>>());
                     } else {
@@ -1614,7 +1658,7 @@ struct Matcher<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for Matcher<'a> {
+impl ToTokens for Matcher<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let (ig, tg, wc) = self.f.cgenerics.split_for_impl();
         let argnames = &self.f.argnames;
@@ -1677,6 +1721,7 @@ impl<'a> ToTokens for Matcher<'a> {
             }
             impl #ig Matcher #tg #wc {
                 #[allow(clippy::ptr_arg)]
+                #[allow(clippy::ref_option)]
                 fn matches #lg (&self, #( #argnames: &#predty, )*) -> bool {
                     match self {
                         Matcher::Always => true,
@@ -1718,7 +1763,7 @@ struct RefRfunc<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for RefRfunc<'a> {
+impl ToTokens for RefRfunc<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let fn_params = &self.f.fn_params;
         let (ig, tg, wc) = self.f.egenerics.split_for_impl();
@@ -1777,7 +1822,7 @@ struct RefMutRfunc<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for RefMutRfunc<'a> {
+impl ToTokens for RefMutRfunc<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let argnames = &self.f.argnames;
         let argty = &self.f.argty;
@@ -1867,7 +1912,7 @@ struct StaticRfunc<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for StaticRfunc<'a> {
+impl ToTokens for StaticRfunc<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let argnames = &self.f.argnames;
         let argty = &self.f.argty;
@@ -1954,7 +1999,7 @@ struct RefExpectation<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for RefExpectation<'a> {
+impl ToTokens for RefExpectation<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let argnames = &self.f.argnames;
         let argty = &self.f.argty;
@@ -2020,7 +2065,7 @@ struct RefMutExpectation<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for RefMutExpectation<'a> {
+impl ToTokens for RefMutExpectation<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let common_methods = CommonExpectationMethods{f: self.f};
         let argnames = &self.f.argnames;
@@ -2108,7 +2153,7 @@ struct StaticExpectation<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for StaticExpectation<'a> {
+impl ToTokens for StaticExpectation<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let common_methods = CommonExpectationMethods{f: self.f};
         let argnames = &self.f.argnames;
@@ -2282,7 +2327,7 @@ struct RefExpectations<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for RefExpectations<'a> {
+impl ToTokens for RefExpectations<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let common_methods = CommonExpectationsMethods{f: self.f};
         let argnames = &self.f.argnames;
@@ -2320,7 +2365,7 @@ struct RefMutExpectations<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for RefMutExpectations<'a> {
+impl ToTokens for RefMutExpectations<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let common_methods = CommonExpectationsMethods{f: self.f};
         let argnames = &self.f.argnames;
@@ -2359,7 +2404,7 @@ struct StaticExpectations<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for StaticExpectations<'a> {
+impl ToTokens for StaticExpectations<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let common_methods = CommonExpectationsMethods{f: self.f};
         let argnames = &self.f.argnames;
@@ -2396,7 +2441,7 @@ struct GenericExpectations<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for GenericExpectations<'a> {
+impl ToTokens for GenericExpectations<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         if ! self.f.is_expectation_generic() {
             return;
@@ -2442,7 +2487,7 @@ struct StaticGenericExpectations<'a> {
     f: &'a MockFunction
 }
 
-impl<'a> ToTokens for StaticGenericExpectations<'a> {
+impl ToTokens for StaticGenericExpectations<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let argnames = &self.f.argnames;
         let argty = &self.f.argty;

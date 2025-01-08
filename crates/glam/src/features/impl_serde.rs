@@ -1,5 +1,6 @@
 macro_rules! impl_serde_vec2 {
     ($t:ty, $vec2:ident) => {
+        /// Serialize as a sequence of 2 values.
         impl Serialize for $vec2 {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -12,6 +13,7 @@ macro_rules! impl_serde_vec2 {
             }
         }
 
+        /// Deserialize expects a sequence of 2 values.
         impl<'de> Deserialize<'de> for $vec2 {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -23,7 +25,7 @@ macro_rules! impl_serde_vec2 {
                     type Value = $vec2;
 
                     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        formatter.write_str(concat!("struct ", stringify!($vec2)))
+                        formatter.write_str(&concat!("a sequence of 2 ", stringify!($t), " values"))
                     }
 
                     fn visit_seq<V>(self, mut seq: V) -> Result<$vec2, V::Error>
@@ -57,6 +59,9 @@ macro_rules! impl_serde_vec2 {
             assert!(deserialized.is_err());
             let deserialized = serde_json::from_str::<$vec2>(SX3);
             assert!(deserialized.is_err());
+
+            let deserialized = serde_json::from_str::<$vec2>(ST0);
+            assert!(deserialized.is_err());
         }
     };
 }
@@ -66,6 +71,7 @@ macro_rules! impl_serde_vec3 {
         impl_serde_vec3!($t, $vec3, test_vec3_serde);
     };
     ($t:ty, $vec3:ident, $test_name:ident) => {
+        /// Serialize as a sequence of 3 values.
         impl Serialize for $vec3 {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -79,6 +85,7 @@ macro_rules! impl_serde_vec3 {
             }
         }
 
+        /// Deserialize expects a sequence of 3 values.
         impl<'de> Deserialize<'de> for $vec3 {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -90,7 +97,7 @@ macro_rules! impl_serde_vec3 {
                     type Value = $vec3;
 
                     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        formatter.write_str(concat!("struct ", stringify!($vec3)))
+                        formatter.write_str(&concat!("a sequence of 3 ", stringify!($t), " values"))
                     }
 
                     fn visit_seq<V>(self, mut seq: V) -> Result<$vec3, V::Error>
@@ -129,12 +136,15 @@ macro_rules! impl_serde_vec3 {
             assert!(deserialized.is_err());
             let deserialized = serde_json::from_str::<$vec3>(SX4);
             assert!(deserialized.is_err());
+            let deserialized = serde_json::from_str::<$vec3>(ST0);
+            assert!(deserialized.is_err());
         }
     };
 }
 
 macro_rules! impl_serde_vec4 {
     ($t:ty, $vec4:ident) => {
+        /// Serialize as a sequence of 4 values.
         impl Serialize for $vec4 {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -149,6 +159,7 @@ macro_rules! impl_serde_vec4 {
             }
         }
 
+        /// Deserialize expects a sequence of 4 values.
         impl<'de> Deserialize<'de> for $vec4 {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -160,7 +171,7 @@ macro_rules! impl_serde_vec4 {
                     type Value = $vec4;
 
                     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        formatter.write_str(concat!("struct ", stringify!($vec4)))
+                        formatter.write_str(&concat!("a sequence of 4 ", stringify!($t), " values"))
                     }
 
                     fn visit_seq<V>(self, mut seq: V) -> Result<$vec4, V::Error>
@@ -204,12 +215,15 @@ macro_rules! impl_serde_vec4 {
             assert!(deserialized.is_err());
             let deserialized = serde_json::from_str::<$vec4>(SX5);
             assert!(deserialized.is_err());
+            let deserialized = serde_json::from_str::<$vec4>(ST0);
+            assert!(deserialized.is_err());
         }
     };
 }
 
 macro_rules! impl_serde_quat {
     ($t:ty, $quat:ident) => {
+        /// Serialize as a sequence of 4 values.
         impl Serialize for $quat {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -224,6 +238,7 @@ macro_rules! impl_serde_quat {
             }
         }
 
+        /// Deserialize expects a sequence of 4 values.
         impl<'de> Deserialize<'de> for $quat {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -235,7 +250,7 @@ macro_rules! impl_serde_quat {
                     type Value = $quat;
 
                     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        formatter.write_str(concat!("struct ", stringify!($quat)))
+                        formatter.write_str(&concat!("a sequence of 4 ", stringify!($t), " values"))
                     }
 
                     fn visit_seq<V>(self, mut seq: V) -> Result<$quat, V::Error>
@@ -279,12 +294,15 @@ macro_rules! impl_serde_quat {
             assert!(deserialized.is_err());
             let deserialized = serde_json::from_str::<$quat>("[1.0,2.0,3.0,4.0,5.0]");
             assert!(deserialized.is_err());
+            let deserialized = serde_json::from_str::<$quat>("{}");
+            assert!(deserialized.is_err());
         }
     };
 }
 
 macro_rules! impl_serde_mat2 {
     ($t:ty, $mat2:ident) => {
+        /// Serialize as a sequence of 4 values.
         impl Serialize for $mat2 {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -300,6 +318,7 @@ macro_rules! impl_serde_mat2 {
             }
         }
 
+        /// Deserialize expects a sequence of 4 values.
         impl<'de> Deserialize<'de> for $mat2 {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -311,7 +330,7 @@ macro_rules! impl_serde_mat2 {
                     type Value = $mat2;
 
                     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        formatter.write_str(concat!("struct ", stringify!($mat2)))
+                        formatter.write_str(&concat!("a sequence of 4 ", stringify!($t), "values"))
                     }
 
                     fn visit_seq<V>(self, mut seq: V) -> Result<$mat2, V::Error>
@@ -351,6 +370,8 @@ macro_rules! impl_serde_mat2 {
             assert!(deserialized.is_err());
             let deserialized = serde_json::from_str::<$mat2>("[[1.0,2.0],[3.0,4.0]]");
             assert!(deserialized.is_err());
+            let deserialized = serde_json::from_str::<$mat2>("{}");
+            assert!(deserialized.is_err());
         }
     };
 }
@@ -360,6 +381,7 @@ macro_rules! impl_serde_mat3 {
         impl_serde_mat3!($t, $mat3, test_mat3_serde);
     };
     ($t:ty, $mat3:ident, $test_name:ident) => {
+        /// Serialize as a sequence of 9 values.
         impl Serialize for $mat3 {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -383,6 +405,7 @@ macro_rules! impl_serde_mat3 {
             }
         }
 
+        /// Deserialize expects a sequence of 9 values.
         impl<'de> Deserialize<'de> for $mat3 {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -394,7 +417,7 @@ macro_rules! impl_serde_mat3 {
                     type Value = $mat3;
 
                     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        formatter.write_str(concat!("struct ", stringify!($mat3)))
+                        formatter.write_str(&concat!("a sequence of 9 ", stringify!($t), "values"))
                     }
 
                     fn visit_seq<V>(self, mut seq: V) -> Result<$mat3, V::Error>
@@ -435,12 +458,15 @@ macro_rules! impl_serde_mat3 {
             let deserialized =
                 serde_json::from_str::<$mat3>("[[1.0,2.0,3.0],[4.0,5.0,6.0],[7.0,8.0,9.0]]");
             assert!(deserialized.is_err());
+            let deserialized = serde_json::from_str::<$mat3>("{}");
+            assert!(deserialized.is_err());
         }
     };
 }
 
 macro_rules! impl_serde_mat4 {
     ($t:ty, $mat4:ident) => {
+        /// Serialize as a sequence of 16 values.
         impl Serialize for $mat4 {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -454,6 +480,7 @@ macro_rules! impl_serde_mat4 {
             }
         }
 
+        /// Deserialize expects a sequence of 16 values.
         impl<'de> Deserialize<'de> for $mat4 {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -465,7 +492,7 @@ macro_rules! impl_serde_mat4 {
                     type Value = $mat4;
 
                     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        formatter.write_str(concat!("struct ", stringify!($mat4)))
+                        formatter.write_str(&concat!("a sequence of 16 ", stringify!($t), "values"))
                     }
 
                     fn visit_seq<V>(self, mut seq: V) -> Result<$mat4, V::Error>
@@ -516,12 +543,15 @@ macro_rules! impl_serde_mat4 {
                 "[[1.0,2.0,3.0,4.0],[5.0,6.0,7.0,8.0],[9.0,10.0,11.0,12.0][13.0,14.0,15.0,16.0]]",
             );
             assert!(deserialized.is_err());
+            let deserialized = serde_json::from_str::<$mat4>("{}");
+            assert!(deserialized.is_err());
         }
     };
 }
 
 macro_rules! impl_serde_affine2 {
     ($t:ty, $affine2:ident) => {
+        /// Serialize as a sequence of 6 values.
         impl Serialize for $affine2 {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -539,6 +569,7 @@ macro_rules! impl_serde_affine2 {
             }
         }
 
+        /// Deserialize expects a sequence of 6 values.
         impl<'de> Deserialize<'de> for $affine2 {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -550,7 +581,7 @@ macro_rules! impl_serde_affine2 {
                     type Value = $affine2;
 
                     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        formatter.write_str("struct $affine2")
+                        formatter.write_str(&concat!("a sequence of 6 ", stringify!($t), "values"))
                     }
 
                     fn visit_seq<V>(self, mut seq: V) -> Result<$affine2, V::Error>
@@ -595,12 +626,15 @@ macro_rules! impl_serde_affine2 {
                 "[[1.0,2.0,3.0,4.0],[5.0,6.0,7.0,8.0],[9.0,10.0,11.0,12.0][13.0,14.0,15.0,16.0]]",
             );
             assert!(deserialized.is_err());
+            let deserialized = serde_json::from_str::<$affine2>("{}");
+            assert!(deserialized.is_err());
         }
     };
 }
 
 macro_rules! impl_serde_affine3 {
     ($t:ty, $affine3:ident) => {
+        /// Serialize as a sequence of 12 values.
         impl Serialize for $affine3 {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -624,6 +658,7 @@ macro_rules! impl_serde_affine3 {
             }
         }
 
+        /// Deserialize expects a sequence of 12 values.
         impl<'de> Deserialize<'de> for $affine3 {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -635,7 +670,7 @@ macro_rules! impl_serde_affine3 {
                     type Value = $affine3;
 
                     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        formatter.write_str("struct $affine3")
+                        formatter.write_str(&concat!("a sequence of 12 ", stringify!($t), "values"))
                     }
 
                     fn visit_seq<V>(self, mut seq: V) -> Result<$affine3, V::Error>
@@ -686,6 +721,8 @@ macro_rules! impl_serde_affine3 {
                 "[[1.0,2.0,3.0,4.0],[5.0,6.0,7.0,8.0],[9.0,10.0,11.0,12.0][13.0,14.0,15.0,16.0]]",
             );
             assert!(deserialized.is_err());
+            let deserialized = serde_json::from_str::<$affine3>("{}");
+            assert!(deserialized.is_err());
         }
     };
 }
@@ -727,6 +764,14 @@ mod test_f64 {
 }
 
 #[cfg(test)]
+mod test_i8 {
+    pub const V1: i8 = 1;
+    pub const V2: i8 = 2;
+    pub const V3: i8 = 3;
+    pub const V4: i8 = 4;
+}
+
+#[cfg(test)]
 mod test_i16 {
     pub const V1: i16 = 1;
     pub const V2: i16 = 2;
@@ -748,6 +793,14 @@ mod test_i64 {
     pub const V2: i64 = 2;
     pub const V3: i64 = 3;
     pub const V4: i64 = 4;
+}
+
+#[cfg(test)]
+mod test_u8 {
+    pub const V1: u8 = 1;
+    pub const V2: u8 = 2;
+    pub const V3: u8 = 3;
+    pub const V4: u8 = 4;
 }
 
 #[cfg(test)]
@@ -782,6 +835,7 @@ mod test_float {
     pub const SX3: &str = "[1.0,2.0,3.0]";
     pub const SX4: &str = "[1.0,2.0,3.0,4.0]";
     pub const SX5: &str = "[1.0,2.0,3.0,4.0,5.0]";
+    pub const ST0: &str = "{}";
 }
 
 #[cfg(test)]
@@ -792,6 +846,7 @@ mod test_int {
     pub const SX3: &str = "[1,2,3]";
     pub const SX4: &str = "[1,2,3,4]";
     pub const SX5: &str = "[1,2,3,4,5]";
+    pub const ST0: &str = "{}";
 }
 
 #[cfg(test)]
@@ -802,6 +857,7 @@ mod test_bool_mask {
     pub const SX3: &str = "[true,true,true]";
     pub const SX4: &str = "[true,true,true,true]";
     pub const SX5: &str = "[true,true,true,true,true]";
+    pub const ST0: &str = "{}";
     pub const V1: bool = true;
     pub const V2: bool = true;
     pub const V3: bool = true;
@@ -851,7 +907,7 @@ mod bool {
                 type Value = BVec3A;
 
                 fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    formatter.write_str("struct BVec3A")
+                    formatter.write_str(&concat!("a sequence of 3 ", stringify!($t), "values"))
                 }
 
                 fn visit_seq<V>(self, mut seq: V) -> Result<BVec3A, V::Error>
@@ -921,7 +977,7 @@ mod bool {
                 type Value = BVec4A;
 
                 fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    formatter.write_str(concat!("struct ", stringify!(BVec4A)))
+                    formatter.write_str(&concat!("a sequence of 4 ", stringify!($t), "values"))
                 }
 
                 fn visit_seq<V>(self, mut seq: V) -> Result<BVec4A, V::Error>
@@ -1003,6 +1059,21 @@ mod f64 {
     );
 }
 
+mod i8 {
+    #[cfg(test)]
+    use super::test_i8::*;
+    #[cfg(test)]
+    use super::test_int::*;
+    use crate::{I8Vec2, I8Vec3, I8Vec4};
+    use core::fmt;
+    use serde::{
+        de::{self, Deserialize, Deserializer, SeqAccess, Visitor},
+        ser::{Serialize, SerializeTupleStruct, Serializer},
+    };
+
+    impl_serde_vec_types!(i8, I8Vec2, I8Vec3, I8Vec4);
+}
+
 mod i16 {
     #[cfg(test)]
     use super::test_i16::*;
@@ -1046,6 +1117,21 @@ mod i64 {
     };
 
     impl_serde_vec_types!(i64, I64Vec2, I64Vec3, I64Vec4);
+}
+
+mod u8 {
+    #[cfg(test)]
+    use super::test_int::*;
+    #[cfg(test)]
+    use super::test_u8::*;
+    use crate::{U8Vec2, U8Vec3, U8Vec4};
+    use core::fmt;
+    use serde::{
+        de::{self, Deserialize, Deserializer, SeqAccess, Visitor},
+        ser::{Serialize, SerializeTupleStruct, Serializer},
+    };
+
+    impl_serde_vec_types!(u8, U8Vec2, U8Vec3, U8Vec4);
 }
 
 mod u16 {
@@ -1117,6 +1203,60 @@ mod euler {
                 EulerRot::XZY => {
                     serde::Serializer::serialize_unit_variant(serializer, "EulerRot", 5u32, "XZY")
                 }
+                EulerRot::ZYZ => {
+                    serde::Serializer::serialize_unit_variant(serializer, "EulerRot", 6u32, "ZYZ")
+                }
+                EulerRot::ZXZ => {
+                    serde::Serializer::serialize_unit_variant(serializer, "EulerRot", 7u32, "ZXZ")
+                }
+                EulerRot::YXY => {
+                    serde::Serializer::serialize_unit_variant(serializer, "EulerRot", 8u32, "YXY")
+                }
+                EulerRot::YZY => {
+                    serde::Serializer::serialize_unit_variant(serializer, "EulerRot", 9u32, "YZY")
+                }
+                EulerRot::XYX => {
+                    serde::Serializer::serialize_unit_variant(serializer, "EulerRot", 10u32, "XYX")
+                }
+                EulerRot::XZX => {
+                    serde::Serializer::serialize_unit_variant(serializer, "EulerRot", 11u32, "XZX")
+                }
+                EulerRot::ZYXEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 12u32, "ZYXEx",
+                ),
+                EulerRot::ZXYEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 13u32, "ZXYEx",
+                ),
+                EulerRot::YXZEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 14u32, "YXZEx",
+                ),
+                EulerRot::YZXEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 15u32, "YZXEx",
+                ),
+                EulerRot::XYZEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 16u32, "XYZEx",
+                ),
+                EulerRot::XZYEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 17u32, "XZYEx",
+                ),
+                EulerRot::ZYZEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 18u32, "ZYZEx",
+                ),
+                EulerRot::ZXZEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 19u32, "ZXZEx",
+                ),
+                EulerRot::YXYEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 20u32, "YXYEx",
+                ),
+                EulerRot::YZYEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 21u32, "YZYEx",
+                ),
+                EulerRot::XYXEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 22u32, "XYXEx",
+                ),
+                EulerRot::XZXEx => serde::Serializer::serialize_unit_variant(
+                    serializer, "EulerRot", 23u32, "XZXEx",
+                ),
             }
         }
     }
@@ -1134,13 +1274,31 @@ mod euler {
                 YZX,
                 XYZ,
                 XZY,
+                ZYZ,
+                ZXZ,
+                YXY,
+                YZY,
+                XYX,
+                XZX,
+                ZYXEx,
+                ZXYEx,
+                YXZEx,
+                YZXEx,
+                XYZEx,
+                XZYEx,
+                ZYZEx,
+                ZXZEx,
+                YXYEx,
+                YZYEx,
+                XYXEx,
+                XZXEx,
             }
             struct FieldVisitor;
 
             impl<'de> serde::de::Visitor<'de> for FieldVisitor {
                 type Value = Field;
                 fn expecting(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-                    core::fmt::Formatter::write_str(formatter, "variant identifier")
+                    core::fmt::Formatter::write_str(formatter, "a variant identifier")
                 }
                 fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
                 where
@@ -1153,9 +1311,28 @@ mod euler {
                         3u64 => Ok(Field::YZX),
                         4u64 => Ok(Field::XYZ),
                         5u64 => Ok(Field::XZY),
+                        6u64 => Ok(Field::ZYZ),
+                        7u64 => Ok(Field::ZXZ),
+                        8u64 => Ok(Field::YXY),
+                        9u64 => Ok(Field::YZY),
+                        10u64 => Ok(Field::XYX),
+                        11u64 => Ok(Field::XZX),
+
+                        12u64 => Ok(Field::ZYXEx),
+                        13u64 => Ok(Field::ZXYEx),
+                        14u64 => Ok(Field::YXZEx),
+                        15u64 => Ok(Field::YZXEx),
+                        16u64 => Ok(Field::XYZEx),
+                        17u64 => Ok(Field::XZYEx),
+                        18u64 => Ok(Field::ZYZEx),
+                        19u64 => Ok(Field::ZXZEx),
+                        20u64 => Ok(Field::YXYEx),
+                        21u64 => Ok(Field::YZYEx),
+                        22u64 => Ok(Field::XYXEx),
+                        23u64 => Ok(Field::XZXEx),
                         _ => Err(serde::de::Error::invalid_value(
                             serde::de::Unexpected::Unsigned(value),
-                            &"variant index 0 <= i < 6",
+                            &"variant index 0 <= i < 24",
                         )),
                     }
                 }
@@ -1170,6 +1347,24 @@ mod euler {
                         "YZX" => Ok(Field::YZX),
                         "XYZ" => Ok(Field::XYZ),
                         "XZY" => Ok(Field::XZY),
+                        "ZYZ" => Ok(Field::ZYZ),
+                        "ZXZ" => Ok(Field::ZXZ),
+                        "YXY" => Ok(Field::YXY),
+                        "YZY" => Ok(Field::YZY),
+                        "XYX" => Ok(Field::XYX),
+                        "XZX" => Ok(Field::XZX),
+                        "ZYXEx" => Ok(Field::ZYXEx),
+                        "ZXYEx" => Ok(Field::ZXYEx),
+                        "YXZEx" => Ok(Field::YXZEx),
+                        "YZXEx" => Ok(Field::YZXEx),
+                        "XYZEx" => Ok(Field::XYZEx),
+                        "XZYEx" => Ok(Field::XZYEx),
+                        "ZYZEx" => Ok(Field::ZYZEx),
+                        "ZXZEx" => Ok(Field::ZXZEx),
+                        "YXYEx" => Ok(Field::YXYEx),
+                        "YZYEx" => Ok(Field::YZYEx),
+                        "XYXEx" => Ok(Field::XYXEx),
+                        "XZXEx" => Ok(Field::XZXEx),
                         _ => Err(serde::de::Error::unknown_variant(value, VARIANTS)),
                     }
                 }
@@ -1184,6 +1379,24 @@ mod euler {
                         b"YZX" => Ok(Field::YZX),
                         b"XYZ" => Ok(Field::XYZ),
                         b"XZY" => Ok(Field::XZY),
+                        b"ZYZ" => Ok(Field::ZYZ),
+                        b"ZXZ" => Ok(Field::ZXZ),
+                        b"YXY" => Ok(Field::YXY),
+                        b"YZY" => Ok(Field::YZY),
+                        b"XYX" => Ok(Field::XYX),
+                        b"XZX" => Ok(Field::XZX),
+                        b"ZYXEx" => Ok(Field::ZYXEx),
+                        b"ZXYEx" => Ok(Field::ZXYEx),
+                        b"YXZEx" => Ok(Field::YXZEx),
+                        b"YZXEx" => Ok(Field::YZXEx),
+                        b"XYZEx" => Ok(Field::XYZEx),
+                        b"XZYEx" => Ok(Field::XZYEx),
+                        b"ZYZEx" => Ok(Field::ZYZEx),
+                        b"ZXZEx" => Ok(Field::ZXZEx),
+                        b"YXYEx" => Ok(Field::YXYEx),
+                        b"YZYEx" => Ok(Field::YZYEx),
+                        b"XYXEx" => Ok(Field::XYXEx),
+                        b"XZXEx" => Ok(Field::XZXEx),
                         _ => {
                             #[cfg(feature = "std")]
                             let value = &String::from_utf8_lossy(value);
@@ -1214,7 +1427,7 @@ mod euler {
                     &self,
                     __formatter: &mut core::fmt::Formatter<'_>,
                 ) -> core::fmt::Result {
-                    core::fmt::Formatter::write_str(__formatter, "enum EulerRot")
+                    core::fmt::Formatter::write_str(__formatter, "an EulerRot enum")
                 }
                 fn visit_enum<A>(self, data: A) -> Result<Self::Value, A::Error>
                 where
@@ -1245,10 +1458,87 @@ mod euler {
                             serde::de::VariantAccess::unit_variant(variant)?;
                             Ok(EulerRot::XZY)
                         }
+
+                        (Field::ZYZ, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::ZYZ)
+                        }
+                        (Field::ZXZ, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::ZXZ)
+                        }
+                        (Field::YXY, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::YXY)
+                        }
+                        (Field::YZY, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::YZY)
+                        }
+                        (Field::XYX, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::XYX)
+                        }
+                        (Field::XZX, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::XZX)
+                        }
+                        (Field::ZYXEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::ZYXEx)
+                        }
+                        (Field::ZXYEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::ZXYEx)
+                        }
+                        (Field::YXZEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::YXZEx)
+                        }
+                        (Field::YZXEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::YZXEx)
+                        }
+                        (Field::XYZEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::XYZEx)
+                        }
+                        (Field::XZYEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::XZYEx)
+                        }
+                        (Field::ZYZEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::ZYZEx)
+                        }
+                        (Field::ZXZEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::ZXZEx)
+                        }
+                        (Field::YXYEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::YXYEx)
+                        }
+                        (Field::YZYEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::YZYEx)
+                        }
+                        (Field::XYXEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::XYXEx)
+                        }
+                        (Field::XZXEx, variant) => {
+                            serde::de::VariantAccess::unit_variant(variant)?;
+                            Ok(EulerRot::XZXEx)
+                        }
                     }
                 }
             }
-            const VARIANTS: &[&str] = &["ZYX", "ZXY", "YXZ", "YZX", "XYZ", "XZY"];
+            const VARIANTS: &[&str] = &[
+                "ZYX", "ZXY", "YXZ", "YZX", "XYZ", "XZY", "ZYZ", "ZXZ", "YXY", "YZY", "XYX", "XZX",
+                "ZYXEx", "ZXYEx", "YXZEx", "YZXEx", "XYZEx", "XZYEx", "ZYZEx", "ZXZEx", "YXYEx",
+                "YZYEx", "XYXEx", "XZXEx",
+            ];
             serde::Deserializer::deserialize_enum(
                 deserializer,
                 "EulerRot",
@@ -1263,10 +1553,37 @@ mod euler {
 
     #[test]
     fn test_euler_rot_serde() {
-        let a = EulerRot::XYZ;
-        let serialized = serde_json::to_string(&a).unwrap();
-        assert_eq!("\"XYZ\"", serialized);
-        let deserialized = serde_json::from_str(&serialized).unwrap();
-        assert_eq!(a, deserialized);
+        const PAIRS: [(EulerRot, &str); 24] = [
+            (EulerRot::ZYX, "\"ZYX\""),
+            (EulerRot::ZXY, "\"ZXY\""),
+            (EulerRot::YXZ, "\"YXZ\""),
+            (EulerRot::YZX, "\"YZX\""),
+            (EulerRot::XYZ, "\"XYZ\""),
+            (EulerRot::XZY, "\"XZY\""),
+            (EulerRot::ZYZ, "\"ZYZ\""),
+            (EulerRot::ZXZ, "\"ZXZ\""),
+            (EulerRot::YXY, "\"YXY\""),
+            (EulerRot::YZY, "\"YZY\""),
+            (EulerRot::XYX, "\"XYX\""),
+            (EulerRot::XZX, "\"XZX\""),
+            (EulerRot::ZYXEx, "\"ZYXEx\""),
+            (EulerRot::ZXYEx, "\"ZXYEx\""),
+            (EulerRot::YXZEx, "\"YXZEx\""),
+            (EulerRot::YZXEx, "\"YZXEx\""),
+            (EulerRot::XYZEx, "\"XYZEx\""),
+            (EulerRot::XZYEx, "\"XZYEx\""),
+            (EulerRot::ZYZEx, "\"ZYZEx\""),
+            (EulerRot::ZXZEx, "\"ZXZEx\""),
+            (EulerRot::YXYEx, "\"YXYEx\""),
+            (EulerRot::YZYEx, "\"YZYEx\""),
+            (EulerRot::XYXEx, "\"XYXEx\""),
+            (EulerRot::XZXEx, "\"XZXEx\""),
+        ];
+        for (enum_value, enum_string) in PAIRS {
+            let serialized = serde_json::to_string(&enum_value).unwrap();
+            assert_eq!(enum_string, serialized);
+            let deserialized = serde_json::from_str(&serialized).unwrap();
+            assert_eq!(enum_value, deserialized);
+        }
     }
 }
