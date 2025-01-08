@@ -289,7 +289,7 @@ mod tests {
     #[test]
     fn returns_equal_when_strings_are_equal() -> Result<()> {
         let result = edit_list(["A string"], ["A string"], Mode::Exact);
-        verify_that!(result, matches_pattern!(Difference::Equal))
+        verify_that!(result, matches_pattern!(&Difference::Equal))
     }
 
     #[test]
@@ -299,7 +299,7 @@ mod tests {
             ["A string (1)", "A string (2)"],
             Mode::Exact,
         );
-        verify_that!(result, matches_pattern!(Difference::Equal))
+        verify_that!(result, matches_pattern!(&Difference::Equal))
     }
 
     #[test]
@@ -307,8 +307,8 @@ mod tests {
         let result = edit_list(["A string"], [], Mode::Exact);
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![matches_pattern!(
-                Edit::ExtraActual(eq("A string"))
+            matches_pattern!(&Difference::Editable(ref elements_are![matches_pattern!(
+                &Edit::ExtraActual(eq("A string"))
             )]))
         )
     }
@@ -318,8 +318,8 @@ mod tests {
         let result = edit_list([], ["A string"], Mode::Exact);
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![matches_pattern!(
-                Edit::ExtraExpected(eq("A string"))
+            matches_pattern!(&Difference::Editable(ref elements_are![matches_pattern!(
+                &Edit::ExtraExpected(eq("A string"))
             )]))
         )
     }
@@ -329,9 +329,9 @@ mod tests {
         let result = edit_list(["A string"], ["Another string"], Mode::Exact);
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::ExtraActual(eq("A string"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Another string"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::ExtraActual(eq("A string"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Another string"))),
             ]))
         )
     }
@@ -342,11 +342,11 @@ mod tests {
             edit_list(["A string", "A string"], ["Another string", "Another string"], Mode::Exact);
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::ExtraActual(eq("A string"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Another string"))),
-                matches_pattern!(Edit::ExtraActual(eq("A string"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Another string"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::ExtraActual(eq("A string"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Another string"))),
+                matches_pattern!(&Edit::ExtraActual(eq("A string"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Another string"))),
             ]))
         )
     }
@@ -360,10 +360,10 @@ mod tests {
         );
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::Both(eq("Common part"))),
-                matches_pattern!(Edit::ExtraActual(eq("Actual only"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Expected only"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::Both(eq("Common part"))),
+                matches_pattern!(&Edit::ExtraActual(eq("Actual only"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Expected only"))),
             ]))
         )
     }
@@ -373,9 +373,9 @@ mod tests {
         let result = edit_list(["Common part", "Actual only"], ["Common part"], Mode::Exact);
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::Both(eq("Common part"))),
-                matches_pattern!(Edit::ExtraActual(eq("Actual only"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::Both(eq("Common part"))),
+                matches_pattern!(&Edit::ExtraActual(eq("Actual only"))),
             ]))
         )
     }
@@ -385,9 +385,9 @@ mod tests {
         let result = edit_list(["Common part"], ["Common part", "Expected only"], Mode::Exact);
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::Both(eq("Common part"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Expected only"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::Both(eq("Common part"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Expected only"))),
             ]))
         )
     }
@@ -401,10 +401,10 @@ mod tests {
         );
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::ExtraActual(eq("Actual only"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Expected only"))),
-                matches_pattern!(Edit::Both(eq("Common part"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::ExtraActual(eq("Actual only"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Expected only"))),
+                matches_pattern!(&Edit::Both(eq("Common part"))),
             ]))
         )
     }
@@ -419,19 +419,19 @@ mod tests {
         );
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::ExtraActual(eq("Actual only (1)"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Expected only (1)"))),
-                matches_pattern!(Edit::Both(eq("Common part"))),
-                matches_pattern!(Edit::ExtraActual(eq("Actual only (2)"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Expected only (2)"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::ExtraActual(eq("Actual only (1)"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Expected only (1)"))),
+                matches_pattern!(&Edit::Both(eq("Common part"))),
+                matches_pattern!(&Edit::ExtraActual(eq("Actual only (2)"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Expected only (2)"))),
             ]))
         )
     }
 
     #[test]
-    fn returns_common_part_plus_difference_plus_common_part_when_there_is_common_prefix_and_suffix()
-    -> Result<()> {
+    fn returns_common_part_plus_difference_plus_common_part_when_there_is_common_prefix_and_suffix(
+    ) -> Result<()> {
         let result = edit_list(
             ["Common part (1)", "Actual only", "Common part (2)"],
             ["Common part (1)", "Expected only", "Common part (2)"],
@@ -439,18 +439,18 @@ mod tests {
         );
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::Both(eq("Common part (1)"))),
-                matches_pattern!(Edit::ExtraActual(eq("Actual only"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Expected only"))),
-                matches_pattern!(Edit::Both(eq("Common part (2)"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::Both(eq("Common part (1)"))),
+                matches_pattern!(&Edit::ExtraActual(eq("Actual only"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Expected only"))),
+                matches_pattern!(&Edit::Both(eq("Common part (2)"))),
             ]))
         )
     }
 
     #[test]
-    fn returns_common_part_plus_extra_actual_plus_common_part_when_there_is_common_prefix_and_suffix()
-    -> Result<()> {
+    fn returns_common_part_plus_extra_actual_plus_common_part_when_there_is_common_prefix_and_suffix(
+    ) -> Result<()> {
         let result = edit_list(
             ["Common part (1)", "Actual only", "Common part (2)"],
             ["Common part (1)", "Common part (2)"],
@@ -458,17 +458,17 @@ mod tests {
         );
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::Both(eq("Common part (1)"))),
-                matches_pattern!(Edit::ExtraActual(eq("Actual only"))),
-                matches_pattern!(Edit::Both(eq("Common part (2)"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::Both(eq("Common part (1)"))),
+                matches_pattern!(&Edit::ExtraActual(eq("Actual only"))),
+                matches_pattern!(&Edit::Both(eq("Common part (2)"))),
             ]))
         )
     }
 
     #[test]
-    fn returns_common_part_plus_extra_expected_plus_common_part_when_there_is_common_prefix_and_suffix()
-    -> Result<()> {
+    fn returns_common_part_plus_extra_expected_plus_common_part_when_there_is_common_prefix_and_suffix(
+    ) -> Result<()> {
         let result = edit_list(
             ["Common part (1)", "Common part (2)"],
             ["Common part (1)", "Expected only", "Common part (2)"],
@@ -476,10 +476,10 @@ mod tests {
         );
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::Both(eq("Common part (1)"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Expected only"))),
-                matches_pattern!(Edit::Both(eq("Common part (2)"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::Both(eq("Common part (1)"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Expected only"))),
+                matches_pattern!(&Edit::Both(eq("Common part (2)"))),
             ]))
         )
     }
@@ -493,15 +493,15 @@ mod tests {
         );
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(not(contains(matches_pattern!(
-                Edit::ExtraActual(eq("Actual only"))
+            matches_pattern!(&Difference::Editable(ref not(contains(matches_pattern!(
+                &Edit::ExtraActual(eq("Actual only"))
             )))))
         )
     }
 
     #[test]
-    fn does_not_skip_extra_parts_on_actual_in_prefix_mode_at_end_when_they_are_in_common()
-    -> Result<()> {
+    fn does_not_skip_extra_parts_on_actual_in_prefix_mode_at_end_when_they_are_in_common(
+    ) -> Result<()> {
         let result = edit_list(
             ["Actual only", "Common part"],
             ["Expected only", "Common part"],
@@ -509,24 +509,24 @@ mod tests {
         );
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::ExtraActual(eq("Actual only"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Expected only"))),
-                matches_pattern!(Edit::Both(eq("Common part"))),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::ExtraActual(eq("Actual only"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Expected only"))),
+                matches_pattern!(&Edit::Both(eq("Common part"))),
             ]))
         )
     }
 
     #[test]
-    fn does_not_skip_corresponding_line_on_actual_when_actual_and_expected_differ_in_prefix_mode()
-    -> Result<()> {
+    fn does_not_skip_corresponding_line_on_actual_when_actual_and_expected_differ_in_prefix_mode(
+    ) -> Result<()> {
         let result = edit_list(["Actual only"], ["Expected only"], Mode::Prefix);
         verify_that!(
             result,
-            matches_pattern!(Difference::Editable(elements_are![
-                matches_pattern!(Edit::ExtraActual(eq("Actual only"))),
-                matches_pattern!(Edit::ExtraExpected(eq("Expected only"))),
-                matches_pattern!(Edit::AdditionalActual),
+            matches_pattern!(&Difference::Editable(ref elements_are![
+                matches_pattern!(&Edit::ExtraActual(eq("Actual only"))),
+                matches_pattern!(&Edit::ExtraExpected(eq("Expected only"))),
+                matches_pattern!(&Edit::AdditionalActual),
             ]))
         )
     }
@@ -534,7 +534,7 @@ mod tests {
     #[test]
     fn returns_unrelated_when_maximum_distance_exceeded() -> Result<()> {
         let result = edit_list(0..=50, 60..110, Mode::Exact);
-        verify_that!(result, matches_pattern!(Difference::Unrelated))
+        verify_that!(result, matches_pattern!(&Difference::Unrelated))
     }
 
     quickcheck! {
