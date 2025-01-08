@@ -119,9 +119,6 @@ see [examples] directory for more examples and generated code.
 )]
 #![allow(clippy::needless_doctest_main)]
 
-// ANDROID: Use std to allow building as a dylib.
-extern crate std;
-
 #[doc(inline)]
 pub use pin_project_internal::pin_project;
 #[doc(inline)]

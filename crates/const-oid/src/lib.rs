@@ -17,10 +17,6 @@
     unused_qualifications
 )]
 
-/// Local Android change: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 #[cfg(feature = "std")]
 extern crate std;
 

@@ -20,10 +20,6 @@
 #![doc(html_favicon_url = "https://developer.actyx.com/img/favicon.ico")]
 #![no_std]
 
-// ANDROID: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 use core::{
     fmt::{self, Debug, Formatter},
     pin::Pin,

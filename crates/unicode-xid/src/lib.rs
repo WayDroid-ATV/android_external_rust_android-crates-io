@@ -35,10 +35,8 @@
 #![no_std]
 #![cfg_attr(feature = "bench", feature(test, unicode_internals))]
 
-// #[cfg(test)]
-// ANDROID: Unconditionally use std to allow building as a dylib.
-// #[macro_use]
-#[cfg(android_dylib)]
+#[cfg(test)]
+#[macro_use]
 extern crate std;
 
 #[cfg(feature = "bench")]

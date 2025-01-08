@@ -105,9 +105,6 @@ use std::error;
 #[cfg(test)]
 mod test;
 
-#[cfg(android_dylib)]
-extern crate std;
-
 /// Cast errors
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Error {

@@ -45,9 +45,6 @@ extern crate std as _;
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-#[cfg(android_dylib)]
-extern crate std;
-
 #[cfg(feature = "alloc")]
 use alloc::{
     borrow::{Cow, ToOwned},

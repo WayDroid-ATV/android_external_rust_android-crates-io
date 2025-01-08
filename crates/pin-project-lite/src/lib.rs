@@ -135,10 +135,6 @@ pin-project supports this.
     clippy::std_instead_of_core,
 )]
 
-// ANDROID: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 /// A macro that creates a projection type covering all the fields of struct.
 ///
 /// This macro creates a projection type according to the following rules:

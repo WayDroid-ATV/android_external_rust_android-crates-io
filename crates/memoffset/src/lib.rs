@@ -55,7 +55,7 @@
 //! let checksum = crc16(checksum_range);
 //! ```
 
-#![cfg_attr(not(aosp_force_use_std), no_std)]
+#![no_std]
 #![cfg_attr(
     all(feature = "unstable_const", not(stable_const)),
     feature(const_ptr_offset_from)

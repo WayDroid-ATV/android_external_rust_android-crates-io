@@ -17,9 +17,7 @@ fn check_spirv_capability(
         Capability::DerivativeControl => (),
         Capability::Geometry => {
             if !(device.enabled_features().geometry_shader) {
-                return Err(ShaderSupportError::RequirementsNotMet(&[
-                    "feature `geometry_shader`",
-                ]));
+                return Err(ShaderSupportError::RequirementsNotMet(&["feature `geometry_shader`"]));
             }
         }
         Capability::Tessellation => {
@@ -31,16 +29,12 @@ fn check_spirv_capability(
         }
         Capability::Float64 => {
             if !(device.enabled_features().shader_float64) {
-                return Err(ShaderSupportError::RequirementsNotMet(&[
-                    "feature `shader_float64`",
-                ]));
+                return Err(ShaderSupportError::RequirementsNotMet(&["feature `shader_float64`"]));
             }
         }
         Capability::Int64 => {
             if !(device.enabled_features().shader_int64) {
-                return Err(ShaderSupportError::RequirementsNotMet(&[
-                    "feature `shader_int64`",
-                ]));
+                return Err(ShaderSupportError::RequirementsNotMet(&["feature `shader_int64`"]));
             }
         }
         Capability::Int64Atomics => {
@@ -88,12 +82,8 @@ fn check_spirv_capability(
             }
         }
         Capability::AtomicFloat16MinMaxEXT => {
-            if !(device
-                .enabled_features()
-                .shader_buffer_float16_atomic_min_max
-                || device
-                    .enabled_features()
-                    .shader_shared_float16_atomic_min_max)
+            if !(device.enabled_features().shader_buffer_float16_atomic_min_max
+                || device.enabled_features().shader_shared_float16_atomic_min_max)
             {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_buffer_float16_atomic_min_max`",
@@ -102,15 +92,9 @@ fn check_spirv_capability(
             }
         }
         Capability::AtomicFloat32MinMaxEXT => {
-            if !(device
-                .enabled_features()
-                .shader_buffer_float32_atomic_min_max
-                || device
-                    .enabled_features()
-                    .shader_shared_float32_atomic_min_max
-                || device
-                    .enabled_features()
-                    .shader_image_float32_atomic_min_max)
+            if !(device.enabled_features().shader_buffer_float32_atomic_min_max
+                || device.enabled_features().shader_shared_float32_atomic_min_max
+                || device.enabled_features().shader_image_float32_atomic_min_max)
             {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_buffer_float32_atomic_min_max`",
@@ -120,12 +104,8 @@ fn check_spirv_capability(
             }
         }
         Capability::AtomicFloat64MinMaxEXT => {
-            if !(device
-                .enabled_features()
-                .shader_buffer_float64_atomic_min_max
-                || device
-                    .enabled_features()
-                    .shader_shared_float64_atomic_min_max)
+            if !(device.enabled_features().shader_buffer_float64_atomic_min_max
+                || device.enabled_features().shader_shared_float64_atomic_min_max)
             {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_buffer_float64_atomic_min_max`",
@@ -142,26 +122,18 @@ fn check_spirv_capability(
         }
         Capability::Int16 => {
             if !(device.enabled_features().shader_int16) {
-                return Err(ShaderSupportError::RequirementsNotMet(&[
-                    "feature `shader_int16`",
-                ]));
+                return Err(ShaderSupportError::RequirementsNotMet(&["feature `shader_int16`"]));
             }
         }
         Capability::TessellationPointSize => {
-            if !(device
-                .enabled_features()
-                .shader_tessellation_and_geometry_point_size)
-            {
+            if !(device.enabled_features().shader_tessellation_and_geometry_point_size) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_tessellation_and_geometry_point_size`",
                 ]));
             }
         }
         Capability::GeometryPointSize => {
-            if !(device
-                .enabled_features()
-                .shader_tessellation_and_geometry_point_size)
-            {
+            if !(device.enabled_features().shader_tessellation_and_geometry_point_size) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_tessellation_and_geometry_point_size`",
                 ]));
@@ -182,40 +154,28 @@ fn check_spirv_capability(
             }
         }
         Capability::UniformBufferArrayDynamicIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_uniform_buffer_array_dynamic_indexing)
-            {
+            if !(device.enabled_features().shader_uniform_buffer_array_dynamic_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_uniform_buffer_array_dynamic_indexing`",
                 ]));
             }
         }
         Capability::SampledImageArrayDynamicIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_sampled_image_array_dynamic_indexing)
-            {
+            if !(device.enabled_features().shader_sampled_image_array_dynamic_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_sampled_image_array_dynamic_indexing`",
                 ]));
             }
         }
         Capability::StorageBufferArrayDynamicIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_storage_buffer_array_dynamic_indexing)
-            {
+            if !(device.enabled_features().shader_storage_buffer_array_dynamic_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_storage_buffer_array_dynamic_indexing`",
                 ]));
             }
         }
         Capability::StorageImageArrayDynamicIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_storage_image_array_dynamic_indexing)
-            {
+            if !(device.enabled_features().shader_storage_image_array_dynamic_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_storage_image_array_dynamic_indexing`",
                 ]));
@@ -286,9 +246,7 @@ fn check_spirv_capability(
             }
         }
         Capability::StorageImageReadWithoutFormat => {
-            if !(device
-                .enabled_features()
-                .shader_storage_image_read_without_format
+            if !(device.enabled_features().shader_storage_image_read_without_format
                 || device.api_version() >= Version::V1_1
                 || device.enabled_extensions().khr_format_feature_flags2)
             {
@@ -300,9 +258,7 @@ fn check_spirv_capability(
             }
         }
         Capability::StorageImageWriteWithoutFormat => {
-            if !(device
-                .enabled_features()
-                .shader_storage_image_write_without_format
+            if !(device.enabled_features().shader_storage_image_write_without_format
                 || device.api_version() >= Version::V1_1
                 || device.enabled_extensions().khr_format_feature_flags2)
             {
@@ -315,9 +271,7 @@ fn check_spirv_capability(
         }
         Capability::MultiViewport => {
             if !(device.enabled_features().multi_viewport) {
-                return Err(ShaderSupportError::RequirementsNotMet(&[
-                    "feature `multi_viewport`",
-                ]));
+                return Err(ShaderSupportError::RequirementsNotMet(&["feature `multi_viewport`"]));
             }
         }
         Capability::DrawParameters => {
@@ -332,9 +286,7 @@ fn check_spirv_capability(
         }
         Capability::MultiView => {
             if !(device.enabled_features().multiview) {
-                return Err(ShaderSupportError::RequirementsNotMet(&[
-                    "feature `multiview`",
-                ]));
+                return Err(ShaderSupportError::RequirementsNotMet(&["feature `multiview`"]));
             }
         }
         Capability::DeviceGroup => {
@@ -456,10 +408,7 @@ fn check_spirv_capability(
             }
         }
         Capability::PerViewAttributesNV => {
-            if !(device
-                .enabled_extensions()
-                .nvx_multiview_per_view_attributes)
-            {
+            if !(device.enabled_extensions().nvx_multiview_per_view_attributes) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "device extension `nvx_multiview_per_view_attributes`",
                 ]));
@@ -473,10 +422,7 @@ fn check_spirv_capability(
             }
         }
         Capability::UniformAndStorageBuffer16BitAccess => {
-            if !(device
-                .enabled_features()
-                .uniform_and_storage_buffer16_bit_access)
-            {
+            if !(device.enabled_features().uniform_and_storage_buffer16_bit_access) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `uniform_and_storage_buffer16_bit_access`",
                 ]));
@@ -638,100 +584,70 @@ fn check_spirv_capability(
             }
         }
         Capability::InputAttachmentArrayDynamicIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_input_attachment_array_dynamic_indexing)
-            {
+            if !(device.enabled_features().shader_input_attachment_array_dynamic_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_input_attachment_array_dynamic_indexing`",
                 ]));
             }
         }
         Capability::UniformTexelBufferArrayDynamicIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_uniform_texel_buffer_array_dynamic_indexing)
-            {
+            if !(device.enabled_features().shader_uniform_texel_buffer_array_dynamic_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_uniform_texel_buffer_array_dynamic_indexing`",
                 ]));
             }
         }
         Capability::StorageTexelBufferArrayDynamicIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_storage_texel_buffer_array_dynamic_indexing)
-            {
+            if !(device.enabled_features().shader_storage_texel_buffer_array_dynamic_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_storage_texel_buffer_array_dynamic_indexing`",
                 ]));
             }
         }
         Capability::UniformBufferArrayNonUniformIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_uniform_buffer_array_non_uniform_indexing)
-            {
+            if !(device.enabled_features().shader_uniform_buffer_array_non_uniform_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_uniform_buffer_array_non_uniform_indexing`",
                 ]));
             }
         }
         Capability::SampledImageArrayNonUniformIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_sampled_image_array_non_uniform_indexing)
-            {
+            if !(device.enabled_features().shader_sampled_image_array_non_uniform_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_sampled_image_array_non_uniform_indexing`",
                 ]));
             }
         }
         Capability::StorageBufferArrayNonUniformIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_storage_buffer_array_non_uniform_indexing)
-            {
+            if !(device.enabled_features().shader_storage_buffer_array_non_uniform_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_storage_buffer_array_non_uniform_indexing`",
                 ]));
             }
         }
         Capability::StorageImageArrayNonUniformIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_storage_image_array_non_uniform_indexing)
-            {
+            if !(device.enabled_features().shader_storage_image_array_non_uniform_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_storage_image_array_non_uniform_indexing`",
                 ]));
             }
         }
         Capability::InputAttachmentArrayNonUniformIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_input_attachment_array_non_uniform_indexing)
-            {
+            if !(device.enabled_features().shader_input_attachment_array_non_uniform_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_input_attachment_array_non_uniform_indexing`",
                 ]));
             }
         }
         Capability::UniformTexelBufferArrayNonUniformIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_uniform_texel_buffer_array_non_uniform_indexing)
-            {
+            if !(device.enabled_features().shader_uniform_texel_buffer_array_non_uniform_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_uniform_texel_buffer_array_non_uniform_indexing`",
                 ]));
             }
         }
         Capability::StorageTexelBufferArrayNonUniformIndexing => {
-            if !(device
-                .enabled_features()
-                .shader_storage_texel_buffer_array_non_uniform_indexing)
-            {
+            if !(device.enabled_features().shader_storage_texel_buffer_array_non_uniform_indexing) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `shader_storage_texel_buffer_array_non_uniform_indexing`",
                 ]));
@@ -756,9 +672,7 @@ fn check_spirv_capability(
         }
         Capability::Int8 => {
             if !(device.enabled_features().shader_int8) {
-                return Err(ShaderSupportError::RequirementsNotMet(&[
-                    "feature `shader_int8`",
-                ]));
+                return Err(ShaderSupportError::RequirementsNotMet(&["feature `shader_int8`"]));
             }
         }
         Capability::StorageBuffer8BitAccess => {
@@ -769,10 +683,7 @@ fn check_spirv_capability(
             }
         }
         Capability::UniformAndStorageBuffer8BitAccess => {
-            if !(device
-                .enabled_features()
-                .uniform_and_storage_buffer8_bit_access)
-            {
+            if !(device.enabled_features().uniform_and_storage_buffer8_bit_access) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `uniform_and_storage_buffer8_bit_access`",
                 ]));
@@ -945,9 +856,7 @@ fn check_spirv_capability(
         }
         Capability::ImageFootprintNV => {
             if !(device.enabled_features().image_footprint) {
-                return Err(ShaderSupportError::RequirementsNotMet(&[
-                    "feature `image_footprint`",
-                ]));
+                return Err(ShaderSupportError::RequirementsNotMet(&["feature `image_footprint`"]));
             }
         }
         Capability::FragmentDensityEXT => {
@@ -976,9 +885,7 @@ fn check_spirv_capability(
         }
         Capability::RayQueryKHR => {
             if !(device.enabled_features().ray_query) {
-                return Err(ShaderSupportError::RequirementsNotMet(&[
-                    "feature `ray_query`",
-                ]));
+                return Err(ShaderSupportError::RequirementsNotMet(&["feature `ray_query`"]));
             }
         }
         Capability::RayTraversalPrimitiveCullingKHR => {
@@ -1062,9 +969,7 @@ fn check_spirv_capability(
             }
         }
         Capability::FragmentShaderShadingRateInterlockEXT => {
-            if !(device
-                .enabled_features()
-                .fragment_shader_shading_rate_interlock
+            if !(device.enabled_features().fragment_shader_shading_rate_interlock
                 || device.enabled_features().shading_rate_image)
             {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
@@ -1100,20 +1005,14 @@ fn check_spirv_capability(
             }
         }
         Capability::WorkgroupMemoryExplicitLayout8BitAccessKHR => {
-            if !(device
-                .enabled_features()
-                .workgroup_memory_explicit_layout8_bit_access)
-            {
+            if !(device.enabled_features().workgroup_memory_explicit_layout8_bit_access) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `workgroup_memory_explicit_layout8_bit_access`",
                 ]));
             }
         }
         Capability::WorkgroupMemoryExplicitLayout16BitAccessKHR => {
-            if !(device
-                .enabled_features()
-                .workgroup_memory_explicit_layout16_bit_access)
-            {
+            if !(device.enabled_features().workgroup_memory_explicit_layout16_bit_access) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "feature `workgroup_memory_explicit_layout16_bit_access`",
                 ]));
@@ -1164,10 +1063,7 @@ fn check_spirv_extension(device: &Device, extension: &str) -> Result<(), ShaderS
             }
         }
         "SPV_AMD_shader_explicit_vertex_parameter" => {
-            if !(device
-                .enabled_extensions()
-                .amd_shader_explicit_vertex_parameter)
-            {
+            if !(device.enabled_extensions().amd_shader_explicit_vertex_parameter) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "device extension `amd_shader_explicit_vertex_parameter`",
                 ]));
@@ -1230,10 +1126,7 @@ fn check_spirv_extension(device: &Device, extension: &str) -> Result<(), ShaderS
             }
         }
         "SPV_AMD_shader_early_and_late_fragment_tests" => {
-            if !(device
-                .enabled_extensions()
-                .amd_shader_early_and_late_fragment_tests)
-            {
+            if !(device.enabled_extensions().amd_shader_early_and_late_fragment_tests) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "device extension `amd_shader_early_and_late_fragment_tests`",
                 ]));
@@ -1360,10 +1253,7 @@ fn check_spirv_extension(device: &Device, extension: &str) -> Result<(), ShaderS
             }
         }
         "SPV_NV_shader_invocation_reorder" => {
-            if !(device
-                .enabled_extensions()
-                .nv_ray_tracing_invocation_reorder)
-            {
+            if !(device.enabled_extensions().nv_ray_tracing_invocation_reorder) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "device extension `nv_ray_tracing_invocation_reorder`",
                 ]));
@@ -1380,10 +1270,7 @@ fn check_spirv_extension(device: &Device, extension: &str) -> Result<(), ShaderS
             }
         }
         "SPV_NVX_multiview_per_view_attributes" => {
-            if !(device
-                .enabled_extensions()
-                .nvx_multiview_per_view_attributes)
-            {
+            if !(device.enabled_extensions().nvx_multiview_per_view_attributes) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "device extension `nvx_multiview_per_view_attributes`",
                 ]));
@@ -1533,9 +1420,7 @@ fn check_spirv_extension(device: &Device, extension: &str) -> Result<(), ShaderS
         }
         "SPV_EXT_demote_to_helper_invocation" => {
             if !(device.api_version() >= Version::V1_1
-                || device
-                    .enabled_extensions()
-                    .ext_shader_demote_to_helper_invocation)
+                || device.enabled_extensions().ext_shader_demote_to_helper_invocation)
             {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "Vulkan API version 1.1",
@@ -1587,10 +1472,7 @@ fn check_spirv_extension(device: &Device, extension: &str) -> Result<(), ShaderS
             }
         }
         "SPV_KHR_workgroup_memory_explicit_layout" => {
-            if !(device
-                .enabled_extensions()
-                .khr_workgroup_memory_explicit_layout)
-            {
+            if !(device.enabled_extensions().khr_workgroup_memory_explicit_layout) {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "device extension `khr_workgroup_memory_explicit_layout`",
                 ]));
@@ -1612,9 +1494,7 @@ fn check_spirv_extension(device: &Device, extension: &str) -> Result<(), ShaderS
         }
         "SPV_KHR_subgroup_uniform_control_flow" => {
             if !(device.api_version() >= Version::V1_1
-                || device
-                    .enabled_extensions()
-                    .khr_shader_subgroup_uniform_control_flow)
+                || device.enabled_extensions().khr_shader_subgroup_uniform_control_flow)
             {
                 return Err(ShaderSupportError::RequirementsNotMet(&[
                     "Vulkan API version 1.1",

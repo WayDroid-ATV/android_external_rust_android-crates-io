@@ -117,9 +117,6 @@ mod f2s;
 mod f2s_intrinsics;
 mod pretty;
 
-#[cfg(android_dylib)]
-extern crate std;
-
 pub use crate::buffer::{Buffer, Float};
 
 /// Unsafe functions that mirror the API of the C implementation of Ryū.

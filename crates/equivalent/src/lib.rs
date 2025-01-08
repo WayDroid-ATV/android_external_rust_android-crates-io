@@ -61,10 +61,6 @@
 
 #![no_std]
 
-/// Local Android change: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 use core::borrow::Borrow;
 use core::cmp::Ordering;
 

@@ -14,9 +14,6 @@ mod tests;
 #[cfg(test)]
 mod tests128;
 
-#[cfg(android_dylib)]
-extern crate std;
-
 #[cfg(any(feature = "serde", feature = "serde_std", feature = "serde_no_std"))]
 pub mod reexports {
     pub use serde;

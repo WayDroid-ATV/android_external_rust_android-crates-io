@@ -314,9 +314,6 @@
     feature(layout_for_ptr, coverage_attribute)
 )]
 
-#[cfg(android_dylib)]
-extern crate std;
-
 // This is a hack to allow zerocopy-derive derives to work in this crate. They
 // assume that zerocopy is linked as an extern crate, so they access items from
 // it as `zerocopy::Xxx`. This makes that still work.
