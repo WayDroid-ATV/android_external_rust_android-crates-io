@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.60"
 name = "libtest-mimic"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Lukas Kalbertodt <lukas.kalbertodt@gmail.com>"]
 exclude = [".github"]
 description = """

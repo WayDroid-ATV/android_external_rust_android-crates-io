@@ -12,9 +12,6 @@
 #![allow(clippy::eq_op)]
 #![allow(clippy::assign_op_pattern)]
 
-#[cfg(android_dylib)]
-extern crate std;
-
 mod libm_helper;
 mod math;
 

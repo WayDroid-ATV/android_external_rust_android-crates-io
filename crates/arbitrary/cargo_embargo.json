@@ -1,5 +1,4 @@
 {
-  "tests": true,
   "features": [
     "derive"
   ],

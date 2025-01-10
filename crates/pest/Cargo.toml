@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.61"
 name = "pest"
-version = "2.7.6"
+version = "2.7.15"
 authors = ["Dragoș Tiselice <dragostiselice@gmail.com>"]
 description = "The Elegant Parser"
 homepage = "https://pest.rs/"
@@ -37,6 +37,11 @@ harness = false
 version = "2"
 optional = true
 
+[dependencies.miette]
+version = "7.2.0"
+features = ["fancy"]
+optional = true
+
 [dependencies.serde]
 version = "1.0.145"
 optional = true
@@ -46,7 +51,7 @@ version = "1.0.85"
 optional = true
 
 [dependencies.thiserror]
-version = "1.0.37"
+version = "2"
 optional = true
 
 [dependencies.ucd-trie]
@@ -57,11 +62,21 @@ default-features = false
 version = "0.5.1"
 features = ["html_reports"]
 
+[dev-dependencies.miette]
+version = "7.2.0"
+features = ["fancy"]
+
 [features]
 const_prec_climber = []
 default = [
     "std",
     "memchr",
+]
+miette-error = [
+    "std",
+    "pretty-print",
+    "dep:miette",
+    "dep:thiserror",
 ]
 pretty-print = [
     "dep:serde",

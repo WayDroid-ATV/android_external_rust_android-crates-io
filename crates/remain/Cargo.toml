@@ -13,8 +13,14 @@
 edition = "2021"
 rust-version = "1.56"
 name = "remain"
-version = "0.2.12"
+version = "0.2.14"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
+build = false
+exclude = ["build.rs"]
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Compile-time checks that an enum, struct, or match is written in sorted order."
 documentation = "https://docs.rs/remain"
 readme = "README.md"
@@ -31,7 +37,25 @@ rustdoc-args = ["--generate-link-to-definition"]
 targets = ["x86_64-unknown-linux-gnu"]
 
 [lib]
+name = "remain"
+path = "src/lib.rs"
 proc-macro = true
+
+[[test]]
+name = "stable"
+path = "tests/stable.rs"
+
+[[test]]
+name = "order"
+path = "tests/order.rs"
+
+[[test]]
+name = "compiletest"
+path = "tests/compiletest.rs"
+
+[[test]]
+name = "unstable"
+path = "tests/unstable.rs"
 
 [dependencies.proc-macro2]
 version = "1.0.74"

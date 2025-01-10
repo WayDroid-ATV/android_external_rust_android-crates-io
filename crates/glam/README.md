@@ -2,7 +2,7 @@
 
 [![Build Status]][github-ci] [![Coverage Status]][coveralls.io]
 [![Latest Version]][crates.io] [![docs]][docs.rs]
-[![Minimum Supported Rust Version]][Rust 1.58.1]
+[![Minimum Supported Rust Version]][Rust 1.68.2]
 
 A simple and fast 3D math library for games and graphics.
 
@@ -23,6 +23,10 @@ and feel of the API has solidified.
   * square matrices: `DMat2`, `DMat3` and `DMat4`
   * a quaternion type: `DQuat`
   * affine transformation types: `DAffine2` and `DAffine3`
+* `i8` types
+  * vectors: `I8Vec2`, `I8Vec3` and `I8Vec4`
+* `u8` types
+  * vectors: `U16Vec2`, `U16Vec3` and `U16Vec4`
 * `i16` types
   * vectors: `I16Vec2`, `I16Vec3` and `I16Vec4`
 * `u16` types
@@ -60,6 +64,8 @@ SIMD is supported on `x86`, `x86_64` and `wasm32` targets.
 * `SSE2` is enabled by default on `x86_64` targets.
 * To enable `SSE2` on `x86` targets add `-C target-feature=+sse2` to
   `RUSTCFLAGS`.
+* `NEON` is enabled by default on `aarch64` targets.
+* To enable `NEON` on `aarch64` targets add `-C target-feature=+neon` to `RUSTFLAGS`.
 * To enable `simd128` on `wasm32` targets add `-C target-feature=+simd128` to
   `RUSTFLAGS`.
 * Experimental [portable simd] support can be enabled with the `core-simd`
@@ -78,7 +84,7 @@ defined in `std`. For example:
 
 ```toml
 [dependencies]
-glam = { version = "0.25", default-features = false, features = ["libm"] }
+glam = { version = "0.29.2", default-features = false, features = ["libm"] }
 ```
 
 To support both `std` and `no_std` builds in project, you can use the following
@@ -92,7 +98,7 @@ std = ["glam/std"]
 libm = ["glam/libm"]
 
 [dependencies]
-glam = { version = "0.25", default-features = false }
+glam = { version = "0.29.2", default-features = false }
 ```
 
 ### Optional features
@@ -140,7 +146,7 @@ glam = { version = "0.25", default-features = false }
 
 ### Minimum Supported Rust Version (MSRV)
 
-The minimum supported version of Rust for `glam` is `1.58.1`.
+The minimum supported version of Rust for `glam` is `1.68.2`.
 
 ## Conventions
 
@@ -262,5 +268,5 @@ See [ATTRIBUTION.md] for details.
 [crates.io]: https://crates.io/crates/glam/
 [docs]: https://docs.rs/glam/badge.svg
 [docs.rs]: https://docs.rs/glam/
-[Minimum Supported Rust Version]: https://img.shields.io/badge/Rust-1.58.1-blue?color=fc8d62&logo=rust
-[Rust 1.58.1]: https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1581-2022-01-19
+[Minimum Supported Rust Version]: https://img.shields.io/badge/Rust-1.68.2-blue?color=fc8d62&logo=rust
+[Rust 1.68.2]: https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1682-2023-03-28

@@ -117,10 +117,6 @@
     clippy::unused_self
 )]
 
-// ANDROID: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 mod distributed_slice;
 
 // Not public API.

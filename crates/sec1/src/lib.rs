@@ -23,10 +23,6 @@
 //! serializers/deserializers will autodetect if a "human friendly" textual
 //! encoding is being used, and if so encode the points as hexadecimal.
 
-/// Local Android change: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 #[cfg(feature = "alloc")]
 #[allow(unused_extern_crates)]
 extern crate alloc;

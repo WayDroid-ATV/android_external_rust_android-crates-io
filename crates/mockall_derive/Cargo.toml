@@ -12,8 +12,14 @@
 [package]
 edition = "2021"
 name = "mockall_derive"
-version = "0.12.1"
+version = "0.13.1"
 authors = ["Alan Somers <asomers@gmail.com>"]
+build = "build.rs"
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = """
 Procedural macros for Mockall
 """
@@ -33,6 +39,8 @@ push = false
 tag = false
 
 [lib]
+name = "mockall_derive"
+path = "src/lib.rs"
 proc-macro = true
 
 [dependencies.cfg-if]

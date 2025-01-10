@@ -69,6 +69,8 @@
 //!
 //! [capture]: https://github.com/LukasKalbertodt/libtest-mimic/issues/9
 
+#![forbid(unsafe_code)]
+
 use std::{process, sync::mpsc, fmt, time::Instant};
 
 mod args;
@@ -83,10 +85,10 @@ pub use crate::args::{Arguments, ColorSetting, FormatSetting};
 
 /// A single test or benchmark.
 ///
-/// `libtest` often treats benchmarks as "tests", which is a bit confusing. So
-/// in this library, it is called "trial".
+/// The original `libtest` often calls benchmarks "tests", which is a bit
+/// confusing. So in this library, it is called "trial".
 ///
-/// A trial is create via [`Trial::test`] or [`Trial::bench`]. The trial's
+/// A trial is created via [`Trial::test`] or [`Trial::bench`]. The trial's
 /// `name` is printed and used for filtering. The `runner` is called when the
 /// test/benchmark is executed to determine its outcome. If `runner` panics,
 /// the trial is considered "failed". If you need the behavior of
@@ -390,7 +392,7 @@ impl Arguments {
     }
 }
 
-/// Runs all given tests.
+/// Runs all given trials (tests & benchmarks).
 ///
 /// This is the central function of this crate. It provides the framework for
 /// the testing harness. It does all the printing and house keeping.
@@ -455,7 +457,10 @@ pub fn run(args: &Arguments, mut tests: Vec<Trial>) -> Conclusion {
         }
     } else {
         // Run test in thread pool.
-        let pool = ThreadPool::default();
+        let pool = match args.test_threads {
+            Some(num_threads) => ThreadPool::new(num_threads),
+            None => ThreadPool::default()
+        };
         let (sender, receiver) = mpsc::channel();
 
         let num_tests = tests.len();

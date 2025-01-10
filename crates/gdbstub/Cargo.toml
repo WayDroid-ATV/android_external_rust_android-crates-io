@@ -12,7 +12,7 @@
 [package]
 edition = "2018"
 name = "gdbstub"
-version = "0.7.2"
+version = "0.7.3"
 authors = ["Daniel Prilik <danielprilik@gmail.com>"]
 build = false
 exclude = [
@@ -89,6 +89,7 @@ version = "0.4"
 [features]
 __dead_code_marker = []
 alloc = ["managed/alloc"]
+core_error = []
 default = [
     "std",
     "trace-pkt",

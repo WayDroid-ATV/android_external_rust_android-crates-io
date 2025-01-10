@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
-extern crate glob;
-
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::env;
@@ -24,7 +22,7 @@ fn add_command_error(name: &str, path: &str, arguments: &[&str], message: String
     COMMAND_ERRORS.with(|e| {
         e.borrow_mut()
             .entry(name.into())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(format!(
                 "couldn't execute `{} {}` (path={}) ({})",
                 name,
@@ -92,9 +90,11 @@ impl Drop for CommandErrorPrinter {
 }
 
 #[cfg(test)]
-pub static RUN_COMMAND_MOCK: std::sync::Mutex<
-    Option<Box<dyn Fn(&str, &str, &[&str]) -> Option<String> + Send + Sync + 'static>>,
-> = std::sync::Mutex::new(None);
+lazy_static::lazy_static! {
+    pub static ref RUN_COMMAND_MOCK: std::sync::Mutex<
+        Option<Box<dyn Fn(&str, &str, &[&str]) -> Option<String> + Send + Sync + 'static>>,
+    > = std::sync::Mutex::new(None);
+}
 
 /// Executes a command and returns the `stdout` output if the command was
 /// successfully executed (errors are added to `COMMAND_ERRORS`).
@@ -189,7 +189,7 @@ const DIRECTORIES_WINDOWS: &[(&str, bool)] = &[
     ("C:\\LLVM\\lib", true),
     // LLVM + Clang can be installed as a component of Visual Studio.
     // https://github.com/KyleMayes/clang-sys/issues/121
-    ("C:\\Program Files*\\Microsoft Visual Studio\\*\\BuildTools\\VC\\Tools\\Llvm\\**\\lib", true),
+    ("C:\\Program Files*\\Microsoft Visual Studio\\*\\VC\\Tools\\Llvm\\**\\lib", true),
 ];
 
 /// `libclang` directory patterns for illumos
@@ -237,7 +237,7 @@ fn search_directory(directory: &Path, filenames: &[String]) -> Vec<(PathBuf, Str
                 return None;
             }
 
-            Some((directory.to_owned(), filename.into()))
+            Some((path.parent().unwrap().to_owned(), filename.into()))
         })
         .collect::<Vec<_>>()
 }
@@ -255,7 +255,7 @@ fn search_directories(directory: &Path, filenames: &[String]) -> Vec<(PathBuf, S
     // the LLVM `bin` directory here.
     if target_os!("windows") && directory.ends_with("lib") {
         let sibling = directory.parent().unwrap().join("bin");
-        results.extend(search_directory(&sibling, filenames).into_iter());
+        results.extend(search_directory(&sibling, filenames));
     }
 
     results

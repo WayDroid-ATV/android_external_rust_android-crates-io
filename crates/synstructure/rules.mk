@@ -15,7 +15,6 @@ MODULE_RUSTFLAGS += \
 MODULE_LIBRARY_DEPS := \
 	$(call FIND_CRATE,proc-macro2) \
 	$(call FIND_CRATE,quote) \
-	$(call FIND_CRATE,syn) \
-	$(call FIND_CRATE,unicode-xid)
+	$(call FIND_CRATE,syn)
 
 include make/library.mk

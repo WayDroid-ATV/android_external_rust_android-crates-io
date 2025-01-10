@@ -3,26 +3,22 @@ mod support;
 
 macro_rules! impl_mat4_tests {
     ($t:ident, $newmat4:ident, $newvec4:ident, $newvec3:ident, $mat4:ident, $mat3:ident, $quat:ident, $vec4:ident, $vec3:ident) => {
-        use core::$t::INFINITY;
-        use core::$t::NAN;
-        use core::$t::NEG_INFINITY;
-
         const IDENTITY: [[$t; 4]; 4] = [
             [1.0, 0.0, 0.0, 0.0],
             [0.0, 1.0, 0.0, 0.0],
             [0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 1.0],
         ];
-        const MATRIX: [[$t; 4]; 4] = [
+        const ARRAY4X4: [[$t; 4]; 4] = [
             [1.0, 2.0, 3.0, 4.0],
             [5.0, 6.0, 7.0, 8.0],
             [9.0, 10.0, 11.0, 12.0],
             [13.0, 14.0, 15.0, 16.0],
         ];
-
-        const MATRIX1D: [$t; 16] = [
+        const ARRAY1X16: [$t; 16] = [
             1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0,
         ];
+        const ARRAY3X3: [[$t; 3]; 3] = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]];
 
         glam_test!(test_const, {
             const M0: $mat4 = $mat4::from_cols(
@@ -31,12 +27,12 @@ macro_rules! impl_mat4_tests {
                 $newvec4(9.0, 10.0, 11.0, 12.0),
                 $newvec4(13.0, 14.0, 15.0, 16.0),
             );
-            const M1: $mat4 = $mat4::from_cols_array(&MATRIX1D);
-            const M2: $mat4 = $mat4::from_cols_array_2d(&MATRIX);
+            const M1: $mat4 = $mat4::from_cols_array(&ARRAY1X16);
+            const M2: $mat4 = $mat4::from_cols_array_2d(&ARRAY4X4);
 
-            assert_eq!(MATRIX1D, M0.to_cols_array());
-            assert_eq!(MATRIX1D, M1.to_cols_array());
-            assert_eq!(MATRIX1D, M2.to_cols_array());
+            assert_eq!(ARRAY1X16, M0.to_cols_array());
+            assert_eq!(ARRAY1X16, M1.to_cols_array());
+            assert_eq!(ARRAY1X16, M2.to_cols_array());
         });
 
         glam_test!(test_mat4_identity, {
@@ -80,7 +76,7 @@ macro_rules! impl_mat4_tests {
             m.y_axis = $vec4::new(5.0, 6.0, 7.0, 8.0);
             m.z_axis = $vec4::new(9.0, 10.0, 11.0, 12.0);
             m.w_axis = $vec4::new(13.0, 14.0, 15.0, 16.0);
-            assert_eq!($mat4::from_cols_array_2d(&MATRIX), m);
+            assert_eq!($mat4::from_cols_array_2d(&ARRAY4X4), m);
             assert_eq!($vec4::new(1.0, 2.0, 3.0, 4.0), m.x_axis);
             assert_eq!($vec4::new(5.0, 6.0, 7.0, 8.0), m.y_axis);
             assert_eq!($vec4::new(9.0, 10.0, 11.0, 12.0), m.z_axis);
@@ -120,7 +116,7 @@ macro_rules! impl_mat4_tests {
                 [9.0, 10.0, 11.0, 12.0],
                 [13.0, 14.0, 15.0, 16.0],
             ]);
-            assert_eq!(MATRIX, a.to_cols_array_2d());
+            assert_eq!(ARRAY4X4, a.to_cols_array_2d());
             let b = $mat4::from_cols(
                 $newvec4(1.0, 2.0, 3.0, 4.0),
                 $newvec4(5.0, 6.0, 7.0, 8.0),
@@ -172,7 +168,7 @@ macro_rules! impl_mat4_tests {
 
         glam_test!(test_from_mat3, {
             let m3 =
-                $mat3::from_cols_array_2d(&[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
+                $mat3::from_cols_array_2d(&ARRAY3X3);
             let m4 = $mat4::from_mat3(m3);
             assert_eq!(
                 $mat4::from_cols_array_2d(&[
@@ -588,7 +584,7 @@ macro_rules! impl_mat4_tests {
         });
 
         glam_test!(test_mat4_ops, {
-            let m0 = $mat4::from_cols_array_2d(&MATRIX);
+            let m0 = $mat4::from_cols_array_2d(&ARRAY4X4);
             let m0x2 = $mat4::from_cols_array_2d(&[
                 [2.0, 4.0, 6.0, 8.0],
                 [10.0, 12.0, 14.0, 16.0],
@@ -603,6 +599,8 @@ macro_rules! impl_mat4_tests {
             ]);
             assert_eq!(m0x2, m0 * 2.0);
             assert_eq!(m0x2, 2.0 * m0);
+            assert_eq!(m0, m0x2 / 2.0);
+            assert_eq!(m0, 2.0 / m0x2);
             assert_eq!(m0x2, m0 + m0);
             assert_eq!($mat4::ZERO, m0 - m0);
             assert_eq!(m0_neg, -m0);
@@ -612,6 +610,10 @@ macro_rules! impl_mat4_tests {
             let mut m1 = m0;
             m1 *= 2.0;
             assert_eq!(m0x2, m1);
+
+            let mut m1 = m0x2;
+            m1 /= 2.0;
+            assert_eq!(m0, m1);
 
             let mut m1 = m0;
             m1 += m0;
@@ -627,19 +629,23 @@ macro_rules! impl_mat4_tests {
         });
 
         glam_test!(test_mat4_fmt, {
-            let a = $mat4::from_cols_array_2d(&MATRIX);
+            let a = $mat4::from_cols_array_2d(&ARRAY4X4);
             assert_eq!(
                 format!("{}", a),
                 "[[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]"
             );
+            assert_eq!(
+                format!("{:.1}", a),
+                "[[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 11.0, 12.0], [13.0, 14.0, 15.0, 16.0]]"
+            );
         });
 
         glam_test!(test_mat4_to_from_slice, {
-            let m = $mat4::from_cols_slice(&MATRIX1D);
-            assert_eq!($mat4::from_cols_array(&MATRIX1D), m);
+            let m = $mat4::from_cols_slice(&ARRAY1X16);
+            assert_eq!($mat4::from_cols_array(&ARRAY1X16), m);
             let mut out: [$t; 16] = Default::default();
             m.write_cols_to_slice(&mut out);
-            assert_eq!(MATRIX1D, out);
+            assert_eq!(ARRAY1X16, out);
 
             should_panic!({ $mat4::from_cols_slice(&[0.0; 15]) });
             should_panic!({ $mat4::IDENTITY.write_cols_to_slice(&mut [0.0; 15]) });
@@ -659,9 +665,31 @@ macro_rules! impl_mat4_tests {
 
         glam_test!(test_mat4_is_finite, {
             assert!($mat4::IDENTITY.is_finite());
-            assert!(!($mat4::IDENTITY * INFINITY).is_finite());
-            assert!(!($mat4::IDENTITY * NEG_INFINITY).is_finite());
-            assert!(!($mat4::IDENTITY * NAN).is_finite());
+            assert!(!($mat4::IDENTITY * $t::INFINITY).is_finite());
+            assert!(!($mat4::IDENTITY * $t::NEG_INFINITY).is_finite());
+            assert!(!($mat4::IDENTITY * $t::NAN).is_finite());
+        });
+
+        glam_test!(test_mat4_abs, {
+            let neg = $mat4::IDENTITY * -1.0;
+            assert_eq!(neg.abs(), $mat4::IDENTITY);
+
+            let partial_neg = $mat4::from_cols_array_2d(&[
+                [1.0, -2.0, 3.0, -4.0],
+                [-5.0, 6.0, -7.0, 8.0],
+                [-9.0, 10.0, 11.0, -12.0],
+                [13.0, -14.0, -15.0, 16.0],
+            ]);
+
+            assert_eq!(
+                partial_neg.abs(),
+                $mat4::from_cols_array_2d(&[
+                    [1.0, 2.0, 3.0, 4.0],
+                    [5.0, 6.0, 7.0, 8.0],
+                    [9.0, 10.0, 11.0, 12.0],
+                    [13.0, 14.0, 15.0, 16.0],
+                ])
+            );
         });
     };
 }
@@ -669,13 +697,13 @@ macro_rules! impl_mat4_tests {
 macro_rules! impl_as_ref_tests {
     ($mat:ident) => {
         glam_test!(test_as_ref, {
-            let m = $mat::from_cols_array_2d(&MATRIX);
-            assert_eq!(MATRIX1D, *m.as_ref());
+            let m = $mat::from_cols_array_2d(&ARRAY4X4);
+            assert_eq!(ARRAY1X16, *m.as_ref());
         });
         glam_test!(test_as_mut, {
             let mut m = $mat::ZERO;
-            *m.as_mut() = MATRIX1D;
-            assert_eq!($mat::from_cols_array_2d(&MATRIX), m);
+            *m.as_mut() = ARRAY1X16;
+            assert_eq!($mat::from_cols_array_2d(&ARRAY4X4), m);
         });
     };
 }
@@ -692,7 +720,7 @@ mod mat4 {
 
     glam_test!(test_from_mat3a, {
         use glam::Mat3A;
-        let m3 = Mat3A::from_cols_array_2d(&[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
+        let m3 = Mat3A::from_cols_array_2d(&ARRAY3X3);
         let m4 = Mat4::from_mat3a(m3);
         assert_eq!(
             Mat4::from_cols_array_2d(&[
@@ -702,6 +730,35 @@ mod mat4 {
                 [0.0, 0.0, 0.0, 1.0]
             ]),
             m4
+        );
+    });
+
+    glam_test!(test_transform_vec3a, {
+        use glam::Vec3A;
+        let m = Mat4::from_axis_angle(Vec3::Z, deg(90.0));
+        let result3 = m.transform_vector3a(Vec3A::Y);
+        assert_approx_eq!(Vec3A::new(-1.0, 0.0, 0.0), result3);
+
+        let m = Mat4::from_scale_rotation_translation(
+            Vec3::new(0.5, 1.5, 2.0),
+            Quat::from_rotation_x(deg(90.0)),
+            Vec3::new(1.0, 2.0, 3.0),
+        );
+        let result3 = m.transform_vector3a(Vec3A::Y);
+        assert_approx_eq!(Vec3A::new(0.0, 0.0, 1.5), result3, 1.0e-6);
+
+        let result3 = m.transform_point3a(Vec3A::Y);
+        assert_approx_eq!(Vec3A::new(1.0, 2.0, 4.5), result3, 1.0e-6);
+
+        let m = Mat4::from_cols(
+            vec4(8.0, 0.0, 0.0, 0.0),
+            vec4(0.0, 4.0, 0.0, 0.0),
+            vec4(0.0, 0.0, 2.0, 2.0),
+            vec4(0.0, 0.0, 0.0, 0.0),
+        );
+        assert_approx_eq!(
+            Vec3A::new(4.0, 2.0, 1.0),
+            m.project_point3a(Vec3A::new(2.0, 2.0, 2.0))
         );
     });
 

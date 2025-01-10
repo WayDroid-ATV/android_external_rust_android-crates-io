@@ -54,10 +54,6 @@ pub use crate::{
 };
 pub use der::{self, asn1::ObjectIdentifier};
 
-/// Local Android change: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 #[cfg(feature = "alloc")]
 pub use {
     crate::{
