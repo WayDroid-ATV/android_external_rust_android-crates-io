@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6fa836ad_4793a7e6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-10T22:51:06Z",
+      "side": 1,
+      "message": "You need to go actually regenerate the checksum files for these projects in addition to updating the json and bp files. To do so, run the following commands:\n\n```\n$ cd external/rust/android-crates-io\n$ ./crate_tool regenerate grpcio-sys instant tokio-stream\n$ ./crate_tool --managed-repo-path external/rust/android-crates-io/extra_versions/ regenerate protobuf\n```",
+      "revId": "b41ff260eeafd3cd9af2165812d48b6f5eaf1fb6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
