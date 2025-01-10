@@ -84,7 +84,7 @@
 ///     a_nested_struct: MyInnerStruct { a_field: "Something to believe in".into() },
 /// };
 /// verify_that!(my_struct, matches_pattern!(MyStruct {
-///     a_nested_struct: matches_pattern!(MyInnerStruct {
+///      a_nested_struct: matches_pattern!(MyInnerStruct {
 ///         a_field: starts_with("Something"),
 ///     }),
 /// }))
@@ -138,12 +138,33 @@
 /// #     .unwrap();
 /// ```
 ///
+/// If an inner matcher is `eq(...)`, it can be omitted:
+///
+/// ```
+/// # use googletest::prelude::*;
+/// #[derive(Debug)]
+/// struct MyStruct {
+///     a_field: String,
+///     another_field: String,
+/// }
+///
+/// let my_struct = MyStruct {
+///     a_field: "this".into(),
+///     another_field: "that".into()
+/// };
+/// verify_that!(my_struct, matches_pattern!(MyStruct {
+///     a_field: "this",
+///     another_field: "that",
+/// }))
+/// #     .unwrap();
+/// ```
+///
 /// **Important**: The method should be pure function with a deterministic
 /// output and no side effects. In particular, in the event of an assertion
 /// failure, it will be invoked a second time, with the assertion failure output
 /// reflecting the *second* invocation.
 ///
-/// These may also include extra parameters you pass in:
+/// These may also include extra litteral parameters you pass in:
 ///
 /// ```
 /// # use googletest::prelude::*;
@@ -157,13 +178,14 @@
 /// }
 ///
 /// # let my_struct = MyStruct { a_field: "Something to believe in".into() };
-/// verify_that!(my_struct, matches_pattern!(MyStruct {
-///     append_to_a_field("a suffix"): ends_with("a suffix"),
+/// verify_that!(my_struct, matches_pattern!(&MyStruct {
+///     append_to_a_field("a suffix"): ref ends_with("a suffix"),
 /// }))
 /// #     .unwrap();
 /// ```
 ///
-/// If the method returns a reference, precede it with a `*`:
+/// You can precede both field and property matchers with a `ref` to match the
+/// result by reference:
 ///
 /// ```
 /// # use googletest::prelude::*;
@@ -173,12 +195,34 @@
 /// # }
 /// #
 /// impl MyStruct {
-///     fn get_a_field_ref(&self) -> &String { &self.a_field }
+///     fn get_a_field_ref(&self) -> String { self.a_field.clone() }
+/// }
+///
+/// # let my_struct = MyStruct { a_field: "Something to believe in".into() };
+/// verify_that!(my_struct, matches_pattern!(&MyStruct {
+///     get_a_field_ref(): ref starts_with("Something"),
+/// }))
+/// #    .unwrap();
+/// ```
+///
+/// Note that if the `actual` is of type `&ActualT` and the pattern type is
+/// `ActualT`, this is automatically performed. This behavior is similar to the
+/// reference binding mode in pattern matching.
+///
+/// ```
+/// # use googletest::prelude::*;
+/// # #[derive(Debug)]
+/// # struct MyStruct {
+/// #     a_field: String,
+/// # }
+/// #
+/// impl MyStruct {
+///     fn get_a_field_ref(&self) -> String { self.a_field.clone() }
 /// }
 ///
 /// # let my_struct = MyStruct { a_field: "Something to believe in".into() };
 /// verify_that!(my_struct, matches_pattern!(MyStruct {
-///     *get_a_field_ref(): starts_with("Something"),
+///     get_a_field_ref(): starts_with("Something"),
 /// }))
 /// #    .unwrap();
 /// ```
@@ -194,7 +238,7 @@
 /// let my_struct = MyTupleStruct("Something".into(), "Some other thing".into());
 /// verify_that!(
 ///     my_struct,
-///     matches_pattern!(MyTupleStruct(eq("Something"), eq("Some other thing")))
+///     matches_pattern!(&MyTupleStruct(ref eq("Something"), ref eq("Some other thing")))
 /// )
 /// #    .unwrap();
 /// ```
@@ -210,42 +254,34 @@
 /// }
 ///
 /// # fn should_pass() -> Result<()> {
-/// verify_that!(MyEnum::A(123), matches_pattern!(MyEnum::A(eq(123))))?; // Passes
+/// verify_that!(MyEnum::A(123), matches_pattern!(&MyEnum::A(eq(123))))?; // Passes
 /// #     Ok(())
 /// # }
 /// # fn should_fail() -> Result<()> {
-/// verify_that!(MyEnum::B, matches_pattern!(MyEnum::A(eq(123))))?; // Fails - wrong enum variant
+/// verify_that!(MyEnum::B, matches_pattern!(&MyEnum::A(eq(123))))?; // Fails - wrong enum variant
 /// #     Ok(())
 /// # }
 /// # should_pass().unwrap();
 /// # should_fail().unwrap_err();
 /// ```
 ///
-/// This macro does not support plain (non-struct) tuples. Use the macro
-/// [`tuple`] for that purpose.
+/// This macro does not support plain (non-struct) tuples. But it should not be
+/// necessary as tuple of matchers are matchers of tuple. In other words, if
+/// `MatcherU: Matcher<U>` and `MatcherT: Matcher<T>`, then `(MatcherU,
+/// MatcherT): Matcher<(U, T)>`.
 ///
 /// Trailing commas are allowed (but not required) in both ordinary and tuple
 /// structs.
 ///
-/// Unfortunately, this matcher does *not* work with methods returning string
-/// slices:
+/// Note that the default format (rustfmt) can format macros if the macro
+/// argument is parseable Rust code. This is mostly true for this macro with two
+/// exceptions:
+///  * property matching
+///  * `ref` keyword with named fields
 ///
-/// ```compile_fail
-/// # use googletest::prelude::*;
-/// # #[derive(Debug)]
-/// pub struct MyStruct {
-///     a_string: String,
-/// }
-/// impl MyStruct {
-///     pub fn get_a_string(&self) -> &str { &self.a_string }
-/// }
-///
-/// let value = MyStruct { a_string: "A string".into() };
-/// verify_that!(value, matches_pattern!( MyStruct {
-///     get_a_string(): eq("A string"),   // Does not compile
-/// }))
-/// #    .unwrap();
-/// ```
+/// An option for formatting large is to avoid these exceptions (by removing the
+/// parenthesis of properties and the `ref` keywords), run `rustfmt` and add
+/// them back.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __matches_pattern {
@@ -258,7 +294,17 @@ macro_rules! __matches_pattern {
 #[macro_export]
 macro_rules! matches_pattern_internal {
     (
-        [$($struct_name:tt)*],
+        @name [$($struct_name:tt)*],
+        { $field_name:ident : ref $matcher:expr $(,)? }
+    ) => {
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
+            stringify!($($struct_name)*),
+            all!(field!($($struct_name)*.$field_name, ref $matcher))
+        )
+    };
+
+    (
+        @name [$($struct_name:tt)*],
         { $field_name:ident : $matcher:expr $(,)? }
     ) => {
         $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
@@ -268,7 +314,17 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        [$($struct_name:tt)*],
+        @name [$($struct_name:tt)*],
+        { $property_name:ident($($argument:expr),* $(,)?) : ref $matcher:expr $(,)? }
+    ) => {
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
+            stringify!($($struct_name)*),
+            all!(property!($($struct_name)*.$property_name($($argument),*), ref $matcher))
+        )
+    };
+
+    (
+        @name [$($struct_name:tt)*],
         { $property_name:ident($($argument:expr),* $(,)?) : $matcher:expr $(,)? }
     ) => {
         $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
@@ -278,88 +334,123 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        [$($struct_name:tt)*],
-        { * $property_name:ident($($argument:expr),* $(,)?) : $matcher:expr $(,)? }
-    ) => {
-        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
-            stringify!($($struct_name)*),
-            all!(property!(* $($struct_name)*.$property_name($($argument),*), $matcher))
-        )
-    };
-
-    (
-        [$($struct_name:tt)*],
-        { $field_name:ident : $matcher:expr, $($rest:tt)* }
+        @name [$($struct_name:tt)*],
+        { $field_name:ident : ref $matcher:expr, $($rest:tt)* }
     ) => {
         $crate::matches_pattern_internal!(
-            all!(field!($($struct_name)*.$field_name, $matcher)),
+            @fields (field!($($struct_name)*.$field_name, ref $matcher)),
             [$($struct_name)*],
             { $($rest)* }
         )
     };
 
     (
-        [$($struct_name:tt)*],
+        @name [$($struct_name:tt)*],
+        { $field_name:ident : $matcher:expr, $($rest:tt)* }
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (field!($($struct_name)*.$field_name, $matcher)),
+            [$($struct_name)*],
+            { $($rest)* }
+        )
+    };
+
+    (
+        @name [$($struct_name:tt)*],
+        { $property_name:ident($($argument:expr),* $(,)?) : ref $matcher:expr, $($rest:tt)* }
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (property!($($struct_name)*.$property_name($($argument),*), ref $matcher)),
+            [$($struct_name)*],
+            { $($rest)* }
+        )
+    };
+
+    (
+        @name [$($struct_name:tt)*],
         { $property_name:ident($($argument:expr),* $(,)?) : $matcher:expr, $($rest:tt)* }
     ) => {
         $crate::matches_pattern_internal!(
-            all!(property!($($struct_name)*.$property_name($($argument),*), $matcher)),
+            @fields (property!($($struct_name)*.$property_name($($argument),*), $matcher)),
             [$($struct_name)*],
             { $($rest)* }
         )
     };
 
     (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
-        { * $property_name:ident($($argument:expr),* $(,)?) : $matcher:expr, $($rest:tt)* }
+        { $field_name:ident : ref $matcher:expr $(,)? }
     ) => {
-        $crate::matches_pattern_internal!(
-            all!(property!(* $($struct_name)*.$property_name($($argument),*), $matcher)),
-            [$($struct_name)*],
-            { $($rest)* }
-        )
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
+            stringify!($($struct_name)*),
+            all!(
+                $($processed)*,
+                field!($($struct_name)*.$field_name, ref $matcher)
+            ))
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         { $field_name:ident : $matcher:expr $(,)? }
     ) => {
-        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(stringify!($($struct_name)*), all!(
-            $($processed)*,
-            field!($($struct_name)*.$field_name, $matcher)
-        ))
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
+            stringify!($($struct_name)*),
+            all!(
+                $($processed)*,
+                field!($($struct_name)*.$field_name, $matcher)
+            ))
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        { $property_name:ident($($argument:expr),* $(,)?) : ref $matcher:expr $(,)? }
+    ) => {
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
+            stringify!($($struct_name)*),
+            all!(
+                $($processed)*,
+                property!($($struct_name)*.$property_name($($argument),*), ref $matcher)
+            ))
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         { $property_name:ident($($argument:expr),* $(,)?) : $matcher:expr $(,)? }
     ) => {
-        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(stringify!($($struct_name)*), all!(
-            $($processed)*,
-            property!($($struct_name)*.$property_name($($argument),*), $matcher)
-        ))
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
+            stringify!($($struct_name)*),
+            all!(
+                $($processed)*,
+                property!($($struct_name)*.$property_name($($argument),*), $matcher)
+            ))
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
-        { * $property_name:ident($($argument:expr),* $(,)?) : $matcher:expr $(,)? }
+        { $field_name:ident : ref $matcher:expr, $($rest:tt)* }
     ) => {
-        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(stringify!($($struct_name)*), all!(
-            $($processed)*,
-            property!(* $($struct_name)*.$property_name($($argument),*), $matcher)
-        ))
+        $crate::matches_pattern_internal!(
+            @fields (
+                $($processed)*,
+                field!($($struct_name)*.$field_name, ref $matcher)
+            ),
+            [$($struct_name)*],
+            { $($rest)* }
+        )
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         { $field_name:ident : $matcher:expr, $($rest:tt)* }
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 $($processed)*,
                 field!($($struct_name)*.$field_name, $matcher)
             ),
@@ -369,12 +460,27 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        { $property_name:ident($($argument:expr),* $(,)?) : ref $matcher:expr, $($rest:tt)* }
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (
+                $($processed)*,
+                property!(ref $($struct_name)*.$property_name($($argument),*), $matcher)
+            ),
+            [$($struct_name)*],
+            { $($rest)* }
+        )
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         { $property_name:ident($($argument:expr),* $(,)?) : $matcher:expr, $($rest:tt)* }
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 $($processed)*,
                 property!($($struct_name)*.$property_name($($argument),*), $matcher)
             ),
@@ -384,32 +490,26 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        all!($($processed:tt)*),
-        [$($struct_name:tt)*],
-        { * $property_name:ident($($argument:expr),* $(,)?) : $matcher:expr, $($rest:tt)* }
+        @name [$($struct_name:tt)*],
     ) => {
-        $crate::matches_pattern_internal!(
-            all!(
-                $($processed)*,
-                property!(* $($struct_name)*.$property_name($($argument),*), $matcher)
-            ),
-            [$($struct_name)*],
-            { $($rest)* }
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::pattern_only(
+            |v| matches!(v, $($struct_name)*),
+            concat!("is ", stringify!($($struct_name)*)),
+            concat!("is not ", stringify!($($struct_name)*)))
+    };
+
+    (
+        @name [$($struct_name:tt)*],
+        (ref $matcher:expr $(,)?)
+    ) => {
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
+            stringify!($($struct_name)*),
+            all!(field!($($struct_name)*.0, ref $matcher))
         )
     };
 
     (
-        [$($struct_name:tt)*],
-    ) => {
-        $crate::matchers::predicate(|v| matches!(v, $($struct_name)*))
-            .with_description(
-                concat!("is ", stringify!($($struct_name)*)),
-                concat!("is not ", stringify!($($struct_name)*)),
-            )
-    };
-
-    (
-        [$($struct_name:tt)*],
+        @name [$($struct_name:tt)*],
         ($matcher:expr $(,)?)
     ) => {
         $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
@@ -419,11 +519,25 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        [$($struct_name:tt)*],
+        @name [$($struct_name:tt)*],
+        (ref $matcher:expr, $($rest:tt)*)
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (
+                field!($($struct_name)*.0, ref $matcher)
+            ),
+            [$($struct_name)*],
+            1,
+            ($($rest)*)
+        )
+    };
+
+    (
+        @name [$($struct_name:tt)*],
         ($matcher:expr, $($rest:tt)*)
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 field!($($struct_name)*.0, $matcher)
             ),
             [$($struct_name)*],
@@ -433,28 +547,61 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        $field:tt,
+        (ref $matcher:expr $(,)?)
+    ) => {
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
+            stringify!($($struct_name)*),
+            all!(
+                $($processed)*,
+                field!($($struct_name)*.$field, ref $matcher)
+            ))
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         $field:tt,
         ($matcher:expr $(,)?)
     ) => {
-        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(stringify!($($struct_name)*), all!(
-            $($processed)*,
-            field!($($struct_name)*.$field, $matcher)
-        ))
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::is(
+            stringify!($($struct_name)*),
+            all!(
+                $($processed)*,
+                field!($($struct_name)*.$field, $matcher)
+            ))
     };
 
     // We need to repeat this once for every supported field position, unfortunately. There appears
     // to be no way in declarative macros to compute $field + 1 and have the result evaluated to a
     // token which can be used as a tuple index.
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        1,
+        (ref $matcher:expr, $($rest:tt)*)
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (
+                $($processed)*,
+                field!($($struct_name)*.1, ref $matcher)
+            ),
+            [$($struct_name)*],
+            2,
+            ($($rest)*)
+        )
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         1,
         ($matcher:expr, $($rest:tt)*)
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 $($processed)*,
                 field!($($struct_name)*.1, $matcher)
             ),
@@ -465,13 +612,30 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        2,
+        (ref $matcher:expr, $($rest:tt)*)
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (
+                $($processed)*,
+                field!($($struct_name)*.2, ref $matcher)
+            ),
+            [$($struct_name)*],
+            3,
+            ($($rest)*)
+        )
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         2,
         ($matcher:expr, $($rest:tt)*)
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 $($processed)*,
                 field!($($struct_name)*.2, $matcher)
             ),
@@ -482,13 +646,30 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        3,
+        (ref $matcher:expr, $($rest:tt)*)
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (
+                $($processed)*,
+                field!($($struct_name)*.3, ref $matcher)
+            ),
+            [$($struct_name)*],
+            4,
+            ($($rest)*)
+        )
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         3,
         ($matcher:expr, $($rest:tt)*)
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 $($processed)*,
                 field!($($struct_name)*.3, $matcher)
             ),
@@ -499,13 +680,30 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        4,
+        (ref $matcher:expr, $($rest:tt)*)
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (
+                $($processed)*,
+                field!($($struct_name)*.4, ref $matcher)
+            ),
+            [$($struct_name)*],
+            5,
+            ($($rest)*)
+        )
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         4,
         ($matcher:expr, $($rest:tt)*)
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 $($processed)*,
                 field!($($struct_name)*.4, $matcher)
             ),
@@ -516,13 +714,30 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        5,
+        (ref $matcher:expr, $($rest:tt)*)
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (
+                $($processed)*,
+                field!($($struct_name)*.5, ref $matcher)
+            ),
+            [$($struct_name)*],
+            6,
+            ($($rest)*)
+        )
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         5,
         ($matcher:expr, $($rest:tt)*)
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 $($processed)*,
                 field!($($struct_name)*.5, $matcher)
             ),
@@ -533,13 +748,30 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        6,
+        (ref $matcher:expr, $($rest:tt)*)
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (
+                $($processed)*,
+                field!($($struct_name)*.6, ref $matcher)
+            ),
+            [$($struct_name)*],
+            7,
+            ($($rest)*)
+        )
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         6,
         ($matcher:expr, $($rest:tt)*)
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 $($processed)*,
                 field!($($struct_name)*.6, $matcher)
             ),
@@ -550,13 +782,30 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        7,
+        (ref $matcher:expr, $($rest:tt)*)
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (
+                $($processed)*,
+                field!($($struct_name)*.7, ref $matcher)
+            ),
+            [$($struct_name)*],
+            8,
+            ($($rest)*)
+        )
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         7,
         ($matcher:expr, $($rest:tt)*)
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 $($processed)*,
                 field!($($struct_name)*.7, $matcher)
             ),
@@ -567,13 +816,30 @@ macro_rules! matches_pattern_internal {
     };
 
     (
-        all!($($processed:tt)*),
+        @fields ($($processed:tt)*),
+        [$($struct_name:tt)*],
+        8,
+        (ref $matcher:expr, $($rest:tt)*)
+    ) => {
+        $crate::matches_pattern_internal!(
+            @fields (
+                $($processed)*,
+                field!($($struct_name)*.8, ref $matcher)
+            ),
+            [$($struct_name)*],
+            9,
+            ($($rest)*)
+        )
+    };
+
+    (
+        @fields ($($processed:tt)*),
         [$($struct_name:tt)*],
         8,
         ($matcher:expr, $($rest:tt)*)
     ) => {
         $crate::matches_pattern_internal!(
-            all!(
+            @fields (
                 $($processed)*,
                 field!($($struct_name)*.8, $matcher)
             ),
@@ -583,14 +849,14 @@ macro_rules! matches_pattern_internal {
         )
     };
 
-    ([$($struct_name:tt)*], $first:tt $($rest:tt)*) => {
-        $crate::matches_pattern_internal!([$($struct_name)* $first], $($rest)*)
+    (@name [$($struct_name:tt)*], $first:tt $($rest:tt)*) => {
+        $crate::matches_pattern_internal!(@name [$($struct_name)* $first], $($rest)*)
     };
 
     ($first:tt $($rest:tt)*) => {{
         #[allow(unused)]
         use $crate::matchers::{all, field, property};
-        $crate::matches_pattern_internal!([$first], $($rest)*)
+        $crate::matches_pattern_internal!(@name [$first], $($rest)*)
     }};
 }
 
@@ -599,4 +865,60 @@ macro_rules! matches_pattern_internal {
 #[doc(hidden)]
 macro_rules! __pat {
     ($($t:tt)*) => { $crate::matches_pattern_internal!($($t)*) }
+}
+
+#[doc(hidden)]
+pub mod internal {
+    use crate::matcher::{Matcher, MatcherBase};
+    use std::fmt::Debug;
+
+    // Specialized implementation of the `predicate` matcher to support ref binding
+    // mode for `matches_pattern`.
+    pub fn pattern_only<T>(
+        matcher_function: fn(&T) -> bool,
+        match_description: &'static str,
+        no_match_description: &'static str,
+    ) -> PatternOnlyMatcher<T> {
+        PatternOnlyMatcher { matcher_function, match_description, no_match_description }
+    }
+
+    #[derive(MatcherBase)]
+    #[doc(hidden)]
+    pub struct PatternOnlyMatcher<T> {
+        matcher_function: fn(&T) -> bool,
+        match_description: &'static str,
+        no_match_description: &'static str,
+    }
+
+    impl<'a, T: Debug> Matcher<&'a T> for PatternOnlyMatcher<T> {
+        fn matches(&self, actual: &'a T) -> crate::matcher::MatcherResult {
+            (self.matcher_function)(actual).into()
+        }
+
+        fn describe(
+            &self,
+            matcher_result: crate::matcher::MatcherResult,
+        ) -> crate::description::Description {
+            match matcher_result {
+                crate::matcher::MatcherResult::Match => self.match_description.into(),
+                crate::matcher::MatcherResult::NoMatch => self.no_match_description.into(),
+            }
+        }
+    }
+
+    impl<T: Debug + Copy> Matcher<T> for PatternOnlyMatcher<T> {
+        fn matches(&self, actual: T) -> crate::matcher::MatcherResult {
+            (self.matcher_function)(&actual).into()
+        }
+
+        fn describe(
+            &self,
+            matcher_result: crate::matcher::MatcherResult,
+        ) -> crate::description::Description {
+            match matcher_result {
+                crate::matcher::MatcherResult::Match => self.match_description.into(),
+                crate::matcher::MatcherResult::NoMatch => self.no_match_description.into(),
+            }
+        }
+    }
 }

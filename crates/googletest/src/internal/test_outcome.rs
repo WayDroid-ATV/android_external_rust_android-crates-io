@@ -32,14 +32,13 @@ pub enum TestOutcome {
 }
 
 thread_local! {
-    static CURRENT_TEST_OUTCOME: RefCell<Option<TestOutcome>> = RefCell::new(None);
+    static CURRENT_TEST_OUTCOME: RefCell<Option<TestOutcome>> = const { RefCell::new(None) };
 }
 
 impl TestOutcome {
     /// Resets the current test's [`TestOutcome`].
     ///
-    /// This is intended only for use by the attribute macro
-    /// `#[googletest::test]`.
+    /// This is intended only for use by the attribute macro `#[gtest]`.
     ///
     /// **For internal use only. API stablility is not guaranteed!**
     #[doc(hidden)]
@@ -86,6 +85,7 @@ impl TestOutcome {
 
     /// Returns a `Result` corresponding to the outcome of the currently running
     /// test.
+    #[track_caller]
     pub(crate) fn get_current_test_outcome() -> Result<(), TestAssertionFailure> {
         TestOutcome::with_current_test_outcome(|mut outcome| {
             let outcome = outcome
@@ -117,12 +117,12 @@ impl TestOutcome {
     }
 
     /// Ensure that there is a test context present and panic if there is not.
-    pub(crate) fn ensure_text_context_present() {
+    pub(crate) fn ensure_test_context_present() {
         TestOutcome::with_current_test_outcome(|outcome| {
             outcome.as_ref().expect(
                 "
 No test context found.
- * Did you annotate the test with googletest::test?
+ * Did you annotate the test with gtest?
  * Is the assertion running in the original test thread?
 ",
             );
@@ -162,14 +162,50 @@ pub struct TestAssertionFailure {
     /// A human-readable formatted string describing the error.
     pub description: String,
     pub custom_message: Option<String>,
+    location: Location,
+}
+
+/// A code location.
+///
+/// `std::panic::Location` does not provide a constructor, hence we cannot
+/// construct a fake value.
+///
+/// **For internal use only. API stablility is not guaranteed!**
+#[doc(hidden)]
+#[derive(Clone)]
+enum Location {
+    Real(&'static std::panic::Location<'static>),
+    Fake { file: &'static str, line: u32, column: u32 },
+}
+
+impl Display for Location {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Location::Real(l) => write!(f, "{}", l),
+            Location::Fake { file, line, column } => write!(f, "{}:{}:{}", file, line, column),
+        }
+    }
 }
 
 impl TestAssertionFailure {
     /// Creates a new instance with the given `description`.
     ///
     /// **For internal use only. API stablility is not guaranteed!**
+    #[track_caller]
     pub fn create(description: String) -> Self {
-        Self { description, custom_message: None }
+        Self {
+            description,
+            custom_message: None,
+            location: Location::Real(std::panic::Location::caller()),
+        }
+    }
+
+    /// Set `location`` to a fake value.
+    ///
+    /// **For internal use only. API stablility is not guaranteed!**
+    pub fn with_fake_location(mut self, file: &'static str, line: u32, column: u32) -> Self {
+        self.location = Location::Fake { file, line, column };
+        self
     }
 
     pub(crate) fn log(&self) {
@@ -184,7 +220,7 @@ impl Display for TestAssertionFailure {
         if let Some(custom_message) = &self.custom_message {
             writeln!(f, "{}", custom_message)?;
         }
-        Ok(())
+        writeln!(f, "  at {}", self.location)
     }
 }
 
@@ -198,6 +234,7 @@ impl Debug for TestAssertionFailure {
 }
 
 impl<T: std::error::Error> From<T> for TestAssertionFailure {
+    #[track_caller]
     fn from(value: T) -> Self {
         TestAssertionFailure::create(format!("{value}"))
     }
