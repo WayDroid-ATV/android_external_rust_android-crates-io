@@ -216,7 +216,7 @@ dependencies = [
  "glam",
  "glob",
  "googletest",
- "googletest_macro 0.13.0",
+ "googletest_macro",
  "gpio-cdev",
  "grpcio",
  "grpcio-compiler",
@@ -2289,24 +2289,14 @@ checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
 
 [[package]]
 name = "googletest"
-version = "0.11.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee44a233e2e661240ef77ed5de92ea9ecf70d4832963a8582a6681e1517f3673"
+checksum = "dce026f84cdd339bf71be01b24fe67470ee634282f68c1c4b563d00a9f002b05"
 dependencies = [
- "googletest_macro 0.11.0",
+ "googletest_macro",
  "num-traits",
  "regex",
  "rustversion",
-]
-
-[[package]]
-name = "googletest_macro"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed3057b7d1e628480193188ccb1a7850d034a3add3a350f4ed921b48e287ada9"
-dependencies = [
- "quote 1.0.37",
- "syn 2.0.90",
 ]
 
 [[package]]

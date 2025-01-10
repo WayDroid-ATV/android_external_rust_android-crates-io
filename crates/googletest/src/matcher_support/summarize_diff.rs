@@ -17,7 +17,7 @@
 use crate::matcher_support::edit_distance;
 #[rustversion::since(1.70)]
 use std::io::IsTerminal;
-use std::{borrow::Cow, fmt::Display};
+use std::{borrow::Cow, cell::Cell, fmt::Display};
 
 /// Returns a string describing how the expected and actual lines differ.
 ///
@@ -38,10 +38,29 @@ pub(crate) fn create_diff(
         // line-by-line diff.
         return "".into();
     }
+
     match edit_distance::edit_list(actual_debug.lines(), expected_debug.lines(), diff_mode) {
-        edit_distance::Difference::Equal => "No difference found between debug strings.".into(),
+        edit_distance::Difference::Equal => {
+            // str.lines() is oblivious to the last newline in a
+            // string, so we need to check this to make sure we don't spuriously
+            // claim that 'hello' and 'hello\n' are identical debug strings.
+            //
+            // Although we would have liked to resolve by replacing
+            // str::lines() with str::split('\n'), the potentially
+            // empty last element interferes with good diff output for
+            // "contains" checks.
+            let actual_newline_terminated = actual_debug.ends_with('\n');
+            let expected_newline_terminated = expected_debug.ends_with('\n');
+            if actual_newline_terminated && !expected_newline_terminated {
+                "Actual includes a terminating newline that is absent from expected.".into()
+            } else if !actual_newline_terminated && expected_newline_terminated {
+                "Actual omits a terminating newline that is present in expected.".into()
+            } else {
+                "No difference found between debug strings.".into()
+            }
+        }
         edit_distance::Difference::Editable(edit_list) => {
-            format!("\n{}{}", summary_header(), edit_list.into_iter().collect::<BufferedSummary>(),)
+            format!("{}{}", summary_header(), edit_list.into_iter().collect::<BufferedSummary>(),)
                 .into()
         }
         edit_distance::Difference::Unrelated => "".into(),
@@ -73,7 +92,7 @@ pub(crate) fn create_diff_reversed(
         edit_distance::Difference::Equal => "No difference found between debug strings.".into(),
         edit_distance::Difference::Editable(mut edit_list) => {
             edit_list.reverse();
-            format!("\n{}{}", summary_header(), edit_list.into_iter().collect::<BufferedSummary>(),)
+            format!("{}{}", summary_header(), edit_list.into_iter().collect::<BufferedSummary>(),)
                 .into()
         }
         edit_distance::Difference::Unrelated => "".into(),
@@ -81,9 +100,9 @@ pub(crate) fn create_diff_reversed(
 }
 
 // Produces the header, with or without coloring depending on
-// stdout_supports_color()
+// USE_COLOR
 fn summary_header() -> Cow<'static, str> {
-    if stdout_supports_color() {
+    if USE_COLOR.with(Cell::get) {
         format!(
             "Difference(-{ACTUAL_ONLY_STYLE}actual{RESET_ALL} / +{EXPECTED_ONLY_STYLE}expected{RESET_ALL}):"
         ).into()
@@ -105,11 +124,11 @@ struct BufferedSummary<'a> {
 impl<'a> BufferedSummary<'a> {
     // Appends a new line which is common to both actual and expected.
     fn feed_common_lines(&mut self, common_line: &'a str) {
-        if let Buffer::CommonLineBuffer(ref mut common_lines) = self.buffer {
+        if let Buffer::CommonLines(ref mut common_lines) = self.buffer {
             common_lines.push(common_line);
         } else {
             self.flush_buffer();
-            self.buffer = Buffer::CommonLineBuffer(vec![common_line]);
+            self.buffer = Buffer::CommonLines(vec![common_line]);
         }
     }
 
@@ -229,7 +248,7 @@ impl<'a> Display for BufferedSummary<'a> {
 
 enum Buffer<'a> {
     Empty,
-    CommonLineBuffer(Vec<&'a str>),
+    CommonLines(Vec<&'a str>),
     ExtraActualLineChunk(&'a str),
     ExtraExpectedLineChunk(&'a str),
 }
@@ -238,7 +257,7 @@ impl<'a> Buffer<'a> {
     fn flush(&mut self, summary: &mut SummaryBuilder) {
         match self {
             Buffer::Empty => {}
-            Buffer::CommonLineBuffer(common_lines) => {
+            Buffer::CommonLines(common_lines) => {
                 Self::flush_common_lines(std::mem::take(common_lines), summary);
             }
             Buffer::ExtraActualLineChunk(extra_actual) => {
@@ -294,8 +313,13 @@ impl<'a> Default for Buffer<'a> {
     }
 }
 
+thread_local! {
+  pub(crate) static USE_COLOR: Cell<bool> = Cell::new(stdout_supports_color());
+}
+
 #[rustversion::since(1.70)]
 fn stdout_supports_color() -> bool {
+    #[allow(clippy::incompatible_msrv)]
     match (is_env_var_set("NO_COLOR"), is_env_var_set("FORCE_COLOR")) {
         (true, _) => false,
         (false, true) => true,
@@ -305,7 +329,7 @@ fn stdout_supports_color() -> bool {
 
 #[rustversion::not(since(1.70))]
 fn stdout_supports_color() -> bool {
-    is_env_var_set("FORCE_COLOR")
+    is_env_var_set("FORCE_COLOR") && !is_env_var_set("NO_COLOR")
 }
 
 fn is_env_var_set(var: &'static str) -> bool {
@@ -388,14 +412,14 @@ impl SummaryBuilder {
     }
 
     fn reset_ansi(&mut self) {
-        if !self.last_ansi_style.is_empty() && stdout_supports_color() {
+        if !self.last_ansi_style.is_empty() && USE_COLOR.with(Cell::get) {
             self.summary.push_str(RESET_ALL);
             self.last_ansi_style = "";
         }
     }
 
     fn set_ansi(&mut self, ansi_style: &'static str) {
-        if !stdout_supports_color() || self.last_ansi_style == ansi_style {
+        if !USE_COLOR.with(Cell::get) || self.last_ansi_style == ansi_style {
             return;
         }
         if !self.last_ansi_style.is_empty() {
@@ -411,7 +435,6 @@ mod tests {
     use super::*;
     use crate::{matcher_support::edit_distance::Mode, prelude::*};
     use indoc::indoc;
-    use serial_test::{parallel, serial};
     use std::fmt::Write;
 
     // Make a long text with each element of the iterator on one line.
@@ -427,13 +450,11 @@ mod tests {
     }
 
     #[test]
-    #[parallel]
     fn create_diff_smaller_than_one_line() -> Result<()> {
         verify_that!(create_diff("One", "Two", Mode::Exact), eq(""))
     }
 
     #[test]
-    #[parallel]
     fn create_diff_exact_same() -> Result<()> {
         let expected = indoc! {"
             One
@@ -450,7 +471,6 @@ mod tests {
     }
 
     #[test]
-    #[parallel]
     fn create_diff_multiline_diff() -> Result<()> {
         let expected = indoc! {"
             prefix
@@ -469,7 +489,6 @@ mod tests {
             create_diff(expected, actual, Mode::Exact),
             eq(indoc!(
                 "
-
                 Difference(-actual / +expected):
                  prefix
                 -Actual#1
@@ -483,19 +502,16 @@ mod tests {
     }
 
     #[test]
-    #[parallel]
     fn create_diff_exact_unrelated() -> Result<()> {
         verify_that!(create_diff(&build_text(1..500), &build_text(501..1000), Mode::Exact), eq(""))
     }
 
     #[test]
-    #[parallel]
     fn create_diff_exact_small_difference() -> Result<()> {
         verify_that!(
             create_diff(&build_text(1..50), &build_text(1..51), Mode::Exact),
             eq(indoc! {
                 "
-
                 Difference(-actual / +expected):
                  1
                  2
@@ -507,33 +523,14 @@ mod tests {
         )
     }
 
-    // Test with color enabled.
-
-    struct ForceColor;
-
-    fn force_color() -> ForceColor {
-        std::env::set_var("FORCE_COLOR", "1");
-        std::env::remove_var("NO_COLOR");
-        ForceColor
-    }
-
-    impl Drop for ForceColor {
-        fn drop(&mut self) {
-            std::env::remove_var("FORCE_COLOR");
-            std::env::set_var("NO_COLOR", "1");
-        }
-    }
-
     #[test]
-    #[serial]
     fn create_diff_exact_small_difference_with_color() -> Result<()> {
-        let _keep = force_color();
+        USE_COLOR.with(|cell| cell.set(true));
 
         verify_that!(
             create_diff(&build_text(1..50), &build_text(1..51), Mode::Exact),
             eq(indoc! {
                 "
-
                 Difference(-\x1B[1;31mactual\x1B[0m / +\x1B[1;32mexpected\x1B[0m):
                  1
                  2
@@ -546,9 +543,9 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn create_diff_exact_difference_with_inline_color() -> Result<()> {
-        let _keep = force_color();
+        USE_COLOR.with(|cell| cell.set(true));
+
         let actual = indoc!(
             "There is a home in Nouvelle Orleans
             They say, it is the rising sons
@@ -565,7 +562,6 @@ mod tests {
             create_diff(actual, expected, Mode::Exact),
             eq(indoc! {
                 "
-
                 Difference(-\x1B[1;31mactual\x1B[0m / +\x1B[1;32mexpected\x1B[0m):
                 -\x1B[31mThere is a ho\x1B[0m\x1B[1;31mm\x1B[0m\x1B[31me in N\x1B[0m\x1B[1;31mouv\x1B[0m\x1B[31me\x1B[0m\x1B[1;31mlle\x1B[0m\x1B[31m Orleans\x1B[0m
                 +\x1B[32mThere is a ho\x1B[0m\x1B[1;32mus\x1B[0m\x1B[32me \x1B[0m\x1B[1;32mway down \x1B[0m\x1B[32min Ne\x1B[0m\x1B[1;32mw\x1B[0m\x1B[32m Orleans\x1B[0m
@@ -574,6 +570,22 @@ mod tests {
                 -\x1B[31mAnd it has been the ruin of many a po\x1B[0m\x1B[1;31m'\x1B[0m\x1B[31mboy\x1B[0m
                 +\x1B[32mAnd it has been the ruin of many a po\x1B[0m\x1B[1;32mor \x1B[0m\x1B[32mboy\x1B[0m"
             })
+        )
+    }
+
+    #[test]
+    fn create_diff_line_termination_diff() -> Result<()> {
+        verify_that!(
+            create_diff("1\n2\n3", "1\n2\n3\n", Mode::Exact),
+            eq("Actual omits a terminating newline that is present in expected.")
+        )?;
+        verify_that!(
+            create_diff("1\n2\n3\n", "1\n2\n3", Mode::Exact),
+            eq("Actual includes a terminating newline that is absent from expected.")
+        )?;
+        verify_that!(
+            create_diff("1\n2\n3\n", "1\n2\n3\n", Mode::Exact),
+            eq("No difference found between debug strings.")
         )
     }
 }

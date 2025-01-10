@@ -17,17 +17,18 @@
 mod all_matcher;
 mod any_matcher;
 mod anything_matcher;
+mod bool_matcher;
 mod char_count_matcher;
 mod conjunction_matcher;
 mod container_eq_matcher;
 mod contains_matcher;
 mod contains_regex_matcher;
+mod derefs_to_matcher;
 mod disjunction_matcher;
 mod display_matcher;
 mod each_matcher;
 mod elements_are_matcher;
 mod empty_matcher;
-mod eq_deref_of_matcher;
 mod eq_matcher;
 mod err_matcher;
 mod field_matcher;
@@ -50,6 +51,7 @@ mod points_to_matcher;
 mod pointwise_matcher;
 mod predicate_matcher;
 mod property_matcher;
+mod result_of_matcher;
 mod some_matcher;
 mod str_matcher;
 mod subset_of_matcher;
@@ -58,14 +60,15 @@ mod tuple_matcher;
 mod unordered_elements_are_matcher;
 
 pub use anything_matcher::anything;
+pub use bool_matcher::{is_false, is_true};
 pub use char_count_matcher::char_count;
 pub use container_eq_matcher::container_eq;
 pub use contains_matcher::{contains, ContainsMatcher};
 pub use contains_regex_matcher::contains_regex;
+pub use derefs_to_matcher::derefs_to;
 pub use display_matcher::displays_as;
 pub use each_matcher::each;
 pub use empty_matcher::empty;
-pub use eq_deref_of_matcher::eq_deref_of;
 pub use eq_matcher::{eq, EqMatcher};
 pub use err_matcher::err;
 pub use ge_matcher::ge;
@@ -95,8 +98,8 @@ pub use superset_of_matcher::superset_of;
 pub use crate::{
     __all as all, __any as any, __contains_each as contains_each, __elements_are as elements_are,
     __field as field, __is_contained_in as is_contained_in, __matches_pattern as matches_pattern,
-    __pat as pat, __pointwise as pointwise, __property as property,
-    __unordered_elements_are as unordered_elements_are,
+    __pat as pat, __pointwise as pointwise, __property as property, __result_of as result_of,
+    __result_of_ref as result_of_ref, __unordered_elements_are as unordered_elements_are,
 };
 
 // Types and functions used by macros matchers.
@@ -105,16 +108,16 @@ pub use crate::{
 // should only be used through their respective macros.
 #[doc(hidden)]
 pub mod __internal_unstable_do_not_depend_on_these {
-    pub use super::all_matcher::internal::AllMatcher;
-    pub use super::any_matcher::internal::AnyMatcher;
     pub use super::conjunction_matcher::ConjunctionMatcher;
     pub use super::disjunction_matcher::DisjunctionMatcher;
     pub use super::elements_are_matcher::internal::ElementsAre;
     pub use super::field_matcher::internal::field_matcher;
     pub use super::is_matcher::is;
+    pub use super::matches_pattern::internal::pattern_only;
     pub use super::pointwise_matcher::internal::PointwiseMatcher;
     pub use super::property_matcher::internal::{property_matcher, property_ref_matcher};
+    pub use super::result_of_matcher::internal::{result_of, result_of_ref};
     pub use super::unordered_elements_are_matcher::internal::{
-        Requirements, UnorderedElementsAreMatcher, UnorderedElementsOfMapAreMatcher,
+        Requirements, UnorderedElementsAreMatcher,
     };
 }
