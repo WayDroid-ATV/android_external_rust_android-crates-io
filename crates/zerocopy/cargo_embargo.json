@@ -1,5 +1,10 @@
 {
-  "run_cargo": false,
+  "run_cargo": true,
+  "package": {
+    "zerocopy": {
+      "rulesmk_patch": "patches/rules.mk.patch"
+    }
+  },
   "variants": [
     {
       "features": [
@@ -41,6 +46,20 @@
           "no_std": true
         }
       }
+    },
+    {
+      "features": [
+        "alloc",
+        "derive"
+      ],
+      "package": {
+        "zerocopy": {
+          "alloc": true,
+          "no_std": true
+        }
+      },
+      "generate_androidbp": false,
+      "generate_rulesmk": true
     }
   ],
   "min_sdk_version": "29"

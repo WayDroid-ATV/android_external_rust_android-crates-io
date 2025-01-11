@@ -1,0 +1,18 @@
+7c7
+< MODULE := $(LOCAL_DIR)
+---
+> MODULE := $(LOCAL_DIR)_08
+8a9,10
+> # TODO: b/372549215 - Remove MODULE_RUST_STEM when zerocopy 0.7 rules.mk is removed.
+> MODULE_RUST_STEM := zerocopy_08
+18d19
+< 	--cfg 'zerocopy_core_error_1_81_0' \
+23a25,28
+> # TODO: https://r.android.com/3451416 - Replace this cfg when Trusty lands 1.82.
+> # --cfg 'zerocopy_core_error_1_81_0' \
+> 
+> # TODO: b/372549215 - Use existing crate-finding system for -derive when 0.7 rules.mk is removed.
+25c30
+< 	$(call FIND_CRATE,zerocopy-derive) \
+---
+> 	external/rust/android-crates-io/crates/zerocopy-derive \
