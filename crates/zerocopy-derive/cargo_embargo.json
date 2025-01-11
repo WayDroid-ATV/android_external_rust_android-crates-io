@@ -1,4 +1,9 @@
 {
   "run_cargo": false,
-  "generate_rulesmk": false
+  "generate_rulesmk": true,
+  "package": {
+    "zerocopy-derive": {
+      "rulesmk_patch": "patches/rules.mk.diff"
+    }
+  }
 }
