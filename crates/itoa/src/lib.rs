@@ -51,10 +51,6 @@ use core::{ptr, slice, str};
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
-/// Local Android change: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 /// A correctly sized stack allocation for the formatted integer to be written
 /// into.
 ///

@@ -16,10 +16,6 @@
 #![no_std]
 #![deny(clippy::undocumented_unsafe_blocks)]
 
-/// Local Android change: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 extern crate alloc;
 use alloc::{vec, vec::Vec};
 

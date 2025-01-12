@@ -20,11 +20,75 @@ Released YYYY-MM-DD.
 
 ### Fixed
 
-* (Included in `arbitrary_derive`  1.2.1) Fixed bug in Derive macro around `no_std` path uses [#131](https://github.com/rust-fuzz/arbitrary/pull/131)
+* TODO (or remove section if none)
 
 ### Security
 
 * TODO (or remove section if none)
+
+--------------------------------------------------------------------------------
+
+## 1.4.0
+
+Released 2024-10-30.
+
+### Added
+
+* Added an `Arbitrary` implementation for `PhantomPinned`.
+* Added the `Unstructured::choose_iter` helper method.
+* Added `#[arbitrary(skip)]` for `enum` variants in the derive macro.
+* Added the `Arbitrary::try_size_hint` trait method.
+
+### Changed
+
+* Implement `Arbitrary` for `PhantomData<A>` even when `A` does not implement
+  `Arbitrary` and when `A` is `?Sized`.
+* Make `usize`'s underlying encoding independent of machine word size so that
+  corpora are more portable.
+
+### Fixed
+
+* Make `derive(Arbitrary)` work for local definitions of `struct Option`.
+
+--------------------------------------------------------------------------------
+
+## 1.3.2
+
+Released 2023-10-30.
+
+### Added
+
+* Added `Arbitrary` implementations for `Arc<[T]>` and
+  `Rc<[T]>`. [#160](https://github.com/rust-fuzz/arbitrary/pull/160)
+
+--------------------------------------------------------------------------------
+
+## 1.3.1
+
+Released 2023-10-11.
+
+### Fixed
+
+* Fixed an issue with generating collections of collections in
+  `arbitrary_take_rest` where `<Vec<Vec<u8>>>::arbitrary_take_rest` would never
+  generate `vec![vec![]]` for example. See
+  [#159](https://github.com/rust-fuzz/arbitrary/pull/159) for details.
+
+--------------------------------------------------------------------------------
+
+## 1.3.0
+
+Released 2023-03-13.
+
+### Added
+
+* Added the ability to manually specify derived trait bounds for
+  `Arbitrary`. See [#138](https://github.com/rust-fuzz/arbitrary/pull/138) for
+  details.
+
+### Fixed
+
+* Fixed minimal versions correctness for `syn`.
 
 --------------------------------------------------------------------------------
 
@@ -69,7 +133,7 @@ Released 2022-10-20.
 
 ## 1.1.6
 
-Released 2022-09-08.
+Released 2022-09-20.
 
 ### Fixed
 
@@ -80,7 +144,7 @@ Released 2022-09-08.
 
 ## 1.1.5
 
-Released 2022-09-20.
+Released 2022-09-08.
 
 ### Added
 

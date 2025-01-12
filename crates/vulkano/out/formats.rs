@@ -1630,48 +1630,36 @@ impl Format {
             Self::G8_B8_R8_3PLANE_422_UNORM => &[Self::R8_UNORM, Self::R8_UNORM, Self::R8_UNORM],
             Self::G8_B8R8_2PLANE_422_UNORM => &[Self::R8_UNORM, Self::R8G8_UNORM],
             Self::G8_B8_R8_3PLANE_444_UNORM => &[Self::R8_UNORM, Self::R8_UNORM, Self::R8_UNORM],
-            Self::G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16 => &[
-                Self::R10X6_UNORM_PACK16,
-                Self::R10X6_UNORM_PACK16,
-                Self::R10X6_UNORM_PACK16,
-            ],
+            Self::G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16 => {
+                &[Self::R10X6_UNORM_PACK16, Self::R10X6_UNORM_PACK16, Self::R10X6_UNORM_PACK16]
+            }
             Self::G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16 => {
                 &[Self::R10X6_UNORM_PACK16, Self::R10X6G10X6_UNORM_2PACK16]
             }
-            Self::G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16 => &[
-                Self::R10X6_UNORM_PACK16,
-                Self::R10X6_UNORM_PACK16,
-                Self::R10X6_UNORM_PACK16,
-            ],
+            Self::G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16 => {
+                &[Self::R10X6_UNORM_PACK16, Self::R10X6_UNORM_PACK16, Self::R10X6_UNORM_PACK16]
+            }
             Self::G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16 => {
                 &[Self::R10X6_UNORM_PACK16, Self::R10X6G10X6_UNORM_2PACK16]
             }
-            Self::G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16 => &[
-                Self::R10X6_UNORM_PACK16,
-                Self::R10X6_UNORM_PACK16,
-                Self::R10X6_UNORM_PACK16,
-            ],
-            Self::G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16 => &[
-                Self::R12X4_UNORM_PACK16,
-                Self::R12X4_UNORM_PACK16,
-                Self::R12X4_UNORM_PACK16,
-            ],
+            Self::G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16 => {
+                &[Self::R10X6_UNORM_PACK16, Self::R10X6_UNORM_PACK16, Self::R10X6_UNORM_PACK16]
+            }
+            Self::G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16 => {
+                &[Self::R12X4_UNORM_PACK16, Self::R12X4_UNORM_PACK16, Self::R12X4_UNORM_PACK16]
+            }
             Self::G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16 => {
                 &[Self::R12X4_UNORM_PACK16, Self::R12X4G12X4_UNORM_2PACK16]
             }
-            Self::G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16 => &[
-                Self::R12X4_UNORM_PACK16,
-                Self::R12X4_UNORM_PACK16,
-                Self::R12X4_UNORM_PACK16,
-            ],
+            Self::G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16 => {
+                &[Self::R12X4_UNORM_PACK16, Self::R12X4_UNORM_PACK16, Self::R12X4_UNORM_PACK16]
+            }
             Self::G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16 => {
                 &[Self::R12X4_UNORM_PACK16, Self::R12X4G12X4_UNORM_2PACK16]
             }
-            Self::G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16 => &[
-                Self::R12X4_UNORM_PACK16,
-                Self::R12X4_UNORM_PACK16,
-                Self::R12X4_UNORM_PACK16,
-            ],
+            Self::G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16 => {
+                &[Self::R12X4_UNORM_PACK16, Self::R12X4_UNORM_PACK16, Self::R12X4_UNORM_PACK16]
+            }
             Self::G16_B16_R16_3PLANE_420_UNORM => {
                 &[Self::R16_UNORM, Self::R16_UNORM, Self::R16_UNORM]
             }
@@ -3325,9 +3313,7 @@ impl Format {
             Self::ASTC_12x12_SRGB_BLOCK => {}
             Self::G8B8G8R8_422_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G8B8G8R8_422_UNORM`",
@@ -3341,9 +3327,7 @@ impl Format {
             }
             Self::B8G8R8G8_422_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::B8G8R8G8_422_UNORM`",
@@ -3357,9 +3341,7 @@ impl Format {
             }
             Self::G8_B8_R8_3PLANE_420_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G8_B8_R8_3PLANE_420_UNORM`",
@@ -3373,9 +3355,7 @@ impl Format {
             }
             Self::G8_B8R8_2PLANE_420_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G8_B8R8_2PLANE_420_UNORM`",
@@ -3389,9 +3369,7 @@ impl Format {
             }
             Self::G8_B8_R8_3PLANE_422_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G8_B8_R8_3PLANE_422_UNORM`",
@@ -3405,9 +3383,7 @@ impl Format {
             }
             Self::G8_B8R8_2PLANE_422_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G8_B8R8_2PLANE_422_UNORM`",
@@ -3421,9 +3397,7 @@ impl Format {
             }
             Self::G8_B8_R8_3PLANE_444_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G8_B8_R8_3PLANE_444_UNORM`",
@@ -3437,9 +3411,7 @@ impl Format {
             }
             Self::R10X6_UNORM_PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::R10X6_UNORM_PACK16`",
@@ -3453,9 +3425,7 @@ impl Format {
             }
             Self::R10X6G10X6_UNORM_2PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::R10X6G10X6_UNORM_2PACK16`",
@@ -3469,9 +3439,7 @@ impl Format {
             }
             Self::R10X6G10X6B10X6A10X6_UNORM_4PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::R10X6G10X6B10X6A10X6_UNORM_4PACK16`",
@@ -3485,9 +3453,7 @@ impl Format {
             }
             Self::G10X6B10X6G10X6R10X6_422_UNORM_4PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G10X6B10X6G10X6R10X6_422_UNORM_4PACK16`",
@@ -3501,9 +3467,7 @@ impl Format {
             }
             Self::B10X6G10X6R10X6G10X6_422_UNORM_4PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::B10X6G10X6R10X6G10X6_422_UNORM_4PACK16`",
@@ -3517,9 +3481,7 @@ impl Format {
             }
             Self::G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16`",
@@ -3533,9 +3495,7 @@ impl Format {
             }
             Self::G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16`",
@@ -3549,9 +3509,7 @@ impl Format {
             }
             Self::G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16`",
@@ -3565,9 +3523,7 @@ impl Format {
             }
             Self::G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16`",
@@ -3581,9 +3537,7 @@ impl Format {
             }
             Self::G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16`",
@@ -3597,9 +3551,7 @@ impl Format {
             }
             Self::R12X4_UNORM_PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::R12X4_UNORM_PACK16`",
@@ -3613,9 +3565,7 @@ impl Format {
             }
             Self::R12X4G12X4_UNORM_2PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::R12X4G12X4_UNORM_2PACK16`",
@@ -3629,9 +3579,7 @@ impl Format {
             }
             Self::R12X4G12X4B12X4A12X4_UNORM_4PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::R12X4G12X4B12X4A12X4_UNORM_4PACK16`",
@@ -3645,9 +3593,7 @@ impl Format {
             }
             Self::G12X4B12X4G12X4R12X4_422_UNORM_4PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G12X4B12X4G12X4R12X4_422_UNORM_4PACK16`",
@@ -3661,9 +3607,7 @@ impl Format {
             }
             Self::B12X4G12X4R12X4G12X4_422_UNORM_4PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::B12X4G12X4R12X4G12X4_422_UNORM_4PACK16`",
@@ -3677,9 +3621,7 @@ impl Format {
             }
             Self::G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16`",
@@ -3693,9 +3635,7 @@ impl Format {
             }
             Self::G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16`",
@@ -3709,9 +3649,7 @@ impl Format {
             }
             Self::G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16`",
@@ -3725,9 +3663,7 @@ impl Format {
             }
             Self::G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16`",
@@ -3741,9 +3677,7 @@ impl Format {
             }
             Self::G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16`",
@@ -3757,9 +3691,7 @@ impl Format {
             }
             Self::G16B16G16R16_422_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G16B16G16R16_422_UNORM`",
@@ -3773,9 +3705,7 @@ impl Format {
             }
             Self::B16G16R16G16_422_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::B16G16R16G16_422_UNORM`",
@@ -3789,9 +3719,7 @@ impl Format {
             }
             Self::G16_B16_R16_3PLANE_420_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G16_B16_R16_3PLANE_420_UNORM`",
@@ -3805,9 +3733,7 @@ impl Format {
             }
             Self::G16_B16R16_2PLANE_420_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G16_B16R16_2PLANE_420_UNORM`",
@@ -3821,9 +3747,7 @@ impl Format {
             }
             Self::G16_B16_R16_3PLANE_422_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G16_B16_R16_3PLANE_422_UNORM`",
@@ -3837,9 +3761,7 @@ impl Format {
             }
             Self::G16_B16R16_2PLANE_422_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G16_B16R16_2PLANE_422_UNORM`",
@@ -3853,9 +3775,7 @@ impl Format {
             }
             Self::G16_B16_R16_3PLANE_444_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_1
-                    || physical_device
-                        .supported_extensions()
-                        .khr_sampler_ycbcr_conversion)
+                    || physical_device.supported_extensions().khr_sampler_ycbcr_conversion)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G16_B16_R16_3PLANE_444_UNORM`",
@@ -3957,9 +3877,7 @@ impl Format {
             }
             Self::ASTC_4x4_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_4x4_SFLOAT_BLOCK`",
@@ -3973,9 +3891,7 @@ impl Format {
             }
             Self::ASTC_5x4_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_5x4_SFLOAT_BLOCK`",
@@ -3989,9 +3905,7 @@ impl Format {
             }
             Self::ASTC_5x5_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_5x5_SFLOAT_BLOCK`",
@@ -4005,9 +3919,7 @@ impl Format {
             }
             Self::ASTC_6x5_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_6x5_SFLOAT_BLOCK`",
@@ -4021,9 +3933,7 @@ impl Format {
             }
             Self::ASTC_6x6_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_6x6_SFLOAT_BLOCK`",
@@ -4037,9 +3947,7 @@ impl Format {
             }
             Self::ASTC_8x5_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_8x5_SFLOAT_BLOCK`",
@@ -4053,9 +3961,7 @@ impl Format {
             }
             Self::ASTC_8x6_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_8x6_SFLOAT_BLOCK`",
@@ -4069,9 +3975,7 @@ impl Format {
             }
             Self::ASTC_8x8_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_8x8_SFLOAT_BLOCK`",
@@ -4085,9 +3989,7 @@ impl Format {
             }
             Self::ASTC_10x5_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_10x5_SFLOAT_BLOCK`",
@@ -4101,9 +4003,7 @@ impl Format {
             }
             Self::ASTC_10x6_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_10x6_SFLOAT_BLOCK`",
@@ -4117,9 +4017,7 @@ impl Format {
             }
             Self::ASTC_10x8_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_10x8_SFLOAT_BLOCK`",
@@ -4133,9 +4031,7 @@ impl Format {
             }
             Self::ASTC_10x10_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_10x10_SFLOAT_BLOCK`",
@@ -4149,9 +4045,7 @@ impl Format {
             }
             Self::ASTC_12x10_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_12x10_SFLOAT_BLOCK`",
@@ -4165,9 +4059,7 @@ impl Format {
             }
             Self::ASTC_12x12_SFLOAT_BLOCK => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_texture_compression_astc_hdr)
+                    || physical_device.supported_extensions().ext_texture_compression_astc_hdr)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::ASTC_12x12_SFLOAT_BLOCK`",
@@ -4181,9 +4073,7 @@ impl Format {
             }
             Self::G8_B8R8_2PLANE_444_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_ycbcr_2plane_444_formats)
+                    || physical_device.supported_extensions().ext_ycbcr_2plane_444_formats)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G8_B8R8_2PLANE_444_UNORM`",
@@ -4197,9 +4087,7 @@ impl Format {
             }
             Self::G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_ycbcr_2plane_444_formats)
+                    || physical_device.supported_extensions().ext_ycbcr_2plane_444_formats)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16`",
@@ -4213,9 +4101,7 @@ impl Format {
             }
             Self::G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16 => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_ycbcr_2plane_444_formats)
+                    || physical_device.supported_extensions().ext_ycbcr_2plane_444_formats)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16`",
@@ -4229,9 +4115,7 @@ impl Format {
             }
             Self::G16_B16R16_2PLANE_444_UNORM => {
                 if !(physical_device.api_version() >= crate::Version::V1_3
-                    || physical_device
-                        .supported_extensions()
-                        .ext_ycbcr_2plane_444_formats)
+                    || physical_device.supported_extensions().ext_ycbcr_2plane_444_formats)
                 {
                     return Err(crate::RequirementNotMet {
                         required_for: "`Format::G16_B16R16_2PLANE_444_UNORM`",

@@ -1,8 +1,7 @@
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![deny(warnings)]
-// ANDROID: Use std to allow building as a dylib.
-#![cfg_attr(not(any(test, android_dylib)), no_std)]
+#![cfg_attr(not(test), no_std)]
 
 //! A light-weight lock guarded by an atomic boolean.
 //!
@@ -44,8 +43,7 @@
 //! assert_eq!(locked2.name, "Spanner Bundle");
 //! ```
 
-// ANDROID: Use std to allow building as a dylib.
-#[cfg(any(test, android_dylib))]
+#[cfg(test)]
 extern crate core;
 
 use core::cell::UnsafeCell;

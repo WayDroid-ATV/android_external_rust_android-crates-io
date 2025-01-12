@@ -248,10 +248,6 @@ appropriate `repr` attribute:
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-/// Local Android change: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 use core::fmt::{Debug, Formatter, Result};
 use core::ops::*;
 

@@ -33,9 +33,6 @@
 //! # fn main() { }
 //! ```
 
-// ANDROID: Use std to allow building as a dylib.
-extern crate std;
-
 /// Check if an expression matches a refutable pattern.
 ///
 /// Syntax: `matches!(` *expression* `,` *pattern* `)`

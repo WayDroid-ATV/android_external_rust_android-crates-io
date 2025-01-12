@@ -83,9 +83,6 @@
 
 #![deny(unused_macros)]
 
-#[cfg(android_dylib)]
-extern crate std;
-
 #[doc(hidden)]
 pub extern crate core as _core;
 

@@ -1,10 +1,6 @@
 #![no_std]
 #![forbid(unsafe_code)]
 
-// ANDROID: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 #[macro_export]
 macro_rules! impl_mirrored {
     {

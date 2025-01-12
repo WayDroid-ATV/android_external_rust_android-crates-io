@@ -236,10 +236,6 @@
 //! [good cryptographic hygiene]: https://github.com/veorq/cryptocoding#clean-memory-of-secret-data
 //! [`Ordering::SeqCst`]: core::sync::atomic::Ordering::SeqCst
 
-/// Local Android change: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 #[cfg(feature = "alloc")]
 extern crate alloc;
 

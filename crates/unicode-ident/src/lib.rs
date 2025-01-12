@@ -248,10 +248,6 @@
 #[rustfmt::skip]
 mod tables;
 
-/// Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 use crate::tables::{ASCII_CONTINUE, ASCII_START, CHUNK, LEAF, TRIE_CONTINUE, TRIE_START};
 
 pub fn is_xid_start(ch: char) -> bool {

@@ -70,10 +70,6 @@
 //! [PKCS#5v2 Password Based Encryption Scheme 2 (RFC 8018)]: https://tools.ietf.org/html/rfc8018#section-6.2
 //! [scrypt]: https://en.wikipedia.org/wiki/Scrypt
 
-/// Local Android change: Use std to allow building as a dylib.
-#[cfg(android_dylib)]
-extern crate std;
-
 #[cfg(feature = "pem")]
 extern crate alloc;
 #[cfg(feature = "std")]
