@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libptr_meta_derive",
     crate_name: "ptr_meta_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.0",
+    cargo_pkg_version: "0.3.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [

@@ -346,7 +346,7 @@ dependencies = [
  "protobuf-parse",
  "protobuf-support",
  "ptr_meta",
- "ptr_meta_derive",
+ "ptr_meta_derive 0.3.0",
  "quiche",
  "quickcheck",
  "quote 1.0.37",
@@ -4251,7 +4251,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bcada80daa06c42ed5f48c9a043865edea5dc44cbf9ac009fda3b89526e28607"
 dependencies = [
- "ptr_meta_derive",
+ "ptr_meta_derive 0.2.0",
 ]
 
 [[package]]
@@ -4263,6 +4263,17 @@ dependencies = [
  "proc-macro2 1.0.92",
  "quote 1.0.37",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "ptr_meta_derive"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca414edb151b4c8d125c12566ab0d74dc9cdba36fb80eb7b848c15f495fd32d1"
+dependencies = [
+ "proc-macro2 1.0.92",
+ "quote 1.0.37",
+ "syn 2.0.90",
 ]
 
 [[package]]
