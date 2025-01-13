@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4692ae0c_bbb0f658",
+        "filename": "crates/criterion/Android.bp",
+        "patchSetId": 2
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1963875
+      },
+      "writtenOn": "2025-01-13T14:20:25Z",
+      "side": 1,
+      "message": "Thanks for the tip! I\u0027ll abandon this CL and re-upload",
+      "parentUuid": "33d8aad0_be08bc64",
+      "revId": "50fe420aaf66637c7b66d1dd2b4e4cb76b810525",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "72eba5fd_af7baf35",
