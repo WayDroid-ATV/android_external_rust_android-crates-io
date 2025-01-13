@@ -11,15 +11,21 @@
 
 [package]
 edition = "2021"
-rust-version = "1.58"
+rust-version = "1.59"
 name = "xml-rs"
-version = "0.8.19"
+version = "0.8.25"
 authors = ["Vladimir Matveev <vmatveev@citrine.cc>"]
+build = false
 include = [
     "src/**",
     "LICENSE",
     "README.md",
 ]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "An XML library in pure Rust"
 homepage = "https://lib.rs/crates/xml-rs"
 documentation = "https://docs.rs/xml-rs/"

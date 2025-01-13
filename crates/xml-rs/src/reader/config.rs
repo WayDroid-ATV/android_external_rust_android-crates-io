@@ -74,7 +74,7 @@ pub struct ParserConfig {
     /// By default the parser will either error out when it encounters a premature end of
     /// stream or complete normally if the end of stream was expected. If you want to continue
     /// reading from a stream whose input is supplied progressively, you can set this option to true.
-    /// In this case the parser will allow you to invoke the next() method even if a supposed end
+    /// In this case the parser will allow you to invoke the `next()` method even if a supposed end
     /// of stream has happened.
     ///
     /// Note that support for this functionality is incomplete; for example, the parser will fail if
@@ -112,8 +112,8 @@ impl ParserConfig {
     /// ```
     #[must_use]
     #[inline]
-    pub fn new() -> ParserConfig {
-        ParserConfig {
+    pub fn new() -> Self {
+        Self {
             trim_whitespace: false,
             whitespace_to_characters: false,
             cdata_to_characters: false,
@@ -165,7 +165,8 @@ impl ParserConfig {
     ///     .add_entity("reg", "®")
     ///     .create_reader(&mut source);
     /// ```
-    pub fn add_entity<S: Into<String>, T: Into<String>>(mut self, entity: S, value: T) -> ParserConfig {
+    #[must_use]
+    pub fn add_entity<S: Into<String>, T: Into<String>>(mut self, entity: S, value: T) -> Self {
         self.extra_entities.insert(entity.into(), value.into());
         self
     }
@@ -173,8 +174,8 @@ impl ParserConfig {
 
 impl Default for ParserConfig {
     #[inline]
-    fn default() -> ParserConfig {
-        ParserConfig::new()
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -225,22 +226,23 @@ pub struct ParserConfig2 {
 
 impl Default for ParserConfig2 {
     fn default() -> Self {
-        ParserConfig2 {
-            c: Default::default(),
+        Self {
+            c: ParserConfig::default(),
             override_encoding: None,
             ignore_invalid_encoding_declarations: false,
             allow_multiple_root_elements: true,
             max_entity_expansion_length: DEFAULT_MAX_ENTITY_EXPANSION_LENGTH,
             max_entity_expansion_depth: DEFAULT_MAX_ENTITY_EXPANSION_DEPTH,
-            max_attributes: 1<<16,
-            max_attribute_length: 1<<30,
-            max_data_length: 1<<30,
-            max_name_length: 1<<18,
+            max_attributes: 1 << 16,
+            max_attribute_length: 1 << 30,
+            max_data_length: 1 << 30,
+            max_name_length: 1 << 18,
         }
     }
 }
 
 impl ParserConfig2 {
+    /// Create extended configuration struct
     #[inline]
     #[must_use]
     pub fn new() -> Self {
@@ -257,11 +259,8 @@ impl ParserConfig2 {
             .and_then(|(_, args)| args.split_once('='));
         if let Some((_, charset)) = charset {
             let name = charset.trim().trim_matches('"');
-            match name.parse() {
-                Ok(enc) => {
-                    self.override_encoding = Some(enc);
-                },
-                Err(_) => {},
+            if let Ok(enc) = name.parse() {
+                self.override_encoding = Some(enc);
             }
         }
         self
@@ -294,10 +293,7 @@ impl ParserConfig2 {
 impl From<ParserConfig> for ParserConfig2 {
     #[inline]
     fn from(c: ParserConfig) -> Self {
-        Self {
-            c,
-            ..Default::default()
-        }
+        Self { c, ..Default::default() }
     }
 }
 
