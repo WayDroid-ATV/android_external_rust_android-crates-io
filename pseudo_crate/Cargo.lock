@@ -448,7 +448,7 @@ dependencies = [
  "unicode-xid 0.2.6",
  "uniffi",
  "uniffi_checksum_derive 0.28.3",
- "uniffi_core",
+ "uniffi_core 0.28.3",
  "uniffi_macros",
  "uniffi_meta",
  "unsafe-libyaml",
@@ -5658,7 +5658,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a5566fae48a5cb017005bf9cd622af5236b2a203a13fb548afde3506d3c68277"
 dependencies = [
  "anyhow",
- "uniffi_core",
+ "uniffi_core 0.27.1",
  "uniffi_macros",
 ]
 
@@ -5694,6 +5694,20 @@ dependencies = [
  "log",
  "once_cell",
  "oneshot-uniffi",
+ "paste",
+ "static_assertions",
+]
+
+[[package]]
+name = "uniffi_core"
+version = "0.28.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc7687007d2546c454d8ae609b105daceb88175477dac280707ad6d95bcd6f1f"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "log",
+ "once_cell",
  "paste",
  "static_assertions",
 ]
