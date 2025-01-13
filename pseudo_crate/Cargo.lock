@@ -450,7 +450,7 @@ dependencies = [
  "uniffi_checksum_derive 0.28.3",
  "uniffi_core",
  "uniffi_macros",
- "uniffi_meta",
+ "uniffi_meta 0.28.3",
  "unsafe-libyaml",
  "untrusted 0.7.1",
  "url",
@@ -5713,7 +5713,7 @@ dependencies = [
  "serde",
  "syn 2.0.90",
  "toml 0.5.11",
- "uniffi_meta",
+ "uniffi_meta 0.27.1",
 ]
 
 [[package]]
@@ -5726,6 +5726,18 @@ dependencies = [
  "bytes",
  "siphasher 0.3.11",
  "uniffi_checksum_derive 0.27.1",
+]
+
+[[package]]
+name = "uniffi_meta"
+version = "0.28.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a74ed96c26882dac1ca9b93ca23c827e284bacbd7ec23c6f0b0372f747d59e4"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "siphasher 0.3.11",
+ "uniffi_checksum_derive 0.28.3",
 ]
 
 [[package]]
