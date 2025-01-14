@@ -12,16 +12,26 @@
 [package]
 edition = "2021"
 name = "mls-rs-core"
-version = "0.18.0"
+version = "0.20.0"
+build = false
 exclude = ["test_data"]
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Core components and traits for mls-rs"
 homepage = "https://github.com/awslabs/mls-rs"
+readme = false
 keywords = [
     "mls",
     "mls-rs",
 ]
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/awslabs/mls-rs"
+
+[lib]
+name = "mls_rs_core"
+path = "src/lib.rs"
 
 [dependencies.arbitrary]
 version = "1"
@@ -45,7 +55,7 @@ version = "0.5.2"
 default-features = false
 
 [dependencies.safer-ffi]
-version = "0.1.3"
+version = "0.1.7"
 optional = true
 default-features = false
 
@@ -101,6 +111,7 @@ ffi = [
     "dep:safer-ffi",
     "dep:safer-ffi-gen",
 ]
+last_resort_key_package_ext = []
 rfc_compliant = ["x509"]
 serde = [
     "dep:serde",
@@ -125,9 +136,17 @@ x509 = []
 [target."cfg(mls_build_async)".dependencies.async-trait]
 version = "0.1.74"
 
-[target."cfg(target_arch = \"wasm32\")".dependencies.wasm-bindgen]
+[target.'cfg(target_arch = "wasm32")'.dependencies.wasm-bindgen]
 version = "^0.2.79"
 
-[target."cfg(target_arch = \"wasm32\")".dev-dependencies.wasm-bindgen-test]
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies.wasm-bindgen-test]
 version = "0.3.26"
 default-features = false
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = [
+    "cfg(mls_build_async)",
+    "cfg(coverage_nightly)",
+]
