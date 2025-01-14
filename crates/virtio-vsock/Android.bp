@@ -17,7 +17,7 @@ rust_library_host {
     name: "libvirtio_vsock",
     crate_name: "virtio_vsock",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.5.0",
+    cargo_pkg_version: "0.6.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [

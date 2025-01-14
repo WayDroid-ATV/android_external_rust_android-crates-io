@@ -31,8 +31,8 @@ impl Predicate<str> for DifferencePredicate {
             None
         } else {
             let palette = crate::Palette::new(true);
-            let orig: Vec<_> = self.orig.lines().map(|l| format!("{}\n", l)).collect();
-            let variable: Vec<_> = variable.lines().map(|l| format!("{}\n", l)).collect();
+            let orig: Vec<_> = self.orig.lines().map(|l| format!("{l}\n")).collect();
+            let variable: Vec<_> = variable.lines().map(|l| format!("{l}\n")).collect();
             let diff = difflib::unified_diff(
                 &orig,
                 &variable,
@@ -46,10 +46,8 @@ impl Predicate<str> for DifferencePredicate {
             diff.insert(0, "\n".to_owned());
 
             Some(
-                reflection::Case::new(Some(self), result).add_product(reflection::Product::new(
-                    "diff",
-                    itertools::join(diff.iter(), ""),
-                )),
+                reflection::Case::new(Some(self), result)
+                    .add_product(reflection::Product::new("diff", diff.join(""))),
             )
         }
     }

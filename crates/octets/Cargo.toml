@@ -12,7 +12,7 @@
 [package]
 edition = "2018"
 name = "octets"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Alessandro Ghedini <alessandro@ghedini.me>"]
 description = "Zero-copy abstraction for parsing and constructing network packets"
 keywords = [

@@ -13,55 +13,14 @@ license {
     license_text: ["LICENSE"],
 }
 
-rust_test {
-    name: "arbitrary_test_src_lib",
-    host_supported: true,
-    crate_name: "arbitrary",
-    cargo_env_compat: true,
-    cargo_pkg_version: "1.2.3",
-    crate_root: "src/lib.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2018",
-    features: [
-        "derive",
-        "derive_arbitrary",
-    ],
-    proc_macros: ["libderive_arbitrary"],
-}
-
-rust_test {
-    name: "arbitrary_test_tests_derive",
-    host_supported: true,
-    crate_name: "derive",
-    cargo_env_compat: true,
-    cargo_pkg_version: "1.2.3",
-    crate_root: "tests/derive.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2018",
-    features: [
-        "derive",
-        "derive_arbitrary",
-    ],
-    rustlibs: ["libarbitrary"],
-    proc_macros: ["libderive_arbitrary"],
-}
-
 rust_library_rlib {
     name: "libarbitrary",
     host_supported: true,
     crate_name: "arbitrary",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.2.3",
+    cargo_pkg_version: "1.4.1",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     features: [
         "derive",
         "derive_arbitrary",

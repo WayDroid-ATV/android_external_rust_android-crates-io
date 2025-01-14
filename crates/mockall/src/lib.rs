@@ -305,7 +305,7 @@
 //! specify the order by using a [`Sequence`].  Any expectations may be added to
 //! the same sequence.  They don't even need to come from the same object.
 //!
-//! ```should_panic(expected = "Method sequence violation")
+//! ```should_panic
 //! # use mockall::*;
 //! #[automock]
 //! trait Foo {
@@ -740,14 +740,14 @@
 //! ## Generic traits and structs
 //!
 //! Mocking generic structs and generic traits is not a problem.  The mock
-//! struct will be generic, too.  The same restrictions apply as with mocking
-//! generic methods: each generic parameter must be `'static`, and generic
-//! lifetime parameters are not allowed.
+//! struct will be generic, too.  As with generic methods, lifetime parameters
+//! are not allowed.  However, as long as the generic parameters are not used by
+//! any static methods, then the parameters need not be `'static'`.
 //!
 //! ```
 //! # use mockall::*;
 //! #[automock]
-//! trait Foo<T: 'static> {
+//! trait Foo<T> {
 //!     fn foo(&self, t: T) -> i32;
 //! }
 //!
@@ -899,7 +899,8 @@
 //! ### Generic static methods
 //!
 //! Mocking static methods of generic structs or traits, whether or not the
-//! methods themselves are generic, should work seamlessly.
+//! methods themselves are generic, should work seamlessly as long as the
+//! generic parameter is `'static`
 //!
 //! ```
 //! # use mockall::*;
@@ -1161,10 +1162,6 @@ pub use downcast::{Any, Downcast};
 #[doc(hidden)]
 pub use fragile::Fragile;
 
-/// For mocking static methods
-#[doc(hidden)]
-pub use lazy_static::lazy_static;
-
 pub use predicates::{
     boolean::PredicateBooleanExt,
     prelude::{
@@ -1276,7 +1273,7 @@ pub mod examples;
 /// # Limitations
 ///
 /// `#[automock]` can't handle everything.  There are some cases where
-/// you will need to use [`mock`] instead:
+/// you will need to use [`mock!`] instead:
 /// * Mocking a struct that has multiple `impl` blocks, including
 ///   structs that implement traits.
 /// * Mocking a struct or trait defined in another crate.
@@ -1292,17 +1289,17 @@ pub use mockall_derive::automock;
 /// can't be mocked.  The downsides of using this attribute are:
 ///
 /// * Mockall can't tell if a parameter isn't `'static`, so you must annotate
-/// such methods with the `#[mockall::concretize]` attribute.
+///   such methods with the `#[mockall::concretize]` attribute.
 /// * Generic methods will share expectations for all argument types.  That is,
 ///   you won't be able to do `my_mock.expect_foo::<i32>(...)`.
 /// * It can't be used on methods with a closure argument (though this may be
-/// fixable).
+///   fixable).
 /// * Concretized methods' expectations may only be matched with `.withf` or
-/// `.withf_st`, not `.with`.
+///   `.withf_st`, not `.with`.
 /// * It only works for parameters that can be turned into a trait object.
-/// (may be fixable).
+///   (may be fixable).
 /// * Mockall needs to know how to turn the function argument into a trait
-/// object.  Given a generic parameter `T`, currently supported patterns are:
+///   object.  Given a generic parameter `T`, currently supported patterns are:
 ///   - `T`
 ///   - `&T`
 ///   - `&mut T`
@@ -1341,7 +1338,7 @@ pub use mockall_derive::concretize;
 
 /// Manually mock a structure.
 ///
-/// Sometimes `automock` can't be used.  In those cases you can use `mock!`,
+/// Sometimes [`automock`] can't be used.  In those cases you can use `mock!`,
 /// which basically involves repeating the struct's or trait's definitions.
 ///
 /// The format is:
@@ -1371,7 +1368,7 @@ pub use mockall_derive::concretize;
 /// }
 /// # fn main() {}
 /// ```
-/// Mocking an unsupported `#[derive(X)]` attribute, e.g. `Clone`, is
+/// Mocking an unsupported `#[derive(X)]` attribute, e.g. [`Clone`], is
 /// similar.
 /// ```
 /// # use mockall_derive::mock;
@@ -1395,8 +1392,8 @@ pub use mockall_derive::concretize;
 /// ```
 /// # use mockall_derive::mock;
 /// mock!{
-///     pub Rc<T: 'static> {}
-///     impl<T: 'static> AsRef<T> for Rc<T> {
+///     pub Rc<T> {}
+///     impl<T> AsRef<T> for Rc<T> {
 ///         fn as_ref(&self) -> &T;
 ///     }
 /// }
@@ -1406,8 +1403,8 @@ pub use mockall_derive::concretize;
 /// ```compile_fail
 /// # use mockall_derive::mock;
 /// mock!{
-///     pub Rc<Q: 'static> {}
-///     impl<T: 'static> AsRef<T> for Rc<T> {
+///     pub Rc<Q> {}
+///     impl<T> AsRef<T> for Rc<T> {
 ///         fn as_ref(&self) -> &T;
 ///     }
 /// }
@@ -1484,7 +1481,7 @@ pub struct ArgPrinter<'a, T>(pub &'a T);
 
 #[doc(hidden)]
 pub struct DebugPrint<'a, T: Debug>(pub &'a T);
-impl<'a, T> Debug for DebugPrint<'a, T> where T: Debug {
+impl<T> Debug for DebugPrint<'_, T> where T: Debug {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Debug::fmt(self.0, f)
     }
@@ -1506,13 +1503,13 @@ impl Debug for NothingPrint {
 }
 #[doc(hidden)]
 pub trait ViaNothing { fn debug_string(&self) -> NothingPrint; }
-impl<'a, T> ViaNothing for ArgPrinter<'a, T> {
+impl<T> ViaNothing for ArgPrinter<'_, T> {
     fn debug_string(&self) -> NothingPrint {
         NothingPrint
     }
 }
 
-// Though it's not entirely correct, we treat usize::max_value() as
+// Though it's not entirely correct, we treat usize::MAX as
 // approximately infinity.
 #[derive(Debug)]
 #[doc(hidden)]
@@ -1521,7 +1518,7 @@ pub struct TimesRange(Range<usize>);
 impl Default for TimesRange {
     fn default() -> TimesRange {
         // By default, allow any number of calls
-        TimesRange(0..usize::max_value())
+        TimesRange(0..usize::MAX)
     }
 }
 
@@ -1540,13 +1537,13 @@ impl From<Range<usize>> for TimesRange {
 
 impl From<RangeFrom<usize>> for TimesRange {
     fn from(r: RangeFrom<usize>) -> TimesRange {
-        TimesRange(r.start..usize::max_value())
+        TimesRange(r.start..usize::MAX)
     }
 }
 
 impl From<RangeFull> for TimesRange {
     fn from(_: RangeFull) -> TimesRange {
-        TimesRange(0..usize::max_value())
+        TimesRange(0..usize::MAX)
     }
 }
 
@@ -1605,7 +1602,7 @@ impl Times {
     }
 
     pub fn any(&mut self) {
-        self.range.0 = 0..usize::max_value();
+        self.range.0 = 0..usize::MAX;
     }
 
     /// Return how many times this expectation has been called

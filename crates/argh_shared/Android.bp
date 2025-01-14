@@ -18,10 +18,9 @@ rust_library {
     host_supported: true,
     crate_name: "argh_shared",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.12",
+    cargo_pkg_version: "0.1.13",
     crate_root: "src/lib.rs",
     edition: "2018",
-    rustlibs: ["libserde"],
     apex_available: [
         "//apex_available:platform",
         "com.android.virt",
