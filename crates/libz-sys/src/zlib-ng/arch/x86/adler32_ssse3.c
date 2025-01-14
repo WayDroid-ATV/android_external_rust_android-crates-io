@@ -6,15 +6,15 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "../../zbuild.h"
-#include "../../adler32_p.h"
+#include "zbuild.h"
+#include "adler32_p.h"
 #include "adler32_ssse3_p.h"
 
-#ifdef X86_SSSE3_ADLER32
+#ifdef X86_SSSE3
 
 #include <immintrin.h>
 
-Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len) {
+Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len) {
     uint32_t sum2;
 
      /* split Adler-32 into component sums */
@@ -54,7 +54,7 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size
         if (len < 16 + align_offset) {
             /* Let's eat the cost of this one unaligned load so that
              * we don't completely skip over the vectorization. Doing
-             * 16 bytes at a time unaligned is is better than 16 + <= 15
+             * 16 bytes at a time unaligned is better than 16 + <= 15
              * sums */
             vbuf = _mm_loadu_si128((__m128i*)buf);
             len -= 16;

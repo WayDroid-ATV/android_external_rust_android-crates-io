@@ -1,7 +1,7 @@
 #ifndef ZUTIL_H_
 #define ZUTIL_H_
 /* zutil.h -- internal interface and configuration of the compression library
- * Copyright (C) 1995-2016 Jean-loup Gailly, Mark Adler
+ * Copyright (C) 1995-2024 Jean-loup Gailly, Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -24,7 +24,7 @@ typedef unsigned long ulg;
 extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 /* (size given to avoid silly warnings with Visual C++) */
 
-#define ERR_MSG(err) PREFIX(z_errmsg)[Z_NEED_DICT-(err)]
+#define ERR_MSG(err) PREFIX(z_errmsg)[(err) < -6 || (err) > 2 ? 9 : 2 - (err)]
 
 #define ERR_RETURN(strm, err) return (strm->msg = ERR_MSG(err), (err))
 /* To be used only when the state is known to be valid */
@@ -35,6 +35,11 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #  define DEF_WBITS MAX_WBITS
 #endif
 /* default windowBits for decompression. MAX_WBITS is for compression only */
+
+#define MAX_BITS 15
+/* all codes must not exceed MAX_BITS bits */
+#define MAX_DIST_EXTRA_BITS 13
+/* maximum number of extra distance bits */
 
 #if MAX_MEM_LEVEL >= 8
 #  define DEF_MEM_LEVEL 8
@@ -98,7 +103,7 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE  6
 #endif
 
-#if defined(MACOS) || defined(TARGET_OS_MAC)
+#if defined(MACOS)
 #  define OS_CODE  7
 #endif
 
@@ -120,20 +125,16 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE  3  /* assume Unix */
 #endif
 
+         /* macros */
+
+#define CHECK_VER_STSIZE(_ver,_stsize) ((_ver) == NULL || (_ver)[0] != PREFIX2(VERSION)[0] || (_stsize) != (int32_t)sizeof(PREFIX3(stream)))
+
          /* memory allocation functions */
 
-void Z_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size);
-void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
+void Z_INTERNAL *PREFIX(zcalloc)(void *opaque, unsigned items, unsigned size);
+void Z_INTERNAL  PREFIX(zcfree)(void *opaque, void *ptr);
 
 typedef void *zng_calloc_func(void *opaque, unsigned items, unsigned size);
 typedef void  zng_cfree_func(void *opaque, void *ptr);
-
-void Z_INTERNAL *zng_alloc_aligned(zng_calloc_func zalloc, void *opaque, unsigned items, unsigned size, unsigned align);
-void Z_INTERNAL  zng_free_aligned(zng_cfree_func zfree, void *opaque, void *ptr);
-
-#define ZALLOC(strm, items, size) zng_alloc_aligned((strm)->zalloc, (strm)->opaque, (items), (size), 64)
-#define ZFREE(strm, addr)         zng_free_aligned((strm)->zfree, (strm)->opaque, (void *)(addr))
-
-#define TRY_FREE(s, p)            {if (p) ZFREE(s, p);}
 
 #endif /* ZUTIL_H_ */
