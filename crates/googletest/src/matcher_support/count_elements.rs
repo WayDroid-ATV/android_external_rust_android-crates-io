@@ -18,10 +18,7 @@
 /// unambiguous answer, i.e., the upper bound exists and the lower and upper
 /// bounds agree. Otherwise it iterates through `value` and counts the
 /// elements.
-pub(crate) fn count_elements<ContainerT: ?Sized>(value: &ContainerT) -> usize
-where
-    for<'b> &'b ContainerT: IntoIterator,
-{
+pub(crate) fn count_elements<ContainerT: IntoIterator>(value: ContainerT) -> usize {
     let iterator = value.into_iter();
     if let (lower, Some(higher)) = iterator.size_hint() {
         if lower == higher {
@@ -29,4 +26,54 @@ where
         }
     }
     iterator.count()
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use crate::prelude::*;
+
+    #[test]
+    fn count_elements_vec() -> Result<()> {
+        verify_that!(count_elements(vec![1, 2, 3]), eq(3))
+    }
+
+    #[test]
+    fn count_elements_with_imprecise_hint() -> Result<()> {
+        struct FakeIterator;
+
+        impl Iterator for FakeIterator {
+            type Item = ();
+
+            fn next(&mut self) -> Option<Self::Item> {
+                None
+            }
+
+            fn size_hint(&self) -> (usize, Option<usize>) {
+                (0, Some(123))
+            }
+        }
+
+        verify_that!(count_elements(FakeIterator), eq(0))
+    }
+
+    #[test]
+    fn count_elements_with_no_hint() -> Result<()> {
+        struct FakeIterator;
+
+        impl Iterator for FakeIterator {
+            type Item = ();
+
+            fn next(&mut self) -> Option<Self::Item> {
+                None
+            }
+
+            fn size_hint(&self) -> (usize, Option<usize>) {
+                (0, None)
+            }
+        }
+
+        verify_that!(count_elements(FakeIterator), eq(0))
+    }
 }
