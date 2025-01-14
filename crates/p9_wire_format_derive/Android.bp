@@ -17,9 +17,9 @@ rust_proc_macro {
     name: "libp9_wire_format_derive",
     crate_name: "p9_wire_format_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.3",
+    cargo_pkg_version: "0.3.0",
     crate_root: "src/lib.rs",
-    edition: "2015",
+    edition: "2021",
     rustlibs: [
         "libproc_macro2",
         "libquote",
@@ -32,14 +32,14 @@ rust_test_host {
     host_cross_supported: false,
     crate_name: "p9_wire_format_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.3",
+    cargo_pkg_version: "0.3.0",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2015",
+    edition: "2021",
     rustlibs: [
         "libproc_macro2",
         "libquote",
