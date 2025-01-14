@@ -11,9 +11,9 @@
 
 [package]
 edition = "2018"
-rust-version = "1.60.0"
+rust-version = "1.70.0"
 name = "bindgen"
-version = "0.69.5"
+version = "0.70.1"
 authors = [
     "Jyun-Yan You <jyyou.tw@gmail.com>",
     "Emilio Cobos Álvarez <emilio@crisal.io>",
@@ -84,14 +84,8 @@ version = "1"
 features = ["clang_6_0"]
 
 [dependencies.itertools]
-version = ">=0.10,<0.13"
+version = ">=0.10,<0.14"
 default-features = false
-
-[dependencies.lazy_static]
-version = "1"
-
-[dependencies.lazycell]
-version = "1"
 
 [dependencies.log]
 version = "0.4"
@@ -111,7 +105,7 @@ version = "1"
 default-features = false
 
 [dependencies.regex]
-version = "1.5.1"
+version = "1.5.3"
 features = [
     "std",
     "unicode-perl",
@@ -132,11 +126,6 @@ features = [
     "visit-mut",
 ]
 
-[dependencies.which]
-version = "4.2.1"
-optional = true
-default-features = false
-
 [features]
 __cli = []
 __testing_only_extra_assertions = []
@@ -146,10 +135,9 @@ default = [
     "logging",
     "prettyplease",
     "runtime",
-    "which-rustfmt",
 ]
 experimental = ["dep:annotate-snippets"]
 logging = ["dep:log"]
 runtime = ["clang-sys/runtime"]
 static = ["clang-sys/static"]
-which-rustfmt = ["dep:which"]
+which-rustfmt = []

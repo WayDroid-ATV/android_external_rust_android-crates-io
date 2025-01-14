@@ -147,7 +147,7 @@ pub(crate) trait FieldMethods {
     /// If this is a bitfield, how many bits does it need?
     fn bitfield_width(&self) -> Option<u32>;
 
-    /// Is this feild declared public?
+    /// Is this field declared public?
     fn is_public(&self) -> bool;
 
     /// Get the annotations for this field.
@@ -825,6 +825,23 @@ impl CompFields {
             }
         }
     }
+
+    /// Return the flex array member for the struct/class, if any.
+    fn flex_array_member(&self, ctx: &BindgenContext) -> Option<TypeId> {
+        let fields = match self {
+            CompFields::Before(_) => panic!("raw fields"),
+            CompFields::After { fields, .. } => fields,
+            CompFields::Error => return None, // panic?
+        };
+
+        match fields.last()? {
+            Field::Bitfields(..) => None,
+            Field::DataMember(FieldData { ty, .. }) => ctx
+                .resolve_type(*ty)
+                .is_incomplete_array(ctx)
+                .map(|item| item.expect_type_id(ctx)),
+        }
+    }
 }
 
 impl Trace for CompFields {
@@ -931,7 +948,7 @@ pub(crate) struct Base {
     pub(crate) kind: BaseKind,
     /// Name of the field in which this base should be stored.
     pub(crate) field_name: String,
-    /// Whether this base is inherited from publically.
+    /// Whether this base is inherited from publicly.
     pub(crate) is_pub: bool,
 }
 
@@ -961,7 +978,7 @@ impl Base {
         true
     }
 
-    /// Whether this base is inherited from publically.
+    /// Whether this base is inherited from publicly.
     pub(crate) fn is_public(&self) -> bool {
         self.is_pub
     }
@@ -1120,6 +1137,14 @@ impl CompInfo {
                 panic!("Should always have computed bitfield units first");
             }
         }
+    }
+
+    /// Return the flex array member and its element type if any
+    pub(crate) fn flex_array_member(
+        &self,
+        ctx: &BindgenContext,
+    ) -> Option<TypeId> {
+        self.fields.flex_array_member(ctx)
     }
 
     fn has_fields(&self) -> bool {
@@ -1424,7 +1449,7 @@ impl CompInfo {
                 }
                 CXCursor_TemplateTypeParameter => {
                     let param = Item::type_param(None, cur, ctx).expect(
-                        "Item::type_param should't fail when pointing \
+                        "Item::type_param shouldn't fail when pointing \
                          at a TemplateTypeParameter",
                     );
                     ci.template_params.push(param);
