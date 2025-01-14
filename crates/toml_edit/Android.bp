@@ -17,7 +17,7 @@ rust_library_host {
     name: "libtoml_edit",
     crate_name: "toml_edit",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.22.4",
+    cargo_pkg_version: "0.22.20",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
