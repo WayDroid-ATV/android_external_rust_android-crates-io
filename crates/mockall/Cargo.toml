@@ -11,15 +11,21 @@
 
 [package]
 edition = "2021"
-rust-version = "1.60"
+rust-version = "1.71"
 name = "mockall"
-version = "0.12.1"
+version = "0.13.1"
 authors = ["Alan Somers <asomers@gmail.com>"]
+build = false
 exclude = [
     "examples/*",
     "tests/*",
     "tools/*",
 ]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = """
 A powerful mock object library for Rust.
 """
@@ -42,7 +48,7 @@ tag-prefix = ""
 
 [[package.metadata.release.pre-release-replacements]]
 file = "../README.md"
-replace = "mockall = \"{{version}}\""
+replace = 'mockall = "{{version}}"'
 search = 'mockall = "[a-z0-9\.-]+"'
 
 [[package.metadata.release.pre-release-replacements]]
@@ -55,10 +61,9 @@ file = "../CHANGELOG.md"
 replace = "{{date}}"
 search = "ReleaseDate"
 
-[[example]]
-name = "serde"
-crate-type = ["lib"]
-path = "examples/serde.rs"
+[lib]
+name = "mockall"
+path = "src/lib.rs"
 
 [dependencies.cfg-if]
 version = "1.0"
@@ -69,11 +74,8 @@ version = "0.11"
 [dependencies.fragile]
 version = "2.0"
 
-[dependencies.lazy_static]
-version = "1.1"
-
 [dependencies.mockall_derive]
-version = "=0.12.1"
+version = "=0.13.1"
 
 [dependencies.predicates]
 version = "3.0.0"
@@ -85,6 +87,9 @@ version = "1.0"
 [dev-dependencies.async-trait]
 version = "0.1.38"
 
+[dev-dependencies.auto_enums]
+version = "0.8.5"
+
 [dev-dependencies.futures]
 version = "0.3.7"
 
@@ -92,16 +97,16 @@ version = "0.3.7"
 version = "^0.3.1"
 
 [dev-dependencies.serde]
-version = "1.0"
+version = "1.0.113"
 
 [dev-dependencies.serde_derive]
-version = "1.0"
+version = "1.0.113"
 
 [dev-dependencies.serde_json]
 version = "1.0"
 
 [dev-dependencies.tracing]
-version = "0.1.32"
+version = "0.1.35"
 
 [features]
 nightly = [

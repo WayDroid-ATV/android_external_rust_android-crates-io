@@ -29,7 +29,7 @@ your `Cargo.toml`:
 
 ```toml
 [dev-dependencies]
-mockall = "0.12.1"
+mockall = "0.13.1"
 ```
 
 Then use it like this:
@@ -62,7 +62,7 @@ See the [API docs](https://docs.rs/mockall) for more information.
 
 # Minimum Supported Rust Version (MSRV)
 
-Mockall is supported on Rust 1.64.0 and higher.  Mockall's MSRV will not be
+Mockall is supported on Rust 1.71.0 and higher.  Mockall's MSRV will not be
 changed in the future without bumping the major or minor version.
 
 # License
