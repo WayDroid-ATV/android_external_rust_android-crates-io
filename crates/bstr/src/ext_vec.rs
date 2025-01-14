@@ -1,7 +1,4 @@
-use core::fmt;
-use core::iter;
-use core::ops;
-use core::ptr;
+use core::{fmt, iter, ops, ptr};
 
 use alloc::{borrow::Cow, string::String, vec, vec::Vec};
 
@@ -188,7 +185,7 @@ pub trait ByteVec: private::Sealed {
         fn imp(os_str: OsString) -> Result<Vec<u8>, OsString> {
             use std::os::unix::ffi::OsStringExt;
 
-            Ok(Vec::from(os_str.into_vec()))
+            Ok(os_str.into_vec())
         }
 
         #[cfg(not(unix))]
@@ -223,10 +220,10 @@ pub trait ByteVec: private::Sealed {
     /// ```
     #[inline]
     #[cfg(feature = "std")]
-    fn from_os_str_lossy<'a>(os_str: &'a OsStr) -> Cow<'a, [u8]> {
+    fn from_os_str_lossy(os_str: &OsStr) -> Cow<'_, [u8]> {
         #[cfg(unix)]
         #[inline]
-        fn imp<'a>(os_str: &'a OsStr) -> Cow<'a, [u8]> {
+        fn imp(os_str: &OsStr) -> Cow<'_, [u8]> {
             use std::os::unix::ffi::OsStrExt;
 
             Cow::Borrowed(os_str.as_bytes())
@@ -234,7 +231,7 @@ pub trait ByteVec: private::Sealed {
 
         #[cfg(not(unix))]
         #[inline]
-        fn imp<'a>(os_str: &'a OsStr) -> Cow<'a, [u8]> {
+        fn imp(os_str: &OsStr) -> Cow<'_, [u8]> {
             match os_str.to_string_lossy() {
                 Cow::Borrowed(x) => Cow::Borrowed(x.as_bytes()),
                 Cow::Owned(x) => Cow::Owned(Vec::from(x)),
@@ -292,8 +289,109 @@ pub trait ByteVec: private::Sealed {
     /// ```
     #[inline]
     #[cfg(feature = "std")]
-    fn from_path_lossy<'a>(path: &'a Path) -> Cow<'a, [u8]> {
+    fn from_path_lossy(path: &Path) -> Cow<'_, [u8]> {
         Vec::from_os_str_lossy(path.as_os_str())
+    }
+
+    /// Unescapes the given string into its raw bytes.
+    ///
+    /// This looks for the escape sequences `\xNN`, `\0`, `\r`, `\n`, `\t`
+    /// and `\` and translates them into their corresponding unescaped form.
+    ///
+    /// Incomplete escape sequences or things that look like escape sequences
+    /// but are not (for example, `\i` or `\xYZ`) are passed through literally.
+    ///
+    /// This is the dual of [`ByteSlice::escape_bytes`].
+    ///
+    /// Note that the zero or NUL byte may be represented as either `\0` or
+    /// `\x00`. Both will be unescaped into the zero byte.
+    ///
+    /// # Examples
+    ///
+    /// This shows basic usage:
+    ///
+    /// ```
+    /// # #[cfg(feature = "alloc")] {
+    /// use bstr::{B, BString, ByteVec};
+    ///
+    /// assert_eq!(
+    ///     BString::from(b"foo\xFFbar"),
+    ///     Vec::unescape_bytes(r"foo\xFFbar"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from(b"foo\nbar"),
+    ///     Vec::unescape_bytes(r"foo\nbar"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from(b"foo\tbar"),
+    ///     Vec::unescape_bytes(r"foo\tbar"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from(b"foo\\bar"),
+    ///     Vec::unescape_bytes(r"foo\\bar"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from("foo☃bar"),
+    ///     Vec::unescape_bytes(r"foo☃bar"),
+    /// );
+    ///
+    /// # }
+    /// ```
+    ///
+    /// This shows some examples of how incomplete or "incorrect" escape
+    /// sequences get passed through literally.
+    ///
+    /// ```
+    /// # #[cfg(feature = "alloc")] {
+    /// use bstr::{B, BString, ByteVec};
+    ///
+    /// // Show some incomplete escape sequences.
+    /// assert_eq!(
+    ///     BString::from(br"\"),
+    ///     Vec::unescape_bytes(r"\"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from(br"\"),
+    ///     Vec::unescape_bytes(r"\\"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from(br"\x"),
+    ///     Vec::unescape_bytes(r"\x"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from(br"\xA"),
+    ///     Vec::unescape_bytes(r"\xA"),
+    /// );
+    /// // And now some that kind of look like escape
+    /// // sequences, but aren't.
+    /// assert_eq!(
+    ///     BString::from(br"\xZ"),
+    ///     Vec::unescape_bytes(r"\xZ"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from(br"\xZZ"),
+    ///     Vec::unescape_bytes(r"\xZZ"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from(br"\i"),
+    ///     Vec::unescape_bytes(r"\i"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from(br"\u"),
+    ///     Vec::unescape_bytes(r"\u"),
+    /// );
+    /// assert_eq!(
+    ///     BString::from(br"\u{2603}"),
+    ///     Vec::unescape_bytes(r"\u{2603}"),
+    /// );
+    ///
+    /// # }
+    /// ```
+    #[inline]
+    #[cfg(feature = "alloc")]
+    fn unescape_bytes<S: AsRef<str>>(escaped: S) -> Vec<u8> {
+        let s = escaped.as_ref();
+        crate::escape_bytes::UnescapeBytes::new(s.chars()).collect()
     }
 
     /// Appends the given byte to the end of this byte string.
@@ -860,7 +958,7 @@ pub trait ByteVec: private::Sealed {
         R: ops::RangeBounds<usize>,
         B: AsRef<[u8]>,
     {
-        self.as_vec_mut().splice(range, replace_with.as_ref().iter().cloned());
+        self.as_vec_mut().splice(range, replace_with.as_ref().iter().copied());
     }
 
     /// Creates a draining iterator that removes the specified range in this
@@ -1064,6 +1162,8 @@ impl fmt::Display for FromUtf8Error {
 
 #[cfg(all(test, feature = "std"))]
 mod tests {
+    use alloc::{vec, vec::Vec};
+
     use crate::ext_vec::ByteVec;
 
     #[test]

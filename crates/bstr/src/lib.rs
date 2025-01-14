@@ -391,29 +391,20 @@ and Unicode support.
   `BString` when `alloc` is enabled.
 */
 
-#![cfg_attr(not(any(feature = "std", test)), no_std)]
+// #![cfg_attr(not(any(feature = "std", test)), no_std)]
+#![no_std]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-// Why do we do this? Well, in order for us to use once_cell's 'Lazy' type to
-// load DFAs, it requires enabling its 'std' feature. Yet, there is really
-// nothing about our 'unicode' feature that requires 'std'. We could declare
-// that 'unicode = [std, ...]', which would be fine, but once regex-automata
-// 0.3 is a thing, I believe we can drop once_cell altogether and thus drop
-// the need for 'std' to be enabled when 'unicode' is enabled. But if we make
-// 'unicode' also enable 'std', then it would be a breaking change to remove
-// 'std' from that list.
-//
-// So, for right now, we force folks to explicitly say they want 'std' if they
-// want 'unicode'. In the future, we should be able to relax this.
-#[cfg(all(feature = "unicode", not(feature = "std")))]
-compile_error!("enabling 'unicode' requires enabling 'std'");
+#[cfg(any(test, feature = "std"))]
+extern crate std;
 
-#[cfg(feature = "alloc")]
+#[cfg(any(test, feature = "alloc"))]
 extern crate alloc;
 
 pub use crate::bstr::BStr;
 #[cfg(feature = "alloc")]
 pub use crate::bstring::BString;
+pub use crate::escape_bytes::EscapeBytes;
 #[cfg(feature = "unicode")]
 pub use crate::ext_slice::Fields;
 pub use crate::ext_slice::{
@@ -437,6 +428,7 @@ mod bstr;
 #[cfg(feature = "alloc")]
 mod bstring;
 mod byteset;
+mod escape_bytes;
 mod ext_slice;
 #[cfg(feature = "alloc")]
 mod ext_vec;
