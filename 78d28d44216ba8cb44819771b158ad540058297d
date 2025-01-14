@@ -16,6 +16,24 @@
       "message": "If it\u0027s unmaintained why are we using it?",
       "revId": "78d28d44216ba8cb44819771b158ad540058297d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c03fc60c_a76e5e31",
+        "filename": "crates/instant/Cargo.toml",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-14T17:32:00Z",
+      "side": 1,
+      "message": "Yes, I\u0027m going to try to remove it.",
+      "parentUuid": "32f6310a_207e177e",
+      "revId": "78d28d44216ba8cb44819771b158ad540058297d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
