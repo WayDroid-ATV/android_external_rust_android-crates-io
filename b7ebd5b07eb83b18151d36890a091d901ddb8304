@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "650ee254_7403600a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-14T15:23:53Z",
+      "side": 1,
+      "message": "We should try to remove usage of this entirely, as async traits are stable since Rust 1.75.",
+      "revId": "b7ebd5b07eb83b18151d36890a091d901ddb8304",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
