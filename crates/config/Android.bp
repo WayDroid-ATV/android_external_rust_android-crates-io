@@ -17,7 +17,7 @@ rust_library_host {
     name: "libconfig_rust",
     crate_name: "config",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.13.4",
+    cargo_pkg_version: "0.14.1",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
@@ -25,16 +25,14 @@ rust_library_host {
         "serde_json",
         "toml",
         "yaml",
-        "yaml-rust",
+        "yaml-rust2",
     ],
     rustlibs: [
-        "liblazy_static",
         "libnom",
         "libpathdiff",
         "libserde",
         "libserde_json",
         "libtoml",
-        "libyaml_rust",
+        "libyaml_rust2",
     ],
-    proc_macros: ["libasync_trait"],
 }
