@@ -1,7 +1,0 @@
-{
-  "postsubmit": [
-    {
-      "name": "uniffi_meta_test_src_lib"
-    }
-  ]
-}
