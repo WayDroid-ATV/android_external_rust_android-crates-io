@@ -16,6 +16,24 @@
       "message": "I\u0027ll resolve this comment once the internal change has been merged.",
       "revId": "d3843fb92857365b8d6340ff1a8a89e4da5c9dc4",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c9faab71_6de185fd",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3364584
+      },
+      "writtenOn": "2025-01-15T09:04:52Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d72f4bd2_935971a7",
+      "revId": "d3843fb92857365b8d6340ff1a8a89e4da5c9dc4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
