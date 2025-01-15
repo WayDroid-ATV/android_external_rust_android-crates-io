@@ -3,9 +3,7 @@
 
 #include "dfltcc_common.h"
 
-struct inflate_state Z_INTERNAL *PREFIX(dfltcc_alloc_inflate_state)(PREFIX3(streamp) strm);
 void Z_INTERNAL PREFIX(dfltcc_reset_inflate_state)(PREFIX3(streamp) strm);
-void Z_INTERNAL PREFIX(dfltcc_copy_inflate_state)(struct inflate_state *dst, const struct inflate_state *src);
 int Z_INTERNAL PREFIX(dfltcc_can_inflate)(PREFIX3(streamp) strm);
 typedef enum {
     DFLTCC_INFLATE_CONTINUE,
@@ -15,9 +13,10 @@ typedef enum {
 dfltcc_inflate_action Z_INTERNAL PREFIX(dfltcc_inflate)(PREFIX3(streamp) strm, int flush, int *ret);
 int Z_INTERNAL PREFIX(dfltcc_was_inflate_used)(PREFIX3(streamp) strm);
 int Z_INTERNAL PREFIX(dfltcc_inflate_disable)(PREFIX3(streamp) strm);
-
-#define ZALLOC_INFLATE_STATE PREFIX(dfltcc_alloc_inflate_state)
-#define ZCOPY_INFLATE_STATE PREFIX(dfltcc_copy_inflate_state)
+int Z_INTERNAL PREFIX(dfltcc_inflate_set_dictionary)(PREFIX3(streamp) strm,
+                                                     const unsigned char *dictionary, uInt dict_length);
+int Z_INTERNAL PREFIX(dfltcc_inflate_get_dictionary)(PREFIX3(streamp) strm,
+                                                     unsigned char *dictionary, uInt* dict_length);
 
 #define INFLATE_RESET_KEEP_HOOK PREFIX(dfltcc_reset_inflate_state)
 
@@ -50,5 +49,19 @@ int Z_INTERNAL PREFIX(dfltcc_inflate_disable)(PREFIX3(streamp) strm);
     do { \
         if (PREFIX(dfltcc_was_inflate_used)((strm))) return Z_STREAM_ERROR; \
     } while (0)
+
+#define INFLATE_SET_DICTIONARY_HOOK(strm, dict, dict_len) \
+    do { \
+        if (PREFIX(dfltcc_can_inflate)((strm))) \
+            return PREFIX(dfltcc_inflate_set_dictionary)((strm), (dict), (dict_len)); \
+    } while (0)
+
+#define INFLATE_GET_DICTIONARY_HOOK(strm, dict, dict_len) \
+    do { \
+        if (PREFIX(dfltcc_can_inflate)((strm))) \
+            return PREFIX(dfltcc_inflate_get_dictionary)((strm), (dict), (dict_len)); \
+    } while (0)
+
+#define INFLATE_ADJUST_WINDOW_SIZE(n) MAX(n, HB_SIZE)
 
 #endif

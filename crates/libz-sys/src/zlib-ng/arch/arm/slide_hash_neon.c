@@ -8,15 +8,10 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#if defined(ARM_NEON_SLIDEHASH)
-#ifdef _M_ARM64
-#  include <arm64_neon.h>
-#else
-#  include <arm_neon.h>
-#endif
-#include "../../zbuild.h"
-#include "../../deflate.h"
-#include "../../fallback_builtins.h"
+#ifdef ARM_NEON
+#include "neon_intrins.h"
+#include "zbuild.h"
+#include "deflate.h"
 
 /* SIMD version of hash_chain rebase */
 static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize) {
@@ -43,7 +38,8 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize
 }
 
 Z_INTERNAL void slide_hash_neon(deflate_state *s) {
-    unsigned int wsize = s->w_size;
+    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
+    uint16_t wsize = (uint16_t)s->w_size;
 
     slide_hash_chain(s->head, HASH_SIZE, wsize);
     slide_hash_chain(s->prev, wsize, wsize);
