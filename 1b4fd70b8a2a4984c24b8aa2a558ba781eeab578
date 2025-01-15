@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "897855bd_f1567aa1",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-15T11:28:58Z",
+      "side": 1,
+      "message": "This change doesn\u0027t touch predicates-tree at all.",
+      "revId": "1b4fd70b8a2a4984c24b8aa2a558ba781eeab578",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
