@@ -16,6 +16,24 @@
       "message": "Duplicate of https://android-review.git.corp.google.com/c/platform/external/rust/android-crates-io/+/3417061?",
       "revId": "21c505997cdf03e631525aff114b4e550a258521",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "89cb9c8a_92611175",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-15T15:22:26Z",
+      "side": 1,
+      "message": "Yes. Use the other one. This CL stack is just so I remember all the things that need to happen in order to migrate libsqlite3-sys, since it\u0027s complicated.",
+      "parentUuid": "1afa5381_2fc19731",
+      "revId": "21c505997cdf03e631525aff114b4e550a258521",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
