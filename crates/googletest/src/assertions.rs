@@ -120,29 +120,37 @@
 /// not supported; see [Rust by Example](https://doc.rust-lang.org/rust-by-example/primitives/tuples.html#tuples).
 #[macro_export]
 macro_rules! verify_that {
+    // specialized to sequences:
     ($actual:expr, [$($expecteds:expr),+ $(,)?]) => {
-        $crate::assertions::internal::check_matcher(
-            &$actual,
-            $crate::matchers::elements_are![$($expecteds),+],
-            stringify!($actual),
-            $crate::internal::source_location::SourceLocation::new(file!(), line!(), column!()),
-        )
+        {
+            use $crate::assertions::internal::Subject as _;
+            $actual.check(
+                $crate::matchers::elements_are![$($expecteds),+],
+                stringify!($actual),
+            )
+        }
     };
+
+    // specialized to unordered sequences:
     ($actual:expr, {$($expecteds:expr),+ $(,)?}) => {
-        $crate::assertions::internal::check_matcher(
-            &$actual,
-            $crate::matchers::unordered_elements_are![$($expecteds),+],
-            stringify!($actual),
-            $crate::internal::source_location::SourceLocation::new(file!(), line!(), column!()),
-        )
+        {
+            use $crate::assertions::internal::Subject as  _;
+            $actual.check(
+                $crate::matchers::unordered_elements_are![$($expecteds),+],
+                stringify!($actual),
+            )
+        }
     };
+
+    // general case:
     ($actual:expr, $expected:expr $(,)?) => {
-        $crate::assertions::internal::check_matcher(
-            &$actual,
-            $expected,
-            stringify!($actual),
-            $crate::internal::source_location::SourceLocation::new(file!(), line!(), column!()),
-        )
+        {
+            use $crate::assertions::internal::Subject as  _;
+            $actual.check(
+                $expected,
+                stringify!($actual),
+            )
+        }
     };
 }
 
@@ -165,29 +173,24 @@ macro_rules! verify_that {
 /// # */
 /// fn test() -> Result<()> {
 ///     let a = 1;
-///     let b = 7;
-///     let n = 5;
-///     verify_pred!(equals_modulo(a, b, n))?;
+///     fn b(_x: i32) -> i32 { 7 }
+///     verify_pred!(equals_modulo(a, b(b(2)), 2 + 3))?;
 ///     Ok(())
 /// }
 /// # verify_that!(
 /// #     test(),
-/// #     err(displays_as(contains_substring("equals_modulo(a, b, n) was false with")))
+/// #     err(displays_as(contains_substring("equals_modulo(a, b(b(2)), 2 + 3) was false with")))
 /// # ).unwrap();
 /// ```
 ///
 /// This results in the following message:
 ///
 /// ```text
-/// equals_modulo(a, b, n) was false with
+/// equals_modulo(a, b(b(2)), 2 + 3) was false with
 ///   a = 1,
-///   b = 7,
-///   n = 5
+///   b(b(2)) = 7,
+///   2 + 3 = 5,
 /// ```
-///
-/// The function passed to this macro must return `bool`. Each of the arguments
-/// must evaluate to a type implementing [`std::fmt::Debug`]. The debug output
-/// is used to construct the failure message.
 ///
 /// The predicate can also be a method on a struct, e.g.:
 ///
@@ -201,42 +204,45 @@ macro_rules! verify_that {
 /// verify_pred!((AStruct {}).equals_modulo(a, b, n))?;
 /// ```
 ///
-/// **Warning:** This macro assumes that the arguments passed to the predicate
-/// are either *variables* or *calls to pure functions*. If two subsequent
-/// invocations to any of the expresssions passed as arguments result in
-/// different values, then the output message of a test failure will deviate
-/// from the values actually passed to the predicate. For this reason, *always
-/// assign the outputs of non-pure functions to variables before using them in
-/// this macro. For example:
+/// The expression passed to this macro must return `bool`. In the most general
+/// case, it prints out each of the `.`-separated parts of the expression and
+/// the arguments of all top-level method calls as long as they implement
+/// `Debug`. It evaluates every value (including the method receivers) exactly
+/// once. Effectively, for `verify_pred!((a + 1).b.c(x + y, &mut z, 2))`, it
+/// generates code analogous to the following, which allows printing accurate
+/// intermediate values even if they are subsequently consumed (moved out) or
+/// mutated in-place by the expression:
 ///
 /// ```ignore
-/// let output = generate_random_number();  // Assigned outside of verify_pred.
-/// verify_pred!(is_sufficiently_random(output))?;
+/// let mut error_message = "(a + 1).b.c(x + y, 2) was false with".to_string();
+/// let mut x1 = (a + 1);
+/// write!(error_message, "\n  (a + 1) = {:?},", x1);
+/// write!(error_message, "\n  (a + 1).b = {:?},", x1.b);
+/// let mut x2 = x + y;
+/// write!(error_message, "\n  x + y = {:?},", x2);
+/// let mut x3 = &mut z;
+/// write!(error_message, "\n  & mut z = {:?},", x3);
+/// let mut x4 = x1.b.c(x2, x3, 2);
+/// if (x4) {
+///   Ok(())
+/// } else {
+///   Err(error_message)
+/// }
 /// ```
+///
+/// Wrapping the passed-in expression in parens or curly braces will prevent the
+/// detailed printing of the expression.
+///
+/// ```ignore
+/// verify_pred!((a.foo()).bar())?;
+/// ```
+///
+/// would not print `a`, but would print `(a.foo())` and `(a.foo()).bar()` on
+/// error.
 #[macro_export]
 macro_rules! verify_pred {
-    ([$($predicate:tt)*]($($arg:tt),* $(,)?)) => {
-        if !$($predicate)*($($arg),*) {
-            $crate::assertions::internal::report_failed_predicate(
-                concat!(stringify!($($predicate)*), stringify!(($($arg),*))),
-                vec![$((format!(concat!(stringify!($arg), " = {:?}"), $arg))),*],
-                $crate::internal::source_location::SourceLocation::new(
-                    file!(),
-                    line!(),
-                    column!(),
-                ),
-            )
-        } else {
-            Ok(())
-        }
-    };
-
-    ([$($predicate:tt)*] $first:tt $($rest:tt)*) => {
-        $crate::verify_pred!([$($predicate)* $first] $($rest)*)
-    };
-
-    ($first:tt $($rest:tt)*) => {
-        $crate::verify_pred!([$first] $($rest)*)
+    ($expr:expr $(,)?) => {
+        $crate::assertions::internal::__googletest_macro_verify_pred!($expr)
     };
 }
 
@@ -285,25 +291,976 @@ macro_rules! verify_pred {
 /// [`and_log_failure`](crate::GoogleTestSupport::and_log_failure).
 #[macro_export]
 macro_rules! fail {
-    ($($message:expr),+) => {{
-        // We wrap this in a function so that we can annotate it with the must_use attribute.
-        // must_use on expressions is still experimental.
-        #[must_use = "The assertion result must be evaluated to affect the test result."]
-        fn create_fail_result(message: String) -> $crate::Result<()> {
-            Err($crate::internal::test_outcome::TestAssertionFailure::create(format!(
-                "{}\n{}",
-                message,
-                $crate::internal::source_location::SourceLocation::new(
-                    file!(),
-                    line!(),
-                    column!(),
-                ),
-            )))
-        }
-        create_fail_result(format!($($message),*))
+    ($($message:expr),+ $(,)?) => {{
+        $crate::assertions::internal::create_fail_result(
+            format!($($message),*),
+        )
     }};
 
     () => { fail!("Test failed") };
+}
+
+/// Generates a success. This **does not** make the overall test succeed. A test
+/// is only considered successful if none of its assertions fail during its
+/// execution.
+///
+/// The succeed!() assertion is purely documentary. The only user visible output
+/// is a stdout with information on where the success was generated from.
+///
+/// ```ignore
+/// fn test_to_be_implemented() {
+///     succeed!();
+/// }
+/// ```
+///
+/// One may include formatted arguments in the success message:
+///
+/// ```ignore
+/// fn test_to_be_implemented() {
+///     succeed!("I am just a fake test: {}", "a fake test indeed");
+/// }
+/// ```
+#[macro_export]
+macro_rules! succeed {
+    ($($message:expr),+ $(,)?) => {{
+        println!(
+            "{}\n at {}:{}:{}",
+            format!($($message),*),
+            file!(), line!(), column!()
+        );
+    }};
+
+    () => {
+        succeed!("Success")
+    };
+}
+
+/// Generates a failure marking the test as failed but continue execution.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail_but_not_abort() {
+///     add_failure!();
+/// }
+/// ```
+///
+/// One may include formatted arguments in the failure message:
+///
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail_but_not_abort() {
+///     add_failure!("I am just a fake test: {}", "a fake test indeed");
+/// }
+/// ```
+#[macro_export]
+macro_rules! add_failure {
+    ($($message:expr),+ $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        $crate::assertions::internal::create_fail_result(
+            format!($($message),*),
+        ).and_log_failure();
+    }};
+
+    () => {
+        add_failure!("Failed")
+    };
+}
+
+/// Generates a failure at specified location marking the test as failed but
+/// continue execution.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail_but_not_abort() {
+///     add_failure_at!("src/my_file.rs", 32, 12);
+/// }
+/// ```
+///
+/// One may include formatted arguments in the failure message:
+///
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail_but_not_abort() {
+///     add_failure_at!(
+///         "src/my_file.rs",
+///         32,
+///         12,
+///         "I am just a fake test: {}", "a fake test indeed",
+///     );
+/// }
+/// ```
+#[macro_export]
+macro_rules! add_failure_at {
+    ($file:expr, $line:expr, $column:expr, $($message:expr),+ $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        $crate::assertions::internal::create_fail_result(
+            format!($($message),*),
+        ).map_err(|e| e.with_fake_location($file, $line, $column)).and_log_failure();
+    }};
+
+    ($file:expr, $line:expr, $column:expr $(,)?) => {
+        add_failure_at!($file, $line, $column, "Failed")
+    };
+}
+
+/// Verify if the condition evaluates to true and returns `Result`.
+///
+/// Evaluates to `Result::Ok(())` if the condition is true and
+/// `Result::Err(TestAssertionFailure)` if it evaluates to false. The caller
+/// must then decide how to handle the `Err` variant. It has a few options:
+///   * Abort the current function with the `?` operator. This requires that the
+///     function return a suitable `Result`.
+///   * Log the failure and continue by calling the method `and_log_failure`.
+///
+/// Of course, one can also use all other standard methods on `Result`.
+///
+/// **Invoking this macro by itself does not cause a test failure to be recorded
+/// or output.** The resulting `Result` must be handled as described above to
+/// cause the test to be recorded as a failure.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[test]
+/// fn should_fail() -> Result<()> {
+///     verify_true!(2 + 2 == 5)
+/// }
+/// ```
+#[macro_export]
+macro_rules! verify_true {
+    ($condition:expr) => {{
+        use $crate::assertions::internal::Subject as _;
+        ($condition).check($crate::matchers::eq(true), stringify!($condition))
+    }};
+}
+
+/// Marks test as failed and continue execution if the expression evaluates to
+/// false.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     expect_true!(2 + 2 == 5);
+///     println!("This will print");
+/// }
+/// ```
+#[macro_export]
+macro_rules! expect_true {
+    ($condition:expr) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_true!($condition).and_log_failure()
+    }};
+}
+
+/// Verify if the condition evaluates to false and returns `Result`.
+///
+/// Evaluates to `Result::Ok(())` if the condition is false and
+/// `Result::Err(TestAssertionFailure)` if it evaluates to true. The caller
+/// must then decide how to handle the `Err` variant. It has a few options:
+///   * Abort the current function with the `?` operator. This requires that the
+///     function return a suitable `Result`.
+///   * Log the failure and continue by calling the method `and_log_failure`.
+///
+/// Of course, one can also use all other standard methods on `Result`.
+///
+/// **Invoking this macro by itself does not cause a test failure to be recorded
+/// or output.** The resulting `Result` must be handled as described above to
+/// cause the test to be recorded as a failure.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[test]
+/// fn should_fail() -> Result<()> {
+///     verify_false!(2 + 2 == 4)
+/// }
+/// ```
+#[macro_export]
+macro_rules! verify_false {
+    ($condition:expr) => {{
+        use $crate::assertions::internal::Subject as _;
+        ($condition).check($crate::matchers::eq(false), stringify!($condition))
+    }};
+}
+
+/// Marks test as failed and continue execution if the expression evaluates to
+/// true.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     expect_false!(2 + 2 == 4);
+///     println!("This will print");
+/// }
+/// ```
+#[macro_export]
+macro_rules! expect_false {
+    ($condition:expr) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_false!($condition).and_log_failure()
+    }};
+}
+
+/// Checks whether the second argument is equal to the first argument.
+///
+/// Evaluates to `Result::Ok(())` if they are equal and
+/// `Result::Err(TestAssertionFailure)` if they are not. The caller must then
+/// decide how to handle the `Err` variant. It has a few options:
+///  * Abort the current function with the `?` operator. This requires that the
+///    function return a suitable `Result`.
+///  * Log the test failure and continue by calling the method
+///    `and_log_failure`.
+///
+/// Of course, one can also use all other standard methods on `Result`.
+///
+/// **Invoking this macro by itself does not cause a test failure to be recorded
+/// or output.** The resulting `Result` must be handled as described above to
+/// cause the test to be recorded as a failure.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[test]
+/// fn should_fail() -> Result<()> {
+///     verify_eq!(2, 1)
+/// }
+/// ```
+///
+/// This macro has special support for matching against container. Namely:
+///  * `verify_eq!(actual, [e1, e2, ...])` is equivalent to
+///    `verify_that!(actual, elements_are![eq(e1), eq(e2), ...])`
+///  * `verify_eq!(actual, {e1, e2, ...})` is equivalent to
+///    `verify_that!(actual, unordered_elements_are![eq(e1), eq(e2), ...])`
+#[macro_export]
+macro_rules! verify_eq {
+    // Specialization for ordered sequences of tuples:
+    ($actual:expr, [ $( ( $($tuple_elt:expr),* ) ),+ $(,)? ] $(,)?) => {
+        verify_that!(&$actual, [
+            $(
+                // tuple matching
+                (
+                    $(
+                        $crate::matchers::eq(&$tuple_elt)
+                    ),*
+                )
+            ),*
+        ])
+    };
+
+    // Specialization for unordered sequences of tuples:
+    ($actual:expr, { $( ( $($tuple_elt:expr),* ) ),+ $(,)?} $(,)?) => {
+        verify_that!(&$actual, {
+            $(
+                // tuple matching
+                (
+                    $(
+                        $crate::matchers::eq(&$tuple_elt)
+                    ),*
+                )
+            ),*
+        })
+    };
+
+    // Ordered sequences:
+    ($actual:expr, [$($expected:expr),+ $(,)?] $(,)?) => {
+        verify_that!(&$actual, [$($crate::matchers::eq(&$expected)),*])
+    };
+
+    // Unordered sequences:
+    ($actual:expr, {$($expected:expr),+ $(,)?} $(,)?) => {
+        verify_that!(&$actual, {$($crate::matchers::eq(&$expected)),*})
+    };
+
+    // General case:
+    ($actual:expr, $expected:expr $(,)?) => {
+        verify_that!(&$actual, $crate::matchers::eq(&$expected))
+    };
+}
+
+/// Marks test as failed and continues execution if the second argument is not
+/// equal to first argument.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     expect_eq!(2, 1);
+///     println!("This will print!");
+/// }
+/// ```
+///
+/// This macro has special support for matching against container. Namely:
+///  * `expect_eq!(actual, [e1, e2, ...])` for checking actual contains "e1, e2,
+///    ..." in order.
+///  * `expect_eq!(actual, {e1, e2, ...})` for checking actual contains "e1, e2,
+///    ..." in any order.
+///
+/// One may include formatted arguments in the failure message:
+///```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     let argument = "argument"
+///     expect_eq!(2, 1, "custom failure message: {argument}");
+///     println!("This will print!");
+/// }
+/// ```
+#[macro_export]
+macro_rules! expect_eq {
+    ($actual:expr, [$($expected:expr),+ $(,)?] $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_eq!($actual, [$($expected),*]).and_log_failure();
+    }};
+    ($actual:expr, [$($expected:expr),+ $(,)?], $($format_args:expr),* $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_eq!($actual, [$($expected),*])
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure();
+    }};
+    ($actual:expr, {$($expected:expr),+ $(,)?} $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_eq!($actual, {$($expected),*}).and_log_failure();
+    }};
+    ($actual:expr, {$($expected:expr),+ $(,)?}, $($format_args:expr),* $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_eq!($actual, {$($expected),*})
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure();
+    }};
+    ($actual:expr, $expected:expr $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_eq!($actual, $expected).and_log_failure();
+    }};
+    ($actual:expr, $expected:expr, $($format_args:expr),* $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_eq!($actual, $expected)
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure();
+    }};
+}
+
+/// Checks whether the second argument is not equal to the first argument.
+///
+/// Evaluates to `Result::Ok(())` if they are not equal and
+/// `Result::Err(TestAssertionFailure)` if they are equal. The caller must then
+/// decide how to handle the `Err` variant. It has a few options:
+///  * Abort the current function with the `?` operator. This requires that the
+///    function return a suitable `Result`.
+///  * Log the test failure and continue by calling the method
+///    `and_log_failure`.
+///
+/// Of course, one can also use all other standard methods on `Result`.
+///
+/// **Invoking this macro by itself does not cause a test failure to be recorded
+/// or output.** The resulting `Result` must be handled as described above to
+/// cause the test to be recorded as a failure.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[test]
+/// fn should_fail() -> Result<()> {
+///     verify_ne!(1, 1)
+/// }
+/// ```
+#[macro_export]
+macro_rules! verify_ne {
+    ($actual:expr, $expected:expr $(,)?) => {
+        verify_that!(&$actual, $crate::matchers::not($crate::matchers::eq(&$expected)))
+    };
+}
+
+/// Marks test as failed and continues execution if the second argument is
+/// equal to first argument.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     expect_ne!(1, 1);
+///     println!("This will print!");
+/// }
+/// ```
+///
+/// One may include formatted arguments in the failure message:
+///```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     let argument = "argument"
+///     expect_ne!(1, 1, "custom failure message: {argument}");
+///     println!("This will print!");
+/// }
+/// ```
+#[macro_export]
+macro_rules! expect_ne {
+    ($actual:expr, $expected:expr, $($format_args:expr),+ $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_ne!($actual, $expected)
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure();
+    }};
+    ($actual:expr, $expected:expr $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_ne!($actual, $expected).and_log_failure();
+    }};
+}
+
+/// Checks whether the first argument is less than second argument.
+///
+/// Evaluates to `Result::Ok(())` if the first argument is less than the second
+/// and `Result::Err(TestAssertionFailure)` if it is greater or equal. The
+/// caller must then decide how to handle the `Err` variant. It has a few
+/// options:
+///  * Abort the current function with the `?` operator. This requires that the
+///    function return a suitable `Result`.
+///  * Log the test failure and continue by calling the method
+///    `and_log_failure`.
+///
+/// Of course, one can also use all other standard methods on `Result`.
+///
+/// **Invoking this macro by itself does not cause a test failure to be recorded
+/// or output.** The resulting `Result` must be handled as described above to
+/// cause the test to be recorded as a failure.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[test]
+/// fn should_fail() -> Result<()> {
+///     verify_lt!(2, 1)
+/// }
+#[macro_export]
+macro_rules! verify_lt {
+    ($actual:expr, $expected:expr $(,)?) => {
+        verify_that!($actual, $crate::matchers::lt($expected))
+    };
+}
+
+/// Marks test as failed and continues execution if the first argument is
+/// greater or equal to second argument.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     expect_lt!(2, 1);
+///     println!("This will print!");
+/// }
+/// ```
+///
+/// One may include formatted arguments in the failure message:
+///```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     let argument = "argument"
+///     expect_lt!(1, 1, "custom failure message: {argument}");
+///     println!("This will print!");
+/// }
+/// ```
+#[macro_export]
+macro_rules! expect_lt {
+    ($actual:expr, $expected:expr, $($format_args:expr),+ $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_lt!($actual, $expected)
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure();
+    }};
+    ($actual:expr, $expected:expr $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_lt!($actual, $expected).and_log_failure();
+    }};
+}
+
+/// Checks whether the first argument is less than or equal to the second
+/// argument.
+///
+/// Evaluates to `Result::Ok(())` if the first argument is less than or equal to
+/// the second and `Result::Err(TestAssertionFailure)` if it is greater. The
+/// caller must then decide how to handle the `Err` variant. It has a few
+/// options:
+///  * Abort the current function with the `?` operator. This requires that the
+///    function return a suitable `Result`.
+///  * Log the test failure and continue by calling the method
+///    `and_log_failure`.
+///
+/// Of course, one can also use all other standard methods on `Result`.
+///
+/// **Invoking this macro by itself does not cause a test failure to be recorded
+/// or output.** The resulting `Result` must be handled as described above to
+/// cause the test to be recorded as a failure.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[test]
+/// fn should_fail() -> Result<()> {
+///     verify_le!(2, 1)
+/// }
+#[macro_export]
+macro_rules! verify_le {
+    ($actual:expr, $expected:expr $(,)?) => {
+        verify_that!($actual, $crate::matchers::le($expected))
+    };
+}
+
+/// Marks test as failed and continues execution if the first argument is
+/// greater than the second argument.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     expect_le!(2, 1);
+///     println!("This will print!");
+/// }
+/// ```
+///
+/// One may include formatted arguments in the failure message:
+///```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     let argument = "argument"
+///     expect_le!(2, 1, "custom failure message: {argument}");
+///     println!("This will print!");
+/// }
+/// ```
+#[macro_export]
+macro_rules! expect_le {
+    ($actual:expr, $expected:expr, $($format_args:expr),+ $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_le!($actual, $expected)
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure();
+    }};
+    ($actual:expr, $expected:expr $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_le!($actual, $expected).and_log_failure();
+    }};
+}
+
+/// Checks whether the first argument is greater than the second argument.
+///
+/// Evaluates to `Result::Ok(())` if the first argument is greater than
+/// the second and `Result::Err(TestAssertionFailure)` if it is not. The
+/// caller must then decide how to handle the `Err` variant. It has a few
+/// options:
+///  * Abort the current function with the `?` operator. This requires that the
+///    function return a suitable `Result`.
+///  * Log the test failure and continue by calling the method
+///    `and_log_failure`.
+///
+/// Of course, one can also use all other standard methods on `Result`.
+///
+/// **Invoking this macro by itself does not cause a test failure to be recorded
+/// or output.** The resulting `Result` must be handled as described above to
+/// cause the test to be recorded as a failure.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[test]
+/// fn should_fail() -> Result<()> {
+///     verify_gt!(1, 2)
+/// }
+#[macro_export]
+macro_rules! verify_gt {
+    ($actual:expr, $expected:expr $(,)?) => {
+        verify_that!($actual, $crate::matchers::gt($expected))
+    };
+}
+
+/// Marks test as failed and continues execution if the first argument is
+/// not greater than the second argument.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     expect_gt!(1, 2);
+///     println!("This will print!");
+/// }
+/// ```
+///
+/// One may include formatted arguments in the failure message:
+///```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     let argument = "argument"
+///     expect_gt!(1, 2, "custom failure message: {argument}");
+///     println!("This will print!");
+/// }
+/// ```
+#[macro_export]
+macro_rules! expect_gt {
+    ($actual:expr, $expected:expr, $($format_args:expr),+ $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_gt!($actual, $expected)
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure();
+    }};
+    ($actual:expr, $expected:expr $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_gt!($actual, $expected).and_log_failure();
+    }};
+}
+
+/// Checks whether the first argument is greater than or equal to the second
+/// argument.
+///
+/// Evaluates to `Result::Ok(())` if the first argument is greater than or equal
+/// to the second and `Result::Err(TestAssertionFailure)` if it is not. The
+/// caller must then decide how to handle the `Err` variant. It has a few
+/// options:
+///  * Abort the current function with the `?` operator. This requires that the
+///    function return a suitable `Result`.
+///  * Log the test failure and continue by calling the method
+///    `and_log_failure`.
+///
+/// Of course, one can also use all other standard methods on `Result`.
+///
+/// **Invoking this macro by itself does not cause a test failure to be recorded
+/// or output.** The resulting `Result` must be handled as described above to
+/// cause the test to be recorded as a failure.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[test]
+/// fn should_fail() -> Result<()> {
+///     verify_ge!(1, 2)
+/// }
+/// ```
+#[macro_export]
+macro_rules! verify_ge {
+    ($actual:expr, $expected:expr $(,)?) => {
+        verify_that!($actual, $crate::matchers::ge($expected))
+    };
+}
+
+/// Marks test as failed and continues execution if the first argument is
+/// not greater than or equal to the second argument.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     expect_ge!(1, 2);
+///     println!("This will print!");
+/// }
+/// ```
+///
+/// One may include formatted arguments in the failure message:
+///```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     let argument = "argument"
+///     expect_ge!(1, 2, "custom failure message: {argument}");
+///     println!("This will print!");
+/// }
+/// ```
+#[macro_export]
+macro_rules! expect_ge {
+    ($actual:expr, $expected:expr, $($format_args:expr),+ $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_ge!($actual, $expected)
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure();
+    }};
+    ($actual:expr, $expected:expr $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_ge!($actual, $expected).and_log_failure();
+    }};
+}
+
+/// Checks whether the float given by first argument is approximately
+/// equal to second argument.
+///
+/// This automatically computes a tolerance from the magnitude of `expected` and
+/// matches any actual value within this tolerance of the expected value. The
+/// tolerance is chosen to account for the inaccuracies in most ordinary
+/// floating point calculations. To see details of how the tolerance is
+/// calculated look at the implementation of
+/// [`googletest::approx_eq`][crate::matchers::approx_eq].
+///
+/// Evaluates to `Result::Ok(())` if the first argument is approximately equal
+/// to the second and `Result::Err(TestAssertionFailure)` if it is not. The
+/// caller must then decide how to handle the `Err` variant. It has a few
+/// options:
+///  * Abort the current function with the `?` operator. This requires that the
+///    function return a suitable `Result`.
+///  * Log the test failure and continue by calling the method
+///    `and_log_failure`.
+///
+/// Of course, one can also use all other standard methods on `Result`.
+///
+/// **Invoking this macro by itself does not cause a test failure to be recorded
+/// or output.** The resulting `Result` must be handled as described above to
+/// cause the test to be recorded as a failure.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[test]
+/// fn should_fail() -> Result<()> {
+///     verify_float_eq!(1.0, 2.0)
+/// }
+/// ```
+#[macro_export]
+macro_rules! verify_float_eq {
+    ($actual:expr, $expected:expr $(,)?) => {
+        verify_that!($actual, $crate::matchers::approx_eq($expected))
+    };
+}
+
+/// Marks test as failed and continues execution if the float given by the first
+/// argument is not approximately equal to the float given by the second
+/// argument.
+///
+/// This automatically computes a tolerance from the magnitude of `expected` and
+/// matches any actual value within this tolerance of the expected value. The
+/// tolerance is chosen to account for the inaccuracies in most ordinary
+/// floating point calculations. To see details of how the tolerance is
+/// calculated look at the implementation of
+/// [`googletest::approx_eq`][crate::matchers::approx_eq].
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     expect_float_eq!(1.0, 2.0);
+///     println!("This will print!");
+/// }
+/// ```
+///
+/// One may include formatted arguments in the failure message:
+///```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     let argument = "argument"
+///     expect_float_eq!(1.0, 2.0, "custom failure message: {argument}");
+///     println!("This will print!");
+/// }
+/// ```
+#[macro_export]
+macro_rules! expect_float_eq {
+    ($actual:expr, $expected:expr, $($format_args:expr),+ $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_float_eq!($actual, $expected)
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure();
+    }};
+    ($actual:expr, $expected:expr $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_float_eq!($actual, $expected).and_log_failure();
+    }};
+}
+
+/// Checks whether the float given by first argument is equal to second argument
+/// with error tolerance of max_abs_error.
+///
+/// Evaluates to `Result::Ok(())` if the first argument is approximately equal
+/// to the second and `Result::Err(TestAssertionFailure)` if it is not. The
+/// caller must then decide how to handle the `Err` variant. It has a few
+/// options:
+///  * Abort the current function with the `?` operator. This requires that the
+///    function return a suitable `Result`.
+///  * Log the test failure and continue by calling the method
+///    `and_log_failure`.
+///
+/// Of course, one can also use all other standard methods on `Result`.
+///
+/// **Invoking this macro by itself does not cause a test failure to be recorded
+/// or output.** The resulting `Result` must be handled as described above to
+/// cause the test to be recorded as a failure.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[test]
+/// fn should_fail() -> Result<()> {
+///     verify_near!(1.12345, 1.12346, 1e-6)
+/// }
+/// ```
+#[macro_export]
+macro_rules! verify_near {
+    ($actual:expr, $expected:expr, $max_abs_error:expr $(,)?) => {
+        verify_that!($actual, $crate::matchers::near($expected, $max_abs_error))
+    };
+}
+
+/// Marks the test as failed and continues execution if the float given by first
+/// argument is not equal to second argument with error tolerance of
+/// max_abs_error.
+///
+/// This is a **not-fatal** failure. The test continues execution even after the
+/// macro execution.
+///
+/// This can only be invoked inside tests with the
+/// [`gtest`][crate::gtest] attribute. The failure must be generated
+/// in the same thread as that running the test itself.
+///
+/// Example:
+/// ```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     expect_near!(1.12345, 1.12346, 1e-6);
+///     println!("This will print!");
+/// }
+/// ```
+///
+/// One may include formatted arguments in the failure message:
+///```ignore
+/// use googletest::prelude::*;
+///
+/// #[gtest]
+/// fn should_fail() {
+///     let argument = "argument"
+///     expect_near!(1.12345, 1.12346, 1e-6, "custom failure message: {argument}");
+///     println!("This will print!");
+/// }
+/// ```
+#[macro_export]
+macro_rules! expect_near {
+    ($actual:expr, $expected:expr, $max_abs_error:expr, $($format_args:expr),+ $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_near!($actual, $expected, $max_abs_error)
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure();
+    }};
+    ($actual:expr, $expected:expr, $max_abs_error:expr $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        verify_near!($actual, $expected, $max_abs_error).and_log_failure();
+    }};
 }
 
 /// Matches the given value against the given matcher, panicking if it does not
@@ -351,6 +1308,59 @@ macro_rules! fail {
 /// equivalent to `ASSERT_THAT`, use [`verify_that!`] with the `?` operator.
 #[macro_export]
 macro_rules! assert_that {
+    // specialized to sequence:
+    ($actual:expr, [ $($expected:expr),* ] $(,)?) => {
+        match $crate::verify_that!($actual, [ $($expected),* ]) {
+            Ok(_) => {}
+            Err(e) => {
+                // The extra newline before the assertion failure message makes the failure a
+                // bit easier to read when there's some generic boilerplate from the panic.
+                panic!("\n{}", e);
+            }
+        }
+    };
+
+    // specialized to unordered sequence
+    ($actual:expr, { $($expected:expr),* } $(,)?) => {
+        match $crate::verify_that!($actual, { $($expected),* }) {
+            Ok(_) => {}
+            Err(e) => {
+                // The extra newline before the assertion failure message makes the failure a
+                // bit easier to read when there's some generic boilerplate from the panic.
+                panic!("\n{}", e);
+            }
+        }
+    };
+
+    // w/ format args, specialized to sequence:
+    ($actual:expr, [ $($expected:expr),* ], $($format_args:expr),* $(,)?) => {
+        match $crate::verify_that!($actual, [ $($expected),* ])
+            .with_failure_message(|| format!($($format_args),*))
+        {
+            Ok(_) => {}
+            Err(e) => {
+                // The extra newline before the assertion failure message makes the failure a
+                // bit easier to read when there's some generic boilerplate from the panic.
+                panic!("\n{}", e);
+            }
+        }
+    };
+
+    // w/ format args, specialized to unordered sequence:
+    ($actual:expr, { $($expected:expr),* }, $($format_args:expr),* $(,)?) => {
+        match $crate::verify_that!($actual, { $($expected),* })
+            .with_failure_message(|| format!($($format_args),*))
+        {
+            Ok(_) => {}
+            Err(e) => {
+                // The extra newline before the assertion failure message makes the failure a
+                // bit easier to read when there's some generic boilerplate from the panic.
+                panic!("\n{}", e);
+            }
+        }
+    };
+
+    // general case:
     ($actual:expr, $expected:expr $(,)?) => {
         match $crate::verify_that!($actual, $expected) {
             Ok(_) => {}
@@ -362,6 +1372,7 @@ macro_rules! assert_that {
         }
     };
 
+    // w/ format args, general case:
     ($actual:expr, $expected:expr, $($format_args:expr),* $(,)?) => {
         match $crate::verify_that!($actual, $expected)
             .with_failure_message(|| format!($($format_args),*))
@@ -405,7 +1416,7 @@ macro_rules! assert_pred {
 /// execution in the event of assertion failure.
 ///
 /// This can only be invoked inside tests with the
-/// [`googletest::test`][crate::test] attribute. The assertion must
+/// [`gtest`][crate::gtest] attribute. The assertion must
 /// occur in the same thread as that running the test itself.
 ///
 /// Invoking this macro is equivalent to using
@@ -442,12 +1453,43 @@ macro_rules! assert_pred {
 /// ```
 #[macro_export]
 macro_rules! expect_that {
+    // specialized to sequence:
+    ($actual:expr, [$($expected:expr),*] $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        $crate::verify_that!($actual, [$($expected),*]).and_log_failure();
+    }};
+
+    // specialized to unordered sequence:
+    ($actual:expr, {$($expected:expr),*} $(,)?) => {{
+        use $crate::GoogleTestSupport as _;
+        $crate::verify_that!($actual, {$($expected),*}).and_log_failure();
+    }};
+
+    // w/ format args, specialized to sequence:
+    ($actual:expr, [$($expected:expr),*], $($format_args:expr),* $(,)?) => {
+        use $crate::GoogleTestSupport as _;
+        $crate::verify_that!($actual, [$($expected),*])
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure()
+    };
+
+    // w/ format args, specialized to unordered sequence:
+    ($actual:expr, {$($expected:expr),*}, $($format_args:expr),* $(,)?) => {
+        use $crate::GoogleTestSupport as _;
+        $crate::verify_that!($actual, {$($expected),*})
+            .with_failure_message(|| format!($($format_args),*))
+            .and_log_failure()
+    };
+
+    // general case:
     ($actual:expr, $expected:expr $(,)?) => {{
-        use $crate::GoogleTestSupport;
+        use $crate::GoogleTestSupport as _;
         $crate::verify_that!($actual, $expected).and_log_failure();
     }};
 
+    // w/ format args, general case:
     ($actual:expr, $expected:expr, $($format_args:expr),* $(,)?) => {
+        use $crate::GoogleTestSupport as _;
         $crate::verify_that!($actual, $expected)
             .with_failure_message(|| format!($($format_args),*))
             .and_log_failure()
@@ -461,7 +1503,7 @@ macro_rules! expect_that {
 /// continues execution in the event of assertion failure.
 ///
 /// This can only be invoked inside tests with the
-/// [`googletest::test`][crate::test] attribute. The assertion must
+/// [`gtest`][crate::gtest] attribute. The assertion must
 /// occur in the same thread as that running the test itself.
 ///
 /// Invoking this macro is equivalent to using
@@ -473,7 +1515,7 @@ macro_rules! expect_that {
 #[macro_export]
 macro_rules! expect_pred {
     ($($content:tt)*) => {{
-        use $crate::GoogleTestSupport;
+        use $crate::GoogleTestSupport as _;
         $crate::verify_pred!($($content)*).and_log_failure();
     }};
 }
@@ -484,50 +1526,142 @@ macro_rules! expect_pred {
 #[doc(hidden)]
 pub mod internal {
     use crate::{
-        internal::{source_location::SourceLocation, test_outcome::TestAssertionFailure},
+        internal::test_outcome::TestAssertionFailure,
         matcher::{create_assertion_failure, Matcher, MatcherResult},
     };
     use std::fmt::Debug;
 
-    /// Checks whether the matcher `expected` matches the value `actual`, adding
-    /// a test failure report if it does not match.
-    ///
-    /// Returns `Ok(())` if the value matches and `Err(())` if it does not
-    /// match.
-    ///
-    /// **For internal use only. API stablility is not guaranteed!**
-    #[must_use = "The assertion result must be evaluated to affect the test result."]
-    pub fn check_matcher<T: Debug + ?Sized>(
-        actual: &T,
-        expected: impl Matcher<ActualT = T>,
-        actual_expr: &'static str,
-        source_location: SourceLocation,
-    ) -> Result<(), TestAssertionFailure> {
-        match expected.matches(actual) {
-            MatcherResult::Match => Ok(()),
-            MatcherResult::NoMatch => {
-                Err(create_assertion_failure(&expected, actual, actual_expr, source_location))
+    pub use ::googletest_macro::__googletest_macro_verify_pred;
+
+    /// Extension trait to perform autoref through method lookup in the
+    /// assertion macros. With this trait, the subject can be either a value
+    /// or a reference. For example, this trait makes the following code
+    /// compile and work:
+    /// ```
+    /// # use googletest::prelude::*;
+    /// # fn would_not_compile_without_autoref() -> Result<()> {
+    /// let not_copyable = vec![1,2,3];
+    /// verify_that!(not_copyable, empty())?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    /// See [Method Lookup](https://rustc-dev-guide.rust-lang.org/method-lookup.html)
+    pub trait Subject: Copy + Debug {
+        /// Checks whether the matcher `expected` matches the `Subject `self`,
+        /// adding a test failure report if it does not match.
+        ///
+        /// Returns `Ok(())` if the value matches and `Err(_)` if it does not
+        /// match.
+        ///
+        /// **For internal use only. API stablility is not guaranteed!**
+        #[must_use = "The assertion result must be evaluated to affect the test result."]
+        #[track_caller]
+        fn check(
+            self,
+            expected: impl Matcher<Self>,
+            actual_expr: &'static str,
+        ) -> Result<(), TestAssertionFailure> {
+            match expected.matches(self) {
+                MatcherResult::Match => Ok(()),
+                MatcherResult::NoMatch => {
+                    Err(create_assertion_failure(&expected, self, actual_expr))
+                }
             }
         }
     }
 
-    /// Constructs a `Result::Err(TestAssertionFailure)` for a predicate failure
-    /// as produced by the macro [`crate::verify_pred`].
+    impl<T: Copy + Debug> Subject for T {}
+
+    /// Creates a failure at specified location.
     ///
-    /// This intended only for use by the macro [`crate::verify_pred`].
-    ///
-    /// **For internal use only. API stablility is not guaranteed!**
+    /// **For internal use only. API stability is not guaranteed!**
     #[must_use = "The assertion result must be evaluated to affect the test result."]
-    pub fn report_failed_predicate(
-        actual_expr: &'static str,
-        formatted_arguments: Vec<String>,
-        source_location: SourceLocation,
-    ) -> Result<(), TestAssertionFailure> {
-        Err(TestAssertionFailure::create(format!(
-            "{} was false with\n  {}\n{}",
-            actual_expr,
-            formatted_arguments.join(",\n  "),
-            source_location,
-        )))
+    #[track_caller]
+    pub fn create_fail_result(message: String) -> crate::Result<()> {
+        Err(crate::internal::test_outcome::TestAssertionFailure::create(message))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::*;
+
+    #[test]
+    fn verify_of_hash_maps_with_str_string_matching() -> Result<()> {
+        let hash_map: std::collections::HashMap<String, String> =
+            std::collections::HashMap::from([("a".into(), "A".into()), ("b".into(), "B".into())]);
+        verify_eq!(hash_map, {("a", "A"), ("b", "B")})
+    }
+
+    #[test]
+    fn verify_of_hash_maps_with_ad_hoc_struct() -> Result<()> {
+        #[derive(PartialEq, Debug)]
+        struct Greek(String);
+
+        let hash_map: std::collections::HashMap<String, Greek> = std::collections::HashMap::from([
+            ("a".into(), Greek("Alpha".into())),
+            ("b".into(), Greek("Beta".into())),
+        ]);
+        verify_eq!(hash_map, {
+            ("b", Greek("Beta".into())),
+            ("a", Greek("Alpha".into())),
+        })
+    }
+
+    #[test]
+    fn verify_of_hash_maps_with_i32s() -> Result<()> {
+        let hash_map: std::collections::HashMap<i32, i32> =
+            std::collections::HashMap::from([(1, 1), (2, 4), (-1, 1), (-3, 9)]);
+        verify_eq!(hash_map, {
+            (-3, 9),
+            (-1, 1),
+            (1, 1),
+            (2, 4),
+        })
+    }
+
+    #[test]
+    fn verify_eq_of_unordered_pairs() -> Result<()> {
+        verify_eq!(vec![(1, 2), (2, 3)], {(1, 2), (2, 3)})?;
+        verify_eq!(vec![(1, 2), (2, 3)], {(2, 3), (1, 2)})
+    }
+
+    #[test]
+    fn verify_eq_of_unordered_structs() -> Result<()> {
+        #[derive(PartialEq, Debug)]
+        struct P(i32, i32);
+
+        verify_eq!(vec![P(1, 1), P(1, 2), P(3, 7)],
+                  {P(1, 1), P(1, 2), P(3, 7)})?;
+        verify_eq!(vec![P(1, 1), P(1, 2), P(3, 7)],
+                  {P(3,7), P(1, 1), P(1, 2)})
+    }
+
+    #[test]
+    fn verify_eq_of_ordered_pairs() -> Result<()> {
+        verify_eq!(vec![(1, 2), (2, 3)], [(1, 2), (2, 3)])
+    }
+
+    #[test]
+    fn verify_eq_of_ordered_structs() -> Result<()> {
+        #[derive(PartialEq, Debug)]
+        struct P(i32, i32);
+
+        verify_eq!(vec![P(1, 1), P(1, 2), P(3, 7)], [P(1, 1), P(1, 2), P(3, 7)])
+    }
+
+    #[test]
+    fn verify_eq_of_ordered_pairs_order_matters() -> Result<()> {
+        let result = verify_eq!(vec![(1, 2), (2, 3)], [(2, 3), (1, 2)]);
+        verify_that!(result, err(anything()))
+    }
+
+    #[test]
+    fn verify_eq_of_ordered_structs_order_matters() -> Result<()> {
+        #[derive(PartialEq, Debug)]
+        struct P(i32, i32);
+
+        let result = verify_eq!(vec![P(1, 1), P(1, 2), P(3, 7)], [P(3, 7), P(1, 1), P(1, 2)]);
+        verify_that!(result, err(anything()))
     }
 }

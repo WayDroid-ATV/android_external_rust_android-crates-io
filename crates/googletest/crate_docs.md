@@ -6,6 +6,14 @@ This library provides:
    range of assertions on data,
  * A rich set of matchers, and
  * A new set of test assertion macros.
+## Learning resources
+
+If you're just getting started with `googletest`, consider going through
+the first chapter of
+["Advanced testing for Rust applications"](https://github.com/mainmatter/rust-advanced-testing-workshop),
+a self-guided Rust course: it provides a guided introduction to the library,
+with exercises to help you get comfortable with `googletest` macros,
+its matchers and its overall philosophy.
 
 ## Assertions and matchers
 
@@ -18,7 +26,7 @@ To make an assertion using a matcher, GoogleTest offers three macros:
  * [`assert_that!`] panics if the assertion fails, aborting the test.
  * [`expect_that!`] logs an assertion failure, marking the test as having
    failed, but allows the test to continue running (called a _non-fatal
-   assertion_). It requires the use of the [`googletest::test`][crate::test]
+   assertion_). It requires the use of the [`gtest`]
    attribute macro on the test itself.
  * [`verify_that!`] has no side effects and evaluates to a [`Result`] whose
    `Err` variant describes the assertion failure, if there is one. In
@@ -41,7 +49,7 @@ fn fails_and_panics() {
 }
 
 # /* The attribute macro would prevent the function from being compiled in a doctest.
-#[googletest::test]
+#[gtest]
 # */
 fn two_logged_failures() {
     let value = 2;
@@ -74,25 +82,25 @@ Matchers are composable:
 use googletest::prelude::*;
 
 # /* The attribute macro would prevent the function from being compiled in a doctest.
-#[googletest::test]
+#[gtest]
 # */
 fn contains_at_least_one_item_at_least_3() {
 # googletest::internal::test_outcome::TestOutcome::init_current_test_outcome();
     let value = vec![1, 2, 3];
-    expect_that!(value, contains(ge(3)));
+    expect_that!(value, contains(ge(&3)));
 # googletest::internal::test_outcome::TestOutcome::close_current_test_outcome::<&str>(Ok(()))
 #     .unwrap();
 }
 # contains_at_least_one_item_at_least_3();
 ```
 
-They can also be logically combined:
+They can also be logically combined, with methods from [`MatcherBase`]:
 
 ```
 use googletest::prelude::*;
 
 # /* The attribute macro would prevent the function from being compiled in a doctest.
-#[googletest::test]
+#[gtest]
 # */
 fn strictly_between_9_and_11() {
 # googletest::internal::test_outcome::TestOutcome::init_current_test_outcome();
@@ -120,13 +128,13 @@ The following matchers are provided in GoogleTest Rust:
 | [`contains_each!`]   | A container containing distinct elements each of the arguments match.    |
 | [`contains_regex`]   | A string containing a substring matching the given regular expression.   |
 | [`contains_substring`] | A string containing the given substring.                               |
+| [`derefs_to`]        | A [`Deref`] which `deref()`s to a value that the argument matches.       |
 | [`displays_as`]      | A [`Display`] value whose formatted string is matched by the argument.   |
 | [`each`]             | A container all of whose elements the given argument matches.            |
 | [`elements_are!`]    | A container whose elements the arguments match, in order.                |
 | [`empty`]            | An empty collection.                                                     |
 | [`ends_with`]        | A string ending with the given suffix.                                   |
 | [`eq`]               | A value equal to the argument, in the sense of the [`PartialEq`] trait.  |
-| [`eq_deref_of`]      | A value equal to the dereferenced value of the argument.                 |
 | [`err`]              | A [`Result`][std::result::Result] containing an `Err` variant the argument matches. |
 | [`field!`]           | A struct or enum with a given field whose value the argument matches.    |
 | [`ge`]               | A [`PartialOrd`] value greater than or equal to the given value.         |
@@ -144,7 +152,7 @@ The following matchers are provided in GoogleTest Rust:
 | [`not`]              | Any value the argument does not match.                                   |
 | [`ok`]               | A [`Result`][std::result::Result] containing an `Ok` variant the argument matches. |
 | [`pat!`]             | Alias for [`matches_pattern!`].                                          |
-| [`points_to`]        | Any [`Deref`] such as `&`, `Rc`, etc. whose value the argument matches.  |
+| [`points_to`]        | A reference `&` which points to a value that the argument matches.       |
 | [`pointwise!`]       | A container whose contents the arguments match in a pointwise fashion.   |
 | [`predicate`]        | A value on which the given predicate returns true.                       |
 | [`some`]             | An [`Option`] containing `Some` whose value the argument matches.        |
@@ -164,12 +172,12 @@ The following matchers are provided in GoogleTest Rust:
 [`contains_regex`]: matchers::contains_regex
 [`contains_substring`]: matchers::contains_substring
 [`displays_as`]: matchers::displays_as
+[`derefs_to`]: matchers::derefs_to
 [`each`]: matchers::each
 [`elements_are!`]: matchers::elements_are
 [`empty`]: matchers::empty
 [`ends_with`]: matchers::ends_with
 [`eq`]: matchers::eq
-[`eq_deref_of`]: matchers::eq_deref_of
 [`err`]: matchers::err
 [`field!`]: matchers::field
 [`ge`]: matchers::ge
@@ -205,22 +213,21 @@ The following matchers are provided in GoogleTest Rust:
 ## Writing matchers
 
 One can extend the library by writing additional matchers. To do so, create
-a struct holding the matcher's data and have it implement the trait
-[`Matcher`]:
+a struct holding the matcher's data and have it implement the traits
+[`Matcher`] and  [`MatcherBase`]:
 
 ```no_run
-use googletest::{description::Description, matcher::{Matcher, MatcherResult}};
+use googletest::{description::Description, matcher::{Matcher, MatcherBase, MatcherResult}};
 use std::fmt::Debug;
 
+#[derive(MatcherBase)]
 struct MyEqMatcher<T> {
     expected: T,
 }
 
-impl<T: PartialEq + Debug> Matcher for MyEqMatcher<T> {
-    type ActualT = T;
-
-    fn matches(&self, actual: &Self::ActualT) -> MatcherResult {
-        if self.expected == *actual {
+impl<T: PartialEq + Debug + Copy> Matcher<T> for MyEqMatcher<T> {
+    fn matches(&self, actual: T) -> MatcherResult {
+        if self.expected == actual {
             MatcherResult::Match
         } else {
             MatcherResult::NoMatch
@@ -243,18 +250,16 @@ impl<T: PartialEq + Debug> Matcher for MyEqMatcher<T> {
  It is recommended to expose a function which constructs the matcher:
 
  ```no_run
- # use googletest::{description::Description, matcher::{Matcher, MatcherResult}};
+ # use googletest::{description::Description, matcher::{Matcher, MatcherBase, MatcherResult}};
  # use std::fmt::Debug;
- #
+ # #[derive(MatcherBase)]
  # struct MyEqMatcher<T> {
  #    expected: T,
  # }
  #
- # impl<T: PartialEq + Debug> Matcher for MyEqMatcher<T> {
- #    type ActualT = T;
- #
- #    fn matches(&self, actual: &Self::ActualT) -> MatcherResult {
- #        if self.expected == *actual {
+ # impl<T: PartialEq + Debug + Copy> Matcher<T> for MyEqMatcher<T> {
+ #    fn matches(&self, actual: T) -> MatcherResult {
+ #        if self.expected == actual {
  #            MatcherResult::Match
  #        } else {
  #            MatcherResult::NoMatch
@@ -273,7 +278,7 @@ impl<T: PartialEq + Debug> Matcher for MyEqMatcher<T> {
  #    }
  # }
  #
- pub fn eq_my_way<T: PartialEq + Debug>(expected: T) -> impl Matcher<ActualT = T> {
+ pub fn eq_my_way<T: PartialEq + Debug + Copy>(expected: T) -> impl Matcher<T> {
     MyEqMatcher { expected }
  }
  ```
@@ -282,18 +287,16 @@ impl<T: PartialEq + Debug> Matcher for MyEqMatcher<T> {
 
 ```
 # use googletest::prelude::*;
-# use googletest::{description::Description, matcher::{Matcher, MatcherResult}};
+# use googletest::{description::Description, matcher::{Matcher, MatcherBase, MatcherResult}};
 # use std::fmt::Debug;
-#
+# #[derive(MatcherBase)]
 # struct MyEqMatcher<T> {
 #    expected: T,
 # }
 #
-# impl<T: PartialEq + Debug> Matcher for MyEqMatcher<T> {
-#    type ActualT = T;
-#
-#    fn matches(&self, actual: &Self::ActualT) -> MatcherResult {
-#        if self.expected == *actual {
+# impl<T: PartialEq + Debug + Copy> Matcher<T> for MyEqMatcher<T> {
+#    fn matches(&self, actual: T) -> MatcherResult {
+#        if self.expected == actual {
 #            MatcherResult::Match
 #        } else {
 #            MatcherResult::NoMatch
@@ -312,11 +315,11 @@ impl<T: PartialEq + Debug> Matcher for MyEqMatcher<T> {
 #    }
 # }
 #
-# pub fn eq_my_way<T: PartialEq + Debug>(expected: T) -> impl Matcher<ActualT = T> {
+# pub fn eq_my_way<T: PartialEq + Debug + Copy>(expected: T) -> impl Matcher<T> {
 #    MyEqMatcher { expected }
 # }
 # /* The attribute macro would prevent the function from being compiled in a doctest.
-#[googletest::test]
+#[gtest]
 # */
 fn should_be_equal_by_my_definition() {
 # googletest::internal::test_outcome::TestOutcome::init_current_test_outcome();
@@ -335,13 +338,12 @@ having failed, but execution continues until the test completes or otherwise
 aborts.
 
 To make a non-fatal assertion, use the macro [`expect_that!`]. The test must
-also be marked with [`googletest::test`][crate::test] instead of the
-Rust-standard `#[test]`.
+also be marked with [`gtest`] instead of the Rust-standard `#[test]`.
 
 ```no_run
 use googletest::prelude::*;
 
-#[googletest::test]
+#[gtest]
 fn three_non_fatal_assertions() {
     let value = 2;
     expect_that!(value, eq(2));  // Passes; test still considered passing.
@@ -357,7 +359,7 @@ function must also return [`Result<()>`]:
 use googletest::prelude::*;
 
 # /* Make sure this also compiles as a doctest.
-#[googletest::test]
+#[gtest]
 # */
 fn failing_non_fatal_assertion() -> Result<()> {
     let value = 2;
@@ -371,7 +373,7 @@ fn failing_non_fatal_assertion() -> Result<()> {
 ```no_run
 use googletest::prelude::*;
 
-#[googletest::test]
+#[gtest]
 fn failing_fatal_assertion_after_non_fatal_assertion() -> Result<()> {
     let value = 2;
     expect_that!(value, eq(2));  // Passes; test still considered passing.
@@ -434,62 +436,98 @@ fn always_fails() -> Result<()> {
 # always_fails().unwrap_err();
 ```
 
+## Conversion from `Result::Err` and `Option::None`
+
+To simplify error management during a test arrangement, [`Result<T>`]
+provides a few conversion utilities.
+
+If your setup function returns `std::result::Result<T, E>` where `E: std::error::Error`,
+the `std::result::Result<T, E>` can simply be handled with the `?` operator. If an `Err(e)`
+is returned, the test will report a failure at the line where the `?` operator has been
+applied (or the lowest caller without `#[track_caller]`).
+
+```
+# use googletest::prelude::*;
+struct PngImage { h: i32, w: i32 /* ... */ }
+impl PngImage {
+  fn new_from_file(file_name: &str) -> std::result::Result<Self, std::io::Error> {
+    Err(std::io::Error::new(std::io::ErrorKind::Other, "oh no!"))
+
+   }
+  fn rotate(&mut self) { std::mem::swap(&mut self.h, &mut self.w);}
+  fn dimensions(&self) -> (i32, i32) { (self.h, self.w)}
+}
+
+fn test_png_image_dimensions() -> googletest::Result<()> {
+  // Arrange
+  let mut png = PngImage::new_from_file("example.png")?;
+  verify_eq!(png.dimensions(), (128, 64))?;
+
+  // Act
+  png.rotate();
+
+  // Assert
+  expect_eq!(png.dimensions(), (64, 128));
+  Ok(())
+}
+
+# test_png_image_dimensions().unwrap_err();
+```
+
+If your setup function returns `Option<T>` or `std::result::Result<T, E>` where
+`E: !std::error::Error`, then you can convert these types with `into_test_result()`
+from the `IntoTestResult` extension trait.
+
+```
+# use googletest::prelude::*;
+# struct PngImage;
+# static PNG_BINARY: [u8;0] = [];
+
+impl PngImage {
+  fn new_from_binary(bin: &[u8]) -> std::result::Result<Self, String> {
+    Err("Parsing failed".into())
+  }
+}
+
+# /* The attribute macro would prevent the function from being compiled in a doctest.
+#[gtest]
+# */
+fn test_png_image_binary() -> googletest::Result<()> {
+  // Arrange
+  let png_image = PngImage::new_from_binary(&PNG_BINARY).into_test_result()?;
+  /* ... */
+  # Ok(())
+}
+# test_png_image_binary().unwrap_err();
+
+impl PngImage {
+  fn new_from_cache(key: u64) -> Option<Self> {
+    None
+  }
+}
+
+# /* The attribute macro would prevent the function from being compiled in a doctest.
+#[gtest]
+# */
+fn test_png_from_cache() -> googletest::Result<()> {
+  // Arrange
+  let png_image = PngImage::new_from_cache(123).into_test_result()?;
+  /* ... */
+  # Ok(())
+}
+# test_png_from_cache().unwrap_err();
+```
+
+
 ## Integrations with other crates
 
 GoogleTest Rust includes integrations with the
-[Anyhow](https://crates.io/crates/anyhow) and
 [Proptest](https://crates.io/crates/proptest) crates to simplify turning
-errors from those crates into test failures.
-
-To use this, activate the `anyhow`, respectively `proptest` feature in
-GoogleTest Rust and invoke the extension method [`into_test_result()`] on a
-`Result` value in your test. For example:
-
-```
-# use googletest::prelude::*;
-# #[cfg(feature = "anyhow")]
-# use anyhow::anyhow;
-# #[cfg(feature = "anyhow")]
-# /* The attribute macro would prevent the function from being compiled in a doctest.
-#[test]
-# */
-fn has_anyhow_failure() -> Result<()> {
-    Ok(just_return_error().into_test_result()?)
-}
-
-# #[cfg(feature = "anyhow")]
-fn just_return_error() -> anyhow::Result<()> {
-    anyhow::Result::Err(anyhow!("This is an error"))
-}
-# #[cfg(feature = "anyhow")]
-# has_anyhow_failure().unwrap_err();
-```
-
-One can convert Proptest test failures into GoogleTest test failures when the
-test is invoked with
-[`TestRunner::run`](https://docs.rs/proptest/latest/proptest/test_runner/struct.TestRunner.html#method.run):
-
-```
-# use googletest::prelude::*;
-# #[cfg(feature = "proptest")]
-# use proptest::test_runner::{Config, TestRunner};
-# #[cfg(feature = "proptest")]
-# /* The attribute macro would prevent the function from being compiled in a doctest.
-#[test]
-# */
-fn numbers_are_greater_than_zero() -> Result<()> {
-    let mut runner = TestRunner::new(Config::default());
-    runner.run(&(1..100i32), |v| Ok(verify_that!(v, gt(0))?)).into_test_result()
-}
-# #[cfg(feature = "proptest")]
-# numbers_are_greater_than_zero().unwrap();
-```
-
-Similarly, when the `proptest` feature is enabled, GoogleTest assertion failures
-can automatically be converted into Proptest
+GoogleTest assertion failures into Proptest
 [`TestCaseError`](https://docs.rs/proptest/latest/proptest/test_runner/enum.TestCaseError.html)
-through the `?` operator as the example above shows.
+through the `?` operator.
 
 [`and_log_failure()`]: GoogleTestSupport::and_log_failure
 [`into_test_result()`]: IntoTestResult::into_test_result
 [`Matcher`]: matcher::Matcher
+[`MatcherBase`]: matcher::MatcherBase
