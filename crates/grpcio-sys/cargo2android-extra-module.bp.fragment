@@ -7,7 +7,7 @@ cc_defaults {
     apex_available: [
         "//apex_available:anyapex",
         "//apex_available:platform",
-        "com.android.btservices",
+        "com.android.bt",
     ],
     product_available: true,
     vendor_available: true,

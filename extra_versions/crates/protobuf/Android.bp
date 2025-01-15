@@ -33,7 +33,7 @@ rust_library {
     rustlibs: ["libbytes"],
     apex_available: [
         "//apex_available:platform",
-        "com.android.btservices",
+        "com.android.bt",
         "com.android.compos",
         "com.android.virt",
     ],

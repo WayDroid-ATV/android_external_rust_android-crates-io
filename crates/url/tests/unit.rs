@@ -11,8 +11,15 @@
 use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
 use std::net::{Ipv4Addr, Ipv6Addr};
+#[cfg(any(unix, windows, target_os = "redox", target_os = "wasi"))]
 use std::path::{Path, PathBuf};
 use url::{form_urlencoded, Host, Origin, Url};
+
+// https://rustwasm.github.io/wasm-bindgen/wasm-bindgen-test/usage.html
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+use wasm_bindgen_test::{wasm_bindgen_test as test, wasm_bindgen_test_configure};
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+wasm_bindgen_test_configure!(run_in_browser);
 
 #[test]
 fn size() {
@@ -35,6 +42,17 @@ fn test_relative_empty() {
 }
 
 #[test]
+fn test_strip_trailing_spaces_from_opaque_path() {
+    let mut url: Url = "data:space   ?query".parse().unwrap();
+    url.set_query(None);
+    assert_eq!(url.as_str(), "data:space");
+
+    let mut url: Url = "data:space   #hash".parse().unwrap();
+    url.set_fragment(None);
+    assert_eq!(url.as_str(), "data:space");
+}
+
+#[test]
 fn test_set_empty_host() {
     let mut base: Url = "moz://foo:bar@servo/baz".parse().unwrap();
     base.set_username("").unwrap();
@@ -51,6 +69,30 @@ fn test_set_empty_host() {
     let mut base: Url = "file://server/share/foo/bar".parse().unwrap();
     base.set_host(Some("foo")).unwrap();
     assert_eq!(base.as_str(), "file://foo/share/foo/bar");
+}
+
+#[test]
+fn test_set_empty_username_and_password() {
+    let mut base: Url = "moz://foo:bar@servo/baz".parse().unwrap();
+    base.set_username("").unwrap();
+    assert_eq!(base.as_str(), "moz://:bar@servo/baz");
+
+    base.set_password(Some("")).unwrap();
+    assert_eq!(base.as_str(), "moz://servo/baz");
+
+    base.set_password(None).unwrap();
+    assert_eq!(base.as_str(), "moz://servo/baz");
+}
+
+#[test]
+fn test_set_empty_password() {
+    let mut base: Url = "moz://foo:bar@servo/baz".parse().unwrap();
+
+    base.set_password(Some("")).unwrap();
+    assert_eq!(base.as_str(), "moz://foo@servo/baz");
+
+    base.set_password(None).unwrap();
+    assert_eq!(base.as_str(), "moz://foo@servo/baz");
 }
 
 #[test]
@@ -71,6 +113,18 @@ fn test_set_empty_hostname() {
     assert_eq!(base.as_str(), "moz:///baz");
 }
 
+#[test]
+fn test_set_empty_query() {
+    let mut base: Url = "moz://example.com/path?query".parse().unwrap();
+
+    base.set_query(Some(""));
+    assert_eq!(base.as_str(), "moz://example.com/path?");
+
+    base.set_query(None);
+    assert_eq!(base.as_str(), "moz://example.com/path");
+}
+
+#[cfg(any(unix, windows, target_os = "redox", target_os = "wasi"))]
 macro_rules! assert_from_file_path {
     ($path: expr) => {
         assert_from_file_path!($path, $path)
@@ -84,6 +138,7 @@ macro_rules! assert_from_file_path {
 }
 
 #[test]
+#[cfg(any(unix, windows))]
 fn new_file_paths() {
     if cfg!(unix) {
         assert_eq!(Url::from_file_path(Path::new("relative")), Err(()));
@@ -100,6 +155,7 @@ fn new_file_paths() {
         assert_from_file_path!("/foo/bar");
         assert_from_file_path!("/foo/ba\0r", "/foo/ba%00r");
         assert_from_file_path!("/foo/ba%00r", "/foo/ba%2500r");
+        assert_from_file_path!("/foo/ba\\r", "/foo/ba%5Cr");
     }
 }
 
@@ -115,28 +171,28 @@ fn new_path_bad_utf8() {
 }
 
 #[test]
+#[cfg(windows)]
 fn new_path_windows_fun() {
-    if cfg!(windows) {
-        assert_from_file_path!(r"C:\foo\bar", "/C:/foo/bar");
-        assert_from_file_path!("C:\\foo\\ba\0r", "/C:/foo/ba%00r");
+    assert_from_file_path!(r"C:\foo\bar", "/C:/foo/bar");
+    assert_from_file_path!("C:\\foo\\ba\0r", "/C:/foo/ba%00r");
 
-        // Invalid UTF-8
-        assert!(Url::parse("file:///C:/foo/ba%80r")
-            .unwrap()
-            .to_file_path()
-            .is_err());
+    // Invalid UTF-8
+    assert!(Url::parse("file:///C:/foo/ba%80r")
+        .unwrap()
+        .to_file_path()
+        .is_err());
 
-        // test windows canonicalized path
-        let path = PathBuf::from(r"\\?\C:\foo\bar");
-        assert!(Url::from_file_path(path).is_ok());
+    // test windows canonicalized path
+    let path = PathBuf::from(r"\\?\C:\foo\bar");
+    assert!(Url::from_file_path(path).is_ok());
 
-        // Percent-encoded drive letter
-        let url = Url::parse("file:///C%3A/foo/bar").unwrap();
-        assert_eq!(url.to_file_path(), Ok(PathBuf::from(r"C:\foo\bar")));
-    }
+    // Percent-encoded drive letter
+    let url = Url::parse("file:///C%3A/foo/bar").unwrap();
+    assert_eq!(url.to_file_path(), Ok(PathBuf::from(r"C:\foo\bar")));
 }
 
 #[test]
+#[cfg(any(unix, windows))]
 fn new_directory_paths() {
     if cfg!(unix) {
         assert_eq!(Url::from_directory_path(Path::new("relative")), Err(()));
@@ -392,6 +448,7 @@ fn issue_61() {
 }
 
 #[test]
+#[cfg(any(unix, target_os = "redox", target_os = "wasi"))]
 #[cfg(not(windows))]
 /// https://github.com/servo/rust-url/issues/197
 fn issue_197() {
@@ -426,7 +483,7 @@ fn append_trailing_slash() {
 fn extend_query_pairs_then_mutate() {
     let mut url: Url = "http://localhost:6767/foo/bar".parse().unwrap();
     url.query_pairs_mut()
-        .extend_pairs(vec![("auth", "my-token")].into_iter());
+        .extend_pairs(vec![("auth", "my-token")]);
     url.check_invariants().unwrap();
     assert_eq!(
         url.to_string(),
@@ -576,6 +633,7 @@ fn test_origin_unicode_serialization() {
 }
 
 #[test]
+#[cfg(any(unix, windows, target_os = "redox", target_os = "wasi"))]
 fn test_socket_addrs() {
     use std::net::ToSocketAddrs;
 
@@ -757,11 +815,8 @@ fn test_expose_internals() {
 }
 
 #[test]
+#[cfg(windows)]
 fn test_windows_unc_path() {
-    if !cfg!(windows) {
-        return;
-    }
-
     let url = Url::from_file_path(Path::new(r"\\host\share\path\file.txt")).unwrap();
     assert_eq!(url.as_str(), "file://host/share/path/file.txt");
 
@@ -881,6 +936,7 @@ fn test_url_from_file_path() {
 }
 
 /// https://github.com/servo/rust-url/issues/505
+#[cfg(any(unix, target_os = "redox", target_os = "wasi"))]
 #[cfg(not(windows))]
 #[test]
 fn test_url_from_file_path() {
@@ -941,6 +997,16 @@ fn test_set_scheme_to_file_with_host() {
 fn no_panic() {
     let mut url = Url::parse("arhttpsps:/.//eom/dae.com/\\\\t\\:").unwrap();
     url::quirks::set_hostname(&mut url, "//eom/datcom/\\\\t\\://eom/data.cs").unwrap();
+}
+
+#[test]
+fn test_null_host_with_leading_empty_path_segment() {
+    // since Note in item 3 of URL serializing in the URL Standard
+    // https://url.spec.whatwg.org/#url-serializing
+    let url = Url::parse("m:/.//\\").unwrap();
+    let encoded = url.as_str();
+    let reparsed = Url::parse(encoded).unwrap();
+    assert_eq!(reparsed, url);
 }
 
 #[test]
@@ -1161,4 +1227,92 @@ fn test_make_relative() {
         let make_relative = base_uri.make_relative(&relative_uri);
         assert_eq!(make_relative, None, "base: {}, uri: {}", base, uri);
     }
+}
+
+#[test]
+fn test_has_authority() {
+    let url = Url::parse("mailto:joe@example.com").unwrap();
+    assert!(!url.has_authority());
+    let url = Url::parse("unix:/run/foo.socket").unwrap();
+    assert!(!url.has_authority());
+    let url = Url::parse("file:///tmp/foo").unwrap();
+    assert!(url.has_authority());
+    let url = Url::parse("http://example.com/tmp/foo").unwrap();
+    assert!(url.has_authority());
+}
+
+#[test]
+fn test_authority() {
+    let url = Url::parse("mailto:joe@example.com").unwrap();
+    assert_eq!(url.authority(), "");
+    let url = Url::parse("unix:/run/foo.socket").unwrap();
+    assert_eq!(url.authority(), "");
+    let url = Url::parse("file:///tmp/foo").unwrap();
+    assert_eq!(url.authority(), "");
+    let url = Url::parse("http://example.com/tmp/foo").unwrap();
+    assert_eq!(url.authority(), "example.com");
+    let url = Url::parse("ftp://127.0.0.1:21/").unwrap();
+    assert_eq!(url.authority(), "127.0.0.1");
+    let url = Url::parse("ftp://user@127.0.0.1:2121/").unwrap();
+    assert_eq!(url.authority(), "user@127.0.0.1:2121");
+    let url = Url::parse("https://:@example.com/").unwrap();
+    assert_eq!(url.authority(), "example.com");
+    let url = Url::parse("https://:password@[::1]:8080/").unwrap();
+    assert_eq!(url.authority(), ":password@[::1]:8080");
+    let url = Url::parse("gopher://user:@àlex.example.com:70").unwrap();
+    assert_eq!(url.authority(), "user@%C3%A0lex.example.com:70");
+    let url = Url::parse("irc://àlex:àlex@àlex.рф.example.com:6667/foo").unwrap();
+    assert_eq!(
+        url.authority(),
+        "%C3%A0lex:%C3%A0lex@%C3%A0lex.%D1%80%D1%84.example.com:6667"
+    );
+    let url = Url::parse("https://àlex:àlex@àlex.рф.example.com:443/foo").unwrap();
+    assert_eq!(
+        url.authority(),
+        "%C3%A0lex:%C3%A0lex@xn--lex-8ka.xn--p1ai.example.com"
+    );
+}
+
+#[test]
+/// https://github.com/servo/rust-url/issues/838
+fn test_file_with_drive() {
+    let s1 = "fIlE:p:?../";
+    let url = url::Url::parse(s1).unwrap();
+    assert_eq!(url.to_string(), "file:///p:?../");
+    assert_eq!(url.path(), "/p:");
+
+    let testcases = [
+        ("a", "file:///p:/a"),
+        ("", "file:///p:?../"),
+        ("?x", "file:///p:?x"),
+        (".", "file:///p:/"),
+        ("..", "file:///p:/"),
+        ("../", "file:///p:/"),
+    ];
+
+    for case in &testcases {
+        let url2 = url::Url::join(&url, case.0).unwrap();
+        assert_eq!(url2.to_string(), case.1);
+    }
+}
+
+#[test]
+/// Similar to test_file_with_drive, but with a path
+/// that could be confused for a drive.
+fn test_file_with_drive_and_path() {
+    let s1 = "fIlE:p:/x|?../";
+    let url = url::Url::parse(s1).unwrap();
+    assert_eq!(url.to_string(), "file:///p:/x|?../");
+    assert_eq!(url.path(), "/p:/x|");
+    let s2 = "a";
+    let url2 = url::Url::join(&url, s2).unwrap();
+    assert_eq!(url2.to_string(), "file:///p:/a");
+}
+
+#[test]
+fn issue_864() {
+    let mut url = url::Url::parse("file://").unwrap();
+    dbg!(&url);
+    url.set_path("x");
+    dbg!(&url);
 }

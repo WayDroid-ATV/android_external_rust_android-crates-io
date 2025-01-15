@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "predicates",
     cargo_env_compat: true,
-    cargo_pkg_version: "3.0.4",
+    cargo_pkg_version: "3.1.3",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -26,7 +26,6 @@ rust_library {
         "regex",
     ],
     rustlibs: [
-        "libitertools",
         "libpredicates_core",
         "libregex",
         "libtermcolor",
@@ -45,7 +44,7 @@ rust_test {
     host_supported: true,
     crate_name: "predicates",
     cargo_env_compat: true,
-    cargo_pkg_version: "3.0.4",
+    cargo_pkg_version: "3.1.3",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -58,7 +57,6 @@ rust_test {
         "regex",
     ],
     rustlibs: [
-        "libitertools",
         "libpredicates_core",
         "libpredicates_tree",
         "libregex",

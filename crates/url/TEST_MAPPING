@@ -9,7 +9,7 @@
   ],
   "presubmit": [
     {
-      "name": "url_test_tests_data"
+      "name": "url_test_src_lib"
     },
     {
       "name": "url_test_tests_unit"
@@ -17,7 +17,7 @@
   ],
   "presubmit-rust": [
     {
-      "name": "url_test_tests_data"
+      "name": "url_test_src_lib"
     },
     {
       "name": "url_test_tests_unit"

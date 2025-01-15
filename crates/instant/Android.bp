@@ -24,7 +24,7 @@ rust_library {
     rustlibs: ["libcfg_if"],
     apex_available: [
         "//apex_available:platform",
-        "com.android.btservices",
+        "com.android.bt",
         "com.android.virt",
     ],
     product_available: true,

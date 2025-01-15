@@ -25,25 +25,16 @@ fn invalid_literals() {
 
 #[test]
 fn misc() {
-    assert_err_single!(Literal::parse("0x44.5"), InvalidIntegerTypeSuffix, 4..6);
+    assert_err_single!(Literal::parse("0x44.5"), UnexpectedChar, 4..6);
     assert_err_single!(Literal::parse("a"), InvalidLiteral, None);
     assert_err_single!(Literal::parse(";"), InvalidLiteral, None);
     assert_err_single!(Literal::parse("0;"), UnexpectedChar, 1);
-    assert_err_single!(Literal::parse("0a"), UnexpectedChar, 1);
-    assert_err_single!(Literal::parse("0z"), UnexpectedChar, 1);
     assert_err_single!(Literal::parse(" 0"), InvalidLiteral, None);
     assert_err_single!(Literal::parse("0 "), UnexpectedChar, 1);
-    assert_err_single!(Literal::parse("0a3"), UnexpectedChar, 1);
-    assert_err_single!(Literal::parse("0z3"), UnexpectedChar, 1);
     assert_err_single!(Literal::parse("_"), InvalidLiteral, None);
     assert_err_single!(Literal::parse("_3"), InvalidLiteral, None);
-    assert_err_single!(Literal::parse("12a3"), UnexpectedChar, 2);
-    assert_err_single!(Literal::parse("12f3"), InvalidFloatTypeSuffix, 2..4);
-    assert_err_single!(Literal::parse("12f_"), InvalidFloatTypeSuffix, 2..4);
-    assert_err_single!(Literal::parse("12F_"), UnexpectedChar, 2);
     assert_err_single!(Literal::parse("a_123"), InvalidLiteral, None);
     assert_err_single!(Literal::parse("B_123"), InvalidLiteral, None);
-    assert_err_single!(Literal::parse("54321a64"), UnexpectedChar, 5);
 }
 
 macro_rules! assert_no_panic {
@@ -113,7 +104,11 @@ fn proc_macro() {
         ($input:expr, expected: $expected:path, actual: $actual:path $(,)?) => {
             let err = $input.unwrap_err();
             if err.expected != $expected {
-                panic!("err.expected was expected to be {:?}, but is {:?}", $expected, err.expected);
+                panic!(
+                    "err.expected was expected to be {:?}, but is {:?}",
+                    $expected,
+                    err.expected,
+                );
             }
             if err.actual != $actual {
                 panic!("err.actual was expected to be {:?}, but is {:?}", $actual, err.actual);
@@ -177,7 +172,10 @@ fn proc_macro() {
     assert_eq!(Literal::from(FloatLit::try_from(pm_f32_lit.clone()).unwrap()), f32_lit);
     assert_eq!(Literal::from(FloatLit::try_from(pm_f64_lit.clone()).unwrap()), f64_lit);
     assert_eq!(Literal::from(StringLit::try_from(pm_string_lit.clone()).unwrap()), string_lit);
-    assert_eq!(Literal::from(ByteStringLit::try_from(pm_bytestr_lit.clone()).unwrap()), bytestr_lit);
+    assert_eq!(
+        Literal::from(ByteStringLit::try_from(pm_bytestr_lit.clone()).unwrap()),
+        bytestr_lit,
+    );
     assert_eq!(Literal::from(CharLit::try_from(pm_char_lit.clone()).unwrap()), char_lit);
 
     assert_invalid_token!(

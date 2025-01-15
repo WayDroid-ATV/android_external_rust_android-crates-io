@@ -1,7 +1,7 @@
 {
   "apex_available": [
     "//apex_available:platform",
-    "com.android.btservices",
+    "com.android.bt",
     "com.android.virt"
   ],
   "min_sdk_version": "29",
