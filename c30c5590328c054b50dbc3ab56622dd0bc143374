@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f1d00c57_49f2ccad",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-15T16:11:39Z",
+      "side": 1,
+      "message": "This change doesn\u0027t touch bytemuck_derive.",
+      "revId": "c30c5590328c054b50dbc3ab56622dd0bc143374",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
