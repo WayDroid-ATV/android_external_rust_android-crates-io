@@ -70,6 +70,30 @@
       },
       "revId": "8c94d9274a37045f60c8aefc780a28766edb5785",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3ff964af_4d64603f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1307230
+      },
+      "writtenOn": "2025-01-15T19:24:49Z",
+      "side": 1,
+      "message": "@rspier@google.com for 3p/licensing would be my suggested starting point.\n\n+1 to taking this back through 3p review.\n\nApologies for the lag, I left this comment in draft (thought I sent it on Jan 7).",
+      "parentUuid": "f7748b69_473acc4f",
+      "range": {
+        "startLine": 11,
+        "startChar": 55,
+        "endLine": 15,
+        "endChar": 14
+      },
+      "revId": "8c94d9274a37045f60c8aefc780a28766edb5785",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
