@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "serde_yaml",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.9.32",
+    cargo_pkg_version: "0.9.34+deprecated",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
