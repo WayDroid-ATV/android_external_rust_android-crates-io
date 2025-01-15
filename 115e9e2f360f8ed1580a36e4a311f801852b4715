@@ -16,6 +16,24 @@
       "message": "Duplicate of https://android-review.git.corp.google.com/c/platform/external/rust/android-crates-io/+/3417060",
       "revId": "115e9e2f360f8ed1580a36e4a311f801852b4715",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0b93fc52_eccc29ae",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-15T15:23:31Z",
+      "side": 1,
+      "message": "Yes. The other one is authoritative. This one I won\u0027t submit.",
+      "parentUuid": "48eb054b_eccd01bb",
+      "revId": "115e9e2f360f8ed1580a36e4a311f801852b4715",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
