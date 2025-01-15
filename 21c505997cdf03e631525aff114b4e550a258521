@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1afa5381_2fc19731",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-15T06:12:35Z",
+      "side": 1,
+      "message": "Duplicate of https://android-review.git.corp.google.com/c/platform/external/rust/android-crates-io/+/3417061?",
+      "revId": "21c505997cdf03e631525aff114b4e550a258521",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
