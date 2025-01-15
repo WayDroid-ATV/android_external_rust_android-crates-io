@@ -237,7 +237,7 @@ impl<'a> PathSegmentsMut<'a> {
                     scheme_type,
                     &mut has_host,
                     path_start,
-                    parser::Input::new_no_trim(segment),
+                    parser::Input::new(segment),
                 );
             }
         });
