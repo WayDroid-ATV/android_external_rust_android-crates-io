@@ -18,6 +18,7 @@
 
 #![deny(clippy::doc_markdown)]
 #![deny(missing_docs)]
+#![deny(missing_debug_implementations)]
 
 #[macro_use]
 pub mod address;
@@ -44,6 +45,9 @@ pub use guest_memory::{
     Error as GuestMemoryError, FileOffset, GuestAddress, GuestAddressSpace, GuestMemory,
     GuestMemoryRegion, GuestUsize, MemoryRegionAddress, Result as GuestMemoryResult,
 };
+
+pub mod io;
+pub use io::{ReadVolatile, WriteVolatile};
 
 #[cfg(all(feature = "backend-mmap", not(feature = "xen"), unix))]
 mod mmap_unix;

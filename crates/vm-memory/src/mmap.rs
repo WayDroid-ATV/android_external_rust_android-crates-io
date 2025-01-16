@@ -273,6 +273,7 @@ impl<B: Bitmap> Bytes<MemoryRegionAddress> for GuestRegionMmap<B> {
         F: Read,
     {
         let maddr = addr.raw_value() as usize;
+        #[allow(deprecated)] // function itself is deprecated
         self.as_volatile_slice()
             .unwrap()
             .read_from::<F>(maddr, src, count)
@@ -318,6 +319,7 @@ impl<B: Bitmap> Bytes<MemoryRegionAddress> for GuestRegionMmap<B> {
         F: Read,
     {
         let maddr = addr.raw_value() as usize;
+        #[allow(deprecated)] // function itself is deprecated
         self.as_volatile_slice()
             .unwrap()
             .read_exact_from::<F>(maddr, src, count)
@@ -363,6 +365,7 @@ impl<B: Bitmap> Bytes<MemoryRegionAddress> for GuestRegionMmap<B> {
         F: Write,
     {
         let maddr = addr.raw_value() as usize;
+        #[allow(deprecated)] // function itself is deprecated
         self.as_volatile_slice()
             .unwrap()
             .write_to::<F>(maddr, dst, count)
@@ -408,6 +411,7 @@ impl<B: Bitmap> Bytes<MemoryRegionAddress> for GuestRegionMmap<B> {
         F: Write,
     {
         let maddr = addr.raw_value() as usize;
+        #[allow(deprecated)] // function itself is deprecated
         self.as_volatile_slice()
             .unwrap()
             .write_all_to::<F>(maddr, dst, count)
@@ -508,7 +512,7 @@ impl<B: NewBitmap> GuestMemoryMmap<B> {
 
     /// Creates a container and allocates anonymous memory for guest memory regions.
     ///
-    /// Valid memory regions are specified as a sequence of (Address, Size, Option<FileOffset>)
+    /// Valid memory regions are specified as a sequence of (Address, Size, [`Option<FileOffset>`])
     /// tuples sorted by Address.
     pub fn from_ranges_with_files<A, T>(ranges: T) -> result::Result<Self, Error>
     where
@@ -612,6 +616,7 @@ impl<B: Bitmap> GuestMemoryMmap<B> {
 /// An iterator over the elements of `GuestMemoryMmap`.
 ///
 /// This struct is created by `GuestMemory::iter()`. See its documentation for more.
+#[derive(Debug)]
 pub struct Iter<'a, B>(std::slice::Iter<'a, Arc<GuestRegionMmap<B>>>);
 
 impl<'a, B> Iterator for Iter<'a, B> {
@@ -1177,7 +1182,7 @@ mod tests {
                 File::open(Path::new("c:\\Windows\\system32\\ntoskrnl.exe")).unwrap()
             };
             gm.write_obj(!0u32, addr).unwrap();
-            gm.read_exact_from(addr, &mut file, mem::size_of::<u32>())
+            gm.read_exact_volatile_from(addr, &mut file, mem::size_of::<u32>())
                 .unwrap();
             let value: u32 = gm.read_obj(addr).unwrap();
             if cfg!(unix) {
@@ -1186,8 +1191,8 @@ mod tests {
                 assert_eq!(value, 0x0090_5a4d);
             }
 
-            let mut sink = Vec::new();
-            gm.write_all_to(addr, &mut sink, mem::size_of::<u32>())
+            let mut sink = vec![0; mem::size_of::<u32>()];
+            gm.write_all_volatile_to(addr, &mut sink.as_mut_slice(), mem::size_of::<u32>())
                 .unwrap();
             if cfg!(unix) {
                 assert_eq!(sink, vec![0; mem::size_of::<u32>()]);

@@ -1,5 +1,57 @@
 # Changelog
 
+## Upcoming version
+
+### Added
+### Changed
+### Fixed
+### Removed
+### Deprecated
+
+## [v0.14.1]
+
+### Fixed
+- [[#279](https://github.com/rust-vmm/vm-memory/pull/279)] Remove restriction from `read_volatile_from` and `write_volatile_into`
+  that made it copy data it chunks of 4096.
+
+## [v0.14.0]
+
+### Added
+- [[#266](https://github.com/rust-vmm/vm-memory/pull/266)] Derive `Debug` for several
+  types that were missing it.
+
+### Changed
+- [[#274](https://github.com/rust-vmm/vm-memory/pull/274)] Drop `Default` as requirement for `ByteValued`.
+
+## [v0.13.1]
+
+### Added
+
+- [[#256](https://github.com/rust-vmm/vm-memory/pull/256)] Implement `WriteVolatile`
+  for `std::io::Stdout`.
+- [[#256](https://github.com/rust-vmm/vm-memory/pull/256)] Implement `WriteVolatile`
+  for `std::vec::Vec`.
+- [[#256](https://github.com/rust-vmm/vm-memory/pull/256)] Implement `WriteVolatile`
+  for `Cursor<&mut [u8]>`.
+- [[#256](https://github.com/rust-vmm/vm-memory/pull/256)] Implement `ReadVolatile`
+  for `Cursor<T: AsRef[u8]>`.
+
+## [v0.13.0]
+
+### Added
+- [[#247]](https://github.com/rust-vmm/vm-memory/pull/247) Add `ReadVolatile` and
+  `WriteVolatile` traits which are equivalents of `Read`/`Write` with volatile
+  access semantics.
+
+### Changed
+
+- [[#247]](https://github.com/rust-vmm/vm-memory/pull/247) Deprecate
+  `Bytes::{read_from, read_exact_from, write_to, write_all_to}`. Instead use
+  `ReadVolatile`/`WriteVolatile`, which do not incur the performance penalty
+  of copying to hypervisor memory due to `Read`/`Write` being incompatible
+  with volatile semantics (see also #217).
+
+
 ## [v0.12.2]
 
 ### Fixed
