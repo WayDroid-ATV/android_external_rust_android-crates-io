@@ -185,7 +185,7 @@ impl<T: VhostUserBackend> VhostUserHandler<T> {
             }
         }
 
-        Err(VhostUserHandlerError::MissingMemoryMapping)
+        panic!("Missing memory mapping: {:?} from {:?}", vmm_va, self.mappings);
     }
 }
 
@@ -275,7 +275,7 @@ where
 
     fn set_features(&mut self, features: u64) -> VhostUserResult<()> {
         if (features & !self.backend.features()) != 0 {
-            return Err(VhostUserError::InvalidParam);
+            panic!("set_features: {} vs {}", features, self.backend.features());
         }
 
         self.acked_features = features;
