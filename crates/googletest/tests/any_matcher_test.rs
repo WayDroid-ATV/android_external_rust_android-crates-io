@@ -12,14 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use googletest::matcher::Matcher;
 use googletest::prelude::*;
 use indoc::indoc;
-
-#[test]
-fn does_not_match_value_when_list_is_empty() -> Result<()> {
-    verify_that!((), not(any!()))
-}
 
 #[test]
 fn matches_value_with_single_matching_component() -> Result<()> {
@@ -54,7 +48,7 @@ fn admits_matchers_without_static_lifetime() -> Result<()> {
     #[derive(Debug, PartialEq)]
     struct AStruct(i32);
     let expected_value = AStruct(123);
-    verify_that!(AStruct(123), any![eq_deref_of(&expected_value)])
+    verify_that!(AStruct(123), any![eq(&expected_value)])
 }
 
 #[test]
@@ -63,11 +57,6 @@ fn mismatch_description_two_failed_matchers() -> Result<()> {
         any!(starts_with("One"), starts_with("Two")).explain_match("Three"),
         displays_as(eq("* which does not start with \"One\"\n* which does not start with \"Two\""))
     )
-}
-
-#[test]
-fn mismatch_description_empty_matcher() -> Result<()> {
-    verify_that!(any!().explain_match("Three"), displays_as(eq("which never matches")))
 }
 
 #[test]
@@ -115,7 +104,7 @@ fn formats_error_message_correctly_when_any_is_inside_some() -> Result<()> {
 #[test]
 fn formats_error_message_correctly_when_any_is_inside_ok() -> Result<()> {
     let value: std::result::Result<i32, std::io::Error> = Ok(4);
-    let result = verify_that!(value, ok(any![eq(1), eq(2), eq(3)]));
+    let result = verify_that!(value, ok(any![eq(&1), eq(&2), eq(&3)]));
     verify_that!(
         result,
         err(displays_as(contains_substring(indoc!(

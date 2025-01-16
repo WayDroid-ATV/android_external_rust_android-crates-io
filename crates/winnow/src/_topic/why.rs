@@ -2,9 +2,13 @@
 //!
 //! To answer this question, it will be useful to contrast this with other approaches to parsing.
 //!
+//! <div class="warning">
+//!
 //! **Note:** This will focus on principles and priorities. For a deeper and wider wider
 //! comparison with other Rust parser libraries, see
 //! [parse-rosetta-rs](https://github.com/rosetta-rs/parse-rosetta-rs).
+//!
+//! </div>
 //!
 //! ## Hand-written parsers
 //!
@@ -36,18 +40,18 @@
 //!
 //! `winnow` includes support for:
 //! - Zero-copy parsing
-//! - [Parse traces][crate::trace] for easier debugging
-//! - [Streaming parsing][crate::Partial] for network communication or large file
-//! - [Stateful][crate::Stateful] parsers
+//! - [Parse traces][trace] for easier debugging
+//! - [Streaming parsing][Partial] for network communication or large file
+//! - [Stateful] parsers
 //!
 //! For binary formats, `winnow` includes:
-//! - [A hexadecimal view][crate::Bytes] in [traces][crate::trace]
+//! - [A hexadecimal view][crate::Bytes] in [trace]
 //! - [TLV](https://en.wikipedia.org/wiki/Type-length-value) (e.g. [`length_take`])
 //! - Some common parsers to help get started, like numbers
 //!
 //! For text formats, `winnow` includes:
-//! - [Tracking of spans][crate::Located]
-//! - [A textual view when parsing as bytes][crate::BStr] in [traces][crate::trace]
+//! - [Tracking of spans][crate::LocatingSlice]
+//! - [A textual view when parsing as bytes][crate::BStr] in [trace]
 //! - Ability to evaluate directly, parse to an AST, or lex and parse the format
 //!
 //! This works well for:
@@ -69,6 +73,25 @@
 //!   fundamentals for parsing to ensure the experience is cohesive and high quality.
 //!
 //! See also our [nom migration guide][super::nom]
+//!
+//! ### Design trade-offs
+//!
+//! `winnow` switched from pure-function parser (`Fn(I) -> (I, O)` to `Fn(&mut I) -> O`).
+//! On error, `i` is left pointing at where the error happened.
+//!
+//! Benefits:
+//! - Cleaner code: Removes need to pass `i` everywhere and makes changes to `i` more explicit
+//! - Correctness: No forgetting to chain `i` through a parser
+//! - Flexibility: `I` does not need to be `Copy` or even `Clone`. For example, [`Stateful`] can use `&mut S` instead of `RefCell<S>`.
+//! - Performance: `Result::Ok` is smaller without `i`, reducing the risk that the output will be
+//!   returned on the stack, rather than the much faster CPU registers.
+//!   `Result::Err` can also be smaller because the error type does not need to carry `i` to point
+//!   to the error.
+//!   See also [#72](https://github.com/winnow-rs/winnow/issues/72).
+//!
+//! Downsides:
+//! - When returning a slice, you have to add a lifetime (`fn foo<'i>(i: &mut &i str) -> PResult<&i str>`)
+//! - When writing a closure, you need to annotate the type (`|i: &mut _|`, at least the full type isn't needed)
 //!
 //! ## `chumsky`
 //!
@@ -98,4 +121,7 @@
 
 #![allow(unused_imports)]
 use crate::binary::length_take;
+use crate::combinator::trace;
 use crate::stream::Accumulate;
+use crate::stream::Partial;
+use crate::stream::Stateful;

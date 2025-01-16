@@ -17,56 +17,87 @@
 
 use crate::{
     description::Description,
-    matcher::{Matcher, MatcherResult},
+    matcher::{Matcher, MatcherBase, MatcherResult},
 };
 use std::fmt::Debug;
 
-/// Matcher created by [`Matcher::and`].
+/// Matcher created by [`Matcher::and`] and [`all!`].
+///
+/// Both [`Matcher::and`] and [`all!`] nest on m1. In other words,
+/// both `x.and(y).and(z)` and `all![x, y, z]` produce:
+/// ```ignore
+/// ConjunctionMatcher {
+///     m1: ConjunctionMatcher {
+///         m1: x,
+///         m2: y
+///     },
+///     m2: z
+/// }
+/// ```
+///
+/// This behavior must be respected
+/// to ensure that [`Matcher::explain_match`] and [`Matcher::describe`] produce
+/// useful descriptions.
 ///
 /// **For internal use only. API stablility is not guaranteed!**
 #[doc(hidden)]
+#[derive(MatcherBase)]
 pub struct ConjunctionMatcher<M1, M2> {
     m1: M1,
     m2: M2,
 }
 
 impl<M1, M2> ConjunctionMatcher<M1, M2> {
-    pub(crate) fn new(m1: M1, m2: M2) -> Self {
+    pub fn new(m1: M1, m2: M2) -> Self {
         Self { m1, m2 }
     }
 }
 
-impl<M1: Matcher, M2: Matcher<ActualT = M1::ActualT>> Matcher for ConjunctionMatcher<M1, M2>
-where
-    M1::ActualT: Debug,
-{
-    type ActualT = M1::ActualT;
-
-    fn matches(&self, actual: &M1::ActualT) -> MatcherResult {
+impl<T: Debug + Copy, M1: Matcher<T>, M2: Matcher<T>> Matcher<T> for ConjunctionMatcher<M1, M2> {
+    fn matches(&self, actual: T) -> MatcherResult {
         match (self.m1.matches(actual), self.m2.matches(actual)) {
             (MatcherResult::Match, MatcherResult::Match) => MatcherResult::Match,
             _ => MatcherResult::NoMatch,
         }
     }
 
-    fn explain_match(&self, actual: &M1::ActualT) -> Description {
+    fn explain_match(&self, actual: T) -> Description {
         match (self.m1.matches(actual), self.m2.matches(actual)) {
-            (MatcherResult::Match, MatcherResult::Match) => Description::new()
-                .nested(self.m1.explain_match(actual))
-                .text("and")
-                .nested(self.m2.explain_match(actual)),
             (MatcherResult::NoMatch, MatcherResult::Match) => self.m1.explain_match(actual),
             (MatcherResult::Match, MatcherResult::NoMatch) => self.m2.explain_match(actual),
-            (MatcherResult::NoMatch, MatcherResult::NoMatch) => Description::new()
-                .nested(self.m1.explain_match(actual))
-                .text("and")
-                .nested(self.m2.explain_match(actual)),
+            (_, _) => {
+                let m1_description = self.m1.explain_match(actual);
+                if m1_description.is_conjunction_description() {
+                    m1_description.nested(self.m2.explain_match(actual))
+                } else {
+                    Description::new()
+                        .bullet_list()
+                        .collect([m1_description, self.m2.explain_match(actual)])
+                        .conjunction_description()
+                }
+            }
         }
     }
 
     fn describe(&self, matcher_result: MatcherResult) -> Description {
-        format!("{}, and {}", self.m1.describe(matcher_result), self.m2.describe(matcher_result))
-            .into()
+        let m1_description = self.m1.describe(matcher_result);
+        if m1_description.is_conjunction_description() {
+            m1_description.push_in_last_nested(self.m2.describe(matcher_result))
+        } else {
+            let header = if matcher_result.into() {
+                "has all the following properties:"
+            } else {
+                "has at least one of the following properties:"
+            };
+            Description::new()
+                .text(header)
+                .nested(
+                    Description::new()
+                        .bullet_list()
+                        .collect([m1_description, self.m2.describe(matcher_result)]),
+                )
+                .conjunction_description()
+        }
     }
 }
 
@@ -88,7 +119,9 @@ mod tests {
             err(displays_as(contains_substring(indoc!(
                 "
                 Value of: 1
-                Expected: is anything, and never matches
+                Expected: has all the following properties:
+                  * is anything
+                  * never matches
                 Actual: 1,
                   which is anything
                 "
@@ -104,7 +137,9 @@ mod tests {
             err(displays_as(contains_substring(indoc!(
                 "
                     Value of: 1
-                    Expected: never matches, and is anything
+                    Expected: has all the following properties:
+                      * never matches
+                      * is anything
                     Actual: 1,
                       which is anything
                 "
@@ -120,11 +155,37 @@ mod tests {
             err(displays_as(contains_substring(indoc!(
                 "
                 Value of: 1
-                Expected: never matches, and never matches
+                Expected: has all the following properties:
+                  * never matches
+                  * never matches
                 Actual: 1,
-                    which is anything
-                  and
-                    which is anything
+                  * which is anything
+                  * which is anything
+                "
+            ))))
+        )
+    }
+
+    #[test]
+    fn and_long_chain_of_matchers() -> Result<()> {
+        let result = verify_that!(
+            1,
+            anything().and(not(anything())).and(anything()).and(not(anything())).and(anything())
+        );
+        verify_that!(
+            result,
+            err(displays_as(contains_substring(indoc!(
+                "
+                Value of: 1
+                Expected: has all the following properties:
+                  * is anything
+                  * never matches
+                  * is anything
+                  * never matches
+                  * is anything
+                Actual: 1,
+                  * which is anything
+                  * which is anything
                 "
             ))))
         )
@@ -132,7 +193,7 @@ mod tests {
 
     #[test]
     fn chained_and_matches() -> Result<()> {
-        #[derive(Debug)]
+        #[derive(Debug, Clone, Copy)]
         struct Struct {
             a: i32,
             b: i32,

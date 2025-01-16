@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "pin_project",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.1.3",
+    cargo_pkg_version: "1.1.8",
     crate_root: "src/lib.rs",
     edition: "2021",
     proc_macros: ["libpin_project_internal"],

@@ -1,6 +1,6 @@
 use plotters::prelude::*;
 
-const OUT_FILE_NAME: &'static str = "plotters-doc-data/matshow.png";
+const OUT_FILE_NAME: &str = "plotters-doc-data/matshow.png";
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let root = BitMapBackend::new(OUT_FILE_NAME, (1024, 768)).into_drawing_area();
 
@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .margin(5)
         .top_x_label_area_size(40)
         .y_label_area_size(40)
-        .build_cartesian_2d(0i32..15i32, 15i32..0i32)?;
+        .build_cartesian_2d(0i32..15i32, 0i32..15i32)?;
 
     chart
         .configure_mesh()
@@ -35,8 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         matrix
             .iter()
             .zip(0..)
-            .map(|(l, y)| l.iter().zip(0..).map(move |(v, x)| (x as i32, y as i32, v)))
-            .flatten()
+            .flat_map(|(l, y)| l.iter().zip(0..).map(move |(v, x)| (x, y, v)))
             .map(|(x, y, v)| {
                 Rectangle::new(
                     [(x, y), (x + 1, y + 1)],

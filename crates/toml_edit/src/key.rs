@@ -113,7 +113,10 @@ impl Key {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor_mut`")]
+    #[deprecated(
+        since = "0.21.1",
+        note = "Replaced with `dotted_decor_mut`, `leaf_decor_mut"
+    )]
     pub fn decor_mut(&mut self) -> &mut Decor {
         self.leaf_decor_mut()
     }
@@ -129,7 +132,7 @@ impl Key {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor`")]
+    #[deprecated(since = "0.21.1", note = "Replaced with `dotted_decor`, `leaf_decor")]
     pub fn decor(&self) -> &Decor {
         self.leaf_decor()
     }
@@ -144,9 +147,10 @@ impl Key {
         &self.dotted_decor
     }
 
-    /// Returns the location within the original document
-    #[cfg(feature = "serde")]
-    pub(crate) fn span(&self) -> Option<std::ops::Range<usize>> {
+    /// The location within the original document
+    ///
+    /// This generally requires an [`ImDocument`][crate::ImDocument].
+    pub fn span(&self) -> Option<std::ops::Range<usize>> {
         self.repr.as_ref().and_then(|r| r.span())
     }
 
@@ -154,7 +158,7 @@ impl Key {
         self.leaf_decor.despan(input);
         self.dotted_decor.despan(input);
         if let Some(repr) = &mut self.repr {
-            repr.despan(input)
+            repr.despan(input);
         }
     }
 
@@ -285,17 +289,13 @@ fn to_key_repr(key: &str) -> Repr {
             crate::encode::to_string_repr(
                 key,
                 Some(crate::encode::StringStyle::OnelineSingle),
-                Some(false),
+                None,
             )
         }
     }
     #[cfg(not(feature = "parse"))]
     {
-        crate::encode::to_string_repr(
-            key,
-            Some(crate::encode::StringStyle::OnelineSingle),
-            Some(false),
-        )
+        crate::encode::to_string_repr(key, Some(crate::encode::StringStyle::OnelineSingle), None)
     }
 }
 
@@ -355,12 +355,15 @@ impl<'k> KeyMut<'k> {
 
     /// Returns a raw representation.
     #[cfg(feature = "display")]
-    pub fn display_repr(&self) -> Cow<str> {
+    pub fn display_repr(&self) -> Cow<'_, str> {
         self.key.display_repr()
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor_mut`")]
+    #[deprecated(
+        since = "0.21.1",
+        note = "Replaced with `dotted_decor_mut`, `leaf_decor_mut"
+    )]
     pub fn decor_mut(&mut self) -> &mut Decor {
         #![allow(deprecated)]
         self.key.decor_mut()
@@ -377,7 +380,7 @@ impl<'k> KeyMut<'k> {
     }
 
     /// Returns the surrounding whitespace
-    #[deprecated(since = "0.21.1", note = "Replaced with `decor`")]
+    #[deprecated(since = "0.21.1", note = "Replaced with `dotted_decor`, `leaf_decor")]
     pub fn decor(&self) -> &Decor {
         #![allow(deprecated)]
         self.key.decor()
@@ -395,7 +398,7 @@ impl<'k> KeyMut<'k> {
 
     /// Auto formats the key.
     pub fn fmt(&mut self) {
-        self.key.fmt()
+        self.key.fmt();
     }
 }
 
@@ -433,4 +436,11 @@ impl<'k> std::fmt::Display for KeyMut<'k> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(&self.key, f)
     }
+}
+
+#[test]
+#[cfg(feature = "parse")]
+#[cfg(feature = "display")]
+fn string_roundtrip() {
+    Key::new("hello").to_string().parse::<Key>().unwrap();
 }

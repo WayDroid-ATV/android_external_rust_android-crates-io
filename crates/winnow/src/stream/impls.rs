@@ -1,6 +1,7 @@
 macro_rules! impl_partial_eq {
     ($lhs:ty, $rhs:ty) => {
-        impl<'a, 'b> PartialEq<$rhs> for $lhs {
+        #[allow(unused_lifetimes)]
+        impl<'a> PartialEq<$rhs> for $lhs {
             #[inline]
             fn eq(&self, other: &$rhs) -> bool {
                 let l = self.as_ref();
@@ -9,7 +10,8 @@ macro_rules! impl_partial_eq {
             }
         }
 
-        impl<'a, 'b> PartialEq<$lhs> for $rhs {
+        #[allow(unused_lifetimes)]
+        impl<'a> PartialEq<$lhs> for $rhs {
             #[inline]
             fn eq(&self, other: &$lhs) -> bool {
                 PartialEq::eq(other, self)
@@ -20,7 +22,8 @@ macro_rules! impl_partial_eq {
 
 macro_rules! impl_partial_ord {
     ($lhs:ty, $rhs:ty) => {
-        impl<'a, 'b> PartialOrd<$rhs> for $lhs {
+        #[allow(unused_lifetimes)]
+        impl<'a> PartialOrd<$rhs> for $lhs {
             #[inline]
             fn partial_cmp(&self, other: &$rhs) -> Option<Ordering> {
                 let l = self.as_ref();
@@ -29,7 +32,8 @@ macro_rules! impl_partial_ord {
             }
         }
 
-        impl<'a, 'b> PartialOrd<$lhs> for $rhs {
+        #[allow(unused_lifetimes)]
+        impl<'a> PartialOrd<$lhs> for $rhs {
             #[inline]
             fn partial_cmp(&self, other: &$lhs) -> Option<Ordering> {
                 PartialOrd::partial_cmp(other, self)
@@ -61,7 +65,7 @@ mod bytes {
         #[inline]
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             for byte in self.as_bytes() {
-                write!(f, "{:0>2x}", byte)?;
+                write!(f, "{byte:0>2x}")?;
             }
             Ok(())
         }
@@ -77,7 +81,7 @@ mod bytes {
                         write!(f, "_")?;
                     }
                 }
-                write!(f, "{:0>2X}", byte)?;
+                write!(f, "{byte:0>2X}")?;
             }
             Ok(())
         }
@@ -283,7 +287,7 @@ mod bytes {
         #[test]
         fn test_pretty_debug() {
             // Output can change from run-to-run
-            format!(
+            let _ = format!(
                 "{:#?}",
                 Bytes::new(b"\0\0\0 ftypisom\0\0\x02\0isomiso2avc1mp")
             );
@@ -293,9 +297,9 @@ mod bytes {
         fn test_sliced() {
             // Output can change from run-to-run
             let total = Bytes::new(b"12345678901234567890");
-            format!("{:#?}", total);
-            format!("{:#?}", &total[1..]);
-            format!("{:#?}", &total[10..]);
+            let _ = format!("{total:#?}");
+            let _ = format!("{:#?}", &total[1..]);
+            let _ = format!("{:#?}", &total[10..]);
         }
     }
 }
