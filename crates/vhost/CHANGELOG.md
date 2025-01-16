@@ -9,6 +9,38 @@
 
 ### Deprecated
 
+## [0.11.0]
+
+### Added
+- [[#203]](https://github.com/rust-vmm/vhost/pull/203) Add back-end's internal state migration support
+- [[#218]](https://github.com/rust-vmm/vhost/pull/218) Adding POSTCOPY support
+- [[#206]](https://github.com/rust-vmm/vhost/pull/206) Add bitmap support for tracking dirty pages during migration
+
+## [0.10.0]
+
+### Changed
+- [[#219]](https://github.com/rust-vmm/vhost/pull/219) Update vmm-sys-util dependency to 0.12.1.
+
+### Remove
+- [[#202](https://github.com/rust-vmm/vhost/pull/202)] Do not expose for internal-usage-only `NOOP` and `MAX_CMD` requests.
+- [[#205](https://github.com/rust-vmm/vhost/pull/205)] Remove some commented out code.
+
+### Fixed
+- [[#208](https://github.com/rust-vmm/vhost/pull/208)] Fix various message structs being `repr(Rust)` instead of `repr(C)`.
+
+## [0.9.0]
+
+### Changed
+- [[#187]](https://github.com/rust-vmm/vhost/pull/187) Clean master slave
+  - Replaced master/slave with frontend/backend in the codebase and public API.
+  - Replaced master/slave with frontend/backend in the crate features.
+- Updated dependency bitflags from 1.0 to 2.4
+- [[#116]](https://github.com/rust-vmm/vhost/pull/116) Upgrade to 2021 edition
+
+### Fixed
+- [[#184]](https://github.com/rust-vmm/vhost/pull/184) Safety fixes
+- [[#186]](https://github.com/rust-vmm/vhost/pull/186) vhost: Fix clippy warnings.
+
 ## [0.8.1]
 
 ### Fixed

@@ -452,7 +452,7 @@ dependencies = [
  "userfaultfd-sys",
  "utf-8",
  "uuid",
- "vhost",
+ "vhost 0.11.0",
  "vhost-user-backend",
  "virtio-bindings",
  "virtio-drivers",
@@ -5755,6 +5755,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "vhost"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6be08d1166d41a78861ad50212ab3f9eca0729c349ac3a7a8f557c62406b87cc"
+dependencies = [
+ "bitflags 2.8.0",
+ "libc",
+ "vm-memory 0.14.1",
+ "vmm-sys-util 0.12.1",
+]
+
+[[package]]
 name = "vhost-user-backend"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5762,7 +5774,7 @@ checksum = "ab069cdedaf18a0673766eb0a07a0f4ee3ed1b8e17fbfe4aafe5b988e2de1d01"
 dependencies = [
  "libc",
  "log",
- "vhost",
+ "vhost 0.8.1",
  "virtio-bindings",
  "virtio-queue 0.9.0",
  "vm-memory 0.12.2",
