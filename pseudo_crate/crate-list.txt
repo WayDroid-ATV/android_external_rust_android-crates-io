@@ -369,6 +369,7 @@ userfaultfd-sys
 utf-8
 uuid
 vhost
+vhost-device-vsock
 vhost-user-backend
 virtio-bindings
 virtio-drivers

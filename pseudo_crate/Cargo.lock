@@ -456,6 +456,7 @@ dependencies = [
  "utf-8",
  "uuid",
  "vhost",
+ "vhost-device-vsock",
  "vhost-user-backend",
  "virtio-bindings",
  "virtio-drivers",
@@ -1959,6 +1960,7 @@ checksum = "8cb01cd46b0cf372153850f4c6c272d9cbea2da513e07538405148f95bd789f3"
 dependencies = [
  "atomic",
  "serde",
+ "serde_yaml",
  "uncased",
  "version_check",
 ]
@@ -5797,6 +5799,29 @@ checksum = "6be08d1166d41a78861ad50212ab3f9eca0729c349ac3a7a8f557c62406b87cc"
 dependencies = [
  "bitflags 2.8.0",
  "libc",
+ "vm-memory",
+ "vmm-sys-util",
+]
+
+[[package]]
+name = "vhost-device-vsock"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d79151e6471be9ef65f9ae276f3f46a9d5dd53b1c4da4b35c52d1021ca31ce2"
+dependencies = [
+ "byteorder",
+ "clap 4.5.0",
+ "env_logger 0.11.6",
+ "epoll",
+ "figment",
+ "log",
+ "serde",
+ "thiserror 1.0.49",
+ "vhost",
+ "vhost-user-backend",
+ "virtio-bindings",
+ "virtio-queue",
+ "virtio-vsock",
  "vm-memory",
  "vmm-sys-util",
 ]
