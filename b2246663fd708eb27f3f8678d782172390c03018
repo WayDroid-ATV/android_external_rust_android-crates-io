@@ -16,6 +16,24 @@
       "message": "Should I instead specify this when importing?",
       "revId": "b2246663fd708eb27f3f8678d782172390c03018",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "56e5f14a_c7875e02",
+        "filename": "crates/signal-hook-registry/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-16T19:48:18Z",
+      "side": 1,
+      "message": "Considering the extra work required to satisfy the apex linter, I would not want to block import behind this (because it requires coordinating multiple reviewers, not just a regular code reviewer + whatever apex reviewer is going to require).",
+      "parentUuid": "19c8efa7_5065c71d",
+      "revId": "b2246663fd708eb27f3f8678d782172390c03018",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
