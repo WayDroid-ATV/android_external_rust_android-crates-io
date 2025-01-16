@@ -1,7 +1,7 @@
 use std::ffi::CString;
 use std::fs::File;
 use std::io::Result;
-use std::os::unix::io::{AsRawFd, FromRawFd};
+use std::os::unix::io::AsRawFd;
 use std::os::unix::net::UnixStream;
 use std::path::Path;
 use std::sync::{Arc, Barrier, Mutex};
@@ -10,7 +10,7 @@ use std::thread;
 use vhost::vhost_user::message::{
     VhostUserConfigFlags, VhostUserHeaderFlag, VhostUserInflight, VhostUserProtocolFeatures,
 };
-use vhost::vhost_user::{Listener, Master, Slave, VhostUserMaster};
+use vhost::vhost_user::{Backend, Frontend, Listener, VhostUserFrontend};
 use vhost::{VhostBackend, VhostUserMemoryRegionInfo, VringConfigData};
 use vhost_user_backend::{VhostUserBackendMut, VhostUserDaemon, VringRwLock};
 use vm_memory::{
@@ -35,7 +35,10 @@ impl MockVhostBackend {
     }
 }
 
-impl VhostUserBackendMut<VringRwLock, ()> for MockVhostBackend {
+impl VhostUserBackendMut for MockVhostBackend {
+    type Bitmap = ();
+    type Vring = VringRwLock;
+
     fn num_queues(&self) -> usize {
         2
     }
@@ -81,7 +84,7 @@ impl VhostUserBackendMut<VringRwLock, ()> for MockVhostBackend {
         Ok(())
     }
 
-    fn set_slave_req_fd(&mut self, _slave: Slave) {}
+    fn set_backend_req_fd(&mut self, _backend: Backend) {}
 
     fn queues_per_thread(&self) -> Vec<u64> {
         vec![1, 1]
@@ -99,53 +102,53 @@ impl VhostUserBackendMut<VringRwLock, ()> for MockVhostBackend {
         _evset: EventSet,
         _vrings: &[VringRwLock],
         _thread_id: usize,
-    ) -> Result<bool> {
+    ) -> Result<()> {
         self.events += 1;
 
-        Ok(false)
+        Ok(())
     }
 }
 
-fn setup_master(path: &Path, barrier: Arc<Barrier>) -> Master {
+fn setup_frontend(path: &Path, barrier: Arc<Barrier>) -> Frontend {
     barrier.wait();
-    let mut master = Master::connect(path, 1).unwrap();
-    master.set_hdr_flags(VhostUserHeaderFlag::NEED_REPLY);
+    let mut frontend = Frontend::connect(path, 1).unwrap();
+    frontend.set_hdr_flags(VhostUserHeaderFlag::NEED_REPLY);
     // Wait before issue service requests.
     barrier.wait();
 
-    let features = master.get_features().unwrap();
-    let proto = master.get_protocol_features().unwrap();
-    master.set_features(features).unwrap();
-    master.set_protocol_features(proto).unwrap();
+    let features = frontend.get_features().unwrap();
+    let proto = frontend.get_protocol_features().unwrap();
+    frontend.set_features(features).unwrap();
+    frontend.set_protocol_features(proto).unwrap();
     assert!(proto.contains(VhostUserProtocolFeatures::REPLY_ACK));
 
-    master
+    frontend
 }
 
 fn vhost_user_client(path: &Path, barrier: Arc<Barrier>) {
     barrier.wait();
-    let mut master = Master::connect(path, 1).unwrap();
-    master.set_hdr_flags(VhostUserHeaderFlag::NEED_REPLY);
+    let mut frontend = Frontend::connect(path, 1).unwrap();
+    frontend.set_hdr_flags(VhostUserHeaderFlag::NEED_REPLY);
     // Wait before issue service requests.
     barrier.wait();
 
-    let features = master.get_features().unwrap();
-    let proto = master.get_protocol_features().unwrap();
-    master.set_features(features).unwrap();
-    master.set_protocol_features(proto).unwrap();
+    let features = frontend.get_features().unwrap();
+    let proto = frontend.get_protocol_features().unwrap();
+    frontend.set_features(features).unwrap();
+    frontend.set_protocol_features(proto).unwrap();
     assert!(proto.contains(VhostUserProtocolFeatures::REPLY_ACK));
 
-    let queue_num = master.get_queue_num().unwrap();
+    let queue_num = frontend.get_queue_num().unwrap();
     assert_eq!(queue_num, 2);
 
-    master.set_owner().unwrap();
-    //master.set_owner().unwrap_err();
-    master.reset_owner().unwrap();
-    master.reset_owner().unwrap();
-    master.set_owner().unwrap();
+    frontend.set_owner().unwrap();
+    //frontend.set_owner().unwrap_err();
+    frontend.reset_owner().unwrap();
+    frontend.reset_owner().unwrap();
+    frontend.set_owner().unwrap();
 
-    master.set_features(features).unwrap();
-    master.set_protocol_features(proto).unwrap();
+    frontend.set_features(features).unwrap();
+    frontend.set_protocol_features(proto).unwrap();
     assert!(proto.contains(VhostUserProtocolFeatures::REPLY_ACK));
 
     let memfd = nix::sys::memfd::memfd_create(
@@ -153,8 +156,7 @@ fn vhost_user_client(path: &Path, barrier: Arc<Barrier>) {
         nix::sys::memfd::MemFdCreateFlag::empty(),
     )
     .unwrap();
-    // SAFETY: Safe because we panic before if memfd is not valid.
-    let file = unsafe { File::from_raw_fd(memfd) };
+    let file = File::from(memfd);
     file.set_len(0x100000).unwrap();
     let file_offset = FileOffset::new(file, 0);
     let mem = GuestMemoryMmap::<()>::from_ranges_with_files(&[(
@@ -173,9 +175,9 @@ fn vhost_user_client(path: &Path, barrier: Arc<Barrier>) {
         0,
         fd.file().as_raw_fd(),
     )];
-    master.set_mem_table(&regions).unwrap();
+    frontend.set_mem_table(&regions).unwrap();
 
-    master.set_vring_num(0, 256).unwrap();
+    frontend.set_vring_num(0, 256).unwrap();
 
     let config = VringConfigData {
         queue_max_size: 256,
@@ -186,33 +188,33 @@ fn vhost_user_client(path: &Path, barrier: Arc<Barrier>) {
         avail_ring_addr: addr + 0x20000,
         log_addr: None,
     };
-    master.set_vring_addr(0, &config).unwrap();
+    frontend.set_vring_addr(0, &config).unwrap();
 
     let eventfd = EventFd::new(0).unwrap();
-    master.set_vring_kick(0, &eventfd).unwrap();
-    master.set_vring_call(0, &eventfd).unwrap();
-    master.set_vring_err(0, &eventfd).unwrap();
-    master.set_vring_enable(0, true).unwrap();
+    frontend.set_vring_kick(0, &eventfd).unwrap();
+    frontend.set_vring_call(0, &eventfd).unwrap();
+    frontend.set_vring_err(0, &eventfd).unwrap();
+    frontend.set_vring_enable(0, true).unwrap();
 
     let buf = [0u8; 8];
-    let (_cfg, data) = master
+    let (_cfg, data) = frontend
         .get_config(0x200, 8, VhostUserConfigFlags::empty(), &buf)
         .unwrap();
     assert_eq!(&data, &[0xa5u8; 8]);
-    master
+    frontend
         .set_config(0x200, VhostUserConfigFlags::empty(), &data)
         .unwrap();
 
     let (tx, _rx) = UnixStream::pair().unwrap();
-    master.set_slave_request_fd(&tx).unwrap();
+    frontend.set_backend_request_fd(&tx).unwrap();
 
-    let state = master.get_vring_base(0).unwrap();
-    master.set_vring_base(0, state as u16).unwrap();
+    let state = frontend.get_vring_base(0).unwrap();
+    frontend.set_vring_base(0, state as u16).unwrap();
 
-    assert_eq!(master.get_max_mem_slots().unwrap(), 32);
+    assert_eq!(frontend.get_max_mem_slots().unwrap(), 509);
     let region = VhostUserMemoryRegionInfo::new(0x800000, 0x100000, addr, 0, fd.file().as_raw_fd());
-    master.add_mem_region(&region).unwrap();
-    master.remove_mem_region(&region).unwrap();
+    frontend.add_mem_region(&region).unwrap();
+    frontend.remove_mem_region(&region).unwrap();
 }
 
 fn vhost_user_server(cb: fn(&Path, Arc<Barrier>)) {
@@ -244,9 +246,9 @@ fn test_vhost_user_server() {
 }
 
 fn vhost_user_enable(path: &Path, barrier: Arc<Barrier>) {
-    let master = setup_master(path, barrier);
-    master.set_owner().unwrap();
-    master.set_owner().unwrap_err();
+    let frontend = setup_frontend(path, barrier);
+    frontend.set_owner().unwrap();
+    frontend.set_owner().unwrap_err();
 }
 
 #[test]
@@ -255,7 +257,7 @@ fn test_vhost_user_enable() {
 }
 
 fn vhost_user_set_inflight(path: &Path, barrier: Arc<Barrier>) {
-    let mut master = setup_master(path, barrier);
+    let mut frontend = setup_frontend(path, barrier);
     let eventfd = EventFd::new(0).unwrap();
     // No implementation for inflight_fd yet.
     let inflight = VhostUserInflight {
@@ -264,7 +266,7 @@ fn vhost_user_set_inflight(path: &Path, barrier: Arc<Barrier>) {
         num_queues: 1,
         queue_size: 256,
     };
-    master
+    frontend
         .set_inflight_fd(&inflight, eventfd.as_raw_fd())
         .unwrap_err();
 }
@@ -275,7 +277,7 @@ fn test_vhost_user_set_inflight() {
 }
 
 fn vhost_user_get_inflight(path: &Path, barrier: Arc<Barrier>) {
-    let mut master = setup_master(path, barrier);
+    let mut frontend = setup_frontend(path, barrier);
     // No implementation for inflight_fd yet.
     let inflight = VhostUserInflight {
         mmap_size: 0x100000,
@@ -283,10 +285,41 @@ fn vhost_user_get_inflight(path: &Path, barrier: Arc<Barrier>) {
         num_queues: 1,
         queue_size: 256,
     };
-    assert!(master.get_inflight_fd(&inflight).is_err());
+    assert!(frontend.get_inflight_fd(&inflight).is_err());
 }
 
 #[test]
 fn test_vhost_user_get_inflight() {
     vhost_user_server(vhost_user_get_inflight);
+}
+
+#[cfg(feature = "postcopy")]
+fn vhost_user_postcopy_advise(path: &Path, barrier: Arc<Barrier>) {
+    let mut frontend = setup_frontend(path, barrier);
+    let _uffd_file = frontend.postcopy_advise().unwrap();
+}
+
+#[cfg(feature = "postcopy")]
+fn vhost_user_postcopy_listen(path: &Path, barrier: Arc<Barrier>) {
+    let mut frontend = setup_frontend(path, barrier);
+    let _uffd_file = frontend.postcopy_advise().unwrap();
+    frontend.postcopy_listen().unwrap();
+}
+
+#[cfg(feature = "postcopy")]
+fn vhost_user_postcopy_end(path: &Path, barrier: Arc<Barrier>) {
+    let mut frontend = setup_frontend(path, barrier);
+    let _uffd_file = frontend.postcopy_advise().unwrap();
+    frontend.postcopy_listen().unwrap();
+    frontend.postcopy_end().unwrap();
+}
+
+// These tests need an access to the `/dev/userfaultfd`
+// in order to pass.
+#[cfg(feature = "postcopy")]
+#[test]
+fn test_vhost_user_postcopy() {
+    vhost_user_server(vhost_user_postcopy_advise);
+    vhost_user_server(vhost_user_postcopy_listen);
+    vhost_user_server(vhost_user_postcopy_end);
 }
