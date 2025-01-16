@@ -190,6 +190,7 @@ dependencies = [
  "fallible-iterator 0.3.0",
  "fallible-streaming-iterator",
  "fastrand",
+ "figment",
  "fixedbitset 0.5.7",
  "flagset",
  "flate2",
@@ -1948,6 +1949,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e6853b52649d4ac5c0bd02320cddc5ba956bdb407c4b75a2c6b75bf51500f8c"
 dependencies = [
  "simd-adler32",
+]
+
+[[package]]
+name = "figment"
+version = "0.10.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8cb01cd46b0cf372153850f4c6c272d9cbea2da513e07538405148f95bd789f3"
+dependencies = [
+ "atomic",
+ "serde",
+ "uncased",
+ "version_check",
 ]
 
 [[package]]
