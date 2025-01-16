@@ -14,6 +14,7 @@
         "net",
         "rt",
         "rt-multi-thread",
+        "signal",
         "sync",
         "time"
       ]
@@ -26,6 +27,7 @@
         "net",
         "rt",
         "rt-multi-thread",
+        "signal",
         "sync",
         "test-util",
         "time"
