@@ -9,6 +9,55 @@
 
 ### Deprecated
 
+## v0.15.0
+
+### Changed
+- [[#237]](https://github.com/rust-vmm/vhost/pull/237) Update virtio-queue dependency to 0.12.0
+
+## v0.14.0
+
+### Added
+- [[#203]](https://github.com/rust-vmm/vhost/pull/203) Add back-end's internal state migration support
+- [[#218]](https://github.com/rust-vmm/vhost/pull/218) Adding POSTCOPY support
+- [[#206]](https://github.com/rust-vmm/vhost/pull/206) Add bitmap support for tracking dirty pages during migration
+
+## v0.13.1
+
+### Fixed
+
+- [[#227]](https://github.com/rust-vmm/vhost/pull/227) vhost-user-backend: Fix SET_VRING_KICK should not disable the vring
+
+## v0.13.0
+
+### Changed
+- [[#224]](https://github.com/rust-vmm/vhost/pull/224) vhost-user-backend: bump up MAX_MEM_SLOTS to 509
+
+## v0.12.0
+
+### Fixed
+- [[#210](https://github.com/rust-vmm/vhost/pull/210)] Enable all vrings upon receipt of `VHOST_USER_SET_FEATURES`
+  message.
+- [[#212](https://github.com/rust-vmm/vhost/pull/212)] Validate queue index in `VhostUserHandler::set_vring_base`
+  to avoid potential out-of-bounds panic.
+
+### Changed
+- [[#214](https://github.com/rust-vmm/vhost/pull/214)] Avoid indexing the same Vec multiple times by locally caching the
+  result of `Vec:get`.
+- [[#219]](https://github.com/rust-vmm/vhost/pull/219) Update vmm-sys-util dependency to 0.12.1 and vm-memory dependency to 0.14.0.
+
+## v0.11.0
+
+### Added
+- [[#173]](https://github.com/rust-vmm/vhost/pull/173) vhost-user-backend: Added convenience function `serve`
+
+### Changed
+- [[#187]](https://github.com/rust-vmm/vhost/pull/187) Clean master slave
+  - Replaced master/slave with frontend/backend in the codebase and public API.
+- [[#192]](https://github.com/rust-vmm/vhost/pull/192) vhost-user-backend: remove return value from handle_event
+- [[#155]](https://github.com/rust-vmm/vhost/pull/155) Converted generic type
+  parameters of VhostUserBackend into associated types.
+- [[#116]](https://github.com/rust-vmm/vhost/pull/116) Upgrade to 2021 edition
+
 ## v0.10.1
 
 ### Fixed
