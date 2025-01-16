@@ -440,6 +440,7 @@ dependencies = [
  "uefi-macros",
  "uefi-raw",
  "uguid",
+ "uncased",
  "unicode-bidi",
  "unicode-ident",
  "unicode-normalization",
@@ -5597,6 +5598,15 @@ name = "uguid"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab14ea9660d240e7865ce9d54ecdbd1cd9fa5802ae6f4512f093c7907e921533"
+
+[[package]]
+name = "uncased"
+version = "0.9.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1b88fcfe09e89d3866a5c11019378088af2d24c3fbd4f0543f96b479ec90697"
+dependencies = [
+ "version_check",
+]
 
 [[package]]
 name = "unicode-bidi"
