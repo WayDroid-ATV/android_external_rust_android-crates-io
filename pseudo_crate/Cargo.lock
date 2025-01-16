@@ -181,6 +181,7 @@ dependencies = [
  "drm-fourcc",
  "either",
  "enumn",
+ "env_filter",
  "env_logger 0.10.2",
  "epoll",
  "equivalent",
@@ -1790,6 +1791,16 @@ dependencies = [
  "proc-macro2 1.0.93",
  "quote 1.0.38",
  "syn 2.0.96",
+]
+
+[[package]]
+name = "env_filter"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "186e05a59d4c50738528153b83b0b0194d3a29507dfec16eccd4b342903397d0"
+dependencies = [
+ "log",
+ "regex",
 ]
 
 [[package]]
