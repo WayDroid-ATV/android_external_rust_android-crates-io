@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "19c8efa7_5065c71d",
+        "filename": "crates/signal-hook-registry/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1982430
+      },
+      "writtenOn": "2025-01-16T12:57:19Z",
+      "side": 1,
+      "message": "Should I instead specify this when importing?",
+      "revId": "b2246663fd708eb27f3f8678d782172390c03018",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
