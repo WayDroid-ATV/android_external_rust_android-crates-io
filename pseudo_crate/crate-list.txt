@@ -97,6 +97,7 @@ etherparse
 fallible-iterator
 fallible-streaming-iterator
 fastrand
+figment
 fixedbitset
 flagset
 flate2
