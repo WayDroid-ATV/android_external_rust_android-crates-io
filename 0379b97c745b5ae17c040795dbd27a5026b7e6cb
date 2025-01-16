@@ -16,6 +16,24 @@
       "message": "1. `serde_yaml` is no longer maintained (as you can see from the version number)\n2. `vhost-device-vsock` is the only user of this currently, and the latest version of `vhost-device-vsock` removes the dependency.\n\nCan we update `vhost-device-vsock` instead, and delete this crate?",
       "revId": "0379b97c745b5ae17c040795dbd27a5026b7e6cb",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "acc803fd_830c7c35",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-16T08:51:11Z",
+      "side": 1,
+      "message": "+1",
+      "parentUuid": "b73dc7d1_4cfb2aed",
+      "revId": "0379b97c745b5ae17c040795dbd27a5026b7e6cb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
