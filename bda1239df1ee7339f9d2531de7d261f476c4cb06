@@ -52,6 +52,24 @@
       "parentUuid": "d9e93c87_45123c11",
       "revId": "bda1239df1ee7339f9d2531de7d261f476c4cb06",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bfa9f812_f55acb68",
+        "filename": "pseudo_crate/crate-list.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-16T19:37:33Z",
+      "side": 0,
+      "message": "Thank you for finding a better solution here to work around the limitations of review labels. I actually think having the historical record of removed crates is not the worst thing either. It makes it easier to navigate with `git log` to find out why something was removed (either unnecessary or actively problematic), which makes future decisions easier too.",
+      "parentUuid": "67d1c136_869ba6a8",
+      "revId": "bda1239df1ee7339f9d2531de7d261f476c4cb06",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
