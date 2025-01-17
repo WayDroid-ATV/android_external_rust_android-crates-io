@@ -65,16 +65,11 @@
 
 #[cfg(target_os = "android")]
 extern crate android_log_sys as log_ffi;
-extern crate once_cell;
-use once_cell::sync::OnceCell;
+
 #[cfg(default_log_impl)]
 use crate as log;
 #[cfg(not(default_log_impl))]
-#[macro_use]
 extern crate log;
-
-#[cfg(not(default_log_impl))]
-extern crate env_logger;
 
 use self::log::{Level, LevelFilter, Log, Metadata, Record};
 #[cfg(target_os = "android")]
@@ -83,20 +78,17 @@ use std::ffi::{CStr, CString};
 use std::fmt;
 use std::mem::{self, MaybeUninit};
 use std::ptr;
+use std::sync::OnceLock;
 
 #[cfg(default_log_impl)]
-pub mod env_logger {
-    pub mod filter {
-        pub struct Filter;
-        impl Filter {
-            pub fn matches(&self, _: &crate::Record) -> bool { true }
-        }
+pub mod env_filter {
+    pub struct Filter;
+    impl Filter {
+        pub fn matches(&self, _: &crate::Record) -> bool { true }
     }
 }
 #[cfg(not(default_log_impl))]
-pub use env_logger::filter::{Builder as FilterBuilder, Filter};
-#[cfg(not(default_log_impl))]
-pub use env_logger::fmt::Formatter;
+pub use env_filter::{Builder as FilterBuilder, Filter};
 
 pub(crate) type FormatFn = Box<dyn Fn(&mut dyn fmt::Write, &Record) -> fmt::Result + Sync + Send>;
 
@@ -182,14 +174,14 @@ fn android_log(_buf_id: Option<LogId>, _priority: Level, _tag: &CStr, _msg: &CSt
 
 /// Underlying android logger backend
 pub struct AndroidLogger {
-    config: OnceCell<Config>,
+    config: OnceLock<Config>,
 }
 
 impl AndroidLogger {
     /// Create new logger instance from config
     pub fn new(config: Config) -> AndroidLogger {
         AndroidLogger {
-            config: OnceCell::from(config),
+            config: OnceLock::from(config),
         }
     }
 
@@ -198,7 +190,7 @@ impl AndroidLogger {
     }
 }
 
-static ANDROID_LOGGER: OnceCell<AndroidLogger> = OnceCell::new();
+static ANDROID_LOGGER: OnceLock<AndroidLogger> = OnceLock::new();
 
 const LOGGING_TAG_MAX_LEN: usize = 23;
 const LOGGING_MSG_MAX_LEN: usize = 4000;
@@ -207,7 +199,7 @@ impl Default for AndroidLogger {
     /// Create a new logger with default config
     fn default() -> AndroidLogger {
         AndroidLogger {
-            config: OnceCell::from(Config::default()),
+            config: OnceLock::from(Config::default()),
         }
     }
 }
@@ -295,7 +287,7 @@ impl AndroidLogger {
 pub struct Config {
     log_level: Option<LevelFilter>,
     buf_id: Option<LogId>,
-    filter: Option<env_logger::filter::Filter>,
+    filter: Option<env_filter::Filter>,
     tag: Option<CString>,
     custom_format: Option<FormatFn>,
 }
@@ -333,7 +325,7 @@ impl Config {
         }
     }
 
-    pub fn with_filter(mut self, filter: env_logger::filter::Filter) -> Self {
+    pub fn with_filter(mut self, filter: env_filter::Filter) -> Self {
         self.filter = Some(filter);
         self
     }
@@ -553,7 +545,7 @@ pub fn init_once(config: Config) {
     let logger = ANDROID_LOGGER.get_or_init(|| AndroidLogger::new(config));
 
     if let Err(err) = log::set_logger(logger) {
-        debug!("android_logger: log::set_logger failed: {}", err);
+        log::debug!("android_logger: log::set_logger failed: {}", err);
     } else if let Some(level) = log_level {
         log::set_max_level(level);
     }
@@ -623,7 +615,7 @@ mod tests {
         let info_record = Record::builder().level(Level::Info).build();
         let debug_record = Record::builder().level(Level::Debug).build();
 
-        let info_all_filter = env_logger::filter::Builder::new().parse("info").build();
+        let info_all_filter = env_filter::Builder::new().parse("info").build();
         let info_all_config = Config::default().with_filter(info_all_filter);
 
         assert!(info_all_config.filter_matches(&info_record));
