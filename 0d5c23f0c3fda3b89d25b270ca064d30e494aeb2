@@ -34,6 +34,24 @@
       "parentUuid": "0ace5da2_137809db",
       "revId": "0d5c23f0c3fda3b89d25b270ca064d30e494aeb2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "abde8af8_bfb57f7e",
+        "filename": "crates/bumpalo/src/lib.rs",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1892347
+      },
+      "writtenOn": "2025-01-17T16:25:33Z",
+      "side": 0,
+      "message": "Acknowledged",
+      "parentUuid": "b14453f4_e68831bf",
+      "revId": "0d5c23f0c3fda3b89d25b270ca064d30e494aeb2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }

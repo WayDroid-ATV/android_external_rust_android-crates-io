@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fcd7e44b_dcccf0fb",
+        "filename": "crates/bumpalo/src/collections/string.rs",
+        "patchSetId": 10
+      },
+      "lineNbr": 1290,
+      "author": {
+        "id": 1892347
+      },
+      "writtenOn": "2025-01-17T16:25:33Z",
+      "side": 1,
+      "message": "Unsafe Rust Review: This function can cause the string to contain invalid utf-8 if the closure panics. 😞\n\nI guess it\u0027s not a concern for us because we have panic\u003dunwind.\n\nBug: https://github.com/fitzgen/bumpalo/issues/261",
+      "revId": "dc05b9a72434549e0882b9618ddc0ecedc9cf646",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
