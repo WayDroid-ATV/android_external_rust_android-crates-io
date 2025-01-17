@@ -1,6 +1,5 @@
-oneshot-uniffi
-uniffi
-uniffi_checksum_derive
-uniffi_core
+remove-uniffi
+remove checksum_derive
+uremove_core
 uniffi_macros
-uniffi_meta
+remove_meta
