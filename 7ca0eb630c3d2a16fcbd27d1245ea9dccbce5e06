@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3ef00cd5_e826c8f3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-01-17T18:10:52Z",
+      "side": 1,
+      "message": "Can you confirm that you used these instructions:\nhttps://cs.android.com/android/platform/superproject/main/+/main:external/rust/android-crates-io/crates/grpcio-sys/android/build_cmake.rs;l\u003d12-27?q\u003dgrpc-bindings.rs\u0026ss\u003dandroid%2Fplatform%2Fsuperproject%2Fmain:external%2Frust%2Fandroid-crates-io%2Fcrates%2Fgrpcio-sys%2F\n\nto regenerate the contents of android/grpc-bindings.rs?\n\nNote that if you are using Soong to build your modified grpcio-sys, you don\u0027t need to touch that file. That file is used by an alternate cmake build (which possibly we should remove now that we\u0027re on the monorepo?). The version used by Soong is built dynamically, not pulled from `android/`.\n\nIf you aren\u0027t using the cmake build (and I don\u0027t think you are), you don\u0027t need to touch that file. If you want to update it, you need to follow their update procedure.",
+      "revId": "7ca0eb630c3d2a16fcbd27d1245ea9dccbce5e06",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
