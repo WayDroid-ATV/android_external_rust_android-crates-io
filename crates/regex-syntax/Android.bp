@@ -33,6 +33,7 @@ rust_library {
         "unicode-segment",
     ],
     apex_available: [
+        "//apex_available:anyapex",
         "//apex_available:platform",
         "com.android.compos",
         "com.android.configinfrastructure",
