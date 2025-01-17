@@ -69,6 +69,24 @@
       "parentUuid": "24d6e6fb_ef59c769",
       "revId": "49e8e689ea1fd2d73fe45d8ae855a252cf403b61",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f0a8b0d9_a8ac99ed",
+        "filename": "crates/bumpalo/src/boxed.rs",
+        "patchSetId": 7
+      },
+      "lineNbr": 463,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-17T15:45:49Z",
+      "side": 1,
+      "message": "The \"boxed\" feature is disabled by default. I\u0027m not sure of the best way to ensure that this feature doesn\u0027t get enabled in the future.",
+      "parentUuid": "6ca80377_f230f3ca",
+      "revId": "49e8e689ea1fd2d73fe45d8ae855a252cf403b61",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
