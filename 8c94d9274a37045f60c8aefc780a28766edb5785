@@ -94,6 +94,30 @@
       },
       "revId": "8c94d9274a37045f60c8aefc780a28766edb5785",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7a2010c6_c1aea7e6",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1224593
+      },
+      "writtenOn": "2025-01-17T22:59:20Z",
+      "side": 1,
+      "message": "Both Apache-2.0 and BSD-3-Clause are notice type licenses.  They have effectively equivalent obligations.  Satisfying both is straightforward (ensure a copy of the Apache license AND a copy of the BSD license and accompanying copyright are distributed) -- and is what I\u0027d reccomend.  Additional 3p review shouldn\u0027t be necessary.",
+      "parentUuid": "3ff964af_4d64603f",
+      "range": {
+        "startLine": 11,
+        "startChar": 55,
+        "endLine": 15,
+        "endChar": 14
+      },
+      "revId": "8c94d9274a37045f60c8aefc780a28766edb5785",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
