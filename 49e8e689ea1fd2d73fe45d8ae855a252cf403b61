@@ -33,6 +33,24 @@
       "message": "This is not okay because leaking a bumpalo `Box` does not cause the memory to live forever, which pinning requires. 😞\nAlready seem to be reported:\nhttps://github.com/fitzgen/bumpalo/issues/186",
       "revId": "49e8e689ea1fd2d73fe45d8ae855a252cf403b61",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "24d6e6fb_ef59c769",
+        "filename": "crates/bumpalo/src/boxed.rs",
+        "patchSetId": 7
+      },
+      "lineNbr": 463,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-17T15:28:13Z",
+      "side": 1,
+      "message": "Yes, and it looks like this crate is up to v3.16 since I started the import (it\u0027s been awhile). I\u0027ll update the change with the latest version.",
+      "parentUuid": "f237f3de_39aeaee7",
+      "revId": "49e8e689ea1fd2d73fe45d8ae855a252cf403b61",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
