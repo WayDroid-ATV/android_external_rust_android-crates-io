@@ -31,44 +31,6 @@ diff --git b/src/lib.rs a/src/lib.rs
 index faf2779b..cfd2bb99 100644
 --- b/src/lib.rs
 +++ a/src/lib.rs
-@@ -67,20 +67,35 @@
- extern crate android_log_sys as log_ffi;
- extern crate once_cell;
- use once_cell::sync::OnceCell;
-+#[cfg(default_log_impl)]
-+use crate as log;
-+#[cfg(not(default_log_impl))]
- #[macro_use]
- extern crate log;
- 
-+#[cfg(not(default_log_impl))]
- extern crate env_logger;
- 
--use log::{Level, LevelFilter, Log, Metadata, Record};
-+use self::log::{Level, LevelFilter, Log, Metadata, Record};
- #[cfg(target_os = "android")]
--use log_ffi::LogPriority;
-+use self::log_ffi::LogPriority;
- use std::ffi::{CStr, CString};
- use std::fmt;
- use std::mem::{self, MaybeUninit};
- use std::ptr;
- 
-+#[cfg(default_log_impl)]
-+pub mod env_logger {
-+    pub mod filter {
-+        pub struct Filter;
-+        impl Filter {
-+            pub fn matches(&self, _: &crate::Record) -> bool { true }
-+        }
-+    }
-+}
-+#[cfg(not(default_log_impl))]
- pub use env_logger::filter::{Builder as FilterBuilder, Filter};
-+#[cfg(not(default_log_impl))]
- pub use env_logger::fmt::Formatter;
- 
- pub(crate) type FormatFn = Box<dyn Fn(&mut dyn fmt::Write, &Record) -> fmt::Result + Sync + Send>;
 @@ -542,6 +557,12 @@ pub fn init_once(config: Config) {
      } else if let Some(level) = log_level {
          log::set_max_level(level);

@@ -1,17 +1,17 @@
 name: "android_logger"
 description: "()"
 third_party {
-  version: "0.13.3"
+  version: "0.14.1"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
+    year: 2025
     month: 1
-    day: 24
+    day: 17
   }
   homepage: "https://crates.io/crates/android_logger"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/android_logger/android_logger-0.13.3.crate"
-    version: "0.13.3"
+    value: "https://static.crates.io/crates/android_logger/android_logger-0.14.1.crate"
+    version: "0.14.1"
   }
 }
