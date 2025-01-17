@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0ace5da2_137809db",
+        "filename": "crates/bumpalo/src/lib.rs",
+        "patchSetId": 7
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1892347
+      },
+      "writtenOn": "2025-01-17T14:56:02Z",
+      "side": 0,
+      "message": "Why is this file executable?",
+      "revId": "0d5c23f0c3fda3b89d25b270ca064d30e494aeb2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}

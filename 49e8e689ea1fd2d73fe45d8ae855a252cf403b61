@@ -16,6 +16,23 @@
       "message": "This needs to be reviewed by an unsafe expert. Adding @aliceryhl@google.com",
       "revId": "49e8e689ea1fd2d73fe45d8ae855a252cf403b61",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f237f3de_39aeaee7",
+        "filename": "crates/bumpalo/src/boxed.rs",
+        "patchSetId": 7
+      },
+      "lineNbr": 463,
+      "author": {
+        "id": 1892347
+      },
+      "writtenOn": "2025-01-17T14:56:02Z",
+      "side": 1,
+      "message": "This is not okay because leaking a bumpalo `Box` does not cause the memory to live forever, which pinning requires. 😞\nAlready seem to be reported:\nhttps://github.com/fitzgen/bumpalo/issues/186",
+      "revId": "49e8e689ea1fd2d73fe45d8ae855a252cf403b61",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
