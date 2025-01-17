@@ -34,6 +34,24 @@
       "parentUuid": "b73dc7d1_4cfb2aed",
       "revId": "0379b97c745b5ae17c040795dbd27a5026b7e6cb",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dd3e0acf_695d2190",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-17T02:57:34Z",
+      "side": 1,
+      "message": "I spent awhile investigating this. Basically, no, we can\u0027t remove the dependency by upgrading vhost-device-vsock.\n\nvhost-device-vsock 0.2.0, in addition to being a very complicated update that someone else is already working on, removes the direct dependency on serde_yaml, but adds a new dependency on figment, which depends on (you guessed it) serde_yaml.\n\nIn light of this, I think it\u0027s probably best for now to upgrade to the latest version of serde_yaml.\n\nYou can look at the stack of updates and imports I had to do to update to vhost-device-vsock 0.2.0 (and this is still not working, btw): aosp/3454673",
+      "parentUuid": "acc803fd_830c7c35",
+      "revId": "0379b97c745b5ae17c040795dbd27a5026b7e6cb",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
