@@ -51,6 +51,24 @@
       "parentUuid": "f237f3de_39aeaee7",
       "revId": "49e8e689ea1fd2d73fe45d8ae855a252cf403b61",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6ca80377_f230f3ca",
+        "filename": "crates/bumpalo/src/boxed.rs",
+        "patchSetId": 7
+      },
+      "lineNbr": 463,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-17T15:37:22Z",
+      "side": 1,
+      "message": "Unfortunately, it\u0027s not fixed in 3.16. :(\n\nThe reason for importing this crate is that it\u0027s a dev dependency of newer version of hashbrown, which is something we need to update as part of migrating libsqlite3-sys into the monorepo.\n\nThis functionality is behind the \"boxed\" feature, so maybe the best thing to do is disable boxed.",
+      "parentUuid": "24d6e6fb_ef59c769",
+      "revId": "49e8e689ea1fd2d73fe45d8ae855a252cf403b61",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
