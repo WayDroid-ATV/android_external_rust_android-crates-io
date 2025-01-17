@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0fad7183_45798769",
+        "filename": "crates/env_filter/LICENSE-MIT",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 3686405
+      },
+      "writtenOn": "2025-01-17T00:13:10Z",
+      "side": 1,
+      "message": "Please fix this WARNING reported by ComplianceLint: AllLicensesRecorded\n\nAnalyzer Description: Reports third party compliance warnings. go/compliancelint\nOwner: opensource-compliance-team@google.com\n\nAllLicensesRecorded\nThe license \"MIT\" was found in 1 source files and is missing from the package\u0027s LICENSE file.\n\nThis license was found in \"crates/env_filter/LICENSE-MIT\" on line 3.\n\nThe LICENSE file \"crates/env_filter/LICENSE\" contains the licenses \"Apache-2.0\".\n\n📖 See go/compliancelint-checks#AllLicensesRecorded",
+      "range": {
+        "startLine": 3,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 0
+      },
+      "revId": "7b9f9e6efd7339736895dab037aff963c1ba570b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
