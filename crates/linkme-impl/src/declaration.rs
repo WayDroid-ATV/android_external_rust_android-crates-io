@@ -1,11 +1,8 @@
-use crate::{attr, linker};
+use crate::{attr, linker, ty};
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{
-    bracketed, Attribute, Error, GenericArgument, Ident, Lifetime, PathArguments, Token, Type,
-    Visibility,
-};
+use syn::{bracketed, Attribute, Error, Ident, Token, Type, Visibility};
 
 struct Declaration {
     attrs: Vec<Attribute>,
@@ -29,11 +26,13 @@ impl Parse for Declaration {
         let ident: Ident = input.parse()?;
         input.parse::<Token![:]>()?;
         let ty: Type = input.parse()?;
-        input.parse::<Token![=]>()?;
 
-        let content;
-        bracketed!(content in input);
-        content.parse::<Token![..]>()?;
+        let eq_token: Option<Token![=]> = input.parse()?;
+        if eq_token.is_some() {
+            let content;
+            bracketed!(content in input);
+            content.parse::<Token![..]>()?;
+        }
 
         input.parse::<Token![;]>()?;
 
@@ -67,7 +66,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
         Err(err) => return err.to_compile_error(),
     };
 
-    populate_static_lifetimes(&mut ty);
+    ty::populate_static_lifetimes(&mut ty);
 
     let used = if cfg!(feature = "used_linker") {
         quote!(#[used(linker)])
@@ -103,16 +102,33 @@ pub fn expand(input: TokenStream) -> TokenStream {
     let illumos_dupcheck_start = illumos_section_start.replacen("linkme", "linkm2", 1);
     let illumos_dupcheck_stop = illumos_section_stop.replacen("linkme", "linkm2", 1);
 
-    let freebsd_section = linker::freebsd::section(&ident);
-    let freebsd_section_start = linker::freebsd::section_start(&ident);
-    let freebsd_section_stop = linker::freebsd::section_stop(&ident);
-    let freebsd_dupcheck = freebsd_section.replacen("linkme", "linkm2", 1);
-    let freebsd_dupcheck_start = freebsd_section_start.replacen("linkme", "linkm2", 1);
-    let freebsd_dupcheck_stop = freebsd_section_stop.replacen("linkme", "linkm2", 1);
+    let bsd_section = linker::bsd::section(&ident);
+    let bsd_section_start = linker::bsd::section_start(&ident);
+    let bsd_section_stop = linker::bsd::section_stop(&ident);
+    let bsd_dupcheck = bsd_section.replacen("linkme", "linkm2", 1);
+    let bsd_dupcheck_start = bsd_section_start.replacen("linkme", "linkm2", 1);
+    let bsd_dupcheck_stop = bsd_section_stop.replacen("linkme", "linkm2", 1);
 
     let call_site = Span::call_site();
     let link_section_macro_str = format!("_linkme_macro_{}", ident);
     let link_section_macro = Ident::new(&link_section_macro_str, call_site);
+
+    let unsafe_extern = if cfg!(no_unsafe_extern_blocks) {
+        None
+    } else {
+        Some(Token![unsafe](call_site))
+    };
+
+    let (unsafe_attr, link_section_attr) = if cfg!(no_unsafe_attributes) {
+        // #[cfg_attr(all(), link_section = ...)]
+        (
+            Ident::new("cfg_attr", call_site),
+            quote!(all(), link_section),
+        )
+    } else {
+        // #[unsafe(link_section = ...)]
+        (Ident::new("unsafe", call_site), quote!(link_section))
+    };
 
     quote! {
         #(#attrs)*
@@ -124,64 +140,76 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 target_os = "ios",
                 target_os = "tvos",
                 target_os = "android",
+                target_os = "fuchsia",
                 target_os = "illumos",
                 target_os = "freebsd",
+                target_os = "openbsd",
+                target_os = "psp",
             ))]
-            extern "Rust" {
-                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android"), link_name = #linux_section_start)]
+            #unsafe_extern extern "Rust" {
+                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android", target_os = "fuchsia", target_os = "psp"), link_name = #linux_section_start)]
                 #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "tvos"), link_name = #macho_section_start)]
                 #[cfg_attr(target_os = "illumos", link_name = #illumos_section_start)]
-                #[cfg_attr(target_os = "freebsd", link_name = #freebsd_section_start)]
+                #[cfg_attr(any(target_os = "freebsd", target_os = "openbsd"), link_name = #bsd_section_start)]
                 static LINKME_START: <#ty as #linkme_path::__private::Slice>::Element;
 
-                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android"), link_name = #linux_section_stop)]
+                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android", target_os = "fuchsia", target_os = "psp"), link_name = #linux_section_stop)]
                 #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "tvos"), link_name = #macho_section_stop)]
                 #[cfg_attr(target_os = "illumos", link_name = #illumos_section_stop)]
-                #[cfg_attr(target_os = "freebsd", link_name = #freebsd_section_stop)]
+                #[cfg_attr(any(target_os = "freebsd", target_os = "openbsd"), link_name = #bsd_section_stop)]
                 static LINKME_STOP: <#ty as #linkme_path::__private::Slice>::Element;
 
-                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android"), link_name = #linux_dupcheck_start)]
+                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android", target_os = "fuchsia", target_os = "psp"), link_name = #linux_dupcheck_start)]
                 #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "tvos"), link_name = #macho_dupcheck_start)]
                 #[cfg_attr(target_os = "illumos", link_name = #illumos_dupcheck_start)]
-                #[cfg_attr(target_os = "freebsd", link_name = #freebsd_dupcheck_start)]
+                #[cfg_attr(any(target_os = "freebsd", target_os = "openbsd"), link_name = #bsd_dupcheck_start)]
                 static DUPCHECK_START: #linkme_path::__private::usize;
 
-                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android"), link_name = #linux_dupcheck_stop)]
+                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android", target_os = "fuchsia", target_os = "psp"), link_name = #linux_dupcheck_stop)]
                 #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "tvos"), link_name = #macho_dupcheck_stop)]
                 #[cfg_attr(target_os = "illumos", link_name = #illumos_dupcheck_stop)]
-                #[cfg_attr(target_os = "freebsd", link_name = #freebsd_dupcheck_stop)]
+                #[cfg_attr(any(target_os = "freebsd", target_os = "openbsd"), link_name = #bsd_dupcheck_stop)]
                 static DUPCHECK_STOP: #linkme_path::__private::usize;
             }
 
-            #[cfg(target_os = "windows")]
-            #[link_section = #windows_section_start]
+            #[cfg(any(target_os = "uefi", target_os = "windows"))]
+            #[#unsafe_attr(#link_section_attr = #windows_section_start)]
             static LINKME_START: [<#ty as #linkme_path::__private::Slice>::Element; 0] = [];
 
-            #[cfg(target_os = "windows")]
-            #[link_section = #windows_section_stop]
+            #[cfg(any(target_os = "uefi", target_os = "windows"))]
+            #[#unsafe_attr(#link_section_attr = #windows_section_stop)]
             static LINKME_STOP: [<#ty as #linkme_path::__private::Slice>::Element; 0] = [];
 
-            #[cfg(target_os = "windows")]
-            #[link_section = #windows_dupcheck_start]
+            #[cfg(any(target_os = "uefi", target_os = "windows"))]
+            #[#unsafe_attr(#link_section_attr = #windows_dupcheck_start)]
             static DUPCHECK_START: () = ();
 
-            #[cfg(target_os = "windows")]
-            #[link_section = #windows_dupcheck_stop]
+            #[cfg(any(target_os = "uefi", target_os = "windows"))]
+            #[#unsafe_attr(#link_section_attr = #windows_dupcheck_stop)]
             static DUPCHECK_STOP: () = ();
 
             #used
-            #[cfg(any(target_os = "none", target_os = "linux", target_os = "android", target_os = "illumos", target_os = "freebsd"))]
-            #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android"), link_section = #linux_section)]
-            #[cfg_attr(target_os = "illumos", link_section = #illumos_section)]
-            #[cfg_attr(target_os = "freebsd", link_section = #freebsd_section)]
+            #[cfg(any(
+                target_os = "none",
+                target_os = "linux",
+                target_os = "android",
+                target_os = "fuchsia",
+                target_os = "illumos",
+                target_os = "freebsd",
+                target_os = "openbsd",
+                target_os = "psp",
+            ))]
+            #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android", target_os = "fuchsia", target_os = "psp"), #unsafe_attr(#link_section_attr = #linux_section))]
+            #[cfg_attr(target_os = "illumos", #unsafe_attr(#link_section_attr = #illumos_section))]
+            #[cfg_attr(any(target_os = "freebsd", target_os = "openbsd"), #unsafe_attr(#link_section_attr = #bsd_section))]
             static mut LINKME_PLEASE: [<#ty as #linkme_path::__private::Slice>::Element; 0] = [];
 
             #used
-            #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android"), link_section = #linux_dupcheck)]
-            #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "tvos"), link_section = #macho_dupcheck)]
-            #[cfg_attr(target_os = "windows", link_section = #windows_dupcheck)]
-            #[cfg_attr(target_os = "illumos", link_section = #illumos_dupcheck)]
-            #[cfg_attr(target_os = "freebsd", link_section = #freebsd_dupcheck)]
+            #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android", target_os = "fuchsia", target_os = "psp"), #unsafe_attr(#link_section_attr = #linux_dupcheck))]
+            #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "tvos"), #unsafe_attr(#link_section_attr = #macho_dupcheck))]
+            #[cfg_attr(any(target_os = "uefi", target_os = "windows"), #unsafe_attr(#link_section_attr = #windows_dupcheck))]
+            #[cfg_attr(target_os = "illumos", #unsafe_attr(#link_section_attr = #illumos_dupcheck))]
+            #[cfg_attr(any(target_os = "freebsd", target_os = "openbsd"), #unsafe_attr(#link_section_attr = #bsd_dupcheck))]
             static DUPCHECK: #linkme_path::__private::usize = 1;
 
             #[cfg(not(any(
@@ -191,9 +219,13 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 target_os = "ios",
                 target_os = "tvos",
                 target_os = "windows",
+                target_os = "uefi",
                 target_os = "android",
+                target_os = "fuchsia",
                 target_os = "illumos",
                 target_os = "freebsd",
+                target_os = "openbsd",
+                target_os = "psp",
             )))]
             #unsupported_platform
 
@@ -204,10 +236,10 @@ pub fn expand(input: TokenStream) -> TokenStream {
             unsafe {
                 #linkme_path::DistributedSlice::private_new(
                     #name,
-                    &LINKME_START,
-                    &LINKME_STOP,
-                    &DUPCHECK_START,
-                    &DUPCHECK_STOP,
+                    #linkme_path::__private::ptr::addr_of!(LINKME_START),
+                    #linkme_path::__private::ptr::addr_of!(LINKME_STOP),
+                    #linkme_path::__private::ptr::addr_of!(DUPCHECK_START),
+                    #linkme_path::__private::ptr::addr_of!(DUPCHECK_STOP),
                 )
             }
         };
@@ -225,7 +257,7 @@ pub fn expand(input: TokenStream) -> TokenStream {
                     #![linkme_macho_section = concat!(#macho_section, $key)]
                     #![linkme_windows_section = concat!(#windows_section, $key)]
                     #![linkme_illumos_section = concat!(#illumos_section, $key)]
-                    #![linkme_freebsd_section = concat!(#freebsd_section, $key)]
+                    #![linkme_bsd_section = concat!(#bsd_section, $key)]
                     $item
                 }
             };
@@ -234,69 +266,29 @@ pub fn expand(input: TokenStream) -> TokenStream {
                 #![linkme_macho_section = $macho_section:expr]
                 #![linkme_windows_section = $windows_section:expr]
                 #![linkme_illumos_section = $illumos_section:expr]
-                #![linkme_freebsd_section = $freebsd_section:expr]
+                #![linkme_bsd_section = $bsd_section:expr]
                 $item:item
             ) => {
                 #used
-                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android"), link_section = $linux_section)]
-                #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "tvos"), link_section = $macho_section)]
-                #[cfg_attr(target_os = "windows", link_section = $windows_section)]
-                #[cfg_attr(target_os = "illumos", link_section = $illumos_section)]
-                #[cfg_attr(target_os = "freebsd", link_section = $freebsd_section)]
+                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android", target_os = "fuchsia", target_os = "psp"), #unsafe_attr(#link_section_attr = $linux_section))]
+                #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "tvos"), #unsafe_attr(#link_section_attr = $macho_section))]
+                #[cfg_attr(any(target_os = "uefi", target_os = "windows"), #unsafe_attr(#link_section_attr = $windows_section))]
+                #[cfg_attr(target_os = "illumos", #unsafe_attr(#link_section_attr = $illumos_section))]
+                #[cfg_attr(any(target_os = "freebsd", target_os = "openbsd"), #unsafe_attr(#link_section_attr = $bsd_section))]
                 $item
             };
             ($item:item) => {
                 #used
-                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android"), link_section = #linux_section)]
-                #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "tvos"), link_section = #macho_section)]
-                #[cfg_attr(target_os = "windows", link_section = #windows_section)]
-                #[cfg_attr(target_os = "illumos", link_section = #illumos_section)]
-                #[cfg_attr(target_os = "freebsd", link_section = #freebsd_section)]
+                #[cfg_attr(any(target_os = "none", target_os = "linux", target_os = "android", target_os = "fuchsia", target_os = "psp"), #unsafe_attr(#link_section_attr = #linux_section))]
+                #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "tvos"), #unsafe_attr(#link_section_attr = #macho_section))]
+                #[cfg_attr(any(target_os = "uefi", target_os = "windows"), #unsafe_attr(#link_section_attr = #windows_section))]
+                #[cfg_attr(target_os = "illumos", #unsafe_attr(#link_section_attr = #illumos_section))]
+                #[cfg_attr(any(target_os = "freebsd", target_os = "openbsd"), #unsafe_attr(#link_section_attr = #bsd_section))]
                 $item
             };
         }
 
         #[doc(hidden)]
         #vis use #link_section_macro as #ident;
-    }
-}
-
-fn populate_static_lifetimes(ty: &mut Type) {
-    match ty {
-        Type::Array(ty) => populate_static_lifetimes(&mut ty.elem),
-        Type::Group(ty) => populate_static_lifetimes(&mut ty.elem),
-        Type::Paren(ty) => populate_static_lifetimes(&mut ty.elem),
-        Type::Path(ty) => {
-            if let Some(qself) = &mut ty.qself {
-                populate_static_lifetimes(&mut qself.ty);
-            }
-            for segment in &mut ty.path.segments {
-                if let PathArguments::AngleBracketed(segment) = &mut segment.arguments {
-                    for arg in &mut segment.args {
-                        if let GenericArgument::Type(arg) = arg {
-                            populate_static_lifetimes(arg);
-                        }
-                    }
-                }
-            }
-        }
-        Type::Ptr(ty) => populate_static_lifetimes(&mut ty.elem),
-        Type::Reference(ty) => {
-            if ty.lifetime.is_none() {
-                ty.lifetime = Some(Lifetime::new("'static", ty.and_token.span));
-            }
-            populate_static_lifetimes(&mut ty.elem);
-        }
-        Type::Slice(ty) => populate_static_lifetimes(&mut ty.elem),
-        Type::Tuple(ty) => ty.elems.iter_mut().for_each(populate_static_lifetimes),
-        Type::ImplTrait(_)
-        | Type::Infer(_)
-        | Type::Macro(_)
-        | Type::Never(_)
-        | Type::TraitObject(_)
-        | Type::BareFn(_)
-        | Type::Verbatim(_) => {}
-        #[cfg_attr(all(test, exhaustive), deny(non_exhaustive_omitted_patterns))]
-        _ => unimplemented!("unknown Type"),
     }
 }

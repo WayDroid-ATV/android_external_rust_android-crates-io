@@ -12,7 +12,7 @@ pub fn derive(input: &DeriveInput) -> TokenStream {
     match try_expand(input) {
         Ok(expanded) => expanded,
         // If there are invalid attributes in the input, expand to an Error impl
-        // anyway to minimize spurious knock-on errors in other code that uses
+        // anyway to minimize spurious secondary errors in other code that uses
         // this type as an Error.
         Err(error) => fallback::expand(input, error),
     }
@@ -169,15 +169,21 @@ fn impl_struct(input: Struct) -> TokenStream {
         let from = unoptional_type(from_field.ty);
         let source_var = Ident::new("source", span);
         let body = from_initializer(from_field, backtrace_field, &source_var);
-        quote_spanned! {span=>
-            #[allow(deprecated, unused_qualifications, clippy::needless_lifetimes)]
+        let from_function = quote! {
+            fn from(#source_var: #from) -> Self {
+                #ty #body
+            }
+        };
+        let from_impl = quote_spanned! {span=>
             #[automatically_derived]
             impl #impl_generics ::core::convert::From<#from> for #ty #ty_generics #where_clause {
-                fn from(#source_var: #from) -> Self {
-                    #ty #body
-                }
+                #from_function
             }
-        }
+        };
+        Some(quote! {
+            #[allow(deprecated, unused_qualifications, clippy::needless_lifetimes)]
+            #from_impl
+        })
     });
 
     if input.generics.type_params().next().is_some() {
@@ -433,14 +439,20 @@ fn impl_enum(input: Enum) -> TokenStream {
         let from = unoptional_type(from_field.ty);
         let source_var = Ident::new("source", span);
         let body = from_initializer(from_field, backtrace_field, &source_var);
-        Some(quote_spanned! {span=>
-            #[allow(deprecated, unused_qualifications, clippy::needless_lifetimes)]
+        let from_function = quote! {
+            fn from(#source_var: #from) -> Self {
+                #ty::#variant #body
+            }
+        };
+        let from_impl = quote_spanned! {span=>
             #[automatically_derived]
             impl #impl_generics ::core::convert::From<#from> for #ty #ty_generics #where_clause {
-                fn from(#source_var: #from) -> Self {
-                    #ty::#variant #body
-                }
+                #from_function
             }
+        };
+        Some(quote! {
+            #[allow(deprecated, unused_qualifications, clippy::needless_lifetimes)]
+            #from_impl
         })
     });
 

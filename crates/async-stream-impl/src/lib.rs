@@ -66,7 +66,7 @@ fn visit_token_stream_impl(
                         tokens = rest.into_iter().peekable();
                     }
                     Err(e) => {
-                        out.append_all(&mut e.to_compile_error().into_iter());
+                        out.append_all(e.to_compile_error().into_iter());
                         *modified = true;
                         return;
                     }
@@ -121,10 +121,19 @@ impl VisitMut for Scrub<'_> {
 
                 // let ident = &self.yielder;
 
-                *i = if self.is_try {
-                    syn::parse_quote! { __yield_tx.send(::core::result::Result::Ok(#value_expr)).await }
+                let yield_expr = if self.is_try {
+                    quote! { __yield_tx.send(::core::result::Result::Ok(#value_expr)).await }
                 } else {
-                    syn::parse_quote! { __yield_tx.send(#value_expr).await }
+                    quote! { __yield_tx.send(#value_expr).await }
+                };
+                *i = syn::parse_quote! {
+                    {
+                        #[allow(unreachable_code)]
+                        if false {
+                            break '__async_stream_private_check_scope (loop {});
+                        }
+                        #yield_expr
+                    }
                 };
             }
             syn::Expr::Try(try_expr) => {
@@ -226,8 +235,10 @@ pub fn stream_inner(input: TokenStream) -> TokenStream {
     quote!({
         let (mut __yield_tx, __yield_rx) = unsafe { #crate_path::__private::yielder::pair() };
         #crate_path::__private::AsyncStream::new(__yield_rx, async move {
-            #dummy_yield
-            #(#stmts)*
+            '__async_stream_private_check_scope: {
+                #dummy_yield
+                #(#stmts)*
+            }
         })
     })
     .into()
@@ -260,8 +271,10 @@ pub fn try_stream_inner(input: TokenStream) -> TokenStream {
     quote!({
         let (mut __yield_tx, __yield_rx) = unsafe { #crate_path::__private::yielder::pair() };
         #crate_path::__private::AsyncStream::new(__yield_rx, async move {
-            #dummy_yield
-            #(#stmts)*
+            '__async_stream_private_check_scope: {
+                #dummy_yield
+                #(#stmts)*
+            }
         })
     })
     .into()

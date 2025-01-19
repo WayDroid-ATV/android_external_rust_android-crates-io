@@ -14,7 +14,7 @@ pub mod linux {
     }
 }
 
-pub mod freebsd {
+pub mod bsd {
     use syn::Ident;
 
     pub fn section(ident: &Ident) -> String {

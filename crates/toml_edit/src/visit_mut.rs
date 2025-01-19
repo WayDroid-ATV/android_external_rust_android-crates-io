@@ -72,7 +72,7 @@
 //! table = { apple = 4.5 }
 //! "#;
 //!
-//! let mut document: Document = input.parse().unwrap();
+//! let mut document: DocumentMut = input.parse().unwrap();
 //! let mut visitor = FloatToString;
 //! visitor.visit_document_mut(&mut document);
 //!
@@ -90,7 +90,7 @@
 //! [on GitHub](https://github.com/toml-rs/toml/blob/main/crates/toml_edit/examples/visit.rs).
 
 use crate::{
-    Array, ArrayOfTables, Datetime, Document, Formatted, InlineTable, Item, KeyMut, Table,
+    Array, ArrayOfTables, Datetime, DocumentMut, Formatted, InlineTable, Item, KeyMut, Table,
     TableLike, Value,
 };
 
@@ -98,7 +98,7 @@ use crate::{
 ///
 /// See the [module documentation](self) for details.
 pub trait VisitMut {
-    fn visit_document_mut(&mut self, node: &mut Document) {
+    fn visit_document_mut(&mut self, node: &mut DocumentMut) {
         visit_document_mut(self, node);
     }
 
@@ -111,7 +111,7 @@ pub trait VisitMut {
     }
 
     fn visit_inline_table_mut(&mut self, node: &mut InlineTable) {
-        visit_inline_table_mut(self, node)
+        visit_inline_table_mut(self, node);
     }
 
     /// [`visit_table_mut`](Self::visit_table_mut) and
@@ -137,7 +137,7 @@ pub trait VisitMut {
     }
 
     fn visit_boolean_mut(&mut self, node: &mut Formatted<bool>) {
-        visit_boolean_mut(self, node)
+        visit_boolean_mut(self, node);
     }
 
     fn visit_datetime_mut(&mut self, node: &mut Formatted<Datetime>) {
@@ -145,19 +145,19 @@ pub trait VisitMut {
     }
 
     fn visit_float_mut(&mut self, node: &mut Formatted<f64>) {
-        visit_float_mut(self, node)
+        visit_float_mut(self, node);
     }
 
     fn visit_integer_mut(&mut self, node: &mut Formatted<i64>) {
-        visit_integer_mut(self, node)
+        visit_integer_mut(self, node);
     }
 
     fn visit_string_mut(&mut self, node: &mut Formatted<String>) {
-        visit_string_mut(self, node)
+        visit_string_mut(self, node);
     }
 }
 
-pub fn visit_document_mut<V>(v: &mut V, node: &mut Document)
+pub fn visit_document_mut<V>(v: &mut V, node: &mut DocumentMut)
 where
     V: VisitMut + ?Sized,
 {
@@ -203,7 +203,7 @@ pub fn visit_table_like_kv_mut<V>(v: &mut V, _key: KeyMut<'_>, node: &mut Item)
 where
     V: VisitMut + ?Sized,
 {
-    v.visit_item_mut(node)
+    v.visit_item_mut(node);
 }
 
 pub fn visit_array_mut<V>(v: &mut V, node: &mut Array)

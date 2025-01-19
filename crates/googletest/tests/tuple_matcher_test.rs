@@ -12,13 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use googletest::matcher::{Matcher, MatcherResult};
+use googletest::matcher::MatcherResult;
 use googletest::prelude::*;
 use indoc::indoc;
 
 #[test]
 fn empty_matcher_matches_empty_tuple() -> Result<()> {
     verify_that!((), ())
+}
+
+#[test]
+fn empty_matcher_matches_empty_tuple_reference() -> Result<()> {
+    let a_ok: std::result::Result<(), String> = Ok(()); // Non copy
+    verify_that!(a_ok, ok(()))
 }
 
 #[test]
@@ -176,7 +182,7 @@ fn tuple_matcher_with_trailing_comma_matches_matching_12_tuple() -> Result<()> {
 #[test]
 fn tuple_matcher_1_has_correct_description_for_match() -> Result<()> {
     verify_that!(
-        (eq::<i32, _>(1),).describe(MatcherResult::Match),
+        Matcher::<(i32,)>::describe(&(eq(1),), MatcherResult::Match),
         displays_as(eq(indoc!(
             "
             is a tuple whose values respectively match:
@@ -188,7 +194,7 @@ fn tuple_matcher_1_has_correct_description_for_match() -> Result<()> {
 #[test]
 fn tuple_matcher_1_has_correct_description_for_mismatch() -> Result<()> {
     verify_that!(
-        (eq::<i32, _>(1),).describe(MatcherResult::NoMatch),
+        Matcher::<(i32,)>::describe(&(eq(1),), MatcherResult::NoMatch),
         displays_as(eq(indoc!(
             "
             is a tuple whose values do not respectively match:
@@ -200,7 +206,7 @@ fn tuple_matcher_1_has_correct_description_for_mismatch() -> Result<()> {
 #[test]
 fn tuple_matcher_2_has_correct_description_for_match() -> Result<()> {
     verify_that!(
-        (eq::<i32, _>(1), eq::<i32, _>(2)).describe(MatcherResult::Match),
+        Matcher::<(i32, i32)>::describe(&(eq(1), eq(2)), MatcherResult::Match),
         displays_as(eq(indoc!(
             "
             is a tuple whose values respectively match:
@@ -213,7 +219,7 @@ fn tuple_matcher_2_has_correct_description_for_match() -> Result<()> {
 #[test]
 fn tuple_matcher_2_has_correct_description_for_mismatch() -> Result<()> {
     verify_that!(
-        (eq::<i32, _>(1), eq::<i32, _>(2)).describe(MatcherResult::NoMatch),
+        Matcher::<(i32, i32)>::describe(&(eq(1), eq(2)), MatcherResult::NoMatch),
         displays_as(eq(indoc!(
             "
             is a tuple whose values do not respectively match:
@@ -226,7 +232,7 @@ fn tuple_matcher_2_has_correct_description_for_mismatch() -> Result<()> {
 #[test]
 fn describe_match_shows_which_tuple_element_did_not_match() -> Result<()> {
     verify_that!(
-        (eq(1), eq(2)).explain_match(&(1, 3)),
+        (eq(1), eq(2)).explain_match((1, 3)),
         displays_as(eq(indoc!(
             "
             which
@@ -242,7 +248,7 @@ fn describe_match_shows_which_tuple_element_did_not_match() -> Result<()> {
 #[test]
 fn describe_match_shows_which_two_tuple_elements_did_not_match() -> Result<()> {
     verify_that!(
-        (eq(1), eq(2)).explain_match(&(2, 3)),
+        (eq(1), eq(2)).explain_match((2, 3)),
         displays_as(eq(indoc!(
             "
             which

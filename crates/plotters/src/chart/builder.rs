@@ -194,7 +194,7 @@ impl<'a, 'b, DB: DrawingBackend> ChartBuilder<'a, 'b, DB> {
     Sets the size of the X label area at the bottom of the chart.
 
     - `size`: The desired size of the X label area in backend units (pixels).
-    If set to 0, the X label area is removed.
+      If set to 0, the X label area is removed.
 
     See [`ChartBuilder::on()`] for more information and examples.
     */
@@ -206,7 +206,7 @@ impl<'a, 'b, DB: DrawingBackend> ChartBuilder<'a, 'b, DB> {
     Sets the size of the Y label area to the left of the chart.
 
     - `size`: The desired size of the Y label area in backend units (pixels).
-    If set to 0, the Y label area is removed.
+      If set to 0, the Y label area is removed.
 
     See [`ChartBuilder::on()`] for more information and examples.
     */
@@ -218,7 +218,7 @@ impl<'a, 'b, DB: DrawingBackend> ChartBuilder<'a, 'b, DB> {
     Sets the size of the X label area at the top of the chart.
 
     - `size`: The desired size of the top X label area in backend units (pixels).
-    If set to 0, the top X label area is removed.
+      If set to 0, the top X label area is removed.
 
     See [`ChartBuilder::on()`] for more information and examples.
     */
@@ -230,7 +230,7 @@ impl<'a, 'b, DB: DrawingBackend> ChartBuilder<'a, 'b, DB> {
     Sets the size of the Y label area to the right of the chart.
 
     - `size`: The desired size of the Y label area in backend units (pixels).
-    If set to 0, the Y label area to the right is removed.
+      If set to 0, the Y label area to the right is removed.
 
     See [`ChartBuilder::on()`] for more information and examples.
     */
@@ -243,7 +243,7 @@ impl<'a, 'b, DB: DrawingBackend> ChartBuilder<'a, 'b, DB> {
 
     - `pos`: The position of the desired label area to adjust
     - `size`: The desired size of the label area in backend units (pixels).
-    If set to 0, the label area is removed.
+      If set to 0, the label area is removed.
 
     See [`ChartBuilder::on()`] for more information and examples.
     */
@@ -285,12 +285,12 @@ impl<'a, 'b, DB: DrawingBackend> ChartBuilder<'a, 'b, DB> {
     #[deprecated(
         note = "`build_ranged` has been renamed to `build_cartesian_2d` and is to be removed in the future."
     )]
-    pub fn build_ranged<X: AsRangedCoord, Y: AsRangedCoord>(
+    pub fn build_ranged<'c, X: AsRangedCoord, Y: AsRangedCoord>(
         &mut self,
         x_spec: X,
         y_spec: Y,
     ) -> Result<
-        ChartContext<'a, DB, Cartesian2d<X::CoordDescType, Y::CoordDescType>>,
+        ChartContext<'c, DB, Cartesian2d<X::CoordDescType, Y::CoordDescType>>,
         DrawingAreaErrorKind<DB::ErrorType>,
     > {
         self.build_cartesian_2d(x_spec, y_spec)
@@ -306,12 +306,12 @@ impl<'a, 'b, DB: DrawingBackend> ChartBuilder<'a, 'b, DB> {
     See [`ChartBuilder::on()`] and [`ChartContext::configure_mesh()`] for more information and examples.
     */
     #[allow(clippy::type_complexity)]
-    pub fn build_cartesian_2d<X: AsRangedCoord, Y: AsRangedCoord>(
+    pub fn build_cartesian_2d<'c, X: AsRangedCoord, Y: AsRangedCoord>(
         &mut self,
         x_spec: X,
         y_spec: Y,
     ) -> Result<
-        ChartContext<'a, DB, Cartesian2d<X::CoordDescType, Y::CoordDescType>>,
+        ChartContext<'c, DB, Cartesian2d<X::CoordDescType, Y::CoordDescType>>,
         DrawingAreaErrorKind<DB::ErrorType>,
     > {
         let mut label_areas = [None, None, None, None];
@@ -450,13 +450,13 @@ impl<'a, 'b, DB: DrawingBackend> ChartBuilder<'a, 'b, DB> {
     See [`ChartBuilder::on()`] and [`ChartContext::configure_axes()`] for more information and examples.
     */
     #[allow(clippy::type_complexity)]
-    pub fn build_cartesian_3d<X: AsRangedCoord, Y: AsRangedCoord, Z: AsRangedCoord>(
+    pub fn build_cartesian_3d<'c, X: AsRangedCoord, Y: AsRangedCoord, Z: AsRangedCoord>(
         &mut self,
         x_spec: X,
         y_spec: Y,
         z_spec: Z,
     ) -> Result<
-        ChartContext<'a, DB, Cartesian3d<X::CoordDescType, Y::CoordDescType, Z::CoordDescType>>,
+        ChartContext<'c, DB, Cartesian3d<X::CoordDescType, Y::CoordDescType, Z::CoordDescType>>,
         DrawingAreaErrorKind<DB::ErrorType>,
     > {
         let mut drawing_area = DrawingArea::clone(self.root_area);
@@ -564,5 +564,28 @@ mod test {
 
         chart.caption("This is a test case", ("serif", 10));
         assert_eq!(chart.title.as_ref().unwrap().1.font.get_name(), "serif");
+    }
+
+    #[test]
+    fn test_zero_limit_with_log_scale() {
+        let drawing_area = create_mocked_drawing_area(640, 480, |_| {});
+
+        let mut chart = ChartBuilder::on(&drawing_area)
+            .build_cartesian_2d(0f32..10f32, (1e-6f32..1f32).log_scale())
+            .unwrap();
+
+        let data = vec![
+            (2f32, 1e-4f32),
+            (4f32, 1e-3f32),
+            (6f32, 1e-2f32),
+            (8f32, 1e-1f32),
+        ];
+
+        chart
+            .draw_series(
+                data.iter()
+                    .map(|&(x, y)| Rectangle::new([(x - 0.5, 0.0), (x + 0.5, y)], RED.filled())),
+            )
+            .unwrap();
     }
 }

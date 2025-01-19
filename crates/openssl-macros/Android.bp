@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libopenssl_macros",
     crate_name: "openssl_macros",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.0",
+    cargo_pkg_version: "0.1.1",
     crate_root: "src/lib.rs",
     edition: "2018",
     rustlibs: [

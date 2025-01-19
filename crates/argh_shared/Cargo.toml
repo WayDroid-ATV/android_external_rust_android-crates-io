@@ -12,17 +12,28 @@
 [package]
 edition = "2018"
 name = "argh_shared"
-version = "0.1.12"
+version = "0.1.13"
 authors = [
     "Taylor Cramer <cramertj@google.com>",
     "Benjamin Brittain <bwb@google.com>",
     "Erick Tryzelaar <etryzelaar@google.com>",
 ]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Derive-based argument parsing optimized for code size"
 readme = "README.md"
 license = "BSD-3-Clause"
 repository = "https://github.com/google/argh"
 
+[lib]
+name = "argh_shared"
+path = "src/lib.rs"
+
 [dependencies.serde]
 version = "1"
 features = ["derive"]
+optional = true

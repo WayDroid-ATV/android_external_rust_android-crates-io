@@ -15,7 +15,8 @@ pub struct CommandInfo<'a> {
 }
 
 /// Information about the command line arguments for a given command.
-#[derive(Debug, Default, PartialEq, Eq, Clone, serde::Serialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct CommandInfoWithArgs<'a> {
     /// The name of the command.
     pub name: &'a str,
@@ -36,7 +37,8 @@ pub struct CommandInfoWithArgs<'a> {
 }
 
 /// Information about a documented error code.
-#[derive(Debug, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct ErrorCodeInfo<'a> {
     /// The code value.
     pub code: i32,
@@ -45,7 +47,8 @@ pub struct ErrorCodeInfo<'a> {
 }
 
 /// Information about positional arguments
-#[derive(Debug, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct PositionalInfo<'a> {
     /// Name of the argument.
     pub name: &'a str,
@@ -63,7 +66,8 @@ pub struct PositionalInfo<'a> {
 /// Dynamic subcommands do not implement
 /// get_args_info(), so the command field
 /// only contains the name and description.
-#[derive(Debug, Default, PartialEq, Eq, Clone, serde::Serialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct SubCommandInfo<'a> {
     /// The subcommand name.
     pub name: &'a str,
@@ -72,7 +76,8 @@ pub struct SubCommandInfo<'a> {
 }
 
 /// Information about a flag or option.
-#[derive(Debug, Default, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct FlagInfo<'a> {
     /// The kind of flag.
     pub kind: FlagInfoKind<'a>,
@@ -81,7 +86,7 @@ pub struct FlagInfo<'a> {
     /// The long string of the flag.
     pub long: &'a str,
     /// The single character short indicator
-    /// for trhis flag.
+    /// for this flag.
     pub short: Option<char>,
     /// The description of the flag.
     pub description: &'a str,
@@ -92,7 +97,8 @@ pub struct FlagInfo<'a> {
 }
 
 /// The kind of flags.
-#[derive(Debug, Default, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub enum FlagInfoKind<'a> {
     /// switch represents a boolean flag,
     #[default]
@@ -102,9 +108,10 @@ pub enum FlagInfoKind<'a> {
     Option { arg_name: &'a str },
 }
 
-/// The optionality defines the requirments related
+/// The optionality defines the requirements related
 /// to the presence of the argument on the command line.
-#[derive(Debug, Default, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub enum Optionality {
     /// Required indicates the argument is required
     /// exactly once.
@@ -117,7 +124,7 @@ pub enum Optionality {
     /// or more times.
     Repeating,
     /// Greedy is used for positional arguments which
-    /// capture the all command line input upto the next flag or
+    /// capture the all command line input up to the next flag or
     /// the end of the input.
     Greedy,
 }

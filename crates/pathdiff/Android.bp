@@ -17,7 +17,7 @@ rust_library_host {
     name: "libpathdiff",
     crate_name: "pathdiff",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.1",
+    cargo_pkg_version: "0.2.3",
     crate_root: "src/lib.rs",
     edition: "2018",
 }

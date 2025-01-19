@@ -1,8 +1,3 @@
-#![deny(missing_docs)]
-// https://github.com/Marwes/combine/issues/172
-#![recursion_limit = "256"]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
-
 //! # `toml_edit`
 //!
 //! This crate allows you to parse and modify toml
@@ -16,13 +11,13 @@
 //! ```rust
 //! # #[cfg(feature = "parse")] {
 //! # #[cfg(feature = "display")] {
-//! use toml_edit::{Document, value};
+//! use toml_edit::{DocumentMut, value};
 //!
 //! let toml = r#"
 //! "hello" = 'toml!' # comment
 //! ['a'.b]
 //! "#;
-//! let mut doc = toml.parse::<Document>().expect("invalid doc");
+//! let mut doc = toml.parse::<DocumentMut>().expect("invalid doc");
 //! assert_eq!(doc.to_string(), toml);
 //! // let's add a new key/value pair inside a.b: c = {d = "hello"}
 //! doc["a"]["b"]["c"]["d"] = value("hello");
@@ -43,22 +38,26 @@
 //! By default, values are created with default formatting
 //! ```rust
 //! # #[cfg(feature = "display")] {
-//! let mut doc = toml_edit::Document::new();
+//! # #[cfg(feature = "parse")] {
+//! let mut doc = toml_edit::DocumentMut::new();
 //! doc["foo"] = toml_edit::value("bar");
 //! let expected = r#"foo = "bar"
 //! "#;
 //! assert_eq!(doc.to_string(), expected);
+//! # }
 //! # }
 //! ```
 //!
 //! You can choose a custom TOML representation by parsing the value.
 //! ```rust
 //! # #[cfg(feature = "display")] {
-//! let mut doc = toml_edit::Document::new();
+//! # #[cfg(feature = "parse")] {
+//! let mut doc = toml_edit::DocumentMut::new();
 //! doc["foo"] = "'bar'".parse::<toml_edit::Item>().unwrap();
 //! let expected = r#"foo = 'bar'
 //! "#;
 //! assert_eq!(doc.to_string(), expected);
+//! # }
 //! # }
 //! ```
 //!
@@ -69,6 +68,13 @@
 //! * Order of dotted keys, see [issue](https://github.com/toml-rs/toml/issues/163).
 //!
 //! [`toml`]: https://docs.rs/toml/latest/toml/
+
+// https://github.com/Marwes/combine/issues/172
+#![recursion_limit = "256"]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![warn(missing_docs)]
+#![warn(clippy::print_stderr)]
+#![warn(clippy::print_stdout)]
 
 mod array;
 mod array_of_tables;
@@ -100,7 +106,11 @@ pub use crate::array::{Array, ArrayIntoIter, ArrayIter, ArrayIterMut};
 pub use crate::array_of_tables::{
     ArrayOfTables, ArrayOfTablesIntoIter, ArrayOfTablesIter, ArrayOfTablesIterMut,
 };
-pub use crate::document::Document;
+/// Deprecated, replaced with [`DocumentMut`]
+#[deprecated(since = "0.22.6", note = "Replaced with `DocumentMut`")]
+pub type Document = DocumentMut;
+pub use crate::document::DocumentMut;
+pub use crate::document::ImDocument;
 pub use crate::error::TomlError;
 pub use crate::inline_table::{
     InlineEntry, InlineOccupiedEntry, InlineTable, InlineTableIntoIter, InlineTableIter,

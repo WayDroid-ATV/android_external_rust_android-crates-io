@@ -79,7 +79,13 @@
 //!   detection. This includes `cargo build` of library crates and `cargo check`
 //!   of binary and library crates.
 //!
-//! - The attribute is useless in code built with `panic = "abort"`.
+//! - The attribute is useless in code built with `panic = "abort"`. Code must
+//!   be built with `panic = "unwind"` (the default) in order for any panics to
+//!   be detected. After confirming absence of panics, you can of course still
+//!   ship your software as a `panic = "abort"` build.
+//!
+//! - Const functions are not supported. The attribute will fail to compile if
+//!   placed on a `const fn`.
 //!
 //! If you find that code requires optimization to pass `#[no_panic]`, either
 //! make no-panic an optional dependency that you only enable in release builds,
@@ -126,7 +132,7 @@
 //! [Kixunil]: https://github.com/Kixunil
 //! [`dont_panic`]: https://github.com/Kixunil/dont_panic
 
-#![doc(html_root_url = "https://docs.rs/no-panic/0.1.32")]
+#![doc(html_root_url = "https://docs.rs/no-panic/0.1.33")]
 #![allow(
     clippy::doc_markdown,
     clippy::match_same_arms,
@@ -162,6 +168,12 @@ pub fn no_panic(args: TokenStream, input: TokenStream) -> TokenStream {
 fn parse(args: TokenStream2, input: TokenStream2) -> Result<ItemFn> {
     let function: ItemFn = syn::parse2(input)?;
     let _: Nothing = syn::parse2::<Nothing>(args)?;
+    if function.sig.constness.is_some() {
+        return Err(Error::new(
+            Span::call_site(),
+            "no_panic attribute on const fn is not supported",
+        ));
+    }
     if function.sig.asyncness.is_some() {
         return Err(Error::new(
             Span::call_site(),

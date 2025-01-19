@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "thiserror",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.0.6",
+    cargo_pkg_version: "2.0.11",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -39,7 +39,7 @@ rust_library_rlib {
     name: "libthiserror_nostd",
     crate_name: "thiserror",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.0.6",
+    cargo_pkg_version: "2.0.11",
     crate_root: "src/lib.rs",
     edition: "2021",
     proc_macros: ["libthiserror_impl"],

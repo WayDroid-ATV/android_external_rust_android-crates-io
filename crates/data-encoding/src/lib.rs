@@ -255,12 +255,12 @@ macro_rules! dispatch {
     ($body: expr) => { $body };
 }
 
-unsafe fn chunk_unchecked(x: &[u8], n: usize, i: usize) -> &[u8] {
+unsafe fn chunk_unchecked<T>(x: &[T], n: usize, i: usize) -> &[T] {
     debug_assert!((i + 1) * n <= x.len());
     unsafe { core::slice::from_raw_parts(x.as_ptr().add(n * i), n) }
 }
 
-unsafe fn chunk_mut_unchecked(x: &mut [u8], n: usize, i: usize) -> &mut [u8] {
+unsafe fn chunk_mut_unchecked<T>(x: &mut [T], n: usize, i: usize) -> &mut [T] {
     debug_assert!((i + 1) * n <= x.len());
     unsafe { core::slice::from_raw_parts_mut(x.as_mut_ptr().add(n * i), n) }
 }
@@ -273,6 +273,7 @@ fn floor(x: usize, m: usize) -> usize {
     x / m * m
 }
 
+#[inline]
 fn vectorize<F: FnMut(usize)>(n: usize, bs: usize, mut f: F) {
     for k in 0 .. n / bs {
         for i in k * bs .. (k + 1) * bs {
@@ -362,6 +363,7 @@ fn order(msb: bool, n: usize, i: usize) -> usize {
     }
 }
 
+#[inline]
 fn enc(bit: usize) -> usize {
     match bit {
         1 | 2 | 4 => 1,
@@ -371,6 +373,7 @@ fn enc(bit: usize) -> usize {
     }
 }
 
+#[inline]
 fn dec(bit: usize) -> usize {
     enc(bit) * 8 / bit
 }
@@ -432,7 +435,7 @@ fn decode_block<B: Static<usize>, M: Static<bool>>(
         x |= u64::from(y) << (bit * order(msb, dec(bit), j));
     }
     for (j, output) in output.iter_mut().enumerate() {
-        *output = (x >> (8 * order(msb, enc(bit), j)) & 0xff) as u8;
+        *output = ((x >> (8 * order(msb, enc(bit), j))) & 0xff) as u8;
     }
     Ok(())
 }
@@ -880,6 +883,7 @@ pub type InternalEncoding = &'static [u8];
 // - width % dec(bit) == 0
 // - for all x in separator values[x] is IGNORE
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[repr(transparent)]
 pub struct Encoding(#[doc(hidden)] pub InternalEncoding);
 
 /// How to translate characters when decoding
@@ -1370,6 +1374,22 @@ impl Encoding {
         Ok(())
     }
 
+    /// Returns an object to display the encoding of `input`
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use data_encoding::BASE64;
+    /// assert_eq!(
+    ///     format!("Payload: {}", BASE64.encode_display(b"Hello world")),
+    ///     "Payload: SGVsbG8gd29ybGQ=",
+    /// );
+    /// ```
+    #[must_use]
+    pub fn encode_display<'a>(&'a self, input: &'a [u8]) -> Display<'a> {
+        Display { encoding: self, input }
+    }
+
     /// Returns encoded `input`
     ///
     /// # Examples
@@ -1386,9 +1406,10 @@ impl Encoding {
         unsafe { String::from_utf8_unchecked(output) }
     }
 
-    /// Returns the decoded length of an input of length `len`
+    /// Returns the maximum decoded length of an input of length `len`
     ///
-    /// See [`decode_mut`] for when to use it.
+    /// See [`decode_mut`] for when to use it. In particular, the actual decoded length might be
+    /// smaller if the actual input contains padding or ignored characters.
     ///
     /// # Errors
     ///
@@ -1623,7 +1644,7 @@ pub struct Encoder<'a> {
 }
 
 #[cfg(feature = "alloc")]
-impl<'a> Drop for Encoder<'a> {
+impl Drop for Encoder<'_> {
     fn drop(&mut self) {
         self.encoding.encode_append(&self.buffer[.. self.length as usize], self.output);
     }
@@ -1668,6 +1689,19 @@ impl<'a> Encoder<'a> {
     /// This is equivalent to dropping the encoder and required for correctness, otherwise some
     /// encoded data may be missing at the end.
     pub fn finalize(self) {}
+}
+
+/// Wraps an encoding and input for display purposes.
+#[derive(Debug)]
+pub struct Display<'a> {
+    encoding: &'a Encoding,
+    input: &'a [u8],
+}
+
+impl core::fmt::Display for Display<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        self.encoding.encode_write(self.input, f)
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
