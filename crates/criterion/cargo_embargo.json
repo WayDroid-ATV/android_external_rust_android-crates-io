@@ -2,6 +2,5 @@
   "module_name_overrides": {
     "libclap": "libclap_3.2.23"
   },
-  "run_cargo": false,
-   "min_sdk_version": "29"
+  "run_cargo": false
 }
