@@ -16,6 +16,23 @@
       "message": "Adding Jeff V for security review.",
       "revId": "f56f825e8acfe99d17f9558eba1cff227621b146",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d8e22260_5fd5df40",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-21T21:47:55Z",
+      "side": 1,
+      "message": "Ping for Security Review",
+      "revId": "f56f825e8acfe99d17f9558eba1cff227621b146",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
