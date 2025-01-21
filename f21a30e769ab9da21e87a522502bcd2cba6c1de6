@@ -16,6 +16,24 @@
       "message": "Please add the OWNERS file and resolve compliance lint issues.",
       "revId": "f21a30e769ab9da21e87a522502bcd2cba6c1de6",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "99b46eb5_95d20078",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-21T22:08:04Z",
+      "side": 1,
+      "message": "OWNERS file isn\u0027t need for crates in the monorepo.\n\nComplianceLint warning is OK per b/356656900",
+      "parentUuid": "da78c7ad_cec1d395",
+      "revId": "f21a30e769ab9da21e87a522502bcd2cba6c1de6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
