@@ -22,7 +22,4 @@ fn main() {
     if ac.probe_rustc_version(1, 65) {
         println!("cargo:rustc-cfg=stable_const");
     }
-    if ac.probe_rustc_version(1, 77) {
-        println!("cargo:rustc-cfg=stable_offset_of");
-    }
 }
