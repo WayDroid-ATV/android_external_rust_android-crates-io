@@ -148,7 +148,6 @@ idna
 indexmap
 inotify
 inotify-sys
-instant
 intrusive-collections
 is-terminal
 itertools
@@ -170,6 +169,7 @@ libz-sys
 linked-hash-map
 linkme
 linkme-impl
+litemap
 litrs
 lock_api
 log
@@ -213,7 +213,6 @@ num_enum
 num_enum_derive
 octets
 once_cell
-oneshot-uniffi
 oorandom
 open-enum
 open-enum-derive
@@ -358,11 +357,6 @@ unicode-normalization
 unicode-segmentation
 unicode-width
 unicode-xid
-uniffi
-uniffi_checksum_derive
-uniffi_core
-uniffi_macros
-uniffi_meta
 unsafe-libyaml
 untrusted
 url
