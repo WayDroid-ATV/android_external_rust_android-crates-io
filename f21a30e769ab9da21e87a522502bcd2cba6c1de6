@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "da78c7ad_cec1d395",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3830263
+      },
+      "writtenOn": "2025-01-21T17:58:25Z",
+      "side": 1,
+      "message": "Please add the OWNERS file and resolve compliance lint issues.",
+      "revId": "f21a30e769ab9da21e87a522502bcd2cba6c1de6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
