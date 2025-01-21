@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b25ea169_fad85774",
+        "filename": "crates/mls-rs/android_config.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-01-21T18:42:46Z",
+      "side": 1,
+      "message": "I don\u0027t think we should be using URLs for this at all, see my previous comment.\n\nIf we absolutely, positively must use a URL (pending resolution of the discussion), we can\u0027t use a URL that has a branch name in it - it must be a tag or ideally the hash that the crate came from. Otherwise, upstream editing the license at all would have a backwards-in-versions effect on us.",
+      "revId": "f717d5e0d9f6d3cfccc32892ec050b23de849dc0",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
