@@ -1,0 +1,8 @@
+{
+	"deletions": [
+		{
+			"path": "libusb",
+			"comment": "We use external/libusb instead"
+		}
+	]
+}

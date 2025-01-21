@@ -1,0 +1,12 @@
+{
+	"deletions": [
+		{
+			"path": "src/zlib",
+			"comment": "We use external/zlib instead"
+		},
+		{
+			"path": "src/zlib-ng",
+			"comment": "Not used, and contains a license file"
+		}
+	]
+}

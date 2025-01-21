@@ -1,0 +1,16 @@
+{
+	"deletions": [
+		{
+			"path": "elfutils",
+			"comment": "We use external/elfutils instead"
+		},
+		{
+			"path": "zlib",
+			"comment": "We use external/zlib instead"
+		},
+		{
+			"path": "libbpf",
+			"comment": "We use external/libbpf instead"
+		}
+	]
+}
