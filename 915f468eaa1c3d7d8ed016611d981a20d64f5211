@@ -16,6 +16,23 @@
       "message": "Hey Andrew, can you please take a look?",
       "revId": "915f468eaa1c3d7d8ed016611d981a20d64f5211",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1807ea0a_507a707f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-21T17:10:27Z",
+      "side": 1,
+      "message": "Stephen, do you know if there was a reason this was restricted to SDV initially?",
+      "revId": "915f468eaa1c3d7d8ed016611d981a20d64f5211",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
