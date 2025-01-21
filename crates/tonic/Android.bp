@@ -51,5 +51,8 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-    visibility: ["//system/software_defined_vehicle:__subpackages__"],
+    visibility: [
+        "//system/software_defined_vehicle:__subpackages__",
+        "//vendor:__subpackages__",
+    ],
 }

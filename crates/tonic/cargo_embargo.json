@@ -2,7 +2,8 @@
   "features": ["transport"],
   "module_visibility": {
     "libtonic": [
-      "//system/software_defined_vehicle:__subpackages__"
+      "//system/software_defined_vehicle:__subpackages__",
+      "//vendor:__subpackages__"
     ]
   },
   "run_cargo": false,
