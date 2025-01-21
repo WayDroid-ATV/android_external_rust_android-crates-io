@@ -16,6 +16,23 @@
       "message": "Friendly ping @jaquesc@google.com @pvaradharajan@google.com for Third-Party-Review\n@ajukumar@google.com for Security-Review",
       "revId": "fe959d34d766b001f0aa939ef710e1c4da0176cc",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7acd3326_dece15a8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3836831
+      },
+      "writtenOn": "2025-01-21T22:33:36Z",
+      "side": 1,
+      "message": "Please address compliance lint failures",
+      "revId": "fe959d34d766b001f0aa939ef710e1c4da0176cc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
