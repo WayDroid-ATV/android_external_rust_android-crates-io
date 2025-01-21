@@ -33,6 +33,24 @@
       "message": "Please address compliance lint failures",
       "revId": "fe959d34d766b001f0aa939ef710e1c4da0176cc",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "829e5953_0a7fedaa",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1982430
+      },
+      "writtenOn": "2025-01-21T22:35:12Z",
+      "side": 1,
+      "message": "ComplianceLint warning is OK per b/356656900.\n\n(Also discussed in next CL: https://android-review.git.corp.google.com/c/platform/external/rust/android-crates-io/+/3454031/comments/da78c7ad_cec1d395)",
+      "parentUuid": "7acd3326_dece15a8",
+      "revId": "fe959d34d766b001f0aa939ef710e1c4da0176cc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
