@@ -70,6 +70,24 @@
       "parentUuid": "edbaf117_3e5e3d34",
       "revId": "da6f2c218f45564f111aa9535577cd309e8cb885",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2946a98e_77e14447",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1110304
+      },
+      "writtenOn": "2025-01-21T18:47:12Z",
+      "side": 1,
+      "message": "The update to cargo_embargo is in aosp/3451266",
+      "parentUuid": "824a9d56_17325110",
+      "revId": "da6f2c218f45564f111aa9535577cd309e8cb885",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }

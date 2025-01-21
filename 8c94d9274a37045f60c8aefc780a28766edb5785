@@ -118,6 +118,30 @@
       },
       "revId": "8c94d9274a37045f60c8aefc780a28766edb5785",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f8be576c_a70ed53f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1110304
+      },
+      "writtenOn": "2025-01-21T18:47:12Z",
+      "side": 1,
+      "message": "Copies of both licenses are present in the repo, the Android.bp file lists both and the METADATA file says NOTICE license type.",
+      "parentUuid": "7a2010c6_c1aea7e6",
+      "range": {
+        "startLine": 11,
+        "startChar": 55,
+        "endLine": 15,
+        "endChar": 14
+      },
+      "revId": "8c94d9274a37045f60c8aefc780a28766edb5785",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
