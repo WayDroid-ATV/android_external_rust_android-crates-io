@@ -61,6 +61,7 @@ configparser
 const-oid
 coset
 cov-mark
+crc
 crc-catalog
 crc32fast
 criterion
