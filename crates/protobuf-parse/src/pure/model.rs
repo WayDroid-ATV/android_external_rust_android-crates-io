@@ -6,6 +6,7 @@
 use std::fmt;
 use std::fmt::Write;
 use std::ops::Deref;
+use std::ops::RangeInclusive;
 
 use indexmap::IndexMap;
 use protobuf::reflect::ReflectValueBox;
@@ -213,15 +214,6 @@ pub(crate) enum FieldOrOneOf {
     OneOf(OneOf),
 }
 
-/// Extension range
-#[derive(Default, Debug, Eq, PartialEq, Copy, Clone)]
-pub(crate) struct FieldNumberRange {
-    /// First number
-    pub from: i32,
-    /// Inclusive
-    pub to: i32,
-}
-
 /// A protobuf message
 #[derive(Debug, Clone, Default)]
 pub(crate) struct Message {
@@ -230,9 +222,7 @@ pub(crate) struct Message {
     /// Message fields and oneofs
     pub fields: Vec<WithLoc<FieldOrOneOf>>,
     /// Message reserved numbers
-    ///
-    /// TODO: use RangeInclusive once stable
-    pub reserved_nums: Vec<FieldNumberRange>,
+    pub reserved_nums: Vec<RangeInclusive<i32>>,
     /// Message reserved names
     pub reserved_names: Vec<String>,
     /// Nested messages
@@ -242,7 +232,7 @@ pub(crate) struct Message {
     /// Non-builtin options
     pub options: Vec<ProtobufOption>,
     /// Extension field numbers
-    pub extension_ranges: Vec<FieldNumberRange>,
+    pub extension_ranges: Vec<RangeInclusive<i32>>,
     /// Extensions
     pub extensions: Vec<WithLoc<Extension>>,
 }
@@ -318,6 +308,10 @@ pub(crate) struct Enumeration {
     pub values: Vec<EnumValue>,
     /// enum options
     pub options: Vec<ProtobufOption>,
+    /// enum reserved numbers
+    pub reserved_nums: Vec<RangeInclusive<i32>>,
+    /// enum reserved names
+    pub reserved_names: Vec<String>,
 }
 
 /// A OneOf
@@ -401,8 +395,16 @@ pub(crate) struct ProtobufConstantMessage {
     pub(crate) fields: IndexMap<ProtobufConstantMessageFieldName, ProtobufConstant>,
 }
 
-/// constant = fullIdent | ( [ "-" | "+" ] intLit ) | ( [ "-" | "+" ] floatLit ) |
-//                 strLit | boolLit
+/// constant = fullIdent |
+///            ( [ "-" | "+" ] intLit ) |
+///            ( [ "-" | "+" ] floatLit ) |
+///            strLit |
+///            boolLit |
+///            messageValue
+///
+/// https://protobuf.dev/reference/protobuf/proto2-spec/#constant
+/// https://protobuf.dev/reference/protobuf/proto3-spec/#constant
+/// https://protobuf.dev/reference/protobuf/textformat-spec/#fields
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum ProtobufConstant {
     U64(u64),
@@ -412,6 +414,7 @@ pub(crate) enum ProtobufConstant {
     Ident(ProtobufPath),
     String(StrLit),
     Message(ProtobufConstantMessage),
+    Repeated(Vec<ProtobufConstant>),
 }
 
 impl fmt::Display for ProtobufConstant {
@@ -425,6 +428,7 @@ impl fmt::Display for ProtobufConstant {
             ProtobufConstant::String(v) => write!(f, "{}", v),
             // TODO: text format explicitly
             ProtobufConstant::Message(v) => write!(f, "{:?}", v),
+            ProtobufConstant::Repeated(v) => write!(f, "{:?}", v),
         }
     }
 }
@@ -432,11 +436,11 @@ impl fmt::Display for ProtobufConstant {
 impl ProtobufConstantMessage {
     pub fn format(&self) -> String {
         let mut s = String::new();
-        write!(s, "{{").unwrap();
+        write!(s, "{{ ").unwrap();
         for (n, v) in &self.fields {
             match v {
                 ProtobufConstant::Message(m) => write!(s, "{} {}", n, m.format()).unwrap(),
-                v => write!(s, "{}: {}", n, v.format()).unwrap(),
+                v => write!(s, "{}: {} ", n, v.format()).unwrap(),
             }
         }
         write!(s, "}}").unwrap();
@@ -454,6 +458,18 @@ impl ProtobufConstant {
             ProtobufConstant::Ident(ref i) => format!("{}", i),
             ProtobufConstant::String(ref s) => s.quoted(),
             ProtobufConstant::Message(ref s) => s.format(),
+            ProtobufConstant::Repeated(ref l) => {
+                let mut s = String::from("[");
+                let mut it = l.iter().peekable();
+                while let Some(constant) = it.next() {
+                    s.push_str(&constant.format());
+                    if it.peek().is_some() {
+                        s.push(',');
+                    }
+                }
+                s.push(']');
+                s
+            }
         }
     }
 
