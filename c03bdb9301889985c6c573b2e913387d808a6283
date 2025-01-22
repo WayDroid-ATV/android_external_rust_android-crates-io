@@ -34,6 +34,24 @@
       "parentUuid": "9b7a8451_c00aac12",
       "revId": "c03bdb9301889985c6c573b2e913387d808a6283",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "392f1181_b8f9c71b",
+        "filename": "pseudo_crate/Cargo.lock",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1996085
+      },
+      "writtenOn": "2025-01-22T17:21:43Z",
+      "side": 1,
+      "message": "Okay, I though so, just wanted to check. Thanks!",
+      "parentUuid": "e9cb23b2_a6ae4a79",
+      "revId": "c03bdb9301889985c6c573b2e913387d808a6283",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
