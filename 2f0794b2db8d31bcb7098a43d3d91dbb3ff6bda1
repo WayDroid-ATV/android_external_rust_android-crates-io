@@ -16,6 +16,23 @@
       "message": "Adding Jeff V for security review.",
       "revId": "2f0794b2db8d31bcb7098a43d3d91dbb3ff6bda1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2bb3d9e7_4559d498",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-22T18:42:00Z",
+      "side": 1,
+      "message": "Ping for 3rd-party review. @cnishina@google.com @gmariani@google.com",
+      "revId": "2f0794b2db8d31bcb7098a43d3d91dbb3ff6bda1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
