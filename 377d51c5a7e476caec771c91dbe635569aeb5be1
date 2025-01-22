@@ -16,6 +16,24 @@
       "message": "This is wrong. Entries should never be removed from deleted-crates.txt.\n\nPlease sync development/tools and re-run \"crate_tool regenerate\"",
       "revId": "377d51c5a7e476caec771c91dbe635569aeb5be1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "512052e8_6a3a5835",
+        "filename": "pseudo_crate/deleted-crates.txt",
+        "patchSetId": 8
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1110304
+      },
+      "writtenOn": "2025-01-22T22:06:06Z",
+      "side": 0,
+      "message": "Done.\n\nIt was originally deleted by `crate_tool regenerate` and when I ran it again after syncing it again deleted those lines. Had to manually remove that change from the commit.",
+      "parentUuid": "8ae9c818_1b3f165a",
+      "revId": "377d51c5a7e476caec771c91dbe635569aeb5be1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
