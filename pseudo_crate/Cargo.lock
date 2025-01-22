@@ -175,7 +175,7 @@ dependencies = [
  "displaydoc",
  "document-features",
  "downcast",
- "downcast-rs",
+ "downcast-rs 2.0.1",
  "drm",
  "drm-ffi",
  "drm-fourcc",
@@ -1722,6 +1722,12 @@ name = "downcast-rs"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
+
+[[package]]
+name = "downcast-rs"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea8a8b81cacc08888170eef4d13b775126db426d0b348bee9d18c2c1eaf123cf"
 
 [[package]]
 name = "drm"
@@ -6012,7 +6018,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f90e11ce2ca99c97b940ee83edbae9da2d56a08f9ea8158550fd77fa31722993"
 dependencies = [
  "cc",
- "downcast-rs",
+ "downcast-rs 1.2.1",
  "rustix",
  "scoped-tls",
  "smallvec",
@@ -6037,7 +6043,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2f0a4bab6d420ee4a609b63ef4d5f9b5d309c6b93a029fccab70f2594c0cb3ae"
 dependencies = [
  "bitflags 2.8.0",
- "downcast-rs",
+ "downcast-rs 1.2.1",
  "io-lifetimes",
  "rustix",
  "wayland-backend",
