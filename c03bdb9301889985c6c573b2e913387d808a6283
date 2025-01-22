@@ -16,6 +16,24 @@
       "message": "It was not mentioned in go/android-rust-importing-crates whether or not these `pseudo_crate/` files are supposed to be included as part of an import or not.\n\ncc @jamesfarrell@google.com",
       "revId": "c03bdb9301889985c6c573b2e913387d808a6283",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e9cb23b2_a6ae4a79",
+        "filename": "pseudo_crate/Cargo.lock",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-22T16:40:32Z",
+      "side": 1,
+      "message": "Yes, they need to be included. pseudo_crate/ contains the list of crates in the monorepo, and allows us to use cargo to help manage it.",
+      "parentUuid": "9b7a8451_c00aac12",
+      "revId": "c03bdb9301889985c6c573b2e913387d808a6283",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
