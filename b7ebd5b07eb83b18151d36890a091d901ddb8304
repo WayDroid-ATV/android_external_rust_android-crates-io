@@ -16,6 +16,24 @@
       "message": "We should try to remove usage of this entirely, as async traits are stable since Rust 1.75.",
       "revId": "b7ebd5b07eb83b18151d36890a091d901ddb8304",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9487493d_e8a36ac6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-22T23:58:35Z",
+      "side": 1,
+      "message": "I agree, but `rg libasync_trait -l . -g *.bp` shows that eliminating it will be a non-trivial undertaking:\n\n./device/google/cuttlefish/guest/hals/bluetooth/Android.bp\n./device/google/cuttlefish/guest/hals/nfc/Android.bp\n./hardware/interfaces/uwb/aidl/default/Android.bp\n./external/uwb/src/Android.bp\n./external/crosvm/android_audio/Android.bp\n./external/crosvm/disk/Android.bp\n./external/crosvm/cros_async/Android.bp\n./external/crosvm/audio_util/Android.bp\n./external/crosvm/common/audio_streams/Android.bp\n./external/crosvm/devices/Android.bp\n./external/rust/android-crates-io/crates/async-trait/Android.bp\n./external/rust/android-crates-io/crates/config/Android.bp\n./external/rust/android-crates-io/crates/mls-rs/Android.bp\n./external/rust/android-crates-io/crates/axum-core/Android.bp\n./external/rust/android-crates-io/crates/mls-rs-crypto-traits/Android.bp\n./external/rust/android-crates-io/crates/mls-rs-core/Android.bp\n./external/rust/android-crates-io/crates/axum/Android.bp\n./packages/modules/Connectivity/remoteauth/service/jni/Android.bp\n./packages/modules/Bluetooth/system/rust/Android.bp\n./system/security/mls/mls-rs-crypto-boringssl/Android.bp\n./system/tools/aidl/Android.bp\n\nI think for now we should just update the crate.",
+      "parentUuid": "650ee254_7403600a",
+      "revId": "b7ebd5b07eb83b18151d36890a091d901ddb8304",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
