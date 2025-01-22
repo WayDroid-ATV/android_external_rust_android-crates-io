@@ -2,7 +2,6 @@ use crate::{AsRaw, BufferObject, BufferObjectFlags, Format, Modifier, Ptr, Surfa
 
 use std::os::unix::io::{AsFd, AsRawFd, BorrowedFd};
 
-use std::error;
 use std::ffi::CStr;
 use std::fmt;
 use std::io::{Error as IoError, Result as IoResult};
@@ -103,6 +102,23 @@ impl<T: AsFd> Device<T> {
         unsafe { ffi::gbm_device_is_format_supported(*self.ffi, format as u32, usage.bits()) != 0 }
     }
 
+    /// Get the required number of planes for a given format and modifier
+    ///
+    /// Some combination (e.g. when using a `Modifier::Invalid`) might not
+    /// have a defined/fixed number of planes. In these cases the function
+    /// might return `Option::None`.
+    pub fn format_modifier_plane_count(&self, format: Format, modifier: Modifier) -> Option<u32> {
+        unsafe {
+            ffi::gbm_device_get_format_modifier_plane_count(
+                *self.ffi,
+                format as u32,
+                modifier.into(),
+            )
+            .try_into()
+            .ok()
+        }
+    }
+
     /// Allocate a new surface object
     pub fn create_surface<U: 'static>(
         &self,
@@ -117,7 +133,7 @@ impl<T: AsFd> Device<T> {
         if ptr.is_null() {
             Err(IoError::last_os_error())
         } else {
-            Ok(unsafe { Surface::new(ptr, self.ffi.downgrade()) })
+            Ok(unsafe { Surface::new(ptr, self.ffi.clone()) })
         }
     }
 
@@ -143,7 +159,7 @@ impl<T: AsFd> Device<T> {
         if ptr.is_null() {
             Err(IoError::last_os_error())
         } else {
-            Ok(unsafe { Surface::new(ptr, self.ffi.downgrade()) })
+            Ok(unsafe { Surface::new(ptr, self.ffi.clone()) })
         }
     }
 
@@ -171,7 +187,7 @@ impl<T: AsFd> Device<T> {
         if ptr.is_null() {
             Err(IoError::last_os_error())
         } else {
-            Ok(unsafe { Surface::new(ptr, self.ffi.downgrade()) })
+            Ok(unsafe { Surface::new(ptr, self.ffi.clone()) })
         }
     }
 
@@ -188,7 +204,7 @@ impl<T: AsFd> Device<T> {
         if ptr.is_null() {
             Err(IoError::last_os_error())
         } else {
-            Ok(unsafe { BufferObject::new(ptr, self.ffi.downgrade()) })
+            Ok(unsafe { BufferObject::new(ptr, self.ffi.clone()) })
         }
     }
 
@@ -214,7 +230,7 @@ impl<T: AsFd> Device<T> {
         if ptr.is_null() {
             Err(IoError::last_os_error())
         } else {
-            Ok(unsafe { BufferObject::new(ptr, self.ffi.downgrade()) })
+            Ok(unsafe { BufferObject::new(ptr, self.ffi.clone()) })
         }
     }
 
@@ -242,7 +258,7 @@ impl<T: AsFd> Device<T> {
         if ptr.is_null() {
             Err(IoError::last_os_error())
         } else {
-            Ok(unsafe { BufferObject::new(ptr, self.ffi.downgrade()) })
+            Ok(unsafe { BufferObject::new(ptr, self.ffi.clone()) })
         }
     }
 
@@ -265,7 +281,7 @@ impl<T: AsFd> Device<T> {
         let ptr = unsafe {
             ffi::gbm_bo_import(
                 *self.ffi,
-                ffi::GBM_BO_IMPORT_WL_BUFFER as u32,
+                ffi::GBM_BO_IMPORT_WL_BUFFER,
                 buffer.id().as_ptr() as *mut _,
                 usage.bits(),
             )
@@ -273,7 +289,7 @@ impl<T: AsFd> Device<T> {
         if ptr.is_null() {
             Err(IoError::last_os_error())
         } else {
-            Ok(unsafe { BufferObject::new(ptr, self.ffi.downgrade()) })
+            Ok(unsafe { BufferObject::new(ptr, self.ffi.clone()) })
         }
     }
 
@@ -298,14 +314,14 @@ impl<T: AsFd> Device<T> {
     ) -> IoResult<BufferObject<U>> {
         let ptr = ffi::gbm_bo_import(
             *self.ffi,
-            ffi::GBM_BO_IMPORT_EGL_IMAGE as u32,
+            ffi::GBM_BO_IMPORT_EGL_IMAGE,
             buffer,
             usage.bits(),
         );
         if ptr.is_null() {
             Err(IoError::last_os_error())
         } else {
-            Ok(BufferObject::new(ptr, self.ffi.downgrade()))
+            Ok(BufferObject::new(ptr, self.ffi.clone()))
         }
     }
 
@@ -337,7 +353,7 @@ impl<T: AsFd> Device<T> {
         let ptr = unsafe {
             ffi::gbm_bo_import(
                 *self.ffi,
-                ffi::GBM_BO_IMPORT_FD as u32,
+                ffi::GBM_BO_IMPORT_FD,
                 &mut fd_data as *mut ffi::gbm_import_fd_data as *mut _,
                 usage.bits(),
             )
@@ -345,7 +361,7 @@ impl<T: AsFd> Device<T> {
         if ptr.is_null() {
             Err(IoError::last_os_error())
         } else {
-            Ok(unsafe { BufferObject::new(ptr, self.ffi.downgrade()) })
+            Ok(unsafe { BufferObject::new(ptr, self.ffi.clone()) })
         }
     }
 
@@ -385,7 +401,7 @@ impl<T: AsFd> Device<T> {
         let ptr = unsafe {
             ffi::gbm_bo_import(
                 *self.ffi,
-                ffi::GBM_BO_IMPORT_FD_MODIFIER as u32,
+                ffi::GBM_BO_IMPORT_FD_MODIFIER,
                 &mut fd_data as *mut ffi::gbm_import_fd_modifier_data as *mut _,
                 usage.bits(),
             )
@@ -393,7 +409,7 @@ impl<T: AsFd> Device<T> {
         if ptr.is_null() {
             Err(IoError::last_os_error())
         } else {
-            Ok(unsafe { BufferObject::new(ptr, self.ffi.downgrade()) })
+            Ok(unsafe { BufferObject::new(ptr, self.ffi.clone()) })
         }
     }
 }
@@ -403,19 +419,3 @@ impl<T: DrmDevice + AsFd> DrmDevice for Device<T> {}
 
 #[cfg(feature = "drm-support")]
 impl<T: DrmControlDevice + AsFd> DrmControlDevice for Device<T> {}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-/// Thrown when the underlying GBM device was already destroyed
-pub struct DeviceDestroyedError;
-
-impl fmt::Display for DeviceDestroyedError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "The underlying GBM device was already destroyed")
-    }
-}
-
-impl error::Error for DeviceDestroyedError {
-    fn cause(&self) -> Option<&dyn error::Error> {
-        None
-    }
-}
