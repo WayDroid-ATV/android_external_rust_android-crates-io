@@ -23,7 +23,7 @@ fn try_cfg(introducer: &str, args: TokenStream, input: TokenStream) -> Result<To
     let expr = expr::parse(full_args)?;
     token::parse_end(full_args)?;
 
-    if expr.eval(crate::rust_version()) {
+    if expr.eval(crate::RUSTVERSION) {
         Ok(input)
     } else {
         Ok(TokenStream::new())
@@ -31,7 +31,7 @@ fn try_cfg(introducer: &str, args: TokenStream, input: TokenStream) -> Result<To
 }
 
 pub fn try_attr(args: attr::Args, input: TokenStream) -> Result<TokenStream> {
-    if !args.condition.eval(crate::rust_version()) {
+    if !args.condition.eval(crate::RUSTVERSION) {
         return Ok(input);
     }
 

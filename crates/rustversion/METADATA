@@ -1,17 +1,17 @@
 name: "rustversion"
 description: "Conditional compilation according to rustc compiler version"
 third_party {
-  version: "1.0.14"
+  version: "1.0.19"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 2
-    day: 7
+    year: 2025
+    month: 1
+    day: 22
   }
   homepage: "https://crates.io/crates/rustversion"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/rustversion/rustversion-1.0.14.crate"
-    version: "1.0.14"
+    value: "https://static.crates.io/crates/rustversion/rustversion-1.0.19.crate"
+    version: "1.0.19"
   }
 }
