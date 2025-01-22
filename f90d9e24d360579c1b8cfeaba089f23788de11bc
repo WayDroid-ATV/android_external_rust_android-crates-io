@@ -1,5 +1,23 @@
 {
-  "comments": [],
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "20dcf4b1_fb4613fd",
+        "filename": "crates/vhost-user-backend/src/handler.rs",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3838607
+      },
+      "writtenOn": "2025-01-22T04:35:22Z",
+      "side": 1,
+      "message": "Resolved",
+      "revId": "f90d9e24d360579c1b8cfeaba089f23788de11bc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ],
   "submitRequirementResults": [
     {
       "submitRequirement": {

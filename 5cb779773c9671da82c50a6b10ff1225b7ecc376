@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7a79d34b_aa5553af",
+        "filename": "crates/vhost-user-backend/src/handler.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3838607
+      },
+      "writtenOn": "2025-01-22T04:35:22Z",
+      "side": 1,
+      "message": "Resolved",
+      "revId": "5cb779773c9671da82c50a6b10ff1225b7ecc376",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "acd8d4ab_d4bbf3f3",
+        "filename": "crates/vhost-user-backend/src/handler.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 3838607
+      },
+      "writtenOn": "2025-01-22T04:35:22Z",
+      "side": 1,
+      "message": "Resolved",
+      "revId": "5cb779773c9671da82c50a6b10ff1225b7ecc376",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
