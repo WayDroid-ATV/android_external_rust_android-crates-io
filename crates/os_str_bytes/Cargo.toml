@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.61.0"
+rust-version = "1.74.0"
 name = "os_str_bytes"
-version = "6.6.1"
+version = "7.0.0"
 authors = ["dylni"]
 exclude = [
     ".*",
@@ -23,7 +23,7 @@ exclude = [
     "/tests",
 ]
 description = """
-Convert between byte sequences and platform-native strings
+Lossless functionality for platform-native strings
 """
 readme = "README.md"
 keywords = [
@@ -55,22 +55,17 @@ rustdoc-args = [
 ]
 
 [dependencies.memchr]
-version = "2.4"
-optional = true
-
-[dependencies.print_bytes]
-version = "1.0"
-optional = true
-
-[dependencies.uniquote]
-version = "3.0"
+version = "2.3.5"
 optional = true
 
 [dev-dependencies.fastrand]
 version = "2.0"
 
 [dev-dependencies.lazy_static]
-version = "1.4"
+version = "1.0.3"
+
+[dev-dependencies.tempfile]
+version = "3.8"
 
 [features]
 checked_conversions = ["conversions"]
@@ -79,5 +74,4 @@ default = [
     "memchr",
     "raw_os_str",
 ]
-nightly = []
 raw_os_str = []

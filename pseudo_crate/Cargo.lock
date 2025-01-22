@@ -306,7 +306,7 @@ dependencies = [
  "open-enum",
  "open-enum-derive",
  "openssl-macros",
- "os_str_bytes",
+ "os_str_bytes 7.0.0",
  "p9",
  "p9_wire_format_derive",
  "parking_lot",
@@ -1226,7 +1226,7 @@ version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2850f2f5a82cbf437dd5af4d49848fbdfc27c157c3d010345776f952765261c5"
 dependencies = [
- "os_str_bytes",
+ "os_str_bytes 6.6.1",
 ]
 
 [[package]]
@@ -3628,6 +3628,12 @@ name = "os_str_bytes"
 version = "6.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2355d85b9a3786f481747ced0e0ff2ba35213a1f9bd406ed906554d7af805a1"
+
+[[package]]
+name = "os_str_bytes"
+version = "7.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ac44c994af577c799b1b4bd80dc214701e349873ad894d6cdf96f4f7526e0b9"
 dependencies = [
  "memchr",
 ]
