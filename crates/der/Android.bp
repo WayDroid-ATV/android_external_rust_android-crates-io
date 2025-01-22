@@ -40,6 +40,7 @@ rust_library {
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "apex_inherit",
     visibility: [
         "//external/rust/android-crates-io/crates/sec1:__subpackages__",
         "//external/rust/android-crates-io/crates/spki:__subpackages__",
@@ -49,6 +50,7 @@ rust_library {
         "//packages/modules/Virtualization:__subpackages__",
         "//system/keymint:__subpackages__",
         "//system/security/keystore2:__subpackages__",
+        "//system/software_defined_vehicle/core_services/crypto_rpc:__subpackages__",
     ],
 }
 
@@ -85,6 +87,7 @@ rust_library_rlib {
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "apex_inherit",
     visibility: [
         "//external/rust/android-crates-io/crates/sec1:__subpackages__",
         "//external/rust/android-crates-io/crates/spki:__subpackages__",

@@ -1,5 +1,7 @@
 macro_rules! get_an_isize {
-    () => (0_isize)
+    () => {
+        0_isize
+    };
 }
 
 #[derive(num_derive::FromPrimitive)]

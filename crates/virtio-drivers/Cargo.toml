@@ -10,9 +10,9 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
+edition = "2021"
 name = "virtio-drivers"
-version = "0.7.4"
+version = "0.7.5"
 authors = [
     "Jiajie Chen <noc@jiegec.ac.cn>",
     "Runji Wang <wangrunji0408@163.com>",
@@ -30,17 +30,20 @@ license = "MIT"
 repository = "https://github.com/rcore-os/virtio-drivers"
 
 [dependencies.bitflags]
-version = "2.3.0"
+version = "2.6.0"
+
+[dependencies.enumn]
+version = "0.1.14"
 
 [dependencies.log]
-version = "0.4"
+version = "0.4.22"
 
 [dependencies.zerocopy]
-version = "0.7.5"
+version = "0.7.35"
 features = ["derive"]
 
 [dev-dependencies.zerocopy]
-version = "0.7.5"
+version = "0.7.35"
 features = ["alloc"]
 
 [features]

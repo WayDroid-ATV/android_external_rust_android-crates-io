@@ -79,12 +79,6 @@ If you don't have a specific crate you need to update, but want to help keep the
 ./crate_tool suggest-updates
 ```
 
-Since the only way to be confident an update will work is to try building it, the tool can try out the suggested updates and see if they succeed. If you have some spare cycles, try running the following overnight:
-
-```
-./crate_tool try-updates | tee crate-updates
-```
-
 ## How to add a patch file
 
 You should avoid creating patches, if possible. Every patch file is an ongoing
