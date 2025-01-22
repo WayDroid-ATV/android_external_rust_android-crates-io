@@ -193,8 +193,8 @@ dependencies = [
  "flagset",
  "flate2",
  "fnv",
- "foreign-types 0.3.1",
- "foreign-types-shared 0.1.0",
+ "foreign-types 0.3.2",
+ "foreign-types-shared 0.1.1",
  "form_urlencoded",
  "fragile",
  "fs-err",
@@ -2000,11 +2000,11 @@ dependencies = [
 
 [[package]]
 name = "foreign-types"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a21b40436003b2a1e22483c5ed6c3d25e755b6b3120f601cc22aa57e25dc9065"
+checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
 dependencies = [
- "foreign-types-shared 0.1.0",
+ "foreign-types-shared 0.1.1",
 ]
 
 [[package]]
@@ -2030,9 +2030,9 @@ dependencies = [
 
 [[package]]
 name = "foreign-types-shared"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baa1839fc3c5487b5e129ea4f774e3fd84e6c4607127315521bc014a722ebc9e"
+checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
 name = "foreign-types-shared"
@@ -3577,7 +3577,7 @@ checksum = "6174bc48f102d208783c2c84bf931bb75927a617866870de8a4ea85597f871f5"
 dependencies = [
  "bitflags 2.8.0",
  "cfg-if",
- "foreign-types 0.3.1",
+ "foreign-types 0.3.2",
  "libc",
  "once_cell",
  "openssl-macros",
