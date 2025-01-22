@@ -16,6 +16,24 @@
       "message": "Ping for Security Review and 3P Review",
       "revId": "a9873245c4033358240e94dce5b92ceb20570ead",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0c3b5e78_c276ea3b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 11
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1892347
+      },
+      "writtenOn": "2025-01-22T08:53:43Z",
+      "side": 1,
+      "message": "This crate is exactly the same situation as bumpalo. Lots of code copied from stdlib years ago. Never updated since then. I\u0027ve already found one problematic difference in the first file I looked at.\n\nI don\u0027t think there\u0027s any reason to enable the allocator-api2 feature of the hashbrown crate.",
+      "parentUuid": "404599fd_935c2aed",
+      "revId": "a9873245c4033358240e94dce5b92ceb20570ead",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
