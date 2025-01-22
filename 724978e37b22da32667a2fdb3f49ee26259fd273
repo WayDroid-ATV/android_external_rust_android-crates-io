@@ -16,6 +16,24 @@
       "message": "Not sure about adding an extra version of this, adding James to review when he gets back.",
       "revId": "724978e37b22da32667a2fdb3f49ee26259fd273",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c9a41f8e_c55f62ed",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1110304
+      },
+      "writtenOn": "2025-01-22T19:59:57Z",
+      "side": 1,
+      "message": "trusty depends on this version through rules.mk",
+      "parentUuid": "81e3a1e6_b84467a1",
+      "revId": "724978e37b22da32667a2fdb3f49ee26259fd273",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
