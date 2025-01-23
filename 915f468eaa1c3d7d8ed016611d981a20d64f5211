@@ -51,6 +51,24 @@
       "parentUuid": "1807ea0a_507a707f",
       "revId": "915f468eaa1c3d7d8ed016611d981a20d64f5211",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "789afa45_5524ec6f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-23T01:30:02Z",
+      "side": 1,
+      "message": "Please take a look at go/importing-tonic-to-sdv. This crate provides duplicate grpc functionality, and it was never our intention to support multiple paths. SDV has a special need for this particular crate, hence the visibility restriction. I\u0027m going to mark this CL as -2, because I don\u0027t see us opening up wider use of tonic within Android.",
+      "parentUuid": "857ee29a_b4d17f05",
+      "revId": "915f468eaa1c3d7d8ed016611d981a20d64f5211",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
