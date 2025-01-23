@@ -1,7 +1,6 @@
 {
   "run_cargo": false,
   "module_name_overrides": {
-    "external_rust_crates_zerocopy_license": "external_rust_crates_zerocopy-0.7.35_license",
     "libzerocopy": "libzerocopy-0.7.35",
     "libzerocopy_derive": "libzerocopy_derive-0.7.35"
   },
@@ -52,21 +51,6 @@
           "no_std": true
         }
       }
-    },
-    {
-      "features": [
-        "alloc",
-        "derive",
-        "byteorder"
-      ],
-      "package": {
-        "zerocopy": {
-          "alloc": true,
-          "no_std": true
-        }
-      },
-      "generate_androidbp": false,
-      "generate_rulesmk": true
     }
   ],
   "min_sdk_version": "29"
