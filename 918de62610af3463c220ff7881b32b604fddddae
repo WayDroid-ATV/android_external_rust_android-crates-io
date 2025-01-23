@@ -39,6 +39,30 @@
       },
       "revId": "918de62610af3463c220ff7881b32b604fddddae",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e551db4a_b3cbe195",
+        "filename": "crates/libsqlite3-sys/sqlcipher/LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-23T17:12:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4568784b_699d111e",
+      "range": {
+        "startLine": 4,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 0
+      },
+      "revId": "918de62610af3463c220ff7881b32b604fddddae",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
