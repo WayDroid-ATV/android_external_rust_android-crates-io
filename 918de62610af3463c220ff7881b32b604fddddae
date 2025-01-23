@@ -3,6 +3,23 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "47bbfbdb_d30c9c3a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-23T17:00:17Z",
+      "side": 1,
+      "message": "Note to third party reviewers:\n\nThis crate is already approved and imported, so this should just be a rubber stamp.\n\nThis CL merely moves it from external/rust/crates/libsqlite3-sys to external/rust/android-crates-io.\n\nI apologize for the interruption and extra review burden; this crate was a particularly difficult one to migrate, and we decided we couldn\u0027t block new imports on getting it migrated, so we set up the 3p review triggers knowing that eventually this crate was going to be a \"false alarm\".\n\nThanks,\nJames",
+      "revId": "918de62610af3463c220ff7881b32b604fddddae",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "4568784b_699d111e",
         "filename": "crates/libsqlite3-sys/sqlcipher/LICENSE",
         "patchSetId": 1
