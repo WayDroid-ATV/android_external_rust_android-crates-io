@@ -4,5 +4,5 @@
     "libzerocopy_derive": "libzerocopy_derive-0.7.35"
   },
   "run_cargo": false,
-  "generate_rulesmk": true
+  "generate_rulesmk": false
 }
