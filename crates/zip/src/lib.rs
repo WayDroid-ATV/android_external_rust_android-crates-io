@@ -18,10 +18,13 @@
 //! |         | Reading | Writing |
 //! | ------- | ------  | ------- |
 //! | Deflate | ✅ [->](`crate::ZipArchive::by_name`)      | ✅ [->](`crate::write::FileOptions::compression_method`) |
+//! | Deflate64 | ✅ | |
+//! | Bzip2 | ✅ | ✅ |
+//! | LZMA | ✅ | |
+//! | AES encryption | ✅ | ✅ |
+//! | ZipCrypto deprecated encryption | ✅ | ✅ |
 //!
 //!
-//!
-
 #![warn(missing_docs)]
 
 pub use crate::compression::{CompressionMethod, SUPPORTED_COMPRESSION_METHODS};
@@ -36,20 +39,25 @@ mod aes_ctr;
 mod compression;
 mod cp437;
 mod crc32;
+pub mod extra_fields;
 pub mod read;
 pub mod result;
 mod spec;
 mod types;
 pub mod write;
 mod zipcrypto;
+pub use extra_fields::ExtraField;
 
-/// Unstable APIs
-///
-/// All APIs accessible by importing this module are unstable; They may be changed in patch releases.
-/// You MUST you an exact version specifier in `Cargo.toml`, to indicate the version of this API you're using:
-///
-/// ```toml
-/// [dependencies]
-/// zip = "=0.6.6"
-/// ```
+#[doc = "Unstable APIs\n\
+\
+All APIs accessible by importing this module are unstable; They may be changed in patch \
+releases. You MUST use an exact version specifier in `Cargo.toml`, to indicate the version of this \
+API you're using:\n\
+\
+```toml\n
+[dependencies]\n
+zip = \"="]
+#[doc=env!("CARGO_PKG_VERSION")]
+#[doc = "\"\n\
+```"]
 pub mod unstable;
