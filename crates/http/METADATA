@@ -1,17 +1,17 @@
 name: "http"
 description: "()"
 third_party {
-  version: "0.2.9"
+  version: "0.2.11"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2023
-    month: 6
-    day: 2
+    year: 2025
+    month: 1
+    day: 22
   }
   homepage: "https://crates.io/crates/http"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/http/http-0.2.9.crate"
-    version: "0.2.9"
+    value: "https://static.crates.io/crates/http/http-0.2.11.crate"
+    version: "0.2.11"
   }
 }

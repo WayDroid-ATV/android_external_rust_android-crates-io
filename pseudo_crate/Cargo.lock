@@ -95,6 +95,7 @@ dependencies = [
  "acpi",
  "ahash 0.8.11",
  "aho-corasick",
+ "android_bp",
  "android_log-sys",
  "android_logger",
  "anes 0.2.0",
@@ -176,8 +177,8 @@ dependencies = [
  "document-features",
  "downcast",
  "downcast-rs",
- "drm",
- "drm-ffi",
+ "drm 0.14.1",
+ "drm-ffi 0.9.0",
  "drm-fourcc",
  "either",
  "enumn",
@@ -193,8 +194,9 @@ dependencies = [
  "flagset",
  "flate2",
  "fnv",
- "foreign-types 0.3.1",
- "foreign-types-shared 0.1.0",
+ "foldhash",
+ "foreign-types 0.3.2",
+ "foreign-types-shared 0.1.1",
  "form_urlencoded",
  "fragile",
  "fs-err",
@@ -228,7 +230,7 @@ dependencies = [
  "heck",
  "hex",
  "hound",
- "http 0.2.9",
+ "http 0.2.11",
  "http-body",
  "httparse",
  "httpdate",
@@ -240,6 +242,7 @@ dependencies = [
  "inotify",
  "inotify-sys",
  "intrusive-collections",
+ "is-terminal",
  "itertools 0.14.0",
  "itoa",
  "jni",
@@ -388,6 +391,7 @@ dependencies = [
  "smallvec",
  "smccc",
  "socket2",
+ "spdx",
  "spin 0.9.8",
  "spki",
  "static_assertions",
@@ -401,6 +405,7 @@ dependencies = [
  "tempfile",
  "termcolor",
  "termtree",
+ "textdistance",
  "textwrap 0.16.1",
  "thiserror 2.0.11",
  "thiserror-impl 2.0.11",
@@ -483,6 +488,15 @@ name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e999941b234f3131b00bc13c22d06e8c5ff726d1b6318ac7eb276997bbb4fef0"
+
+[[package]]
+name = "android_bp"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a9e5389cea0250e70ca9323df3b5b5b31749d4face289c92cd4e99f54b1d6425"
+dependencies = [
+ "nom",
+]
 
 [[package]]
 name = "android_log-sys"
@@ -728,7 +742,7 @@ dependencies = [
  "bitflags 1.3.2",
  "bytes",
  "futures-util",
- "http 0.2.9",
+ "http 0.2.11",
  "http-body",
  "hyper",
  "itoa",
@@ -758,7 +772,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "futures-util",
- "http 0.2.9",
+ "http 0.2.11",
  "http-body",
  "mime",
  "rustversion",
@@ -954,9 +968,9 @@ dependencies = [
 
 [[package]]
 name = "bstr"
-version = "1.3.0"
+version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ffdb39cb703212f3c11973452c2861b972f757b021158f3516ba10f2fa8b2c1"
+checksum = "a246e68bb43f6cd9db24bea052a53e40405417c5fb372e3d1a8a7f770a564ef5"
 dependencies = [
  "memchr",
  "once_cell",
@@ -1731,8 +1745,22 @@ checksum = "98888c4bbd601524c11a7ed63f814b8825f420514f78e96f752c437ae9cbb5d1"
 dependencies = [
  "bitflags 2.8.0",
  "bytemuck",
- "drm-ffi",
+ "drm-ffi 0.8.0",
  "drm-fourcc",
+ "rustix",
+]
+
+[[package]]
+name = "drm"
+version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80bc8c5c6c2941f70a55c15f8d9f00f9710ebda3ffda98075f996a0e6c92756f"
+dependencies = [
+ "bitflags 2.8.0",
+ "bytemuck",
+ "drm-ffi 0.9.0",
+ "drm-fourcc",
+ "libc",
  "rustix",
 ]
 
@@ -1742,7 +1770,17 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97c98727e48b7ccb4f4aea8cfe881e5b07f702d17b7875991881b41af7278d53"
 dependencies = [
- "drm-sys",
+ "drm-sys 0.7.0",
+ "rustix",
+]
+
+[[package]]
+name = "drm-ffi"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8e41459d99a9b529845f6d2c909eb9adf3b6d2f82635ae40be8de0601726e8b"
+dependencies = [
+ "drm-sys 0.8.0",
  "rustix",
 ]
 
@@ -1757,6 +1795,16 @@ name = "drm-sys"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd39dde40b6e196c2e8763f23d119ddb1a8714534bf7d77fa97a65b0feda3986"
+dependencies = [
+ "libc",
+ "linux-raw-sys 0.6.5",
+]
+
+[[package]]
+name = "drm-sys"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bafb66c8dbc944d69e15cfcc661df7e703beffbaec8bd63151368b06c5f9858c"
 dependencies = [
  "libc",
  "linux-raw-sys 0.6.5",
@@ -1974,6 +2022,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
+name = "foldhash"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f81ec6369c545a7d40e4589b5597581fa1c441fe1cce96dd1de43159910a36a2"
+
+[[package]]
 name = "font-kit"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2000,11 +2054,11 @@ dependencies = [
 
 [[package]]
 name = "foreign-types"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a21b40436003b2a1e22483c5ed6c3d25e755b6b3120f601cc22aa57e25dc9065"
+checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
 dependencies = [
- "foreign-types-shared 0.1.0",
+ "foreign-types-shared 0.1.1",
 ]
 
 [[package]]
@@ -2030,9 +2084,9 @@ dependencies = [
 
 [[package]]
 name = "foreign-types-shared"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baa1839fc3c5487b5e129ea4f774e3fd84e6c4607127315521bc014a722ebc9e"
+checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
 name = "foreign-types-shared"
@@ -2068,9 +2122,9 @@ dependencies = [
 
 [[package]]
 name = "fs-err"
-version = "2.11.0"
+version = "3.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88a41f105fe1d5b6b34b2055e3dc59bb79b46b48b2040b9e6c7b4b5de097aa41"
+checksum = "1f89bda4c2a21204059a977ed3bfe746677dfd137b83c339e702b0ac91d482aa"
 dependencies = [
  "autocfg",
 ]
@@ -2196,7 +2250,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "45bf55ba6dd53ad0ac115046ff999c5324c283444ee6e0be82454c4e8eb2f36a"
 dependencies = [
  "bitflags 2.8.0",
- "drm",
+ "drm 0.12.0",
  "drm-fourcc",
  "gbm-sys",
  "libc",
@@ -2373,7 +2427,7 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "futures-util",
- "http 0.2.9",
+ "http 0.2.11",
  "indexmap 2.4.0",
  "slab",
  "tokio",
@@ -2493,9 +2547,9 @@ checksum = "62adaabb884c94955b19907d60019f4e145d091c75345379e70d1ee696f7854f"
 
 [[package]]
 name = "http"
-version = "0.2.9"
+version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd6effc99afb63425aff9b05836f029929e345a6148a14b7ecd5ab67af944482"
+checksum = "8947b1a6fad4393052c7ba1f4cd97bed3e953a95c79c92ad9b051a04611d9fbb"
 dependencies = [
  "bytes",
  "fnv",
@@ -2520,7 +2574,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ceab25649e9960c0311ea418d17bee82c0dcec1bd053b5f9a66e265a693bed2"
 dependencies = [
  "bytes",
- "http 0.2.9",
+ "http 0.2.11",
  "pin-project-lite",
 ]
 
@@ -2553,7 +2607,7 @@ dependencies = [
  "futures-core",
  "futures-util",
  "h2 0.3.26",
- "http 0.2.9",
+ "http 0.2.11",
  "http-body",
  "httparse",
  "httpdate",
@@ -3419,11 +3473,10 @@ dependencies = [
 
 [[package]]
 name = "num-bigint"
-version = "0.4.4"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "608e7659b5c3d7cba262d894801b9ec9d00de989e8a82bd4bef91d08da45cdc0"
+checksum = "a5e44f723f1133c9deac646763579fdb3ac745e418f2a7af9cd0c431da1f20b9"
 dependencies = [
- "autocfg",
  "num-integer",
  "num-traits",
 ]
@@ -3577,7 +3630,7 @@ checksum = "6174bc48f102d208783c2c84bf931bb75927a617866870de8a4ea85597f871f5"
 dependencies = [
  "bitflags 2.8.0",
  "cfg-if",
- "foreign-types 0.3.1",
+ "foreign-types 0.3.2",
  "libc",
  "once_cell",
  "openssl-macros",
@@ -4831,6 +4884,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "spdx"
+version = "0.10.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bae30cc7bfe3656d60ee99bf6836f472b0c53dddcbf335e253329abb16e535a2"
+dependencies = [
+ "smallvec",
+]
+
+[[package]]
 name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5027,6 +5089,12 @@ name = "termtree"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
+
+[[package]]
+name = "textdistance"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa672c55ab69f787dbc9126cc387dbe57fdd595f585e4524cf89018fa44ab819"
 
 [[package]]
 name = "textwrap"
@@ -5353,7 +5421,7 @@ dependencies = [
  "base64 0.21.7",
  "bytes",
  "h2 0.3.26",
- "http 0.2.9",
+ "http 0.2.11",
  "http-body",
  "hyper",
  "hyper-timeout",
