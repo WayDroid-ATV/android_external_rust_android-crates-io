@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0cf78dca_b31a7887",
+        "filename": "extra_versions/pseudo_crate/deleted-crates.txt",
+        "patchSetId": 11
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-23T20:55:00Z",
+      "side": 1,
+      "message": "This is probably a bug in crate_tool, but ignorable because we skip blank lines.",
+      "revId": "da9fca84fc18e2561888d2c6b452cbf5b0e5dcc5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
