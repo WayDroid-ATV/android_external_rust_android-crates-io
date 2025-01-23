@@ -6,8 +6,6 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := zerocopy
-# TODO: b/372549215 - Remove MODULE_RUST_STEM when zerocopy 0.7 rules.mk is removed.
-MODULE_RUST_STEM := zerocopy_08
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_ADD_IMPLICIT_DEPS := false
@@ -23,9 +21,8 @@ MODULE_RUSTFLAGS += \
 	--cfg 'zerocopy_panic_in_const_and_vec_try_reserve_1_57_0' \
 	--cfg 'zerocopy_target_has_atomics_1_60_0'
 
-# TODO: b/372549215 - Use existing crate-finding system for -derive when 0.7 rules.mk is removed.
 MODULE_LIBRARY_DEPS := \
-	external/rust/android-crates-io/crates/zerocopy-derive \
+	$(call FIND_CRATE,zerocopy-derive) \
 	trusty/user/base/lib/liballoc-rust \
 	trusty/user/base/lib/libcompiler_builtins-rust \
 	trusty/user/base/lib/libcore-rust

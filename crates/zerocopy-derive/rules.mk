@@ -6,8 +6,6 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := zerocopy_derive
-# TODO: b/372549215 - Remove MODULE_RUST_STEM when zerocopy 0.7 rules.mk is removed.
-MODULE_RUST_STEM := zerocopy_derive_08
 MODULE_RUST_CRATE_TYPES := proc-macro
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_RUST_EDITION := 2021
