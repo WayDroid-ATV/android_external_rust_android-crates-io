@@ -1,0 +1,3 @@
+deletions = [
+  "sqlcipher"  # Not used, and contains a license file.
+]
