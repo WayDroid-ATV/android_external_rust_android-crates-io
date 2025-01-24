@@ -484,6 +484,7 @@ dependencies = [
  "yaml-rust",
  "zerocopy 0.8.14",
  "zerocopy-derive 0.8.14",
+ "zerofrom",
  "zerofrom-derive",
  "zeroize",
  "zeroize_derive",
@@ -6600,6 +6601,12 @@ dependencies = [
  "quote 1.0.38",
  "syn 2.0.96",
 ]
+
+[[package]]
+name = "zerofrom"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cff3ee08c995dee1859d998dea82f7374f2826091dd9cd47def953cae446cd2e"
 
 [[package]]
 name = "zerofrom-derive"
