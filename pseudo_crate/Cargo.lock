@@ -341,6 +341,7 @@ dependencies = [
  "plotters-backend",
  "plotters-svg",
  "poll_token_derive",
+ "potential_utf",
  "ppv-lite86",
  "predicates",
  "predicates-core",
@@ -4075,6 +4076,12 @@ checksum = "a1a7411625b38d51b41421c6333976adffd4674a925a978856734a2dc853449b"
 dependencies = [
  "portable-atomic",
 ]
+
+[[package]]
+name = "potential_utf"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2a1d6d1132e166768a82805efecd7c326eb8dc70ad4a586da697836b44eb970"
 
 [[package]]
 name = "powerfmt"
