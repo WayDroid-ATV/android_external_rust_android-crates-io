@@ -483,6 +483,7 @@ dependencies = [
  "x509-cert",
  "xml-rs",
  "yaml-rust",
+ "yoke-derive",
  "zerocopy 0.8.14",
  "zerocopy-derive 0.8.14",
  "zeroize",
@@ -6563,6 +6564,18 @@ dependencies = [
  "dlib",
  "once_cell",
  "pkg-config",
+]
+
+[[package]]
+name = "yoke-derive"
+version = "0.7.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2380878cad4ac9aac1e2435f3eb4020e8374b5f13c296cb75b4620ff8e229154"
+dependencies = [
+ "proc-macro2 1.0.93",
+ "quote 1.0.38",
+ "syn 2.0.96",
+ "synstructure",
 ]
 
 [[package]]
