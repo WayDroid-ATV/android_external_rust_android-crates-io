@@ -486,6 +486,7 @@ dependencies = [
  "zerocopy-derive 0.8.14",
  "zeroize",
  "zeroize_derive",
+ "zerovec-derive",
  "zip",
 ]
 
@@ -6613,6 +6614,17 @@ name = "zeroize_derive"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce36e65b0d2999d2aafac989fb249189a141aee1f53c612c1f37d72631959f69"
+dependencies = [
+ "proc-macro2 1.0.93",
+ "quote 1.0.38",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "zerovec-derive"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "996c67268f00e216986ac140d8de9f47968c330b96aeefcae9ed296f23934448"
 dependencies = [
  "proc-macro2 1.0.93",
  "quote 1.0.38",
