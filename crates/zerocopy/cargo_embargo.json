@@ -1,5 +1,10 @@
 {
   "run_cargo": true,
+  "package": {
+    "zerocopy": {
+      "rulesmk_patch": "patches/rules.mk.diff"
+    }
+  },
   "variants": [
     {
       "features": [
