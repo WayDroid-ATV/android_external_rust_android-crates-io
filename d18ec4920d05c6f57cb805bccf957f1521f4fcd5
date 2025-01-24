@@ -52,6 +52,24 @@
       "parentUuid": "d3c44372_2e130150",
       "revId": "d18ec4920d05c6f57cb805bccf957f1521f4fcd5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "bf8a2ba7_56186492",
+        "filename": "pseudo_crate/crate-list.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 368,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-24T17:59:17Z",
+      "side": 0,
+      "message": "@jamesfarrell@google.com - I think we need to make sure that `regenerate` respects the deleted crates as well. I filed http://b/392113632 to follow up with a proper fix here.",
+      "parentUuid": "61cf75d2_07a2dee6",
+      "revId": "d18ec4920d05c6f57cb805bccf957f1521f4fcd5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
