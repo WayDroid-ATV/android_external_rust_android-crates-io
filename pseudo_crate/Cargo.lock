@@ -181,6 +181,7 @@ dependencies = [
  "der",
  "der_derive",
  "derive_arbitrary",
+ "diplomat",
  "diplomat_core",
  "displaydoc",
  "document-features",
@@ -1694,6 +1695,18 @@ dependencies = [
  "block-buffer",
  "crypto-common",
  "subtle",
+]
+
+[[package]]
+name = "diplomat"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef0c3a613b09df83bdd42393cd532830a795053102f87461fca1726999829c60"
+dependencies = [
+ "diplomat_core",
+ "proc-macro2 1.0.93",
+ "quote 1.0.38",
+ "syn 2.0.96",
 ]
 
 [[package]]
