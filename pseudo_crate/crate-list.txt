@@ -308,6 +308,7 @@ spidev
 spin
 spki
 static_assertions
+strck
 strsim
 strum
 strum_macros

@@ -405,6 +405,7 @@ dependencies = [
  "spin 0.9.8",
  "spki",
  "static_assertions",
+ "strck",
  "strsim 0.11.1",
  "strum",
  "strum_macros",
@@ -5044,6 +5045,12 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "strck"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42316e70da376f3d113a68d138a60d8a9883c604fe97942721ec2068dab13a9f"
 
 [[package]]
 name = "strsim"
