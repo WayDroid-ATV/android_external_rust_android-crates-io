@@ -389,5 +389,6 @@ zerofrom
 zerofrom-derive
 zeroize
 zeroize_derive
+zerovec
 zerovec-derive
 zip
