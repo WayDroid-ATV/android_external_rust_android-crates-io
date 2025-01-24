@@ -82,6 +82,7 @@ debug_tree
 der
 der_derive
 derive_arbitrary
+diplomat_core
 displaydoc
 document-features
 downcast
