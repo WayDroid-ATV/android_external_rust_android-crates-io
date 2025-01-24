@@ -479,6 +479,7 @@ dependencies = [
  "webpki",
  "which",
  "winnow 0.6.24",
+ "writeable",
  "x509-cert",
  "xml-rs",
  "yaml-rust",
@@ -6510,6 +6511,12 @@ dependencies = [
  "quote 1.0.38",
  "syn 1.0.109",
 ]
+
+[[package]]
+name = "writeable"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74b3b5b7c6114bf7253093603034e102d479ecc8501deca33b6c1c816418b6d2"
 
 [[package]]
 name = "x509-cert"
