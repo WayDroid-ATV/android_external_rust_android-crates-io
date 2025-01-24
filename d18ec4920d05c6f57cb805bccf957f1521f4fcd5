@@ -16,6 +16,24 @@
       "message": "Where did these changes come from, are they expected?",
       "revId": "d18ec4920d05c6f57cb805bccf957f1521f4fcd5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d3c44372_2e130150",
+        "filename": "pseudo_crate/crate-list.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 368,
+      "author": {
+        "id": 3512461
+      },
+      "writtenOn": "2025-01-24T14:12:15Z",
+      "side": 0,
+      "message": "These changes came from running `crate_tool regenerate der`. I\u0027ve seen this happen before, You can find these lines in `deleted-crates.txt`, which the crate_tool seems to ignore. I\u0027ll just manually remove this file change from my CL, but then everyone else running `crate_tool` has to do that.",
+      "parentUuid": "95595fe7_6dc27b5a",
+      "revId": "d18ec4920d05c6f57cb805bccf957f1521f4fcd5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
