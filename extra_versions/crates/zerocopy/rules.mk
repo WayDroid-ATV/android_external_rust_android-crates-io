@@ -6,26 +6,19 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := zerocopy
-# TODO: b/372549215 - Remove MODULE_RUST_STEM when zerocopy 0.7 rules.mk is removed.
-MODULE_RUST_STEM := zerocopy_08
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_ADD_IMPLICIT_DEPS := false
-MODULE_RUST_EDITION := 2021
+MODULE_RUST_EDITION := 2018
 MODULE_RUSTFLAGS += \
 	--cfg 'feature="alloc"' \
+	--cfg 'feature="byteorder"' \
 	--cfg 'feature="derive"' \
-	--cfg 'feature="zerocopy-derive"' \
-	--cfg 'zerocopy_aarch64_simd_1_59_0' \
-	--cfg 'zerocopy_core_error_1_81_0' \
-	--cfg 'zerocopy_diagnostic_on_unimplemented_1_78_0' \
-	--cfg 'zerocopy_generic_bounds_in_const_fn_1_61_0' \
-	--cfg 'zerocopy_panic_in_const_and_vec_try_reserve_1_57_0' \
-	--cfg 'zerocopy_target_has_atomics_1_60_0'
+	--cfg 'feature="zerocopy-derive"'
 
-# TODO: b/372549215 - Use existing crate-finding system for -derive when 0.7 rules.mk is removed.
 MODULE_LIBRARY_DEPS := \
-	external/rust/android-crates-io/crates/zerocopy-derive \
+	$(call FIND_CRATE,byteorder) \
+	$(call FIND_CRATE,zerocopy-derive) \
 	trusty/user/base/lib/liballoc-rust \
 	trusty/user/base/lib/libcompiler_builtins-rust \
 	trusty/user/base/lib/libcore-rust
