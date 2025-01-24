@@ -80,6 +80,7 @@ debug_tree
 der
 der_derive
 derive_arbitrary
+diplomat
 diplomat_core
 displaydoc
 document-features
