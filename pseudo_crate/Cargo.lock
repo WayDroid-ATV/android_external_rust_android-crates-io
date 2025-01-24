@@ -179,6 +179,7 @@ dependencies = [
  "der",
  "der_derive",
  "derive_arbitrary",
+ "diplomat_core",
  "displaydoc",
  "document-features",
  "downcast",
@@ -1674,6 +1675,20 @@ dependencies = [
  "block-buffer",
  "crypto-common",
  "subtle",
+]
+
+[[package]]
+name = "diplomat_core"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58e5ba87fee6b8b9dcc575cfbc84ae97b8b9f891fa27f670996a4684e20bd178"
+dependencies = [
+ "proc-macro2 1.0.93",
+ "quote 1.0.38",
+ "serde",
+ "smallvec",
+ "strck",
+ "syn 2.0.96",
 ]
 
 [[package]]
@@ -4993,6 +5008,9 @@ name = "strck"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42316e70da376f3d113a68d138a60d8a9883c604fe97942721ec2068dab13a9f"
+dependencies = [
+ "unicode-ident",
+]
 
 [[package]]
 name = "strsim"
