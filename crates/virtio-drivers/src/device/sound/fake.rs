@@ -28,7 +28,7 @@ use std::{
     },
     thread::{self, JoinHandle},
 };
-use zerocopy::{FromBytes, IntoBytes};
+use zerocopy::{AsBytes, FromBytes};
 
 #[derive(Clone, Debug)]
 pub struct FakeSoundDevice {
@@ -128,9 +128,7 @@ impl FakeSoundDevice {
     }
 
     fn handle_tx(&self, request: &[u8]) -> Vec<u8> {
-        let header = VirtIOSndPcmXfer::read_from_prefix(&request)
-            .expect("TX request too short")
-            .0;
+        let header = VirtIOSndPcmXfer::read_from_prefix(&request).expect("TX request too short");
         self.played_bytes.lock().unwrap()[usize::try_from(header.stream_id).unwrap()]
             .extend(&request[size_of::<VirtIOSndPcmXfer>()..]);
 
@@ -144,9 +142,8 @@ impl FakeSoundDevice {
 
     fn handle_control_request(&self, request: &[u8]) -> Vec<u8> {
         {
-            let header = VirtIOSndHdr::read_from_prefix(&request)
-                .expect("Control request too short")
-                .0;
+            let header =
+                VirtIOSndHdr::read_from_prefix(&request).expect("Control request too short");
             let mut response = Vec::new();
             const R_JACK_INFO: u32 = CommandCode::RJackInfo as u32;
             const R_PCM_INFO: u32 = CommandCode::RPcmInfo as u32;
@@ -158,7 +155,7 @@ impl FakeSoundDevice {
             const R_PCM_RELEASE: u32 = CommandCode::RPcmRelease as u32;
             match header.command_code {
                 R_JACK_INFO => {
-                    let request = VirtIOSndQueryInfo::read_from_bytes(&request)
+                    let request = VirtIOSndQueryInfo::read_from(&request)
                         .expect("R_JACK_INFO control request wrong length");
                     assert_eq!(
                         request.size,
@@ -177,7 +174,7 @@ impl FakeSoundDevice {
                     }
                 }
                 R_PCM_INFO => {
-                    let request = VirtIOSndQueryInfo::read_from_bytes(&request)
+                    let request = VirtIOSndQueryInfo::read_from(&request)
                         .expect("R_PCM_INFO control request wrong length");
                     assert_eq!(
                         request.size,
@@ -196,7 +193,7 @@ impl FakeSoundDevice {
                     }
                 }
                 R_CHMAP_INFO => {
-                    let request = VirtIOSndQueryInfo::read_from_bytes(&request)
+                    let request = VirtIOSndQueryInfo::read_from(&request)
                         .expect("R_CHMAP_INFO control request wrong length");
                     assert_eq!(
                         request.size,
@@ -215,7 +212,7 @@ impl FakeSoundDevice {
                     }
                 }
                 R_PCM_SET_PARAMS => {
-                    let request = VirtIOSndPcmSetParams::read_from_bytes(&request)
+                    let request = VirtIOSndPcmSetParams::read_from(&request)
                         .expect("R_PCM_SET_PARAMS request wrong length");
                     let stream_id = request.hdr.stream_id;
                     self.params.lock().unwrap()[usize::try_from(stream_id).unwrap()] =
@@ -229,7 +226,7 @@ impl FakeSoundDevice {
                 }
                 R_PCM_PREPARE | R_PCM_START | R_PCM_STOP | R_PCM_RELEASE => {
                     let _request =
-                        VirtIOSndPcmHdr::read_from_bytes(&request).expect("Request wrong length");
+                        VirtIOSndPcmHdr::read_from(&request).expect("Request wrong length");
                     response.extend_from_slice(
                         VirtIOSndHdr {
                             command_code: CommandCode::SOk.into(),

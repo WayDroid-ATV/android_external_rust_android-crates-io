@@ -7,7 +7,7 @@ use super::common::Feature;
 use crate::{
     queue::{owning::OwningQueue, VirtQueue},
     transport::Transport,
-    volatile::ReadOnly,
+    volatile::{volread, ReadOnly},
     Error, Hal, Result, PAGE_SIZE,
 };
 use alloc::{boxed::Box, collections::BTreeMap, vec, vec::Vec};
@@ -16,12 +16,12 @@ use core::{
     array,
     fmt::{self, Debug, Display, Formatter},
     hint::spin_loop,
-    mem::{offset_of, size_of},
+    mem::size_of,
     ops::RangeInclusive,
 };
 use enumn::N;
 use log::{error, info, warn};
-use zerocopy::{FromBytes, FromZeros, Immutable, IntoBytes, KnownLayout};
+use zerocopy::{AsBytes, FromBytes, FromZeroes};
 
 /// Audio driver based on virtio v1.2.
 ///
@@ -96,16 +96,22 @@ impl<H: Hal, T: Transport> VirtIOSound<H, T> {
         )?;
 
         // read configuration space
-        let jacks = transport.read_config_space(offset_of!(VirtIOSoundConfig, jacks))?;
-        let streams = transport.read_config_space(offset_of!(VirtIOSoundConfig, streams))?;
-        let chmaps = transport.read_config_space(offset_of!(VirtIOSoundConfig, chmaps))?;
+        let config_ptr = transport.config_space::<VirtIOSoundConfig>()?;
+        // SAFETY: config_ptr is a valid pointer to the device configuration space.
+        let (jacks, streams, chmaps) = unsafe {
+            (
+                volread!(config_ptr, jacks),
+                volread!(config_ptr, streams),
+                volread!(config_ptr, chmaps),
+            )
+        };
         info!(
             "[sound device] config: jacks: {}, streams: {}, chmaps: {}",
             jacks, streams, chmaps
         );
 
-        let queue_buf_send = FromZeros::new_box_zeroed_with_elems(PAGE_SIZE).unwrap();
-        let queue_buf_recv = FromZeros::new_box_zeroed_with_elems(PAGE_SIZE).unwrap();
+        let queue_buf_send = FromZeroes::new_box_slice_zeroed(PAGE_SIZE);
+        let queue_buf_recv = FromZeroes::new_box_slice_zeroed(PAGE_SIZE);
 
         // set pcm params to default
         let mut pcm_parameters = vec![];
@@ -162,15 +168,13 @@ impl<H: Hal, T: Transport> VirtIOSound<H, T> {
         self.transport.ack_interrupt()
     }
 
-    fn request<Req: IntoBytes + Immutable>(&mut self, req: Req) -> Result<VirtIOSndHdr> {
+    fn request<Req: AsBytes>(&mut self, req: Req) -> Result<VirtIOSndHdr> {
         self.control_queue.add_notify_wait_pop(
             &[req.as_bytes()],
-            &mut [self.queue_buf_recv.as_mut_bytes()],
+            &mut [self.queue_buf_recv.as_bytes_mut()],
             &mut self.transport,
         )?;
-        Ok(VirtIOSndHdr::read_from_prefix(&self.queue_buf_recv)
-            .unwrap()
-            .0)
+        Ok(VirtIOSndHdr::read_from_prefix(&self.queue_buf_recv).unwrap())
     }
 
     /// Set up the driver, initate pcm_infos and jacks_infos
@@ -238,10 +242,9 @@ impl<H: Hal, T: Transport> VirtIOSound<H, T> {
             const JACK_INFO_SIZE: usize = size_of::<VirtIOSndJackInfo>();
             let start_byte_idx = HDR_SIZE + i * JACK_INFO_SIZE;
             let end_byte_idx = HDR_SIZE + (i + 1) * JACK_INFO_SIZE;
-            let jack_info = VirtIOSndJackInfo::read_from_bytes(
-                &self.queue_buf_recv[start_byte_idx..end_byte_idx],
-            )
-            .unwrap();
+            let jack_info =
+                VirtIOSndJackInfo::read_from(&self.queue_buf_recv[start_byte_idx..end_byte_idx])
+                    .unwrap();
             jack_infos.push(jack_info)
         }
         Ok(jack_infos)
@@ -274,10 +277,9 @@ impl<H: Hal, T: Transport> VirtIOSound<H, T> {
             const PCM_INFO_SIZE: usize = size_of::<VirtIOSndPcmInfo>();
             let start_byte_idx = HDR_SIZE + i * PCM_INFO_SIZE;
             let end_byte_idx = HDR_SIZE + (i + 1) * PCM_INFO_SIZE;
-            let pcm_info = VirtIOSndPcmInfo::read_from_bytes(
-                &self.queue_buf_recv[start_byte_idx..end_byte_idx],
-            )
-            .unwrap();
+            let pcm_info =
+                VirtIOSndPcmInfo::read_from(&self.queue_buf_recv[start_byte_idx..end_byte_idx])
+                    .unwrap();
             pcm_infos.push(pcm_info);
         }
         Ok(pcm_infos)
@@ -308,8 +310,7 @@ impl<H: Hal, T: Transport> VirtIOSound<H, T> {
             let start_byte = OFFSET + i * size_of::<VirtIOSndChmapInfo>();
             let end_byte = OFFSET + (i + 1) * size_of::<VirtIOSndChmapInfo>();
             let chmap_info =
-                VirtIOSndChmapInfo::read_from_bytes(&self.queue_buf_recv[start_byte..end_byte])
-                    .unwrap();
+                VirtIOSndChmapInfo::read_from(&self.queue_buf_recv[start_byte..end_byte]).unwrap();
             chmap_infos.push(chmap_info);
         }
         Ok(chmap_infos)
@@ -523,7 +524,7 @@ impl<H: Hal, T: Transport> VirtIOSound<H, T> {
                     tokens[head] = unsafe {
                         self.tx_queue.add(
                             &[&stream_id_bytes, buffer],
-                            &mut [statuses[head].as_mut_bytes()],
+                            &mut [statuses[head].as_bytes_mut()],
                         )?
                     };
                     if self.tx_queue.should_notify() {
@@ -543,7 +544,7 @@ impl<H: Hal, T: Transport> VirtIOSound<H, T> {
                     self.tx_queue.pop_used(
                         tokens[tail],
                         &[&stream_id_bytes, buffers[tail].unwrap()],
-                        &mut [statuses[tail].as_mut_bytes()],
+                        &mut [statuses[tail].as_bytes_mut()],
                     )?;
                 }
                 if statuses[tail].status != CommandCode::SOk.into() {
@@ -582,8 +583,8 @@ impl<H: Hal, T: Transport> VirtIOSound<H, T> {
         let mut buf = vec![0; U32_SIZE + period_size];
         buf[..U32_SIZE].copy_from_slice(&stream_id.to_le_bytes());
         buf[U32_SIZE..U32_SIZE + period_size].copy_from_slice(frames);
-        let mut rsp = VirtIOSndPcmStatus::new_box_zeroed().unwrap();
-        let token = unsafe { self.tx_queue.add(&[&buf], &mut [rsp.as_mut_bytes()])? };
+        let mut rsp = VirtIOSndPcmStatus::new_box_zeroed();
+        let token = unsafe { self.tx_queue.add(&[&buf], &mut [rsp.as_bytes_mut()])? };
         if self.tx_queue.should_notify() {
             self.transport.notify(TX_QUEUE_IDX);
         }
@@ -600,7 +601,7 @@ impl<H: Hal, T: Transport> VirtIOSound<H, T> {
             self.tx_queue.pop_used(
                 token,
                 &[&self.token_buf[&token]],
-                &mut [self.token_rsp.get_mut(&token).unwrap().as_mut_bytes()],
+                &mut [self.token_rsp.get_mut(&token).unwrap().as_bytes_mut()],
             )?;
         }
 
@@ -702,7 +703,7 @@ impl<H: Hal, T: Transport> VirtIOSound<H, T> {
         // If the device has written notifications to the event_queue,
         // then the oldest notification should be at the front of the queue.
         self.event_queue.poll(&mut self.transport, |buffer| {
-            if let Ok(event) = VirtIOSndEvent::read_from_bytes(buffer) {
+            if let Some(event) = VirtIOSndEvent::read_from(buffer) {
                 Ok(Some(Notification {
                     notification_type: NotificationType::n(event.hdr.command_code)
                         .ok_or(Error::IoError)?,
@@ -1111,7 +1112,7 @@ impl From<RequestStatusCode> for VirtIOSndHdr {
 
 /// A common header
 #[repr(C)]
-#[derive(Clone, Debug, Eq, FromBytes, Immutable, IntoBytes, KnownLayout, PartialEq)]
+#[derive(AsBytes, Clone, Debug, Eq, FromBytes, FromZeroes, PartialEq)]
 struct VirtIOSndHdr {
     command_code: u32,
 }
@@ -1125,7 +1126,7 @@ impl From<CommandCode> for VirtIOSndHdr {
 }
 
 #[repr(C)]
-#[derive(FromBytes, Immutable, KnownLayout)]
+#[derive(FromBytes, FromZeroes)]
 /// An event notification
 struct VirtIOSndEvent {
     hdr: VirtIOSndHdr,
@@ -1182,7 +1183,7 @@ const VIRTIO_SND_D_OUTPUT: u8 = 0;
 const VIRTIO_SND_D_INPUT: u8 = 1;
 
 #[repr(C)]
-#[derive(Debug, FromBytes, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug, FromBytes, FromZeroes)]
 struct VirtIOSndQueryInfo {
     /// specifies a particular item request type (VIRTIO_SND_R_*_INFO)
     hdr: VirtIOSndHdr,
@@ -1201,7 +1202,7 @@ struct VirtIOSndQueryInfo {
 }
 
 #[repr(C)]
-#[derive(Debug, FromBytes, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug, FromBytes, FromZeroes)]
 struct VirtIOSndQueryInfoRsp {
     hdr: VirtIOSndHdr,
     info: VirtIOSndInfo,
@@ -1209,13 +1210,13 @@ struct VirtIOSndQueryInfoRsp {
 
 /// Field `hda_fn_nid` indicates a function group node identifier.
 #[repr(C)]
-#[derive(Clone, Debug, Eq, FromBytes, Immutable, IntoBytes, KnownLayout, PartialEq)]
+#[derive(AsBytes, Clone, Debug, Eq, FromBytes, FromZeroes, PartialEq)]
 pub struct VirtIOSndInfo {
     hda_fn_nid: u32,
 }
 
 #[repr(C)]
-#[derive(Clone, Debug, FromBytes, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Clone, Debug, FromBytes, FromZeroes)]
 struct VirtIOSndJackHdr {
     hdr: VirtIOSndHdr,
     /// specifies a jack identifier from 0 to jacks - 1
@@ -1224,7 +1225,7 @@ struct VirtIOSndJackHdr {
 
 /// Jack infomation.
 #[repr(C)]
-#[derive(Clone, Eq, FromBytes, Immutable, IntoBytes, KnownLayout, PartialEq)]
+#[derive(AsBytes, Clone, Eq, FromBytes, FromZeroes, PartialEq)]
 pub struct VirtIOSndJackInfo {
     hdr: VirtIOSndInfo,
     features: u32,
@@ -1270,14 +1271,14 @@ impl Display for VirtIOSndJackInfo {
 }
 
 #[repr(C)]
-#[derive(FromBytes, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, FromBytes, FromZeroes)]
 struct VirtIOSndJackInfoRsp {
     hdr: VirtIOSndHdr,
     body: VirtIOSndJackInfo,
 }
 
 #[repr(C)]
-#[derive(FromBytes, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, FromBytes, FromZeroes)]
 struct VirtIOSndJackRemap {
     hdr: VirtIOSndJackHdr,
     association: u32,
@@ -1285,7 +1286,7 @@ struct VirtIOSndJackRemap {
 }
 
 #[repr(C)]
-#[derive(Debug, Eq, FromBytes, Immutable, IntoBytes, KnownLayout, PartialEq)]
+#[derive(AsBytes, Debug, Eq, FromBytes, FromZeroes, PartialEq)]
 struct VirtIOSndPcmHdr {
     /// specifies request type (VIRTIO_SND_R_PCM_*)
     hdr: VirtIOSndHdr,
@@ -1348,7 +1349,7 @@ impl From<PcmSampleFormat> for u64 {
 
 /// PCM information.
 #[repr(C)]
-#[derive(Clone, Eq, FromBytes, Immutable, IntoBytes, KnownLayout, PartialEq)]
+#[derive(AsBytes, Clone, Eq, FromBytes, FromZeroes, PartialEq)]
 pub struct VirtIOSndPcmInfo {
     hdr: VirtIOSndInfo,
     features: u32, /* 1 << VIRTIO_SND_PCM_F_XXX */
@@ -1408,7 +1409,7 @@ struct PcmParameters {
 }
 
 #[repr(C)]
-#[derive(Debug, Eq, FromBytes, Immutable, IntoBytes, KnownLayout, PartialEq)]
+#[derive(AsBytes, Debug, Eq, FromBytes, FromZeroes, PartialEq)]
 struct VirtIOSndPcmSetParams {
     hdr: VirtIOSndPcmHdr, /* .code = VIRTIO_SND_R_PCM_SET_PARAMS */
     buffer_bytes: u32,
@@ -1423,14 +1424,14 @@ struct VirtIOSndPcmSetParams {
 
 /// An I/O header
 #[repr(C)]
-#[derive(FromBytes, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, FromBytes, FromZeroes)]
 struct VirtIOSndPcmXfer {
     stream_id: u32,
 }
 
 /// An I/O status
 #[repr(C)]
-#[derive(Default, FromBytes, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Default, FromBytes, FromZeroes)]
 struct VirtIOSndPcmStatus {
     status: u32,
     latency_bytes: u32,
@@ -1519,7 +1520,7 @@ enum ChannelPosition {
 const VIRTIO_SND_CHMAP_MAX_SIZE: usize = 18;
 
 #[repr(C)]
-#[derive(Clone, Debug, FromBytes, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Clone, Debug, FromBytes, FromZeroes)]
 struct VirtIOSndChmapInfo {
     hdr: VirtIOSndInfo,
     direction: u8,

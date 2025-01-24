@@ -3,13 +3,12 @@
 use crate::hal::{BufferDirection, Dma, Hal};
 use crate::queue::VirtQueue;
 use crate::transport::Transport;
-use crate::volatile::{ReadOnly, Volatile, WriteOnly};
+use crate::volatile::{volread, ReadOnly, Volatile, WriteOnly};
 use crate::{pages, Error, Result, PAGE_SIZE};
 use alloc::boxed::Box;
 use bitflags::bitflags;
-use core::mem::offset_of;
 use log::info;
-use zerocopy::{FromBytes, FromZeros, Immutable, IntoBytes, KnownLayout};
+use zerocopy::{AsBytes, FromBytes, FromZeroes};
 
 const QUEUE_SIZE: u16 = 2;
 const SUPPORTED_FEATURES: Features = Features::RING_EVENT_IDX.union(Features::RING_INDIRECT_DESC);
@@ -44,12 +43,15 @@ impl<H: Hal, T: Transport> VirtIOGpu<H, T> {
         let negotiated_features = transport.begin_init(SUPPORTED_FEATURES);
 
         // read configuration space
-        let events_read = transport.read_config_space::<u32>(offset_of!(Config, events_read))?;
-        let num_scanouts = transport.read_config_space::<u32>(offset_of!(Config, num_scanouts))?;
-        info!(
-            "events_read: {:#x}, num_scanouts: {:#x}",
-            events_read, num_scanouts
-        );
+        let config_space = transport.config_space::<Config>()?;
+        unsafe {
+            let events_read = volread!(config_space, events_read);
+            let num_scanouts = volread!(config_space, num_scanouts);
+            info!(
+                "events_read: {:#x}, num_scanouts: {:#x}",
+                events_read, num_scanouts
+            );
+        }
 
         let control_queue = VirtQueue::new(
             &mut transport,
@@ -64,8 +66,8 @@ impl<H: Hal, T: Transport> VirtIOGpu<H, T> {
             negotiated_features.contains(Features::RING_EVENT_IDX),
         )?;
 
-        let queue_buf_send = FromZeros::new_box_zeroed_with_elems(PAGE_SIZE).unwrap();
-        let queue_buf_recv = FromZeros::new_box_zeroed_with_elems(PAGE_SIZE).unwrap();
+        let queue_buf_send = FromZeroes::new_box_slice_zeroed(PAGE_SIZE);
+        let queue_buf_recv = FromZeroes::new_box_slice_zeroed(PAGE_SIZE);
 
         transport.finish_init();
 
@@ -171,18 +173,18 @@ impl<H: Hal, T: Transport> VirtIOGpu<H, T> {
     }
 
     /// Send a request to the device and block for a response.
-    fn request<Req: IntoBytes + Immutable, Rsp: FromBytes>(&mut self, req: Req) -> Result<Rsp> {
+    fn request<Req: AsBytes, Rsp: FromBytes>(&mut self, req: Req) -> Result<Rsp> {
         req.write_to_prefix(&mut self.queue_buf_send).unwrap();
         self.control_queue.add_notify_wait_pop(
             &[&self.queue_buf_send],
             &mut [&mut self.queue_buf_recv],
             &mut self.transport,
         )?;
-        Ok(Rsp::read_from_prefix(&self.queue_buf_recv).unwrap().0)
+        Ok(Rsp::read_from_prefix(&self.queue_buf_recv).unwrap())
     }
 
     /// Send a mouse cursor operation request to the device and block for a response.
-    fn cursor_request<Req: IntoBytes + Immutable>(&mut self, req: Req) -> Result {
+    fn cursor_request<Req: AsBytes>(&mut self, req: Req) -> Result {
         req.write_to_prefix(&mut self.queue_buf_send).unwrap();
         self.cursor_queue.add_notify_wait_pop(
             &[&self.queue_buf_send],
@@ -336,7 +338,7 @@ bitflags! {
 }
 
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Eq, FromBytes, Immutable, IntoBytes, KnownLayout, PartialEq)]
+#[derive(AsBytes, Clone, Copy, Debug, Eq, PartialEq, FromBytes, FromZeroes)]
 struct Command(u32);
 
 impl Command {
@@ -369,7 +371,7 @@ impl Command {
 const GPU_FLAG_FENCE: u32 = 1 << 0;
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, FromBytes, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug, Clone, Copy, FromBytes, FromZeroes)]
 struct CtrlHeader {
     hdr_type: Command,
     flags: u32,
@@ -400,7 +402,7 @@ impl CtrlHeader {
 }
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Default, FromBytes, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug, Copy, Clone, Default, FromBytes, FromZeroes)]
 struct Rect {
     x: u32,
     y: u32,
@@ -409,7 +411,7 @@ struct Rect {
 }
 
 #[repr(C)]
-#[derive(Debug, FromBytes, Immutable, KnownLayout)]
+#[derive(Debug, FromBytes, FromZeroes)]
 struct RespDisplayInfo {
     header: CtrlHeader,
     rect: Rect,
@@ -418,7 +420,7 @@ struct RespDisplayInfo {
 }
 
 #[repr(C)]
-#[derive(Debug, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug)]
 struct ResourceCreate2D {
     header: CtrlHeader,
     resource_id: u32,
@@ -428,13 +430,13 @@ struct ResourceCreate2D {
 }
 
 #[repr(u32)]
-#[derive(Debug, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug)]
 enum Format {
     B8G8R8A8UNORM = 1,
 }
 
 #[repr(C)]
-#[derive(Debug, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug)]
 struct ResourceAttachBacking {
     header: CtrlHeader,
     resource_id: u32,
@@ -445,7 +447,7 @@ struct ResourceAttachBacking {
 }
 
 #[repr(C)]
-#[derive(Debug, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug)]
 struct SetScanout {
     header: CtrlHeader,
     rect: Rect,
@@ -454,7 +456,7 @@ struct SetScanout {
 }
 
 #[repr(C)]
-#[derive(Debug, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug)]
 struct TransferToHost2D {
     header: CtrlHeader,
     rect: Rect,
@@ -464,7 +466,7 @@ struct TransferToHost2D {
 }
 
 #[repr(C)]
-#[derive(Debug, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug)]
 struct ResourceFlush {
     header: CtrlHeader,
     rect: Rect,
@@ -473,7 +475,7 @@ struct ResourceFlush {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug, Clone, Copy)]
 struct CursorPos {
     scanout_id: u32,
     x: u32,
@@ -482,7 +484,7 @@ struct CursorPos {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug, Immutable, IntoBytes, KnownLayout)]
+#[derive(AsBytes, Debug, Clone, Copy)]
 struct UpdateCursor {
     header: CtrlHeader,
     pos: CursorPos,
