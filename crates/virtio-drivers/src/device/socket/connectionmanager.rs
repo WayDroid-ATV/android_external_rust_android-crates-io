@@ -8,7 +8,7 @@ use core::cmp::min;
 use core::convert::TryInto;
 use core::hint::spin_loop;
 use log::debug;
-use zerocopy::FromZeros;
+use zerocopy::FromZeroes;
 
 const DEFAULT_PER_CONNECTION_BUFFER_CAPACITY: u32 = 1024;
 
@@ -343,7 +343,7 @@ struct RingBuffer {
 impl RingBuffer {
     pub fn new(capacity: usize) -> Self {
         Self {
-            buffer: FromZeros::new_box_zeroed_with_elems(capacity).unwrap(),
+            buffer: FromZeroes::new_box_slice_zeroed(capacity),
             used: 0,
             start: 0,
         }
@@ -431,7 +431,7 @@ mod tests {
     use alloc::{sync::Arc, vec};
     use core::{mem::size_of, ptr::NonNull};
     use std::{sync::Mutex, thread};
-    use zerocopy::{FromBytes, IntoBytes};
+    use zerocopy::{AsBytes, FromBytes};
 
     #[test]
     fn send_recv() {
@@ -474,7 +474,7 @@ mod tests {
             // Wait for connection request.
             State::wait_until_queue_notified(&state, TX_QUEUE_IDX);
             assert_eq!(
-                VirtioVsockHdr::read_from_bytes(
+                VirtioVsockHdr::read_from(
                     state
                         .lock()
                         .unwrap()
@@ -525,9 +525,7 @@ mod tests {
                 size_of::<VirtioVsockHdr>() + hello_from_guest.len()
             );
             assert_eq!(
-                VirtioVsockHdr::read_from_prefix(request.as_slice())
-                    .unwrap()
-                    .0,
+                VirtioVsockHdr::read_from_prefix(request.as_slice()).unwrap(),
                 VirtioVsockHdr {
                     op: VirtioVsockOp::Rw.into(),
                     src_cid: guest_cid.into(),
@@ -562,8 +560,7 @@ mod tests {
                 buf_alloc: 50.into(),
                 fwd_cnt: (hello_from_guest.len() as u32).into(),
             }
-            .write_to_prefix(response.as_mut_slice())
-            .unwrap();
+            .write_to_prefix(response.as_mut_slice());
             response[size_of::<VirtioVsockHdr>()..].copy_from_slice(hello_from_host.as_bytes());
             state
                 .lock()
@@ -573,7 +570,7 @@ mod tests {
             // Expect a shutdown.
             State::wait_until_queue_notified(&state, TX_QUEUE_IDX);
             assert_eq!(
-                VirtioVsockHdr::read_from_bytes(
+                VirtioVsockHdr::read_from(
                     state
                         .lock()
                         .unwrap()
@@ -711,7 +708,7 @@ mod tests {
             println!("Host waiting for rejection");
             State::wait_until_queue_notified(&state, TX_QUEUE_IDX);
             assert_eq!(
-                VirtioVsockHdr::read_from_bytes(
+                VirtioVsockHdr::read_from(
                     state
                         .lock()
                         .unwrap()
@@ -756,7 +753,7 @@ mod tests {
             println!("Host waiting for response");
             State::wait_until_queue_notified(&state, TX_QUEUE_IDX);
             assert_eq!(
-                VirtioVsockHdr::read_from_bytes(
+                VirtioVsockHdr::read_from(
                     state
                         .lock()
                         .unwrap()
