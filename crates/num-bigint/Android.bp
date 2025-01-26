@@ -13,29 +13,17 @@ license {
     license_text: ["LICENSE"],
 }
 
-genrule {
-    name: "copy_num-bigint_build_out",
-    srcs: ["out/*"],
-    cmd: "cp $(in) $(genDir)",
-    out: ["radix_bases.rs"],
-}
-
 rust_library {
     name: "libnum_bigint",
     host_supported: true,
     crate_name: "num_bigint",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.4.6",
     crate_root: "src/lib.rs",
-    srcs: [":copy_num-bigint_build_out"],
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
-    ],
-    cfgs: [
-        "has_try_from",
-        "u64_digit",
     ],
     rustlibs: [
         "libnum_integer",
@@ -54,22 +42,17 @@ rust_test {
     host_supported: true,
     crate_name: "num_bigint",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.4.6",
     crate_root: "src/lib.rs",
-    srcs: [":copy_num-bigint_build_out"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
-    ],
-    cfgs: [
-        "has_try_from",
-        "u64_digit",
     ],
     rustlibs: [
         "libnum_integer",
@@ -82,22 +65,17 @@ rust_test {
     host_supported: true,
     crate_name: "bigint",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.4.6",
     crate_root: "tests/bigint.rs",
-    srcs: [":copy_num-bigint_build_out"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
-    ],
-    cfgs: [
-        "has_try_from",
-        "u64_digit",
     ],
     rustlibs: [
         "libnum_bigint",
@@ -111,22 +89,17 @@ rust_test {
     host_supported: true,
     crate_name: "bigint_bitwise",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.4.6",
     crate_root: "tests/bigint_bitwise.rs",
-    srcs: [":copy_num-bigint_build_out"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
-    ],
-    cfgs: [
-        "has_try_from",
-        "u64_digit",
     ],
     rustlibs: [
         "libnum_bigint",
@@ -140,22 +113,17 @@ rust_test {
     host_supported: true,
     crate_name: "bigint_scalar",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.4.6",
     crate_root: "tests/bigint_scalar.rs",
-    srcs: [":copy_num-bigint_build_out"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
-    ],
-    cfgs: [
-        "has_try_from",
-        "u64_digit",
     ],
     rustlibs: [
         "libnum_bigint",
@@ -169,22 +137,17 @@ rust_test {
     host_supported: true,
     crate_name: "biguint",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.4.6",
     crate_root: "tests/biguint.rs",
-    srcs: [":copy_num-bigint_build_out"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
-    ],
-    cfgs: [
-        "has_try_from",
-        "u64_digit",
     ],
     rustlibs: [
         "libnum_bigint",
@@ -198,22 +161,17 @@ rust_test {
     host_supported: true,
     crate_name: "biguint_scalar",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.4.6",
     crate_root: "tests/biguint_scalar.rs",
-    srcs: [":copy_num-bigint_build_out"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
-    ],
-    cfgs: [
-        "has_try_from",
-        "u64_digit",
     ],
     rustlibs: [
         "libnum_bigint",
@@ -227,22 +185,17 @@ rust_test {
     host_supported: true,
     crate_name: "fuzzed",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.4.6",
     crate_root: "tests/fuzzed.rs",
-    srcs: [":copy_num-bigint_build_out"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
-    ],
-    cfgs: [
-        "has_try_from",
-        "u64_digit",
     ],
     rustlibs: [
         "libnum_bigint",
@@ -256,22 +209,17 @@ rust_test {
     host_supported: true,
     crate_name: "modpow",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.4.6",
     crate_root: "tests/modpow.rs",
-    srcs: [":copy_num-bigint_build_out"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
-    ],
-    cfgs: [
-        "has_try_from",
-        "u64_digit",
     ],
     rustlibs: [
         "libnum_bigint",
@@ -285,22 +233,17 @@ rust_test {
     host_supported: true,
     crate_name: "roots",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.4.6",
     crate_root: "tests/roots.rs",
-    srcs: [":copy_num-bigint_build_out"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
-    ],
-    cfgs: [
-        "has_try_from",
-        "u64_digit",
     ],
     rustlibs: [
         "libnum_bigint",

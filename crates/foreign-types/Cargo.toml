@@ -12,7 +12,7 @@
 
 [package]
 name = "foreign-types"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
 description = "A framework for Rust wrappers over C APIs"
 readme = "README.md"

@@ -14,6 +14,9 @@
     },
     {
       "name": "tracing-core_test_tests_macros"
+    },
+    {
+      "name": "tracing-core_test_tests_missed_register_callsite"
     }
   ]
 }

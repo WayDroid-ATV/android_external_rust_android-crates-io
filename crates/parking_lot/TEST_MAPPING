@@ -10,6 +10,9 @@
     },
     {
       "name": "parking_lot_test_tests_issue_203"
+    },
+    {
+      "name": "parking_lot_test_tests_issue_392"
     }
   ]
 }

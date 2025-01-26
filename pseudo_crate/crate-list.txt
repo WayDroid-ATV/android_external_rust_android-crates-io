@@ -2,6 +2,7 @@ aarch64-paging
 acpi
 ahash
 aho-corasick
+android_bp
 android_log-sys
 android_logger
 anes
@@ -100,6 +101,7 @@ fixedbitset
 flagset
 flate2
 fnv
+foldhash
 foreign-types
 foreign-types-shared
 form_urlencoded
@@ -148,6 +150,7 @@ inotify
 inotify-sys
 instant
 intrusive-collections
+is-terminal
 itertools
 itoa
 jni
@@ -297,6 +300,7 @@ slab
 smallvec
 smccc
 socket2
+spdx
 spin
 spki
 static_assertions
@@ -310,6 +314,7 @@ synstructure
 tempfile
 termcolor
 termtree
+textdistance
 textwrap
 thiserror
 thiserror-impl
