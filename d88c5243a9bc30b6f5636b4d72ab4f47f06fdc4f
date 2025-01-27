@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "30caa581_ac8e4789",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3679024
+      },
+      "writtenOn": "2025-01-27T10:50:43Z",
+      "side": 1,
+      "message": "Please add the OWNERS files as described in step 5 of go/android3p#creating-changes",
+      "revId": "d88c5243a9bc30b6f5636b4d72ab4f47f06fdc4f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
