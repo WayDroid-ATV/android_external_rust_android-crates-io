@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "package": {
     "tokio-macros": {
       "device_supported": false

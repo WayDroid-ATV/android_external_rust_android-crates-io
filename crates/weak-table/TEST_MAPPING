@@ -1,0 +1,13 @@
+{
+  "postsubmit": [
+    {
+      "name": "weak-table_test_src_lib"
+    },
+    {
+      "name": "weak-table_test_tests_symbols"
+    },
+    {
+      "name": "weak-table_test_tests_weak_key_hash_map"
+    }
+  ]
+}

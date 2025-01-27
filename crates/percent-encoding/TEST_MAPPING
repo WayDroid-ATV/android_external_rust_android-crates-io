@@ -9,5 +9,10 @@
     {
       "path": "packages/modules/DnsResolver"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "percent-encoding_test_src_lib"
+    }
   ]
 }

@@ -33,3 +33,14 @@ rust_library_rlib {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "percore_test_src_lib",
+    crate_name: "percore",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.1.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    edition: "2021",
+}

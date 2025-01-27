@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "protobuf-support_test_src_lib"
+    }
+  ]
+}

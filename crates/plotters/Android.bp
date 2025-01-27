@@ -39,3 +39,35 @@ rust_library {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "plotters_test_src_lib",
+    host_supported: true,
+    crate_name: "plotters",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.3.7",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "area_series",
+        "line_series",
+        "plotters-svg",
+        "svg_backend",
+    ],
+    rustlibs: [
+        "libcriterion",
+        "libitertools",
+        "libnum_traits",
+        "libplotters_backend",
+        "libplotters_svg",
+        "librayon",
+        "libserde",
+        "libserde_json",
+    ],
+    proc_macros: ["libserde_derive"],
+}

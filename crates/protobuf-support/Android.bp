@@ -31,6 +31,22 @@ rust_library {
     min_sdk_version: "29",
 }
 
+rust_test {
+    name: "protobuf-support_test_src_lib",
+    host_supported: true,
+    crate_name: "protobuf_support",
+    cargo_env_compat: true,
+    cargo_pkg_version: "3.2.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: ["libthiserror"],
+}
+
 dirgroup {
     name: "trusty_dirgroup_external_rust_crates_protobuf-support",
     visibility: ["//trusty/vendor/google/aosp/scripts"],

@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "run_cargo": false,
   "module_name_overrides": {
     "libuefi_raw": "libuefi_raw_nostd",

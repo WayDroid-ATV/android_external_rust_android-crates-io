@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "grpcio_test_src_lib"
+    }
+  ]
+}

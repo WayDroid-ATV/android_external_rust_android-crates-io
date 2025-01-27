@@ -1094,7 +1094,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_1, device_extensions.khr_maintenance3].into_iter().any(|x| x)
+        if [
+            api_version >= Version::V1_1,
+            device_extensions.khr_maintenance3,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan11.is_none()].into_iter().all(|x| x)
         {
             self.properties_maintenance3 = Some(Default::default());
@@ -1102,7 +1107,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_1, device_extensions.khr_multiview].into_iter().any(|x| x)
+        if [
+            api_version >= Version::V1_1,
+            device_extensions.khr_multiview,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan11.is_none()].into_iter().all(|x| x)
         {
             self.properties_multiview = Some(Default::default());
@@ -1110,7 +1120,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_1, device_extensions.khr_maintenance2].into_iter().any(|x| x)
+        if [
+            api_version >= Version::V1_1,
+            device_extensions.khr_maintenance2,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan11.is_none()].into_iter().all(|x| x)
         {
             self.properties_point_clipping = Some(Default::default());
@@ -1134,9 +1149,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_2, device_extensions.khr_depth_stencil_resolve]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= Version::V1_2,
+            device_extensions.khr_depth_stencil_resolve,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.properties_depth_stencil_resolve = Some(Default::default());
@@ -1144,9 +1162,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_2, device_extensions.ext_descriptor_indexing]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= Version::V1_2,
+            device_extensions.ext_descriptor_indexing,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.properties_descriptor_indexing = Some(Default::default());
@@ -1154,9 +1175,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_2, device_extensions.khr_driver_properties]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= Version::V1_2,
+            device_extensions.khr_driver_properties,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.properties_driver = Some(Default::default());
@@ -1164,9 +1188,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_2, device_extensions.khr_shader_float_controls]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= Version::V1_2,
+            device_extensions.khr_shader_float_controls,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.properties_float_controls = Some(Default::default());
@@ -1174,9 +1201,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_2, device_extensions.ext_sampler_filter_minmax]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= Version::V1_2,
+            device_extensions.ext_sampler_filter_minmax,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.properties_sampler_filter_minmax = Some(Default::default());
@@ -1184,9 +1214,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_2, device_extensions.khr_timeline_semaphore]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= Version::V1_2,
+            device_extensions.khr_timeline_semaphore,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.properties_timeline_semaphore = Some(Default::default());
@@ -1194,9 +1227,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_3, device_extensions.ext_inline_uniform_block]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= Version::V1_3,
+            device_extensions.ext_inline_uniform_block,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.properties_inline_uniform_block = Some(Default::default());
@@ -1204,7 +1240,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_3, device_extensions.khr_maintenance4].into_iter().any(|x| x)
+        if [
+            api_version >= Version::V1_3,
+            device_extensions.khr_maintenance4,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.properties_maintenance4 = Some(Default::default());
@@ -1212,9 +1253,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_3, device_extensions.khr_shader_integer_dot_product]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= Version::V1_3,
+            device_extensions.khr_shader_integer_dot_product,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.properties_shader_integer_dot_product = Some(Default::default());
@@ -1222,9 +1266,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_3, device_extensions.ext_subgroup_size_control]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= Version::V1_3,
+            device_extensions.ext_subgroup_size_control,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.properties_subgroup_size_control = Some(Default::default());
@@ -1232,9 +1279,12 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= Version::V1_3, device_extensions.ext_texel_buffer_alignment]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= Version::V1_3,
+            device_extensions.ext_texel_buffer_alignment,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.properties_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.properties_texel_buffer_alignment = Some(Default::default());
@@ -1242,7 +1292,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_acceleration_structure].into_iter().any(|x| x)
+        if [device_extensions.khr_acceleration_structure]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_acceleration_structure_khr = Some(Default::default());
@@ -1250,15 +1302,22 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_fragment_shader_barycentric].into_iter().any(|x| x)
+        if [device_extensions.khr_fragment_shader_barycentric]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_fragment_shader_barycentric_khr = Some(Default::default());
-            let member = self.properties_fragment_shader_barycentric_khr.as_mut().unwrap();
+            let member = self
+                .properties_fragment_shader_barycentric_khr
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_fragment_shading_rate].into_iter().any(|x| x)
+        if [device_extensions.khr_fragment_shading_rate]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_fragment_shading_rate_khr = Some(Default::default());
@@ -1266,7 +1325,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_performance_query].into_iter().any(|x| x)
+        if [device_extensions.khr_performance_query]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_performance_query_khr = Some(Default::default());
@@ -1274,7 +1335,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_portability_subset].into_iter().any(|x| x)
+        if [device_extensions.khr_portability_subset]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_portability_subset_khr = Some(Default::default());
@@ -1282,7 +1345,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_push_descriptor].into_iter().any(|x| x)
+        if [device_extensions.khr_push_descriptor]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_push_descriptor_khr = Some(Default::default());
@@ -1290,7 +1355,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_ray_tracing_pipeline].into_iter().any(|x| x)
+        if [device_extensions.khr_ray_tracing_pipeline]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_ray_tracing_pipeline_khr = Some(Default::default());
@@ -1298,23 +1365,35 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_blend_operation_advanced].into_iter().any(|x| x)
+        if [device_extensions.ext_blend_operation_advanced]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_blend_operation_advanced_ext = Some(Default::default());
-            let member = self.properties_blend_operation_advanced_ext.as_mut().unwrap();
+            let member = self
+                .properties_blend_operation_advanced_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_conservative_rasterization].into_iter().any(|x| x)
+        if [device_extensions.ext_conservative_rasterization]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_conservative_rasterization_ext = Some(Default::default());
-            let member = self.properties_conservative_rasterization_ext.as_mut().unwrap();
+            let member = self
+                .properties_conservative_rasterization_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_custom_border_color].into_iter().any(|x| x)
+        if [device_extensions.ext_custom_border_color]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_custom_border_color_ext = Some(Default::default());
@@ -1322,15 +1401,22 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_descriptor_buffer].into_iter().any(|x| x)
+        if [device_extensions.ext_descriptor_buffer]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_descriptor_buffer_density_map_ext = Some(Default::default());
-            let member = self.properties_descriptor_buffer_density_map_ext.as_mut().unwrap();
+            let member = self
+                .properties_descriptor_buffer_density_map_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_descriptor_buffer].into_iter().any(|x| x)
+        if [device_extensions.ext_descriptor_buffer]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_descriptor_buffer_ext = Some(Default::default());
@@ -1338,7 +1424,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_discard_rectangles].into_iter().any(|x| x)
+        if [device_extensions.ext_discard_rectangles]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_discard_rectangle_ext = Some(Default::default());
@@ -1346,7 +1434,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_physical_device_drm].into_iter().any(|x| x)
+        if [device_extensions.ext_physical_device_drm]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_drm_ext = Some(Default::default());
@@ -1354,15 +1444,22 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_extended_dynamic_state3].into_iter().any(|x| x)
+        if [device_extensions.ext_extended_dynamic_state3]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_extended_dynamic_state3_ext = Some(Default::default());
-            let member = self.properties_extended_dynamic_state3_ext.as_mut().unwrap();
+            let member = self
+                .properties_extended_dynamic_state3_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_external_memory_host].into_iter().any(|x| x)
+        if [device_extensions.ext_external_memory_host]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_external_memory_host_ext = Some(Default::default());
@@ -1370,7 +1467,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_fragment_density_map2].into_iter().any(|x| x)
+        if [device_extensions.ext_fragment_density_map2]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_fragment_density_map2_ext = Some(Default::default());
@@ -1378,7 +1477,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_fragment_density_map].into_iter().any(|x| x)
+        if [device_extensions.ext_fragment_density_map]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_fragment_density_map_ext = Some(Default::default());
@@ -1386,15 +1487,22 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_graphics_pipeline_library].into_iter().any(|x| x)
+        if [device_extensions.ext_graphics_pipeline_library]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_graphics_pipeline_library_ext = Some(Default::default());
-            let member = self.properties_graphics_pipeline_library_ext.as_mut().unwrap();
+            let member = self
+                .properties_graphics_pipeline_library_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_line_rasterization].into_iter().any(|x| x)
+        if [device_extensions.ext_line_rasterization]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_line_rasterization_ext = Some(Default::default());
@@ -1414,7 +1522,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_opacity_micromap].into_iter().any(|x| x)
+        if [device_extensions.ext_opacity_micromap]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_opacity_micromap_ext = Some(Default::default());
@@ -1429,7 +1539,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_pipeline_robustness].into_iter().any(|x| x)
+        if [device_extensions.ext_pipeline_robustness]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_pipeline_robustness_ext = Some(Default::default());
@@ -1437,7 +1549,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_provoking_vertex].into_iter().any(|x| x)
+        if [device_extensions.ext_provoking_vertex]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_provoking_vertex_ext = Some(Default::default());
@@ -1451,7 +1565,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_sample_locations].into_iter().any(|x| x)
+        if [device_extensions.ext_sample_locations]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_sample_locations_ext = Some(Default::default());
@@ -1459,15 +1575,22 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_shader_module_identifier].into_iter().any(|x| x)
+        if [device_extensions.ext_shader_module_identifier]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_shader_module_identifier_ext = Some(Default::default());
-            let member = self.properties_shader_module_identifier_ext.as_mut().unwrap();
+            let member = self
+                .properties_shader_module_identifier_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_transform_feedback].into_iter().any(|x| x)
+        if [device_extensions.ext_transform_feedback]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_transform_feedback_ext = Some(Default::default());
@@ -1475,15 +1598,22 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_vertex_attribute_divisor].into_iter().any(|x| x)
+        if [device_extensions.ext_vertex_attribute_divisor]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_vertex_attribute_divisor_ext = Some(Default::default());
-            let member = self.properties_vertex_attribute_divisor_ext.as_mut().unwrap();
+            let member = self
+                .properties_vertex_attribute_divisor_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_cooperative_matrix].into_iter().any(|x| x)
+        if [device_extensions.nv_cooperative_matrix]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_cooperative_matrix_nv = Some(Default::default());
@@ -1491,7 +1621,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_copy_memory_indirect].into_iter().any(|x| x)
+        if [device_extensions.nv_copy_memory_indirect]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_copy_memory_indirect_nv = Some(Default::default());
@@ -1499,31 +1631,48 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_device_generated_commands].into_iter().any(|x| x)
+        if [device_extensions.nv_device_generated_commands]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_device_generated_commands_nv = Some(Default::default());
-            let member = self.properties_device_generated_commands_nv.as_mut().unwrap();
+            let member = self
+                .properties_device_generated_commands_nv
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.qcom_fragment_density_map_offset].into_iter().any(|x| x)
+        if [device_extensions.qcom_fragment_density_map_offset]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_fragment_density_map_offset_qcom = Some(Default::default());
-            let member = self.properties_fragment_density_map_offset_qcom.as_mut().unwrap();
+            let member = self
+                .properties_fragment_density_map_offset_qcom
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_fragment_shading_rate_enums].into_iter().any(|x| x)
+        if [device_extensions.nv_fragment_shading_rate_enums]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_fragment_shading_rate_enums_nv = Some(Default::default());
-            let member = self.properties_fragment_shading_rate_enums_nv.as_mut().unwrap();
+            let member = self
+                .properties_fragment_shading_rate_enums_nv
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.qcom_image_processing].into_iter().any(|x| x)
+        if [device_extensions.qcom_image_processing]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_image_processing_qcom = Some(Default::default());
@@ -1531,7 +1680,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_memory_decompression].into_iter().any(|x| x)
+        if [device_extensions.nv_memory_decompression]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_memory_decompression_nv = Some(Default::default());
@@ -1540,18 +1691,25 @@ impl PropertiesFfi {
             head.p_next = member as *mut _ as _;
         }
         if [device_extensions.nv_mesh_shader].into_iter().any(|x| x)
-            && [self.properties_mesh_shader_ext.is_none()].into_iter().all(|x| x)
+            && [self.properties_mesh_shader_ext.is_none()]
+                .into_iter()
+                .all(|x| x)
         {
             self.properties_mesh_shader_nv = Some(Default::default());
             let member = self.properties_mesh_shader_nv.as_mut().unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nvx_multiview_per_view_attributes].into_iter().any(|x| x)
+        if [device_extensions.nvx_multiview_per_view_attributes]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_multiview_per_view_attributes_nvx = Some(Default::default());
-            let member = self.properties_multiview_per_view_attributes_nvx.as_mut().unwrap();
+            let member = self
+                .properties_multiview_per_view_attributes_nvx
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
@@ -1561,11 +1719,16 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_ray_tracing_invocation_reorder].into_iter().any(|x| x)
+        if [device_extensions.nv_ray_tracing_invocation_reorder]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_ray_tracing_invocation_reorder_nv = Some(Default::default());
-            let member = self.properties_ray_tracing_invocation_reorder_nv.as_mut().unwrap();
+            let member = self
+                .properties_ray_tracing_invocation_reorder_nv
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
@@ -1582,7 +1745,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.arm_shader_core_builtins].into_iter().any(|x| x)
+        if [device_extensions.arm_shader_core_builtins]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_shader_core_builtins_arm = Some(Default::default());
@@ -1590,7 +1755,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.amd_shader_core_properties2].into_iter().any(|x| x)
+        if [device_extensions.amd_shader_core_properties2]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_shader_core2_amd = Some(Default::default());
@@ -1598,7 +1765,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.amd_shader_core_properties].into_iter().any(|x| x)
+        if [device_extensions.amd_shader_core_properties]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_shader_core_amd = Some(Default::default());
@@ -1606,7 +1775,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_shader_sm_builtins].into_iter().any(|x| x)
+        if [device_extensions.nv_shader_sm_builtins]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_shader_sm_builtins_nv = Some(Default::default());
@@ -1614,7 +1785,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_shading_rate_image].into_iter().any(|x| x)
+        if [device_extensions.nv_shading_rate_image]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_shading_rate_image_nv = Some(Default::default());
@@ -1622,7 +1795,9 @@ impl PropertiesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.huawei_subpass_shading].into_iter().any(|x| x)
+        if [device_extensions.huawei_subpass_shading]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.properties_subpass_shading_huawei = Some(Default::default());

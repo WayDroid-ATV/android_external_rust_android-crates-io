@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "percore_test_src_lib"
+    }
+  ]
+}

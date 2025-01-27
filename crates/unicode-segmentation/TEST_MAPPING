@@ -42,5 +42,13 @@
     {
       "path": "system/security/keystore2/legacykeystore"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "unicode-segmentation_test_src_lib"
+    },
+    {
+      "name": "unicode-segmentation_test_tests_test"
+    }
   ]
 }

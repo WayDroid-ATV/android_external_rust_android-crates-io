@@ -15,5 +15,10 @@
     {
       "path": "packages/modules/DnsResolver"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "tinyvec_macros_test_src_lib"
+    }
   ]
 }

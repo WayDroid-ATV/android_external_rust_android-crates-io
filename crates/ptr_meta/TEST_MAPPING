@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "ptr_meta_test_src_lib"
+    }
+  ]
+}

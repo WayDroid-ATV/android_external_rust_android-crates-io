@@ -9,6 +9,7 @@
   "module_visibility": {
     "libconst_oid": [
       "//external/rust/android-crates-io/crates/der:__subpackages__",
+      "//external/rust/android-crates-io/crates/pkcs1:__subpackages__",
       "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
       "//packages/modules/Virtualization:__subpackages__"
     ],

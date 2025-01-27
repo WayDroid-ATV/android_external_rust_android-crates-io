@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "package": {
     "syn-mid": {
       "device_supported": false,

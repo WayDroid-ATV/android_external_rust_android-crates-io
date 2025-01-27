@@ -13,6 +13,22 @@ license {
     license_text: ["LICENSE"],
 }
 
+rust_test {
+    name: "inotify-sys_test_src_lib",
+    host_supported: true,
+    crate_name: "inotify_sys",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.1.5",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2015",
+    rustlibs: ["liblibc"],
+}
+
 rust_library {
     name: "libinotify_sys",
     host_supported: true,

@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "package": {
     "gbm": {
       "license_text": ["LICENSE"]

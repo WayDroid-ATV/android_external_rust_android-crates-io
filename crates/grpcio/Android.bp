@@ -13,6 +13,37 @@ license {
     license_text: ["LICENSE"],
 }
 
+rust_test {
+    name: "grpcio_test_src_lib",
+    host_supported: true,
+    crate_name: "grpcio",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.13.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "_secure",
+        "boringssl",
+        "protobufv3",
+        "protobufv3-codec",
+    ],
+    rustlibs: [
+        "libfutures_executor",
+        "libfutures_util",
+        "libgrpcio_sys",
+        "liblibc",
+        "liblog_rust",
+        "libparking_lot",
+        "libprotobuf",
+    ],
+    aliases: ["protobuf:protobufv3"],
+}
+
 rust_library {
     name: "libgrpcio",
     host_supported: true,

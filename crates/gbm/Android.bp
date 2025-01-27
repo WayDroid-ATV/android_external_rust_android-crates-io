@@ -13,6 +13,32 @@ license {
     license_text: ["LICENSE"],
 }
 
+rust_test {
+    name: "gbm_test_src_lib",
+    host_supported: true,
+    crate_name: "gbm",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.15.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "drm",
+        "drm-support",
+    ],
+    rustlibs: [
+        "libbitflags",
+        "libdrm_fourcc",
+        "libdrm_rust",
+        "libgbm_sys",
+        "liblibc",
+    ],
+}
+
 rust_library {
     name: "libgbm_rust",
     host_supported: true,

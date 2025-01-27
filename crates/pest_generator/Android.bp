@@ -34,3 +34,29 @@ rust_library_host {
     ],
     compile_multilib: "first",
 }
+
+rust_test_host {
+    name: "pest_generator_test_src_lib",
+    host_cross_supported: false,
+    crate_name: "pest_generator",
+    cargo_env_compat: true,
+    cargo_pkg_version: "2.7.15",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "default",
+        "std",
+    ],
+    rustlibs: [
+        "libpest",
+        "libpest_meta",
+        "libproc_macro2",
+        "libquote",
+        "libsyn",
+    ],
+}

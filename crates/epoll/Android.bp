@@ -13,6 +13,24 @@ license {
     license_text: ["LICENSE"],
 }
 
+rust_test_host {
+    name: "epoll_test_src_lib",
+    crate_name: "epoll",
+    cargo_env_compat: true,
+    cargo_pkg_version: "4.3.3",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2015",
+    rustlibs: [
+        "libbitflags",
+        "liblibc",
+    ],
+}
+
 rust_library_host {
     name: "libepoll",
     crate_name: "epoll",

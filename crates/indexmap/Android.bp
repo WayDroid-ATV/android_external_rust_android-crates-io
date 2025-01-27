@@ -13,6 +13,165 @@ license {
     license_text: ["LICENSE"],
 }
 
+rust_test {
+    name: "indexmap_test_src_lib",
+    host_supported: true,
+    crate_name: "indexmap",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.9.3",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "serde",
+        "serde-1",
+    ],
+    cfgs: ["has_std"],
+    rustlibs: [
+        "libfnv",
+        "libfxhash",
+        "libhashbrown-0.12.3",
+        "libitertools",
+        "liblazy_static",
+        "libquickcheck",
+        "librand",
+        "libserde",
+    ],
+    proc_macros: ["libserde_derive"],
+}
+
+rust_test {
+    name: "indexmap_test_tests_equivalent_trait",
+    host_supported: true,
+    crate_name: "equivalent_trait",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.9.3",
+    crate_root: "tests/equivalent_trait.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "serde",
+        "serde-1",
+    ],
+    cfgs: ["has_std"],
+    rustlibs: [
+        "libfnv",
+        "libfxhash",
+        "libhashbrown-0.12.3",
+        "libindexmap",
+        "libitertools",
+        "liblazy_static",
+        "libquickcheck",
+        "librand",
+        "libserde",
+    ],
+    proc_macros: ["libserde_derive"],
+}
+
+rust_test {
+    name: "indexmap_test_tests_macros_full_path",
+    host_supported: true,
+    crate_name: "macros_full_path",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.9.3",
+    crate_root: "tests/macros_full_path.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "serde",
+        "serde-1",
+    ],
+    cfgs: ["has_std"],
+    rustlibs: [
+        "libfnv",
+        "libfxhash",
+        "libhashbrown-0.12.3",
+        "libindexmap",
+        "libitertools",
+        "liblazy_static",
+        "libquickcheck",
+        "librand",
+        "libserde",
+    ],
+    proc_macros: ["libserde_derive"],
+}
+
+rust_test {
+    name: "indexmap_test_tests_quick",
+    host_supported: true,
+    crate_name: "quick",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.9.3",
+    crate_root: "tests/quick.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "serde",
+        "serde-1",
+    ],
+    cfgs: ["has_std"],
+    rustlibs: [
+        "libfnv",
+        "libfxhash",
+        "libhashbrown-0.12.3",
+        "libindexmap",
+        "libitertools",
+        "liblazy_static",
+        "libquickcheck",
+        "librand",
+        "libserde",
+    ],
+    proc_macros: ["libserde_derive"],
+}
+
+rust_test {
+    name: "indexmap_test_tests_tests",
+    host_supported: true,
+    crate_name: "tests",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.9.3",
+    crate_root: "tests/tests.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "serde",
+        "serde-1",
+    ],
+    cfgs: ["has_std"],
+    rustlibs: [
+        "libfnv",
+        "libfxhash",
+        "libhashbrown-0.12.3",
+        "libindexmap",
+        "libitertools",
+        "liblazy_static",
+        "libquickcheck",
+        "librand",
+        "libserde",
+    ],
+    proc_macros: ["libserde_derive"],
+}
+
 rust_library {
     name: "libindexmap",
     host_supported: true,
