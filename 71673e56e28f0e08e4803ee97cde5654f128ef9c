@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e940a5ae_7198bf46",
+        "filename": "pseudo_crate/crate-list.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-27T17:02:51Z",
+      "side": 1,
+      "message": "Please `repo sync` to get aosp/3451256 and re-run `./crate_tool regenerate`.\n\nThere should never be any deletions from crate-list.txt.",
+      "revId": "71673e56e28f0e08e4803ee97cde5654f128ef9c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
