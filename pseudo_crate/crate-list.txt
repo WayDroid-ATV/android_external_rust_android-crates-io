@@ -401,6 +401,7 @@ zerofrom
 zerofrom-derive
 zeroize
 zeroize_derive
+zerotrie
 zerovec
 zerovec-derive
 zip
