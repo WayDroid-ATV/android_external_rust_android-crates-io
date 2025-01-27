@@ -16,6 +16,24 @@
       "message": "This is missing the litemap dependency, being landed in https://android-review.git.corp.google.com/c/platform/external/rust/android-crates-io/+/3462752. I\u0027ll have to wait for that to land first, and this already has a diffbase so I don\u0027t think I can add another.",
       "revId": "717bd9763aac8cd436bad1674d1620d077d1f327",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1bf333a5_d1f3e021",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-01-27T20:33:21Z",
+      "side": 1,
+      "message": "Disabled the optional dependency for now. Will need to be reenabled later.",
+      "parentUuid": "a5b84e27_96092cbf",
+      "revId": "717bd9763aac8cd436bad1674d1620d077d1f327",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
