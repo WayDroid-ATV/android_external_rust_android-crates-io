@@ -34,3 +34,30 @@ rust_library_rlib {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "ucs2_test_src_lib",
+    crate_name: "ucs2",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.3.3",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    edition: "2021",
+    rustlibs: ["libbit_field_nostd"],
+}
+
+rust_test {
+    name: "ucs2_test_tests_tests",
+    crate_name: "tests",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.3.3",
+    crate_root: "tests/tests.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    edition: "2021",
+    rustlibs: [
+        "libbit_field_nostd",
+        "libucs2_nostd",
+    ],
+}

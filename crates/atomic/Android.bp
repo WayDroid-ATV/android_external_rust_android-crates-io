@@ -13,6 +13,26 @@ license {
     license_text: ["LICENSE"],
 }
 
+rust_test {
+    name: "atomic_test_src_lib",
+    host_supported: true,
+    crate_name: "atomic",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.6.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "fallback",
+        "std",
+    ],
+    rustlibs: ["libbytemuck"],
+}
+
 rust_library {
     name: "libatomic_rust",
     host_supported: true,

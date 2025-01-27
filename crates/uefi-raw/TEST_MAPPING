@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "uefi-raw_test_src_lib"
+    }
+  ]
+}

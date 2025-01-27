@@ -35,3 +35,28 @@ rust_library {
     vendor_available: true,
     min_sdk_version: "29",
 }
+
+rust_test {
+    name: "os_str_bytes_test_src_lib",
+    host_supported: true,
+    crate_name: "os_str_bytes",
+    cargo_env_compat: true,
+    cargo_pkg_version: "6.6.1",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "default",
+        "memchr",
+        "raw_os_str",
+    ],
+    rustlibs: [
+        "libfastrand",
+        "liblazy_static",
+        "libmemchr",
+    ],
+}

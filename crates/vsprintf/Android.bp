@@ -32,6 +32,22 @@ rust_library {
     visibility: ["//external/rust/android-crates-io/crates/libbpf-rs"],
 }
 
+rust_test {
+    name: "vsprintf_test_src_lib",
+    host_supported: true,
+    crate_name: "vsprintf",
+    cargo_env_compat: true,
+    cargo_pkg_version: "2.0.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    rustlibs: ["liblibc"],
+}
+
 cc_library {
     name: "libvsprintf_wrapper",
     srcs: ["src/lib.c"],

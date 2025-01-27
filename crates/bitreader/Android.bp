@@ -13,6 +13,26 @@ license {
     license_text: ["LICENSE"],
 }
 
+rust_test {
+    name: "bitreader_test_src_lib",
+    host_supported: true,
+    crate_name: "bitreader",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.3.11",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2015",
+    features: [
+        "default",
+        "std",
+    ],
+    rustlibs: ["libcfg_if"],
+}
+
 rust_library {
     name: "libbitreader",
     host_supported: true,

@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "module_name_overrides": {
     "libvm_memory": "libvm_memory_android"
   },

@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "package": {
     "pest": {
       "device_supported": false,

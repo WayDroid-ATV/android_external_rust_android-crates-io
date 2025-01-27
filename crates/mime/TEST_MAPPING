@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "mime_test_src_lib"
+    }
+  ]
+}

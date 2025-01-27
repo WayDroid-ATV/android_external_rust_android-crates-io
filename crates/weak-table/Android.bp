@@ -32,3 +32,74 @@ rust_library {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "weak-table_test_src_lib",
+    host_supported: true,
+    crate_name: "weak_table",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.3.2",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "default",
+        "std",
+    ],
+    rustlibs: [
+        "libquickcheck",
+        "librand",
+    ],
+}
+
+rust_test {
+    name: "weak-table_test_tests_symbols",
+    host_supported: true,
+    crate_name: "symbols",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.3.2",
+    crate_root: "tests/symbols.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "default",
+        "std",
+    ],
+    rustlibs: [
+        "libquickcheck",
+        "librand",
+        "libweak_table",
+    ],
+}
+
+rust_test {
+    name: "weak-table_test_tests_weak_key_hash_map",
+    host_supported: true,
+    crate_name: "weak_key_hash_map",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.3.2",
+    crate_root: "tests/weak_key_hash_map.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "default",
+        "std",
+    ],
+    rustlibs: [
+        "libquickcheck",
+        "librand",
+        "libweak_table",
+    ],
+}

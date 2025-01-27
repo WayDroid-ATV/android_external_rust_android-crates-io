@@ -1,0 +1,10 @@
+{
+  "postsubmit": [
+    {
+      "name": "libusb1-sys_test_src_lib"
+    },
+    {
+      "name": "libusb1-sys_test_tests_test"
+    }
+  ]
+}

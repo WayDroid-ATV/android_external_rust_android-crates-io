@@ -1,0 +1,10 @@
+{
+  "postsubmit": [
+    {
+      "name": "ucs2_test_src_lib"
+    },
+    {
+      "name": "ucs2_test_tests_tests"
+    }
+  ]
+}

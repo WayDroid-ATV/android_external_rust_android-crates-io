@@ -3,6 +3,7 @@
   "product_available": false,
   "variants": [
     {
+      "tests": true,
       "package": {
         "libusb1-sys": {
           "add_module_block": "module_block.bp.fragment"

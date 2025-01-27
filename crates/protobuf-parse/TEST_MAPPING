@@ -1,0 +1,10 @@
+{
+  "postsubmit": [
+    {
+      "name": "protobuf-parse_test_src_lib"
+    },
+    {
+      "name": "protobuf-parse_test_tests_bundled_proto_consistent"
+    }
+  ]
+}

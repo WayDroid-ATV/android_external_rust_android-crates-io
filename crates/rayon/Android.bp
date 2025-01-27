@@ -32,3 +32,376 @@ rust_library {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "rayon_test_src_lib",
+    host_supported: true,
+    crate_name: "rayon",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_chars",
+    host_supported: true,
+    crate_name: "chars",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/chars.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_clones",
+    host_supported: true,
+    crate_name: "clones",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/clones.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_collect",
+    host_supported: true,
+    crate_name: "collect",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/collect.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_cross-pool",
+    host_supported: true,
+    crate_name: "cross_pool",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/cross-pool.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_debug",
+    host_supported: true,
+    crate_name: "debug",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/debug.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_drain_vec",
+    host_supported: true,
+    crate_name: "drain_vec",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/drain_vec.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_intersperse",
+    host_supported: true,
+    crate_name: "intersperse",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/intersperse.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_issue671",
+    host_supported: true,
+    crate_name: "issue671",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/issue671.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_issue671-unzip",
+    host_supported: true,
+    crate_name: "issue671_unzip",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/issue671-unzip.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_iter_panic",
+    host_supported: true,
+    crate_name: "iter_panic",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/iter_panic.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_named-threads",
+    host_supported: true,
+    crate_name: "named_threads",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/named-threads.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_octillion",
+    host_supported: true,
+    crate_name: "octillion",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/octillion.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_par_bridge_recursion",
+    host_supported: true,
+    crate_name: "par_bridge_recursion",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/par_bridge_recursion.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_producer_split_at",
+    host_supported: true,
+    crate_name: "producer_split_at",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/producer_split_at.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_sort-panic-safe",
+    host_supported: true,
+    crate_name: "sort_panic_safe",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/sort-panic-safe.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}
+
+rust_test {
+    name: "rayon_test_tests_str",
+    host_supported: true,
+    crate_name: "str",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.10.0",
+    crate_root: "tests/str.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libeither",
+        "librand",
+        "librand_xorshift",
+        "librayon",
+        "librayon_core",
+    ],
+}

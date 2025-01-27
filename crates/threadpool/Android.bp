@@ -29,3 +29,19 @@ rust_library {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "threadpool_test_src_lib",
+    host_supported: true,
+    crate_name: "threadpool",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.8.1",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2015",
+    rustlibs: ["libnum_cpus"],
+}

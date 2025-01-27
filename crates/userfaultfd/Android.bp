@@ -37,3 +37,52 @@ rust_library {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "userfaultfd_test_src_lib",
+    host_supported: true,
+    crate_name: "userfaultfd",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.8.1",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: ["default"],
+    rustlibs: [
+        "libbitflags",
+        "libcfg_if",
+        "liblibc",
+        "libnix",
+        "libthiserror",
+        "libuserfaultfd_sys",
+    ],
+}
+
+rust_test {
+    name: "userfaultfd_test_tests_manpage_example",
+    host_supported: true,
+    crate_name: "manpage_example",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.8.1",
+    crate_root: "tests/manpage_example.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: ["default"],
+    rustlibs: [
+        "libbitflags",
+        "libcfg_if",
+        "liblibc",
+        "libnix",
+        "libthiserror",
+        "libuserfaultfd",
+        "libuserfaultfd_sys",
+    ],
+}

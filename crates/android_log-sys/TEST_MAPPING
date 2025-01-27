@@ -27,5 +27,10 @@
     {
       "path": "system/security/keystore2/selinux"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "android_log-sys_test_src_lib"
+    }
   ]
 }

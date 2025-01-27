@@ -13,6 +13,41 @@ license {
     license_text: ["LICENSE"],
 }
 
+rust_test {
+    name: "configparser_test_src_lib",
+    host_supported: true,
+    crate_name: "configparser",
+    cargo_env_compat: true,
+    cargo_pkg_version: "3.1.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: ["libtokio"],
+}
+
+rust_test {
+    name: "configparser_test_tests_test",
+    host_supported: true,
+    crate_name: "test",
+    cargo_env_compat: true,
+    cargo_pkg_version: "3.1.0",
+    crate_root: "tests/test.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libconfigparser",
+        "libtokio",
+    ],
+}
+
 rust_library {
     name: "libconfigparser",
     host_supported: true,

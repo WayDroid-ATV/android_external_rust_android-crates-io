@@ -12,5 +12,10 @@
     {
       "path": "external/rust/android-crates-io/crates/unicode-xid"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "atty_test_src_lib"
+    }
   ]
 }

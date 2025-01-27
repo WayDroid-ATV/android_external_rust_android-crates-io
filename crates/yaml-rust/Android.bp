@@ -22,3 +22,78 @@ rust_library_host {
     edition: "2018",
     rustlibs: ["liblinked_hash_map"],
 }
+
+rust_test_host {
+    name: "yaml-rust_test_src_lib",
+    crate_name: "yaml_rust",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.4.5",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    rustlibs: [
+        "liblinked_hash_map",
+        "libquickcheck",
+    ],
+}
+
+rust_test_host {
+    name: "yaml-rust_test_tests_quickcheck",
+    crate_name: "quickcheck",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.4.5",
+    crate_root: "tests/quickcheck.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    rustlibs: [
+        "liblinked_hash_map",
+        "libquickcheck",
+        "libyaml_rust",
+    ],
+}
+
+rust_test_host {
+    name: "yaml-rust_test_tests_spec_test",
+    crate_name: "spec_test",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.4.5",
+    crate_root: "tests/spec_test.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    rustlibs: [
+        "liblinked_hash_map",
+        "libquickcheck",
+        "libyaml_rust",
+    ],
+}
+
+rust_test_host {
+    name: "yaml-rust_test_tests_test_round_trip",
+    crate_name: "test_round_trip",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.4.5",
+    crate_root: "tests/test_round_trip.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    rustlibs: [
+        "liblinked_hash_map",
+        "libquickcheck",
+        "libyaml_rust",
+    ],
+}

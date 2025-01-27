@@ -61,3 +61,54 @@ rust_binary {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "protobuf-parse_test_src_lib",
+    host_supported: true,
+    crate_name: "protobuf_parse",
+    cargo_env_compat: true,
+    cargo_pkg_version: "3.2.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libanyhow",
+        "libindexmap",
+        "liblog_rust",
+        "libprotobuf",
+        "libprotobuf_support",
+        "libtempfile",
+        "libthiserror",
+        "libwhich",
+    ],
+}
+
+rust_test {
+    name: "protobuf-parse_test_tests_bundled_proto_consistent",
+    host_supported: true,
+    crate_name: "bundled_proto_consistent",
+    cargo_env_compat: true,
+    cargo_pkg_version: "3.2.0",
+    crate_root: "tests/bundled_proto_consistent.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libanyhow",
+        "libindexmap",
+        "liblog_rust",
+        "libprotobuf",
+        "libprotobuf_parse",
+        "libprotobuf_support",
+        "libtempfile",
+        "libthiserror",
+        "libwhich",
+    ],
+}

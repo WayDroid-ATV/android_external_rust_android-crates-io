@@ -1,0 +1,16 @@
+{
+  "postsubmit": [
+    {
+      "name": "yaml-rust_test_src_lib"
+    },
+    {
+      "name": "yaml-rust_test_tests_quickcheck"
+    },
+    {
+      "name": "yaml-rust_test_tests_spec_test"
+    },
+    {
+      "name": "yaml-rust_test_tests_test_round_trip"
+    }
+  ]
+}

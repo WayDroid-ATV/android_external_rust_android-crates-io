@@ -1,0 +1,10 @@
+{
+  "postsubmit": [
+    {
+      "name": "uefi_test_src_lib"
+    },
+    {
+      "name": "uefi_test_tests_memory_map"
+    }
+  ]
+}

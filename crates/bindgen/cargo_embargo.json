@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "features": [
     "__cli",
     "experimental",

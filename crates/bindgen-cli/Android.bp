@@ -38,6 +38,35 @@ rust_binary_host {
     compile_multilib: "first",
 }
 
+rust_test_host {
+    name: "bindgen-cli_test_main",
+    host_cross_supported: false,
+    crate_name: "bindgen",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.69.5",
+    crate_root: "main.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "default",
+        "logging",
+        "runtime",
+        "which-rustfmt",
+    ],
+    rustlibs: [
+        "libbindgen",
+        "libclap",
+        "libclap_complete",
+        "libenv_logger",
+        "liblog_rust",
+        "libshlex",
+    ],
+}
+
 rust_library_host {
     name: "libbindgen_cli",
     host_cross_supported: false,

@@ -13,6 +13,17 @@ license {
     license_text: ["LICENSE"],
 }
 
+rust_test {
+    name: "bit_field_test_src_lib",
+    crate_name: "bit_field",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.10.2",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    edition: "2015",
+}
+
 rust_library_rlib {
     name: "libbit_field_nostd",
     crate_name: "bit_field",

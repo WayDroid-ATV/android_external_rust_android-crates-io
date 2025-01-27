@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "vm-memory_test_src_lib"
+    }
+  ]
+}

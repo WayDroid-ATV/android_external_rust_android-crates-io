@@ -30,6 +30,43 @@ rust_library {
     shared_libs: ["libusb"],
 }
 
+rust_test {
+    name: "libusb1-sys_test_src_lib",
+    host_supported: true,
+    crate_name: "libusb1_sys",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.7.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    rustlibs: ["liblibc"],
+    shared_libs: ["libusb"],
+}
+
+rust_test {
+    name: "libusb1-sys_test_tests_test",
+    host_supported: true,
+    crate_name: "test",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.7.0",
+    crate_root: "tests/test.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    rustlibs: [
+        "liblibc",
+        "liblibusb1_sys",
+    ],
+    shared_libs: ["libusb"],
+}
+
 rust_library {
     name: "liblibusb1_sys_platform",
     host_supported: true,
