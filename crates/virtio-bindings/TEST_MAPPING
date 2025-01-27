@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "virtio-bindings_test_src_lib"
+    }
+  ]
+}

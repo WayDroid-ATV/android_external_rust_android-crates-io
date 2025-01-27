@@ -2,6 +2,7 @@
   "run_cargo": false,
   "variants": [
     {
+      "tests": true,
       "features": [
         "alloc",
         "std"

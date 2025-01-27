@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "ucd-trie_test_src_lib"
+    }
+  ]
+}

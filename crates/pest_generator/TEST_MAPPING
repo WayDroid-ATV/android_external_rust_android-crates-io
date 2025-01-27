@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "pest_generator_test_src_lib"
+    }
+  ]
+}

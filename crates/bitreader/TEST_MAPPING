@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "bitreader_test_src_lib"
+    }
+  ]
+}

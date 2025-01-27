@@ -3,5 +3,10 @@
     {
       "path": "external/rust/android-crates-io/crates/jni"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "jni-sys_test_src_lib"
+    }
   ]
 }

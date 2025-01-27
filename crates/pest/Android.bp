@@ -32,3 +32,83 @@ rust_library_host {
     ],
     compile_multilib: "first",
 }
+
+rust_test_host {
+    name: "pest_test_src_lib",
+    crate_name: "pest",
+    cargo_env_compat: true,
+    cargo_pkg_version: "2.7.15",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "default",
+        "memchr",
+        "std",
+    ],
+    rustlibs: [
+        "libcriterion",
+        "libmemchr",
+        "libmiette",
+        "libthiserror",
+        "libucd_trie",
+    ],
+}
+
+rust_test_host {
+    name: "pest_test_tests_calculator",
+    crate_name: "calculator",
+    cargo_env_compat: true,
+    cargo_pkg_version: "2.7.15",
+    crate_root: "tests/calculator.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "default",
+        "memchr",
+        "std",
+    ],
+    rustlibs: [
+        "libcriterion",
+        "libmemchr",
+        "libmiette",
+        "libpest",
+        "libthiserror",
+        "libucd_trie",
+    ],
+}
+
+rust_test_host {
+    name: "pest_test_tests_json",
+    crate_name: "json",
+    cargo_env_compat: true,
+    cargo_pkg_version: "2.7.15",
+    crate_root: "tests/json.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: [
+        "default",
+        "memchr",
+        "std",
+    ],
+    rustlibs: [
+        "libcriterion",
+        "libmemchr",
+        "libmiette",
+        "libpest",
+        "libthiserror",
+        "libucd_trie",
+    ],
+}

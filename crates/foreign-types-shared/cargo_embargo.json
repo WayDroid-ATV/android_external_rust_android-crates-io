@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "package": {
     "foreign-types-shared": {
       "force_rlib": true

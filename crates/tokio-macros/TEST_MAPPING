@@ -24,5 +24,10 @@
     {
       "path": "system/security/keystore2/legacykeystore"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "tokio-macros_test_src_lib"
+    }
   ]
 }

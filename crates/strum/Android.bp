@@ -32,3 +32,23 @@ rust_library {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "strum_test_src_lib",
+    host_supported: true,
+    crate_name: "strum",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.26.3",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "default",
+        "std",
+    ],
+    proc_macros: ["libstrum_macros"],
+}

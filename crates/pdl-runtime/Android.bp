@@ -33,3 +33,22 @@ rust_library {
     vendor_available: true,
     min_sdk_version: "33",
 }
+
+rust_test {
+    name: "pdl-runtime_test_src_lib",
+    host_supported: true,
+    crate_name: "pdl_runtime",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.3.2",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    rustlibs: [
+        "libbytes",
+        "libthiserror",
+    ],
+}

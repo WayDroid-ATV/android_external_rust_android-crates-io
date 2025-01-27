@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "package": {
     "merge_derive": {
       "device_supported": false
