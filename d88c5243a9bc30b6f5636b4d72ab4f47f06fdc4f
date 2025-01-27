@@ -69,6 +69,24 @@
       "message": "Please `repo sync` to get aosp/3451256 and re-run \"regenerate\"",
       "revId": "d88c5243a9bc30b6f5636b4d72ab4f47f06fdc4f",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6e41541e_f716646b",
+        "filename": "pseudo_crate/crate-list.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-01-27T18:43:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4a1b1516_36e335f4",
+      "revId": "d88c5243a9bc30b6f5636b4d72ab4f47f06fdc4f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
