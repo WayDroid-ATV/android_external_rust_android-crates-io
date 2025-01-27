@@ -16,6 +16,24 @@
       "message": "Please add the OWNERS files as described in step 5 of go/android3p#creating-changes",
       "revId": "d88c5243a9bc30b6f5636b4d72ab4f47f06fdc4f",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d621712c_ea8f2ad7",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-27T17:00:10Z",
+      "side": 1,
+      "message": "OWNERS files are not needed for external/rust/android-crates-io. The documentation is out of date and in the process of being revised.",
+      "parentUuid": "30caa581_ac8e4789",
+      "revId": "d88c5243a9bc30b6f5636b4d72ab4f47f06fdc4f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
