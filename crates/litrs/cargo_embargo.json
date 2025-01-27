@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "package": {
     "litrs": {
       "device_supported": false,

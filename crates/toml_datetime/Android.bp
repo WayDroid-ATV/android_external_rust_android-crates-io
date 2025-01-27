@@ -23,3 +23,19 @@ rust_library_host {
     features: ["serde"],
     rustlibs: ["libserde"],
 }
+
+rust_test_host {
+    name: "toml_datetime_test_src_lib",
+    crate_name: "toml_datetime",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.6.8",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: ["serde"],
+    rustlibs: ["libserde"],
+}

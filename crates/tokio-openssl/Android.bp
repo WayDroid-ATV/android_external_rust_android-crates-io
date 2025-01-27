@@ -35,3 +35,24 @@ rust_library {
     min_sdk_version: "29",
     visibility: ["//system/software_defined_vehicle/core_services/sdv_comms/sdk"],
 }
+
+rust_test {
+    name: "tokio-openssl_test_src_lib",
+    host_supported: true,
+    crate_name: "tokio_openssl",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.6.5",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    rustlibs: [
+        "libbssl_sys",
+        "libfutures_util",
+        "libopenssl",
+        "libtokio",
+    ],
+}

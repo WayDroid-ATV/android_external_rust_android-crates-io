@@ -30,6 +30,21 @@ rust_library {
     min_sdk_version: "29",
 }
 
+rust_test {
+    name: "static_assertions_test_src_lib",
+    host_supported: true,
+    crate_name: "static_assertions",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.1.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2015",
+}
+
 dirgroup {
     name: "trusty_dirgroup_external_rust_crates_static_assertions",
     visibility: ["//trusty/vendor/google/aosp/scripts"],

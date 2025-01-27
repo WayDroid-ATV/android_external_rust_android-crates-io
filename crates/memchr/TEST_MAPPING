@@ -93,5 +93,10 @@
     {
       "path": "system/security/keystore2/legacykeystore"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "memchr_test_src_lib"
+    }
   ]
 }

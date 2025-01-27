@@ -18,5 +18,10 @@
     {
       "path": "external/rust/android-crates-io/crates/unicode-bidi"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "serde_test_test_src_lib"
+    }
   ]
 }

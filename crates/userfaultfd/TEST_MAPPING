@@ -1,0 +1,10 @@
+{
+  "postsubmit": [
+    {
+      "name": "userfaultfd_test_src_lib"
+    },
+    {
+      "name": "userfaultfd_test_tests_manpage_example"
+    }
+  ]
+}

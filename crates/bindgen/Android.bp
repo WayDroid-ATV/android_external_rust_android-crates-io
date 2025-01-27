@@ -13,6 +13,44 @@ license {
     license_text: ["LICENSE"],
 }
 
+rust_test_host {
+    name: "bindgen_test_lib",
+    host_cross_supported: false,
+    crate_name: "bindgen",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.69.5",
+    crate_root: "lib.rs",
+    srcs: [":copy_bindgen_build_out"],
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "__cli",
+        "experimental",
+        "runtime",
+        "which-rustfmt",
+    ],
+    rustlibs: [
+        "libannotate_snippets",
+        "libbitflags",
+        "libcexpr",
+        "libclang_sys",
+        "libitertools",
+        "liblazy_static",
+        "liblazycell",
+        "libproc_macro2",
+        "libquote",
+        "libregex",
+        "librustc_hash",
+        "libshlex",
+        "libsyn",
+        "libwhich",
+    ],
+}
+
 genrule {
     name: "copy_bindgen_build_out",
     srcs: ["out/*"],

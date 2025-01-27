@@ -1,0 +1,13 @@
+{
+  "postsubmit": [
+    {
+      "name": "pest_test_src_lib"
+    },
+    {
+      "name": "pest_test_tests_calculator"
+    },
+    {
+      "name": "pest_test_tests_json"
+    }
+  ]
+}

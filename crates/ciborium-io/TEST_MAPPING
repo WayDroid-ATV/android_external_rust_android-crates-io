@@ -12,5 +12,10 @@
     {
       "path": "system/keymint/hal"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "ciborium-io_test_src_lib"
+    }
   ]
 }

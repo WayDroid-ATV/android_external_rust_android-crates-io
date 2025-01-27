@@ -34,3 +34,25 @@ rust_library {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "named-lock_test_src_lib",
+    host_supported: true,
+    crate_name: "named_lock",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.3.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    rustlibs: [
+        "liblibc",
+        "libonce_cell",
+        "libparking_lot",
+        "libthiserror",
+        "libuuid",
+    ],
+}

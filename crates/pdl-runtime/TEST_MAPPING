@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "pdl-runtime_test_src_lib"
+    }
+  ]
+}

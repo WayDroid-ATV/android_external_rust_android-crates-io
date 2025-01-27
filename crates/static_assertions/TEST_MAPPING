@@ -42,5 +42,10 @@
     {
       "path": "system/security/keystore2/src/crypto"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "static_assertions_test_src_lib"
+    }
   ]
 }

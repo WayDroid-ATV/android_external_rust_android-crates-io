@@ -31,3 +31,26 @@ rust_library_host {
     },
 
 }
+
+rust_test_host {
+    name: "virtio-bindings_test_src_lib",
+    crate_name: "virtio_bindings",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.2.4",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+        x86_64: {
+            enabled: true,
+        },
+    },
+
+}

@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "features": [
     "runtime",
     "clang_10_0"

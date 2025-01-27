@@ -72,5 +72,10 @@
     {
       "path": "system/security/keystore2/src/crypto"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "bitflags_test_src_lib"
+    }
   ]
 }

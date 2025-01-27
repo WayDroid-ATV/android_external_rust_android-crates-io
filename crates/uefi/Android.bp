@@ -45,3 +45,48 @@ rust_library_rlib {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "uefi_test_src_lib",
+    crate_name: "uefi",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.33.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    edition: "2021",
+    features: ["alloc"],
+    rustlibs: [
+        "libbitflags",
+        "libcfg_if",
+        "liblog_rust",
+        "libptr_meta_nostd",
+        "libucs2_nostd",
+        "libuefi_raw_nostd",
+        "libuguid_nostd",
+    ],
+    proc_macros: ["libuefi_macros"],
+}
+
+rust_test {
+    name: "uefi_test_tests_memory_map",
+    crate_name: "memory_map",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.33.0",
+    crate_root: "tests/memory_map.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    edition: "2021",
+    features: ["alloc"],
+    rustlibs: [
+        "libbitflags",
+        "libcfg_if",
+        "liblog_rust",
+        "libptr_meta_nostd",
+        "libucs2_nostd",
+        "libuefi_nostd",
+        "libuefi_raw_nostd",
+        "libuguid_nostd",
+    ],
+    proc_macros: ["libuefi_macros"],
+}

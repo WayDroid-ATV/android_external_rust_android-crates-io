@@ -1,0 +1,19 @@
+{
+  "postsubmit": [
+    {
+      "name": "indexmap_test_src_lib"
+    },
+    {
+      "name": "indexmap_test_tests_equivalent_trait"
+    },
+    {
+      "name": "indexmap_test_tests_macros_full_path"
+    },
+    {
+      "name": "indexmap_test_tests_quick"
+    },
+    {
+      "name": "indexmap_test_tests_tests"
+    }
+  ]
+}

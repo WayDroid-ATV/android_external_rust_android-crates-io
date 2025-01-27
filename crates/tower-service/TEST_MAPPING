@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "tower-service_test_src_lib"
+    }
+  ]
+}

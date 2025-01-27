@@ -26,3 +26,23 @@ rust_proc_macro {
         "libsyn",
     ],
 }
+
+rust_test_host {
+    name: "merge_derive_test_src_lib",
+    host_cross_supported: false,
+    crate_name: "merge_derive",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.1.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    rustlibs: [
+        "libproc_macro2",
+        "libquote",
+        "libsyn",
+    ],
+}

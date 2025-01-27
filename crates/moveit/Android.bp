@@ -26,3 +26,22 @@ rust_library_host {
     ],
     rustlibs: ["libcxx"],
 }
+
+rust_test_host {
+    name: "moveit_test_src_lib",
+    crate_name: "moveit",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.6.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "alloc",
+        "cxx",
+    ],
+    rustlibs: ["libcxx"],
+}

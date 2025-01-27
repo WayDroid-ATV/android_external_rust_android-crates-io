@@ -1,4 +1,5 @@
 {
+  "tests": true,
   "package": {
     "clap_derive": {
       "device_supported": false

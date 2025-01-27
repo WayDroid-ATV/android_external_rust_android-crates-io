@@ -1,0 +1,7 @@
+{
+  "postsubmit": [
+    {
+      "name": "atomic_test_src_lib"
+    }
+  ]
+}

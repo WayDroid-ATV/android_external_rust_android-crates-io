@@ -38,3 +38,19 @@ rust_library_rlib {
     product_available: true,
     vendor_available: true,
 }
+
+rust_test {
+    name: "uefi-raw_test_src_lib",
+    crate_name: "uefi_raw",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.9.0",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    edition: "2021",
+    rustlibs: [
+        "libbitflags",
+        "libptr_meta_nostd",
+        "libuguid_nostd",
+    ],
+}

@@ -15,5 +15,58 @@
     {
       "path": "external/rust/android-crates-io/crates/unicode-xid"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "rayon_test_src_lib"
+    },
+    {
+      "name": "rayon_test_tests_chars"
+    },
+    {
+      "name": "rayon_test_tests_clones"
+    },
+    {
+      "name": "rayon_test_tests_collect"
+    },
+    {
+      "name": "rayon_test_tests_cross-pool"
+    },
+    {
+      "name": "rayon_test_tests_debug"
+    },
+    {
+      "name": "rayon_test_tests_drain_vec"
+    },
+    {
+      "name": "rayon_test_tests_intersperse"
+    },
+    {
+      "name": "rayon_test_tests_issue671"
+    },
+    {
+      "name": "rayon_test_tests_issue671-unzip"
+    },
+    {
+      "name": "rayon_test_tests_iter_panic"
+    },
+    {
+      "name": "rayon_test_tests_named-threads"
+    },
+    {
+      "name": "rayon_test_tests_octillion"
+    },
+    {
+      "name": "rayon_test_tests_par_bridge_recursion"
+    },
+    {
+      "name": "rayon_test_tests_producer_split_at"
+    },
+    {
+      "name": "rayon_test_tests_sort-panic-safe"
+    },
+    {
+      "name": "rayon_test_tests_str"
+    }
   ]
 }
