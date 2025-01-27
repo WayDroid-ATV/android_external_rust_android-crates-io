@@ -87,6 +87,24 @@
       "parentUuid": "4a1b1516_36e335f4",
       "revId": "d88c5243a9bc30b6f5636b4d72ab4f47f06fdc4f",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bdea0874_d86a6759",
+        "filename": "pseudo_crate/crate-list.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-27T18:48:12Z",
+      "side": 1,
+      "message": "I still see deletions from crate-list.txt. Did you not `repo upload`?",
+      "parentUuid": "6e41541e_f716646b",
+      "revId": "d88c5243a9bc30b6f5636b4d72ab4f47f06fdc4f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
