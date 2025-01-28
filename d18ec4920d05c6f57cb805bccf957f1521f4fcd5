@@ -70,6 +70,24 @@
       "parentUuid": "61cf75d2_07a2dee6",
       "revId": "d18ec4920d05c6f57cb805bccf957f1521f4fcd5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e91d873f_43383113",
+        "filename": "pseudo_crate/crate-list.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 368,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-01-28T18:46:33Z",
+      "side": 0,
+      "message": "Just FYI, James had mentioned that this was probably due to not having synced to a recent enough `crate_tool`, and I verified that `crate_tool` does properly handle deleted crates, so there\u0027s nothing else to fix.",
+      "parentUuid": "bf8a2ba7_56186492",
+      "revId": "d18ec4920d05c6f57cb805bccf957f1521f4fcd5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
