@@ -310,7 +310,6 @@ synstructure
 tempfile
 termcolor
 termtree
-textdistance
 textwrap
 thiserror
 thiserror-impl
