@@ -70,6 +70,30 @@
       },
       "revId": "c0b62900949e681861da986f8372ef4c27f5b061",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "19de2ae2_e735e0ff",
+        "filename": "crates/strck/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-01-29T19:46:44Z",
+      "side": 1,
+      "message": "Yeah, so far this is a *dependency* of a proc macro so for some reason had proc macro flags set, but it should be available to regular users too. I removed the multilib bit and it seems to work now.",
+      "parentUuid": "665ab71b_e3cdf5d9",
+      "range": {
+        "startLine": 25,
+        "startChar": 0,
+        "endLine": 25,
+        "endChar": 35
+      },
+      "revId": "c0b62900949e681861da986f8372ef4c27f5b061",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
