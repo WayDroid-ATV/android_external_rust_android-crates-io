@@ -46,6 +46,30 @@
       },
       "revId": "c0b62900949e681861da986f8372ef4c27f5b061",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "665ab71b_e3cdf5d9",
+        "filename": "crates/strck/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1115178
+      },
+      "writtenOn": "2025-01-29T18:52:47Z",
+      "side": 1,
+      "message": "Oh sorry you\u0027re right, I\u0027m not sure what I saw -- this is actually because it\u0027s declared\n`compile_multilib: \"first\",`\n\nThis only produces a 64-bit version of the library, thus the 32-bit host variant of this library is missing the dependency.",
+      "parentUuid": "b8dde3ab_84b86bc6",
+      "range": {
+        "startLine": 25,
+        "startChar": 0,
+        "endLine": 25,
+        "endChar": 35
+      },
+      "revId": "c0b62900949e681861da986f8372ef4c27f5b061",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
