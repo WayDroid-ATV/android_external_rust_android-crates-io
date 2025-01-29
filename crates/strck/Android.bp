@@ -21,6 +21,8 @@ rust_library {
     cargo_pkg_version: "1.0.0",
     crate_root: "src/lib.rs",
     edition: "2021",
+    features: ["ident"],
+    rustlibs: ["libunicode_ident"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
