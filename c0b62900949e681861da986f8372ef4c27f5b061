@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "977562d7_a855efd6",
+        "filename": "crates/strck/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1115178
+      },
+      "writtenOn": "2025-01-29T17:44:28Z",
+      "side": 1,
+      "message": "libunicode_ident is a proc_macro, it should be listed in `proc_macros:[\"...\"]`",
+      "range": {
+        "startLine": 25,
+        "startChar": 0,
+        "endLine": 25,
+        "endChar": 35
+      },
+      "revId": "c0b62900949e681861da986f8372ef4c27f5b061",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
