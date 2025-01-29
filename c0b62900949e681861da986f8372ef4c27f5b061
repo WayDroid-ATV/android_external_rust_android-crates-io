@@ -22,6 +22,30 @@
       },
       "revId": "c0b62900949e681861da986f8372ef4c27f5b061",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b8dde3ab_84b86bc6",
+        "filename": "crates/strck/Android.bp",
+        "patchSetId": 1
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-29T17:54:45Z",
+      "side": 1,
+      "message": "What make you say that? It doesn\u0027t look like it is as far as I can see.",
+      "parentUuid": "977562d7_a855efd6",
+      "range": {
+        "startLine": 25,
+        "startChar": 0,
+        "endLine": 25,
+        "endChar": 35
+      },
+      "revId": "c0b62900949e681861da986f8372ef4c27f5b061",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
