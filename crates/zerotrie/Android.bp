@@ -22,10 +22,17 @@ rust_library {
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
+        "alloc",
+        "litemap",
+        "serde",
+        "yoke",
         "zerofrom",
         "zerovec",
     ],
     rustlibs: [
+        "liblitemap",
+        "libserde",
+        "libyoke",
         "libzerofrom",
         "libzerovec",
     ],
