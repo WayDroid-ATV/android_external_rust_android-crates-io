@@ -61,6 +61,8 @@ configparser
 const-oid
 coset
 cov-mark
+crc
+crc-catalog
 crc32fast
 criterion
 criterion-plot
@@ -80,6 +82,7 @@ debug_tree
 der
 der_derive
 derive_arbitrary
+diplomat-runtime
 displaydoc
 document-features
 downcast
@@ -155,6 +158,7 @@ itertools
 itoa
 jni
 jni-sys
+json-strip-comments
 kernlog
 lazy_static
 lazycell
@@ -164,12 +168,14 @@ libc
 libfuzzer-sys
 libloading
 libm
+libsqlite3-sys
 libtest-mimic
 libusb1-sys
 libz-sys
 linked-hash-map
 linkme
 linkme-impl
+litemap
 litrs
 lock_api
 log
@@ -244,6 +250,7 @@ plotters
 plotters-backend
 plotters-svg
 poll_token_derive
+potential_utf
 ppv-lite86
 predicates
 predicates-core
@@ -301,9 +308,11 @@ smallvec
 smccc
 socket2
 spdx
+spidev
 spin
 spki
 static_assertions
+strck
 strsim
 strum
 strum_macros

@@ -50,7 +50,7 @@ rust_library {
         "//packages/modules/Virtualization:__subpackages__",
         "//system/keymint:__subpackages__",
         "//system/security/keystore2:__subpackages__",
-        "//system/software_defined_vehicle/core_services/crypto_rpc:__subpackages__",
+        "//system/software_defined_vehicle/core_services/service_discovery/sdv_sd_agent:__subpackages__",
     ],
 }
 
