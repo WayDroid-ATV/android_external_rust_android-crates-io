@@ -10,7 +10,10 @@ license {
     name: "external_rust_crates_cesu8_license",
     visibility: [":__subpackages__"],
     license_kinds: ["SPDX-license-identifier-Apache-2.0"],
-    license_text: ["LICENSE"],
+    license_text: [
+        "LICENSE-APACHE",
+        "COPYRIGHT-RUST.txt",
+    ],
 }
 
 rust_test {

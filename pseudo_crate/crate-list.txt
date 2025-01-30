@@ -82,7 +82,9 @@ debug_tree
 der
 der_derive
 derive_arbitrary
+diplomat
 diplomat-runtime
+diplomat_core
 displaydoc
 document-features
 downcast
@@ -311,6 +313,7 @@ spdx
 spidev
 spin
 spki
+stable_deref_trait
 static_assertions
 strck
 strsim
@@ -331,6 +334,7 @@ thread_local
 threadpool
 tikv-jemalloc-sys
 tikv-jemallocator
+tinystr
 tinytemplate
 tinyvec
 tinyvec_macros
@@ -396,11 +400,19 @@ weak-table
 webpki
 which
 winnow
+writeable
 x509-cert
 xml-rs
 yaml-rust
+yoke
+yoke-derive
 zerocopy
 zerocopy-derive
+zerofrom
+zerofrom-derive
 zeroize
 zeroize_derive
+zerotrie
+zerovec
+zerovec-derive
 zip

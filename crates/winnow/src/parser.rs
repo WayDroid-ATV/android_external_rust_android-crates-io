@@ -5,7 +5,7 @@ use crate::combinator::impls;
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
-use crate::error::{AddContext, FromExternalError, IResult, PResult, ParseError, ParserError};
+use crate::error::{AddContext, FromExternalError, PResult, ParseError, ParserError};
 use crate::stream::{Compare, Location, ParseSlice, Stream, StreamIsPartial};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
@@ -95,7 +95,7 @@ pub trait Parser<I, O, E> {
     ///
     /// </div>
     #[inline(always)]
-    fn parse_peek(&mut self, mut input: I) -> IResult<I, O, E> {
+    fn parse_peek(&mut self, mut input: I) -> PResult<(I, O), E> {
         match self.parse_next(&mut input) {
             Ok(o) => Ok((input, o)),
             Err(err) => Err(err),
@@ -1160,6 +1160,11 @@ macro_rules! impl_parser_for_tuples {
     }
 }
 
+/// Trait alias for [`Parser`] to ease the transition to the next release
+pub trait ModalParser<I, O, E>: Parser<I, O, E> {}
+
+impl<I, O, E, P> ModalParser<I, O, E> for P where P: Parser<I, O, E> {}
+
 /// Collect all errors when parsing the input
 ///
 /// [`Parser`]s will need to use [`Recoverable<I, _>`] for their input.
@@ -1264,8 +1269,9 @@ impl<I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + '_> {
 /// Deprecated
 #[inline(always)]
 #[deprecated(since = "0.6.23")]
+#[allow(deprecated)]
 pub fn unpeek<'a, I, O, E>(
-    mut peek: impl FnMut(I) -> IResult<I, O, E> + 'a,
+    mut peek: impl FnMut(I) -> crate::error::IResult<I, O, E> + 'a,
 ) -> impl FnMut(&mut I) -> PResult<O, E>
 where
     I: Clone,
@@ -1285,6 +1291,7 @@ mod tests {
     use crate::binary::be_u16;
     use crate::error::ErrMode;
     use crate::error::ErrorKind;
+    use crate::error::IResult;
     use crate::error::InputError;
     use crate::error::Needed;
     use crate::token::take;

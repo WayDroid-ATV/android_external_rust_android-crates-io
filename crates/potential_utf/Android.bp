@@ -21,8 +21,17 @@ rust_library {
     cargo_pkg_version: "0.1.0",
     crate_root: "src/lib.rs",
     edition: "2021",
-    features: ["serde"],
-    rustlibs: ["libserde"],
+    features: [
+        "alloc",
+        "serde",
+        "writeable",
+        "zerovec",
+    ],
+    rustlibs: [
+        "libserde",
+        "libwriteable",
+        "libzerovec",
+    ],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

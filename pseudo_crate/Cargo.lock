@@ -181,7 +181,9 @@ dependencies = [
  "der",
  "der_derive",
  "derive_arbitrary",
+ "diplomat",
  "diplomat-runtime",
+ "diplomat_core",
  "displaydoc",
  "document-features",
  "downcast",
@@ -408,6 +410,7 @@ dependencies = [
  "spidev",
  "spin 0.9.8",
  "spki",
+ "stable_deref_trait",
  "static_assertions",
  "strck",
  "strsim 0.11.1",
@@ -428,6 +431,7 @@ dependencies = [
  "threadpool",
  "tikv-jemalloc-sys",
  "tikv-jemallocator",
+ "tinystr",
  "tinytemplate",
  "tinyvec",
  "tinyvec_macros",
@@ -487,14 +491,22 @@ dependencies = [
  "weak-table",
  "webpki",
  "which",
- "winnow 0.6.24",
+ "winnow 0.6.25",
+ "writeable",
  "x509-cert",
  "xml-rs",
  "yaml-rust",
+ "yoke",
+ "yoke-derive",
  "zerocopy 0.8.14",
  "zerocopy-derive 0.8.14",
+ "zerofrom",
+ "zerofrom-derive",
  "zeroize",
  "zeroize_derive",
+ "zerotrie",
+ "zerovec",
+ "zerovec-derive",
  "zip",
 ]
 
@@ -1700,10 +1712,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "diplomat"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef0c3a613b09df83bdd42393cd532830a795053102f87461fca1726999829c60"
+dependencies = [
+ "diplomat_core",
+ "proc-macro2 1.0.93",
+ "quote 1.0.38",
+ "syn 2.0.96",
+]
+
+[[package]]
 name = "diplomat-runtime"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc1708f176e12755d6d6571ad9b0ebbd3b428223b5cdf63a38eecf1479c13e70"
+
+[[package]]
+name = "diplomat_core"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58e5ba87fee6b8b9dcc575cfbc84ae97b8b9f891fa27f670996a4684e20bd178"
+dependencies = [
+ "proc-macro2 1.0.93",
+ "quote 1.0.38",
+ "serde",
+ "smallvec",
+ "strck",
+ "syn 2.0.96",
+]
 
 [[package]]
 name = "dirs"
@@ -5072,6 +5110,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "stable_deref_trait"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
+
+[[package]]
 name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5082,6 +5126,9 @@ name = "strck"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42316e70da376f3d113a68d138a60d8a9883c604fe97942721ec2068dab13a9f"
+dependencies = [
+ "unicode-ident",
+]
 
 [[package]]
 name = "strsim"
@@ -5340,6 +5387,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef927ca75afb808a4d64dd374f00a2adf8d0fcff8e7b184af886c3c87ec4a3f3"
 
 [[package]]
+name = "tinystr"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2b56a820bb70060f096338fcc02edb78cb3f8fb21c5078503f48588cfcaf494"
+dependencies = [
+ "displaydoc",
+]
+
+[[package]]
 name = "tinytemplate"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5531,7 +5587,7 @@ dependencies = [
  "serde",
  "serde_spanned",
  "toml_datetime",
- "winnow 0.6.24",
+ "winnow 0.6.25",
 ]
 
 [[package]]
@@ -6550,9 +6606,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.6.24"
+version = "0.6.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8d71a593cc5c42ad7876e2c1fda56f314f3754c084128833e64f1345ff8a03a"
+checksum = "ad699df48212c6cc6eb4435f35500ac6fd3b9913324f938aea302022ce19d310"
 dependencies = [
  "memchr",
 ]
@@ -6585,6 +6641,12 @@ dependencies = [
  "quote 1.0.38",
  "syn 1.0.109",
 ]
+
+[[package]]
+name = "writeable"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74b3b5b7c6114bf7253093603034e102d479ecc8501deca33b6c1c816418b6d2"
 
 [[package]]
 name = "x509-cert"
@@ -6634,6 +6696,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "yoke"
+version = "0.7.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "120e6aef9aa629e3d4f52dc8cc43a015c7724194c97dfaf45180d2daf2b77f40"
+dependencies = [
+ "serde",
+ "stable_deref_trait",
+ "zerofrom",
+]
+
+[[package]]
+name = "yoke-derive"
+version = "0.7.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2380878cad4ac9aac1e2435f3eb4020e8374b5f13c296cb75b4620ff8e229154"
+dependencies = [
+ "proc-macro2 1.0.93",
+ "quote 1.0.38",
+ "syn 2.0.96",
+ "synstructure",
+]
+
+[[package]]
 name = "zerocopy"
 version = "0.7.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6674,6 +6759,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "zerofrom"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cff3ee08c995dee1859d998dea82f7374f2826091dd9cd47def953cae446cd2e"
+
+[[package]]
+name = "zerofrom-derive"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "595eed982f7d355beb85837f651fa22e90b3c044842dc7f2c2842c086f295808"
+dependencies = [
+ "proc-macro2 1.0.93",
+ "quote 1.0.38",
+ "syn 2.0.96",
+ "synstructure",
+]
+
+[[package]]
 name = "zeroize"
 version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6687,6 +6790,35 @@ name = "zeroize_derive"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce36e65b0d2999d2aafac989fb249189a141aee1f53c612c1f37d72631959f69"
+dependencies = [
+ "proc-macro2 1.0.93",
+ "quote 1.0.38",
+ "syn 2.0.96",
+]
+
+[[package]]
+name = "zerotrie"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fa766b97d68da210d29cc0bc8d072d87de9359cb998e4bc30ab4982a1c795d47"
+dependencies = [
+ "displaydoc",
+]
+
+[[package]]
+name = "zerovec"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b622856b789971a6fe0442b69f3a2d7ac949005c4c8586b2c4ef09cc5182f2b"
+dependencies = [
+ "zerofrom",
+]
+
+[[package]]
+name = "zerovec-derive"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "996c67268f00e216986ac140d8de9f47968c330b96aeefcae9ed296f23934448"
 dependencies = [
  "proc-macro2 1.0.93",
  "quote 1.0.38",
