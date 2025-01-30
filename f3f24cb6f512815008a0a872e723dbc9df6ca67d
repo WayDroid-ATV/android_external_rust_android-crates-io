@@ -16,6 +16,24 @@
       "message": "nit: This is sort-of unrelated, but I guess it\u0027s ok.",
       "revId": "f3f24cb6f512815008a0a872e723dbc9df6ca67d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "517cd5db_c4755d42",
+        "filename": "crates/clap/TEST_MAPPING",
+        "patchSetId": 2
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-30T23:24:34Z",
+      "side": 1,
+      "message": "yeah...it got fixed up by \"regenerate\"",
+      "parentUuid": "f6ef186e_370d146a",
+      "revId": "f3f24cb6f512815008a0a872e723dbc9df6ca67d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
