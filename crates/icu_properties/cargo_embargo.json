@@ -1,3 +1,6 @@
 {
-    "features": ["unicode_bidi", "compiled_data"]
+    "features": ["unicode_bidi", "compiled_data"],
+    "ramdisk_available": true,
+    "recovery_available": true,
+    "vendor_ramdisk_available": true
 }
