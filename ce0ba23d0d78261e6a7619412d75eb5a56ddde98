@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "25c5dac1_b0fe5f7d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-31T04:49:39Z",
+      "side": 1,
+      "message": "The effects of this seems to be \n1) Cargo.lock files, which should not be there if they aren\u0027t in the crate archive and I\u0027m not sure why they are showing up.\n2) Fixing the path of libsqlite3-sys in TEST_MAPPING, which I should have done when I migrated it.\n3) Different formatting for some stuff in out/ directories, probably caused by a newer toolchain version since it was last run.\n\n#1 seems like a bug.\n#2 seems worth doing, but not super high priority.\n#3 seems minor.",
+      "revId": "ce0ba23d0d78261e6a7619412d75eb5a56ddde98",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "eb91c816_90bb6321",
+        "filename": "crates/anyhow/Cargo.lock",
+        "patchSetId": 3
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-01-31T04:49:39Z",
+      "side": 1,
+      "message": "These Cargo.lock files should not be there. Not sure how they got added.",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 1,
+        "endChar": 49
+      },
+      "revId": "ce0ba23d0d78261e6a7619412d75eb5a56ddde98",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
