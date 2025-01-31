@@ -5,8 +5,7 @@
   "package": {
     "virtio-queue": {
       "device_supported": false,
-      "host_first_multilib": true,
-      "license_text": ["LICENSE-APACHE", "LICENSE-BSD-3-Clause"]
+      "host_first_multilib": true
     }
   },
   "run_cargo": false

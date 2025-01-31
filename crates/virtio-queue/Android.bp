@@ -13,10 +13,7 @@ license {
         "SPDX-license-identifier-Apache-2.0",
         "SPDX-license-identifier-BSD-3-Clause",
     ],
-    license_text: [
-        "LICENSE-APACHE",
-        "LICENSE-BSD-3-Clause",
-    ],
+    license_text: ["LICENSE"],
 }
 
 rust_library_host {
