@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b786ebb8_777a7676",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-01-31T10:14:58Z",
+      "side": 1,
+      "message": "The presubmit has succeeded, but got invalidated by the topic. Merging.",
+      "revId": "63dc3578f79ebf56a9db1d098b0d2caa21f2502e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
