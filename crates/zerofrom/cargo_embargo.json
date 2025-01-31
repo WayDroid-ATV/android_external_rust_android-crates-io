@@ -1,3 +1,6 @@
 {
-    "features": ["alloc", "derive"]
+    "features": ["alloc", "derive"],
+    "ramdisk_available": true,
+    "recovery_available": true,
+    "vendor_ramdisk_available": true
 }
