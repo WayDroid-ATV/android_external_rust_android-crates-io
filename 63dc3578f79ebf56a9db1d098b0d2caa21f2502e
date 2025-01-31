@@ -33,6 +33,24 @@
       "message": "Did you mean to add this?",
       "revId": "63dc3578f79ebf56a9db1d098b0d2caa21f2502e",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3646db58_415887b2",
+        "filename": "crates/unicode-bidi/Cargo.lock",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-01-31T10:17:54Z",
+      "side": 1,
+      "message": "crate_tool added it, and CI refused to let me remove it since it complained about the checksums being incorrect\n\nIt\u0027s present in the package: https://docs.rs/crate/unicode-bidi/latest/source/",
+      "parentUuid": "925f31ec_b129f5c1",
+      "revId": "63dc3578f79ebf56a9db1d098b0d2caa21f2502e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
