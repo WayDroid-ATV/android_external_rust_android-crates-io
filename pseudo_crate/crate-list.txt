@@ -149,6 +149,8 @@ httpdate
 hyper
 hyper-timeout
 icu_capi
+icu_casemap
+icu_casemap_data
 icu_collections
 icu_locale
 icu_locale_core
