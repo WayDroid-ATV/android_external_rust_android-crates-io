@@ -51,6 +51,24 @@
       "parentUuid": "925f31ec_b129f5c1",
       "revId": "63dc3578f79ebf56a9db1d098b0d2caa21f2502e",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "03d93b63_897514ea",
+        "filename": "crates/unicode-bidi/Cargo.lock",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-01-31T10:31:33Z",
+      "side": 1,
+      "message": "Fair enough then. I wonder why it was missing before.",
+      "parentUuid": "3646db58_415887b2",
+      "revId": "63dc3578f79ebf56a9db1d098b0d2caa21f2502e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ],
   "submitRequirementResults": [
