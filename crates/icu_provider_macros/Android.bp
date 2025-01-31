@@ -26,5 +26,8 @@ rust_proc_macro {
         "libsyn",
     ],
     product_available: true,
+    recovery_available: true,
     vendor_available: true,
+    vendor_ramdisk_available: true,
+    ramdisk_available: true,
 }

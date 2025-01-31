@@ -1,3 +1,6 @@
 {
-    "features": ["alloc", "serde", "writeable", "zerovec"]
+  "features": ["alloc", "serde", "writeable", "zerovec"],
+  "ramdisk_available": true,
+  "recovery_available": true,
+  "vendor_ramdisk_available": true
 }
