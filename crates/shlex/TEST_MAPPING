@@ -1,7 +1,7 @@
 {
   "imports": [
     {
-      "path": "external/rust/crates/libsqlite3-sys"
+      "path": "external/rust/android-crates-io/crates/libsqlite3-sys"
     },
     {
       "path": "system/security/keystore2"
