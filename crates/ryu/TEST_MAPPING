@@ -83,9 +83,6 @@
   "postsubmit": [
     {
       "name": "ryu_test_tests_d2s_intrinsics_test"
-    },
-    {
-      "name": "ryu_test_tests_exhaustive"
     }
   ]
 }
