@@ -13,7 +13,7 @@
       "path": "external/rust/android-crates-io/crates/flate2"
     },
     {
-      "path": "external/rust/crates/libsqlite3-sys"
+      "path": "external/rust/android-crates-io/crates/libsqlite3-sys"
     },
     {
       "path": "external/rust/android-crates-io/crates/mio"

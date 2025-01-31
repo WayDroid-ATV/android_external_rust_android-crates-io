@@ -3981,29 +3981,47 @@ impl Instruction {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
             },
-            2u16 => Self::SourceContinued { continued_source: reader.next_string()? },
+            2u16 => Self::SourceContinued {
+                continued_source: reader.next_string()?,
+            },
             3u16 => Self::Source {
                 source_language: SourceLanguage::parse(reader)?,
                 version: reader.next_u32()?,
-                file: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
-                source: if !reader.is_empty() { Some(reader.next_string()?) } else { None },
+                file: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
+                source: if !reader.is_empty() {
+                    Some(reader.next_string()?)
+                } else {
+                    None
+                },
             },
-            4u16 => Self::SourceExtension { extension: reader.next_string()? },
-            5u16 => Self::Name { target: Id(reader.next_u32()?), name: reader.next_string()? },
+            4u16 => Self::SourceExtension {
+                extension: reader.next_string()?,
+            },
+            5u16 => Self::Name {
+                target: Id(reader.next_u32()?),
+                name: reader.next_string()?,
+            },
             6u16 => Self::MemberName {
                 ty: Id(reader.next_u32()?),
                 member: reader.next_u32()?,
                 name: reader.next_string()?,
             },
-            7u16 => {
-                Self::String { result_id: Id(reader.next_u32()?), string: reader.next_string()? }
-            }
+            7u16 => Self::String {
+                result_id: Id(reader.next_u32()?),
+                string: reader.next_string()?,
+            },
             8u16 => Self::Line {
                 file: Id(reader.next_u32()?),
                 line: reader.next_u32()?,
                 column: reader.next_u32()?,
             },
-            10u16 => Self::Extension { name: reader.next_string()? },
+            10u16 => Self::Extension {
+                name: reader.next_string()?,
+            },
             11u16 => Self::ExtInstImport {
                 result_id: Id(reader.next_u32()?),
                 name: reader.next_string()?,
@@ -4041,17 +4059,24 @@ impl Instruction {
                 entry_point: Id(reader.next_u32()?),
                 mode: ExecutionMode::parse(reader)?,
             },
-            17u16 => Self::Capability { capability: Capability::parse(reader)? },
-            19u16 => Self::TypeVoid { result_id: Id(reader.next_u32()?) },
-            20u16 => Self::TypeBool { result_id: Id(reader.next_u32()?) },
+            17u16 => Self::Capability {
+                capability: Capability::parse(reader)?,
+            },
+            19u16 => Self::TypeVoid {
+                result_id: Id(reader.next_u32()?),
+            },
+            20u16 => Self::TypeBool {
+                result_id: Id(reader.next_u32()?),
+            },
             21u16 => Self::TypeInt {
                 result_id: Id(reader.next_u32()?),
                 width: reader.next_u32()?,
                 signedness: reader.next_u32()?,
             },
-            22u16 => {
-                Self::TypeFloat { result_id: Id(reader.next_u32()?), width: reader.next_u32()? }
-            }
+            22u16 => Self::TypeFloat {
+                result_id: Id(reader.next_u32()?),
+                width: reader.next_u32()?,
+            },
             23u16 => Self::TypeVector {
                 result_id: Id(reader.next_u32()?),
                 component_type: Id(reader.next_u32()?),
@@ -4077,7 +4102,9 @@ impl Instruction {
                     None
                 },
             },
-            26u16 => Self::TypeSampler { result_id: Id(reader.next_u32()?) },
+            26u16 => Self::TypeSampler {
+                result_id: Id(reader.next_u32()?),
+            },
             27u16 => Self::TypeSampledImage {
                 result_id: Id(reader.next_u32()?),
                 image_type: Id(reader.next_u32()?),
@@ -4101,9 +4128,10 @@ impl Instruction {
                     vec
                 },
             },
-            31u16 => {
-                Self::TypeOpaque { result_id: Id(reader.next_u32()?), name: reader.next_string()? }
-            }
+            31u16 => Self::TypeOpaque {
+                result_id: Id(reader.next_u32()?),
+                name: reader.next_string()?,
+            },
             32u16 => Self::TypePointer {
                 result_id: Id(reader.next_u32()?),
                 storage_class: StorageClass::parse(reader)?,
@@ -4120,10 +4148,18 @@ impl Instruction {
                     vec
                 },
             },
-            34u16 => Self::TypeEvent { result_id: Id(reader.next_u32()?) },
-            35u16 => Self::TypeDeviceEvent { result_id: Id(reader.next_u32()?) },
-            36u16 => Self::TypeReserveId { result_id: Id(reader.next_u32()?) },
-            37u16 => Self::TypeQueue { result_id: Id(reader.next_u32()?) },
+            34u16 => Self::TypeEvent {
+                result_id: Id(reader.next_u32()?),
+            },
+            35u16 => Self::TypeDeviceEvent {
+                result_id: Id(reader.next_u32()?),
+            },
+            36u16 => Self::TypeReserveId {
+                result_id: Id(reader.next_u32()?),
+            },
+            37u16 => Self::TypeQueue {
+                result_id: Id(reader.next_u32()?),
+            },
             38u16 => Self::TypePipe {
                 result_id: Id(reader.next_u32()?),
                 qualifier: AccessQualifier::parse(reader)?,
@@ -4223,7 +4259,11 @@ impl Instruction {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
                 storage_class: StorageClass::parse(reader)?,
-                initializer: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                initializer: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             60u16 => Self::ImageTexelPointer {
                 result_type_id: Id(reader.next_u32()?),
@@ -4350,7 +4390,9 @@ impl Instruction {
                 member: reader.next_u32()?,
                 decoration: Decoration::parse(reader)?,
             },
-            73u16 => Self::DecorationGroup { result_id: Id(reader.next_u32()?) },
+            73u16 => Self::DecorationGroup {
+                result_id: Id(reader.next_u32()?),
+            },
             74u16 => Self::GroupDecorate {
                 decoration_group: Id(reader.next_u32()?),
                 targets: {
@@ -5205,8 +5247,12 @@ impl Instruction {
             },
             218u16 => Self::EmitVertex,
             219u16 => Self::EndPrimitive,
-            220u16 => Self::EmitStreamVertex { stream: Id(reader.next_u32()?) },
-            221u16 => Self::EndStreamPrimitive { stream: Id(reader.next_u32()?) },
+            220u16 => Self::EmitStreamVertex {
+                stream: Id(reader.next_u32()?),
+            },
+            221u16 => Self::EndStreamPrimitive {
+                stream: Id(reader.next_u32()?),
+            },
             224u16 => Self::ControlBarrier {
                 execution: Id(reader.next_u32()?),
                 memory: Id(reader.next_u32()?),
@@ -5363,8 +5409,12 @@ impl Instruction {
                 merge_block: Id(reader.next_u32()?),
                 selection_control: SelectionControl::parse(reader)?,
             },
-            248u16 => Self::Label { result_id: Id(reader.next_u32()?) },
-            249u16 => Self::Branch { target_label: Id(reader.next_u32()?) },
+            248u16 => Self::Label {
+                result_id: Id(reader.next_u32()?),
+            },
+            249u16 => Self::Branch {
+                target_label: Id(reader.next_u32()?),
+            },
             250u16 => Self::BranchConditional {
                 condition: Id(reader.next_u32()?),
                 true_label: Id(reader.next_u32()?),
@@ -5390,14 +5440,18 @@ impl Instruction {
             },
             252u16 => Self::Kill,
             253u16 => Self::Return,
-            254u16 => Self::ReturnValue { value: Id(reader.next_u32()?) },
+            254u16 => Self::ReturnValue {
+                value: Id(reader.next_u32()?),
+            },
             255u16 => Self::Unreachable,
-            256u16 => {
-                Self::LifetimeStart { pointer: Id(reader.next_u32()?), size: reader.next_u32()? }
-            }
-            257u16 => {
-                Self::LifetimeStop { pointer: Id(reader.next_u32()?), size: reader.next_u32()? }
-            }
+            256u16 => Self::LifetimeStart {
+                pointer: Id(reader.next_u32()?),
+                size: reader.next_u32()?,
+            },
+            257u16 => Self::LifetimeStop {
+                pointer: Id(reader.next_u32()?),
+                size: reader.next_u32()?,
+            },
             259u16 => Self::GroupAsyncCopy {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
@@ -5666,8 +5720,12 @@ impl Instruction {
                 param_size: Id(reader.next_u32()?),
                 param_align: Id(reader.next_u32()?),
             },
-            297u16 => Self::RetainEvent { event: Id(reader.next_u32()?) },
-            298u16 => Self::ReleaseEvent { event: Id(reader.next_u32()?) },
+            297u16 => Self::RetainEvent {
+                event: Id(reader.next_u32()?),
+            },
+            298u16 => Self::ReleaseEvent {
+                event: Id(reader.next_u32()?),
+            },
             299u16 => Self::CreateUserEvent {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
@@ -5842,7 +5900,9 @@ impl Instruction {
                 result_id: Id(reader.next_u32()?),
                 pointer: Id(reader.next_u32()?),
             },
-            322u16 => Self::TypePipeStorage { result_id: Id(reader.next_u32()?) },
+            322u16 => Self::TypePipeStorage {
+                result_id: Id(reader.next_u32()?),
+            },
             323u16 => Self::ConstantPipeStorage {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
@@ -5872,7 +5932,9 @@ impl Instruction {
                 param_size: Id(reader.next_u32()?),
                 param_align: Id(reader.next_u32()?),
             },
-            327u16 => Self::TypeNamedBarrier { result_id: Id(reader.next_u32()?) },
+            327u16 => Self::TypeNamedBarrier {
+                result_id: Id(reader.next_u32()?),
+            },
             328u16 => Self::NamedBarrierInitialize {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
@@ -5883,7 +5945,9 @@ impl Instruction {
                 memory: Id(reader.next_u32()?),
                 semantics: Id(reader.next_u32()?),
             },
-            330u16 => Self::ModuleProcessed { process: reader.next_string()? },
+            330u16 => Self::ModuleProcessed {
+                process: reader.next_string()?,
+            },
             331u16 => Self::ExecutionModeId {
                 entry_point: Id(reader.next_u32()?),
                 mode: ExecutionMode::parse(reader)?,
@@ -6000,7 +6064,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             350u16 => Self::GroupNonUniformFAdd {
                 result_type_id: Id(reader.next_u32()?),
@@ -6008,7 +6076,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             351u16 => Self::GroupNonUniformIMul {
                 result_type_id: Id(reader.next_u32()?),
@@ -6016,7 +6088,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             352u16 => Self::GroupNonUniformFMul {
                 result_type_id: Id(reader.next_u32()?),
@@ -6024,7 +6100,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             353u16 => Self::GroupNonUniformSMin {
                 result_type_id: Id(reader.next_u32()?),
@@ -6032,7 +6112,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             354u16 => Self::GroupNonUniformUMin {
                 result_type_id: Id(reader.next_u32()?),
@@ -6040,7 +6124,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             355u16 => Self::GroupNonUniformFMin {
                 result_type_id: Id(reader.next_u32()?),
@@ -6048,7 +6136,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             356u16 => Self::GroupNonUniformSMax {
                 result_type_id: Id(reader.next_u32()?),
@@ -6056,7 +6148,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             357u16 => Self::GroupNonUniformUMax {
                 result_type_id: Id(reader.next_u32()?),
@@ -6064,7 +6160,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             358u16 => Self::GroupNonUniformFMax {
                 result_type_id: Id(reader.next_u32()?),
@@ -6072,7 +6172,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             359u16 => Self::GroupNonUniformBitwiseAnd {
                 result_type_id: Id(reader.next_u32()?),
@@ -6080,7 +6184,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             360u16 => Self::GroupNonUniformBitwiseOr {
                 result_type_id: Id(reader.next_u32()?),
@@ -6088,7 +6196,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             361u16 => Self::GroupNonUniformBitwiseXor {
                 result_type_id: Id(reader.next_u32()?),
@@ -6096,7 +6208,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             362u16 => Self::GroupNonUniformLogicalAnd {
                 result_type_id: Id(reader.next_u32()?),
@@ -6104,7 +6220,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             363u16 => Self::GroupNonUniformLogicalOr {
                 result_type_id: Id(reader.next_u32()?),
@@ -6112,7 +6232,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             364u16 => Self::GroupNonUniformLogicalXor {
                 result_type_id: Id(reader.next_u32()?),
@@ -6120,7 +6244,11 @@ impl Instruction {
                 execution: Id(reader.next_u32()?),
                 operation: GroupOperation::parse(reader)?,
                 value: Id(reader.next_u32()?),
-                cluster_size: if !reader.is_empty() { Some(Id(reader.next_u32()?)) } else { None },
+                cluster_size: if !reader.is_empty() {
+                    Some(Id(reader.next_u32()?))
+                } else {
+                    None
+                },
             },
             365u16 => Self::GroupNonUniformQuadBroadcast {
                 result_type_id: Id(reader.next_u32()?),
@@ -6284,7 +6412,9 @@ impl Instruction {
                     None
                 },
             },
-            4472u16 => Self::TypeRayQueryKHR { result_id: Id(reader.next_u32()?) },
+            4472u16 => Self::TypeRayQueryKHR {
+                result_id: Id(reader.next_u32()?),
+            },
             4473u16 => Self::RayQueryInitializeKHR {
                 ray_query: Id(reader.next_u32()?),
                 accel: Id(reader.next_u32()?),
@@ -6295,12 +6425,16 @@ impl Instruction {
                 ray_direction: Id(reader.next_u32()?),
                 ray_t_max: Id(reader.next_u32()?),
             },
-            4474u16 => Self::RayQueryTerminateKHR { ray_query: Id(reader.next_u32()?) },
+            4474u16 => Self::RayQueryTerminateKHR {
+                ray_query: Id(reader.next_u32()?),
+            },
             4475u16 => Self::RayQueryGenerateIntersectionKHR {
                 ray_query: Id(reader.next_u32()?),
                 hit_t: Id(reader.next_u32()?),
             },
-            4476u16 => Self::RayQueryConfirmIntersectionKHR { ray_query: Id(reader.next_u32()?) },
+            4476u16 => Self::RayQueryConfirmIntersectionKHR {
+                ray_query: Id(reader.next_u32()?),
+            },
             4477u16 => Self::RayQueryProceedKHR {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
@@ -6457,7 +6591,9 @@ impl Instruction {
                 time: Id(reader.next_u32()?),
                 payload: Id(reader.next_u32()?),
             },
-            5341u16 => Self::TypeAccelerationStructureKHR { result_id: Id(reader.next_u32()?) },
+            5341u16 => Self::TypeAccelerationStructureKHR {
+                result_id: Id(reader.next_u32()?),
+            },
             5344u16 => Self::ExecuteCallableNV {
                 sbt_index: Id(reader.next_u32()?),
                 callable_data_id: Id(reader.next_u32()?),
@@ -6541,7 +6677,9 @@ impl Instruction {
                 result_id: Id(reader.next_u32()?),
                 operand: Id(reader.next_u32()?),
             },
-            5397u16 => Self::SamplerImageAddressingModeNV { bit_width: reader.next_u32()? },
+            5397u16 => Self::SamplerImageAddressingModeNV {
+                bit_width: reader.next_u32()?,
+            },
             5571u16 => Self::SubgroupShuffleINTEL {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
@@ -6742,7 +6880,9 @@ impl Instruction {
                 semantics: Id(reader.next_u32()?),
                 value: Id(reader.next_u32()?),
             },
-            5630u16 => Self::AssumeTrueKHR { condition: Id(reader.next_u32()?) },
+            5630u16 => Self::AssumeTrueKHR {
+                condition: Id(reader.next_u32()?),
+            },
             5631u16 => Self::ExpectKHR {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
@@ -6768,26 +6908,42 @@ impl Instruction {
                 result_id: Id(reader.next_u32()?),
                 image_type: Id(reader.next_u32()?),
             },
-            5701u16 => Self::TypeAvcImePayloadINTEL { result_id: Id(reader.next_u32()?) },
-            5702u16 => Self::TypeAvcRefPayloadINTEL { result_id: Id(reader.next_u32()?) },
-            5703u16 => Self::TypeAvcSicPayloadINTEL { result_id: Id(reader.next_u32()?) },
-            5704u16 => Self::TypeAvcMcePayloadINTEL { result_id: Id(reader.next_u32()?) },
-            5705u16 => Self::TypeAvcMceResultINTEL { result_id: Id(reader.next_u32()?) },
-            5706u16 => Self::TypeAvcImeResultINTEL { result_id: Id(reader.next_u32()?) },
+            5701u16 => Self::TypeAvcImePayloadINTEL {
+                result_id: Id(reader.next_u32()?),
+            },
+            5702u16 => Self::TypeAvcRefPayloadINTEL {
+                result_id: Id(reader.next_u32()?),
+            },
+            5703u16 => Self::TypeAvcSicPayloadINTEL {
+                result_id: Id(reader.next_u32()?),
+            },
+            5704u16 => Self::TypeAvcMcePayloadINTEL {
+                result_id: Id(reader.next_u32()?),
+            },
+            5705u16 => Self::TypeAvcMceResultINTEL {
+                result_id: Id(reader.next_u32()?),
+            },
+            5706u16 => Self::TypeAvcImeResultINTEL {
+                result_id: Id(reader.next_u32()?),
+            },
             5707u16 => Self::TypeAvcImeResultSingleReferenceStreamoutINTEL {
                 result_id: Id(reader.next_u32()?),
             },
             5708u16 => Self::TypeAvcImeResultDualReferenceStreamoutINTEL {
                 result_id: Id(reader.next_u32()?),
             },
-            5709u16 => {
-                Self::TypeAvcImeSingleReferenceStreaminINTEL { result_id: Id(reader.next_u32()?) }
-            }
-            5710u16 => {
-                Self::TypeAvcImeDualReferenceStreaminINTEL { result_id: Id(reader.next_u32()?) }
-            }
-            5711u16 => Self::TypeAvcRefResultINTEL { result_id: Id(reader.next_u32()?) },
-            5712u16 => Self::TypeAvcSicResultINTEL { result_id: Id(reader.next_u32()?) },
+            5709u16 => Self::TypeAvcImeSingleReferenceStreaminINTEL {
+                result_id: Id(reader.next_u32()?),
+            },
+            5710u16 => Self::TypeAvcImeDualReferenceStreaminINTEL {
+                result_id: Id(reader.next_u32()?),
+            },
+            5711u16 => Self::TypeAvcRefResultINTEL {
+                result_id: Id(reader.next_u32()?),
+            },
+            5712u16 => Self::TypeAvcSicResultINTEL {
+                result_id: Id(reader.next_u32()?),
+            },
             5713u16 => Self::SubgroupAvcMceGetDefaultInterBaseMultiReferencePenaltyINTEL {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
@@ -7444,7 +7600,9 @@ impl Instruction {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
             },
-            5820u16 => Self::RestoreMemoryINTEL { ptr: Id(reader.next_u32()?) },
+            5820u16 => Self::RestoreMemoryINTEL {
+                ptr: Id(reader.next_u32()?),
+            },
             5840u16 => Self::ArbitraryFloatSinCosPiINTEL {
                 result_type_id: Id(reader.next_u32()?),
                 result_id: Id(reader.next_u32()?),
@@ -8763,65 +8921,230 @@ impl Instruction {
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[doc = "An instruction that is used as the operand of the `SpecConstantOp` instruction."]
 pub enum SpecConstantInstruction {
-    AccessChain { base: Id, indexes: Vec<Id> },
-    InBoundsAccessChain { base: Id, indexes: Vec<Id> },
-    PtrAccessChain { base: Id, element: Id, indexes: Vec<Id> },
-    InBoundsPtrAccessChain { base: Id, element: Id, indexes: Vec<Id> },
-    VectorShuffle { vector_1: Id, vector_2: Id, components: Vec<u32> },
-    CompositeExtract { composite: Id, indexes: Vec<u32> },
-    CompositeInsert { object: Id, composite: Id, indexes: Vec<u32> },
-    ConvertFToU { float_value: Id },
-    ConvertFToS { float_value: Id },
-    ConvertSToF { signed_value: Id },
-    ConvertUToF { unsigned_value: Id },
-    UConvert { unsigned_value: Id },
-    SConvert { signed_value: Id },
-    FConvert { float_value: Id },
-    QuantizeToF16 { value: Id },
-    ConvertPtrToU { pointer: Id },
-    ConvertUToPtr { integer_value: Id },
-    PtrCastToGeneric { pointer: Id },
-    GenericCastToPtr { pointer: Id },
-    Bitcast { operand: Id },
-    SNegate { operand: Id },
-    FNegate { operand: Id },
-    IAdd { operand1: Id, operand2: Id },
-    FAdd { operand1: Id, operand2: Id },
-    ISub { operand1: Id, operand2: Id },
-    FSub { operand1: Id, operand2: Id },
-    IMul { operand1: Id, operand2: Id },
-    FMul { operand1: Id, operand2: Id },
-    UDiv { operand1: Id, operand2: Id },
-    SDiv { operand1: Id, operand2: Id },
-    FDiv { operand1: Id, operand2: Id },
-    UMod { operand1: Id, operand2: Id },
-    SRem { operand1: Id, operand2: Id },
-    SMod { operand1: Id, operand2: Id },
-    FRem { operand1: Id, operand2: Id },
-    FMod { operand1: Id, operand2: Id },
-    LogicalEqual { operand1: Id, operand2: Id },
-    LogicalNotEqual { operand1: Id, operand2: Id },
-    LogicalOr { operand1: Id, operand2: Id },
-    LogicalAnd { operand1: Id, operand2: Id },
-    LogicalNot { operand: Id },
-    Select { condition: Id, object_1: Id, object_2: Id },
-    IEqual { operand1: Id, operand2: Id },
-    INotEqual { operand1: Id, operand2: Id },
-    UGreaterThan { operand1: Id, operand2: Id },
-    SGreaterThan { operand1: Id, operand2: Id },
-    UGreaterThanEqual { operand1: Id, operand2: Id },
-    SGreaterThanEqual { operand1: Id, operand2: Id },
-    ULessThan { operand1: Id, operand2: Id },
-    SLessThan { operand1: Id, operand2: Id },
-    ULessThanEqual { operand1: Id, operand2: Id },
-    SLessThanEqual { operand1: Id, operand2: Id },
-    ShiftRightLogical { base: Id, shift: Id },
-    ShiftRightArithmetic { base: Id, shift: Id },
-    ShiftLeftLogical { base: Id, shift: Id },
-    BitwiseOr { operand1: Id, operand2: Id },
-    BitwiseXor { operand1: Id, operand2: Id },
-    BitwiseAnd { operand1: Id, operand2: Id },
-    Not { operand: Id },
+    AccessChain {
+        base: Id,
+        indexes: Vec<Id>,
+    },
+    InBoundsAccessChain {
+        base: Id,
+        indexes: Vec<Id>,
+    },
+    PtrAccessChain {
+        base: Id,
+        element: Id,
+        indexes: Vec<Id>,
+    },
+    InBoundsPtrAccessChain {
+        base: Id,
+        element: Id,
+        indexes: Vec<Id>,
+    },
+    VectorShuffle {
+        vector_1: Id,
+        vector_2: Id,
+        components: Vec<u32>,
+    },
+    CompositeExtract {
+        composite: Id,
+        indexes: Vec<u32>,
+    },
+    CompositeInsert {
+        object: Id,
+        composite: Id,
+        indexes: Vec<u32>,
+    },
+    ConvertFToU {
+        float_value: Id,
+    },
+    ConvertFToS {
+        float_value: Id,
+    },
+    ConvertSToF {
+        signed_value: Id,
+    },
+    ConvertUToF {
+        unsigned_value: Id,
+    },
+    UConvert {
+        unsigned_value: Id,
+    },
+    SConvert {
+        signed_value: Id,
+    },
+    FConvert {
+        float_value: Id,
+    },
+    QuantizeToF16 {
+        value: Id,
+    },
+    ConvertPtrToU {
+        pointer: Id,
+    },
+    ConvertUToPtr {
+        integer_value: Id,
+    },
+    PtrCastToGeneric {
+        pointer: Id,
+    },
+    GenericCastToPtr {
+        pointer: Id,
+    },
+    Bitcast {
+        operand: Id,
+    },
+    SNegate {
+        operand: Id,
+    },
+    FNegate {
+        operand: Id,
+    },
+    IAdd {
+        operand1: Id,
+        operand2: Id,
+    },
+    FAdd {
+        operand1: Id,
+        operand2: Id,
+    },
+    ISub {
+        operand1: Id,
+        operand2: Id,
+    },
+    FSub {
+        operand1: Id,
+        operand2: Id,
+    },
+    IMul {
+        operand1: Id,
+        operand2: Id,
+    },
+    FMul {
+        operand1: Id,
+        operand2: Id,
+    },
+    UDiv {
+        operand1: Id,
+        operand2: Id,
+    },
+    SDiv {
+        operand1: Id,
+        operand2: Id,
+    },
+    FDiv {
+        operand1: Id,
+        operand2: Id,
+    },
+    UMod {
+        operand1: Id,
+        operand2: Id,
+    },
+    SRem {
+        operand1: Id,
+        operand2: Id,
+    },
+    SMod {
+        operand1: Id,
+        operand2: Id,
+    },
+    FRem {
+        operand1: Id,
+        operand2: Id,
+    },
+    FMod {
+        operand1: Id,
+        operand2: Id,
+    },
+    LogicalEqual {
+        operand1: Id,
+        operand2: Id,
+    },
+    LogicalNotEqual {
+        operand1: Id,
+        operand2: Id,
+    },
+    LogicalOr {
+        operand1: Id,
+        operand2: Id,
+    },
+    LogicalAnd {
+        operand1: Id,
+        operand2: Id,
+    },
+    LogicalNot {
+        operand: Id,
+    },
+    Select {
+        condition: Id,
+        object_1: Id,
+        object_2: Id,
+    },
+    IEqual {
+        operand1: Id,
+        operand2: Id,
+    },
+    INotEqual {
+        operand1: Id,
+        operand2: Id,
+    },
+    UGreaterThan {
+        operand1: Id,
+        operand2: Id,
+    },
+    SGreaterThan {
+        operand1: Id,
+        operand2: Id,
+    },
+    UGreaterThanEqual {
+        operand1: Id,
+        operand2: Id,
+    },
+    SGreaterThanEqual {
+        operand1: Id,
+        operand2: Id,
+    },
+    ULessThan {
+        operand1: Id,
+        operand2: Id,
+    },
+    SLessThan {
+        operand1: Id,
+        operand2: Id,
+    },
+    ULessThanEqual {
+        operand1: Id,
+        operand2: Id,
+    },
+    SLessThanEqual {
+        operand1: Id,
+        operand2: Id,
+    },
+    ShiftRightLogical {
+        base: Id,
+        shift: Id,
+    },
+    ShiftRightArithmetic {
+        base: Id,
+        shift: Id,
+    },
+    ShiftLeftLogical {
+        base: Id,
+        shift: Id,
+    },
+    BitwiseOr {
+        operand1: Id,
+        operand2: Id,
+    },
+    BitwiseXor {
+        operand1: Id,
+        operand2: Id,
+    },
+    BitwiseAnd {
+        operand1: Id,
+        operand2: Id,
+    },
+    Not {
+        operand: Id,
+    },
 }
 impl SpecConstantInstruction {
     #[allow(dead_code)]
@@ -8902,63 +9225,107 @@ impl SpecConstantInstruction {
                     vec
                 },
             },
-            109u16 => Self::ConvertFToU { float_value: Id(reader.next_u32()?) },
-            110u16 => Self::ConvertFToS { float_value: Id(reader.next_u32()?) },
-            111u16 => Self::ConvertSToF { signed_value: Id(reader.next_u32()?) },
-            112u16 => Self::ConvertUToF { unsigned_value: Id(reader.next_u32()?) },
-            113u16 => Self::UConvert { unsigned_value: Id(reader.next_u32()?) },
-            114u16 => Self::SConvert { signed_value: Id(reader.next_u32()?) },
-            115u16 => Self::FConvert { float_value: Id(reader.next_u32()?) },
-            116u16 => Self::QuantizeToF16 { value: Id(reader.next_u32()?) },
-            117u16 => Self::ConvertPtrToU { pointer: Id(reader.next_u32()?) },
-            120u16 => Self::ConvertUToPtr { integer_value: Id(reader.next_u32()?) },
-            121u16 => Self::PtrCastToGeneric { pointer: Id(reader.next_u32()?) },
-            122u16 => Self::GenericCastToPtr { pointer: Id(reader.next_u32()?) },
-            124u16 => Self::Bitcast { operand: Id(reader.next_u32()?) },
-            126u16 => Self::SNegate { operand: Id(reader.next_u32()?) },
-            127u16 => Self::FNegate { operand: Id(reader.next_u32()?) },
-            128u16 => {
-                Self::IAdd { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            129u16 => {
-                Self::FAdd { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            130u16 => {
-                Self::ISub { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            131u16 => {
-                Self::FSub { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            132u16 => {
-                Self::IMul { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            133u16 => {
-                Self::FMul { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            134u16 => {
-                Self::UDiv { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            135u16 => {
-                Self::SDiv { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            136u16 => {
-                Self::FDiv { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            137u16 => {
-                Self::UMod { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            138u16 => {
-                Self::SRem { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            139u16 => {
-                Self::SMod { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            140u16 => {
-                Self::FRem { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
-            141u16 => {
-                Self::FMod { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
+            109u16 => Self::ConvertFToU {
+                float_value: Id(reader.next_u32()?),
+            },
+            110u16 => Self::ConvertFToS {
+                float_value: Id(reader.next_u32()?),
+            },
+            111u16 => Self::ConvertSToF {
+                signed_value: Id(reader.next_u32()?),
+            },
+            112u16 => Self::ConvertUToF {
+                unsigned_value: Id(reader.next_u32()?),
+            },
+            113u16 => Self::UConvert {
+                unsigned_value: Id(reader.next_u32()?),
+            },
+            114u16 => Self::SConvert {
+                signed_value: Id(reader.next_u32()?),
+            },
+            115u16 => Self::FConvert {
+                float_value: Id(reader.next_u32()?),
+            },
+            116u16 => Self::QuantizeToF16 {
+                value: Id(reader.next_u32()?),
+            },
+            117u16 => Self::ConvertPtrToU {
+                pointer: Id(reader.next_u32()?),
+            },
+            120u16 => Self::ConvertUToPtr {
+                integer_value: Id(reader.next_u32()?),
+            },
+            121u16 => Self::PtrCastToGeneric {
+                pointer: Id(reader.next_u32()?),
+            },
+            122u16 => Self::GenericCastToPtr {
+                pointer: Id(reader.next_u32()?),
+            },
+            124u16 => Self::Bitcast {
+                operand: Id(reader.next_u32()?),
+            },
+            126u16 => Self::SNegate {
+                operand: Id(reader.next_u32()?),
+            },
+            127u16 => Self::FNegate {
+                operand: Id(reader.next_u32()?),
+            },
+            128u16 => Self::IAdd {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            129u16 => Self::FAdd {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            130u16 => Self::ISub {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            131u16 => Self::FSub {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            132u16 => Self::IMul {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            133u16 => Self::FMul {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            134u16 => Self::UDiv {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            135u16 => Self::SDiv {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            136u16 => Self::FDiv {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            137u16 => Self::UMod {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            138u16 => Self::SRem {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            139u16 => Self::SMod {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            140u16 => Self::FRem {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
+            141u16 => Self::FMod {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
             164u16 => Self::LogicalEqual {
                 operand1: Id(reader.next_u32()?),
                 operand2: Id(reader.next_u32()?),
@@ -8975,15 +9342,18 @@ impl SpecConstantInstruction {
                 operand1: Id(reader.next_u32()?),
                 operand2: Id(reader.next_u32()?),
             },
-            168u16 => Self::LogicalNot { operand: Id(reader.next_u32()?) },
+            168u16 => Self::LogicalNot {
+                operand: Id(reader.next_u32()?),
+            },
             169u16 => Self::Select {
                 condition: Id(reader.next_u32()?),
                 object_1: Id(reader.next_u32()?),
                 object_2: Id(reader.next_u32()?),
             },
-            170u16 => {
-                Self::IEqual { operand1: Id(reader.next_u32()?), operand2: Id(reader.next_u32()?) }
-            }
+            170u16 => Self::IEqual {
+                operand1: Id(reader.next_u32()?),
+                operand2: Id(reader.next_u32()?),
+            },
             171u16 => Self::INotEqual {
                 operand1: Id(reader.next_u32()?),
                 operand2: Id(reader.next_u32()?),
@@ -9044,7 +9414,9 @@ impl SpecConstantInstruction {
                 operand1: Id(reader.next_u32()?),
                 operand2: Id(reader.next_u32()?),
             },
-            200u16 => Self::Not { operand: Id(reader.next_u32()?) },
+            200u16 => Self::Not {
+                operand: Id(reader.next_u32()?),
+            },
             opcode => return Err(reader.map_err(ParseErrors::UnknownSpecConstantOpcode(opcode))),
         })
     }
@@ -9074,18 +9446,46 @@ impl ImageOperands {
     fn parse(reader: &mut InstructionReader<'_>) -> Result<ImageOperands, ParseError> {
         let value = reader.next_u32()?;
         Ok(Self {
-            bias: if value & 1u32 != 0 { Some(Id(reader.next_u32()?)) } else { None },
-            lod: if value & 2u32 != 0 { Some(Id(reader.next_u32()?)) } else { None },
+            bias: if value & 1u32 != 0 {
+                Some(Id(reader.next_u32()?))
+            } else {
+                None
+            },
+            lod: if value & 2u32 != 0 {
+                Some(Id(reader.next_u32()?))
+            } else {
+                None
+            },
             grad: if value & 4u32 != 0 {
                 Some((Id(reader.next_u32()?), Id(reader.next_u32()?)))
             } else {
                 None
             },
-            const_offset: if value & 8u32 != 0 { Some(Id(reader.next_u32()?)) } else { None },
-            offset: if value & 16u32 != 0 { Some(Id(reader.next_u32()?)) } else { None },
-            const_offsets: if value & 32u32 != 0 { Some(Id(reader.next_u32()?)) } else { None },
-            sample: if value & 64u32 != 0 { Some(Id(reader.next_u32()?)) } else { None },
-            min_lod: if value & 128u32 != 0 { Some(Id(reader.next_u32()?)) } else { None },
+            const_offset: if value & 8u32 != 0 {
+                Some(Id(reader.next_u32()?))
+            } else {
+                None
+            },
+            offset: if value & 16u32 != 0 {
+                Some(Id(reader.next_u32()?))
+            } else {
+                None
+            },
+            const_offsets: if value & 32u32 != 0 {
+                Some(Id(reader.next_u32()?))
+            } else {
+                None
+            },
+            sample: if value & 64u32 != 0 {
+                Some(Id(reader.next_u32()?))
+            } else {
+                None
+            },
+            min_lod: if value & 128u32 != 0 {
+                Some(Id(reader.next_u32()?))
+            } else {
+                None
+            },
             make_texel_available: if value & 256u32 != 0 {
                 Some(Id(reader.next_u32()?))
             } else {
@@ -9101,7 +9501,11 @@ impl ImageOperands {
             sign_extend: value & 4096u32 != 0,
             zero_extend: value & 8192u32 != 0,
             nontemporal: value & 16384u32 != 0,
-            offsets: if value & 65536u32 != 0 { Some(Id(reader.next_u32()?)) } else { None },
+            offsets: if value & 65536u32 != 0 {
+                Some(Id(reader.next_u32()?))
+            } else {
+                None
+            },
         })
     }
 }
@@ -9141,7 +9545,10 @@ impl SelectionControl {
     #[allow(dead_code)]
     fn parse(reader: &mut InstructionReader<'_>) -> Result<SelectionControl, ParseError> {
         let value = reader.next_u32()?;
-        Ok(Self { flatten: value & 1u32 != 0, dont_flatten: value & 2u32 != 0 })
+        Ok(Self {
+            flatten: value & 1u32 != 0,
+            dont_flatten: value & 2u32 != 0,
+        })
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -9173,12 +9580,36 @@ impl LoopControl {
             unroll: value & 1u32 != 0,
             dont_unroll: value & 2u32 != 0,
             dependency_infinite: value & 4u32 != 0,
-            dependency_length: if value & 8u32 != 0 { Some(reader.next_u32()?) } else { None },
-            min_iterations: if value & 16u32 != 0 { Some(reader.next_u32()?) } else { None },
-            max_iterations: if value & 32u32 != 0 { Some(reader.next_u32()?) } else { None },
-            iteration_multiple: if value & 64u32 != 0 { Some(reader.next_u32()?) } else { None },
-            peel_count: if value & 128u32 != 0 { Some(reader.next_u32()?) } else { None },
-            partial_count: if value & 256u32 != 0 { Some(reader.next_u32()?) } else { None },
+            dependency_length: if value & 8u32 != 0 {
+                Some(reader.next_u32()?)
+            } else {
+                None
+            },
+            min_iterations: if value & 16u32 != 0 {
+                Some(reader.next_u32()?)
+            } else {
+                None
+            },
+            max_iterations: if value & 32u32 != 0 {
+                Some(reader.next_u32()?)
+            } else {
+                None
+            },
+            iteration_multiple: if value & 64u32 != 0 {
+                Some(reader.next_u32()?)
+            } else {
+                None
+            },
+            peel_count: if value & 128u32 != 0 {
+                Some(reader.next_u32()?)
+            } else {
+                None
+            },
+            partial_count: if value & 256u32 != 0 {
+                Some(reader.next_u32()?)
+            } else {
+                None
+            },
             initiation_interval_intel: if value & 65536u32 != 0 {
                 Some(reader.next_u32()?)
             } else {
@@ -9214,7 +9645,11 @@ impl LoopControl {
             } else {
                 None
             },
-            no_fusion_intel: if value & 8388608u32 != 0 { Some(reader.next_u32()?) } else { None },
+            no_fusion_intel: if value & 8388608u32 != 0 {
+                Some(reader.next_u32()?)
+            } else {
+                None
+            },
         })
     }
 }
@@ -9296,7 +9731,11 @@ impl MemoryAccess {
         let value = reader.next_u32()?;
         Ok(Self {
             volatile: value & 1u32 != 0,
-            aligned: if value & 2u32 != 0 { Some(reader.next_u32()?) } else { None },
+            aligned: if value & 2u32 != 0 {
+                Some(reader.next_u32()?)
+            } else {
+                None
+            },
             nontemporal: value & 4u32 != 0,
             make_pointer_available: if value & 8u32 != 0 {
                 Some(Id(reader.next_u32()?))
@@ -9321,7 +9760,9 @@ impl KernelProfilingInfo {
     #[allow(dead_code)]
     fn parse(reader: &mut InstructionReader<'_>) -> Result<KernelProfilingInfo, ParseError> {
         let value = reader.next_u32()?;
-        Ok(Self { cmd_exec_time: value & 1u32 != 0 })
+        Ok(Self {
+            cmd_exec_time: value & 1u32 != 0,
+        })
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -9495,7 +9936,9 @@ impl MemoryModel {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum ExecutionMode {
-    Invocations { number_of_invocation_invocations: u32 },
+    Invocations {
+        number_of_invocation_invocations: u32,
+    },
     SpacingEqual,
     SpacingFractionalEven,
     SpacingFractionalOdd,
@@ -9511,8 +9954,16 @@ pub enum ExecutionMode {
     DepthGreater,
     DepthLess,
     DepthUnchanged,
-    LocalSize { x_size: u32, y_size: u32, z_size: u32 },
-    LocalSizeHint { x_size: u32, y_size: u32, z_size: u32 },
+    LocalSize {
+        x_size: u32,
+        y_size: u32,
+        z_size: u32,
+    },
+    LocalSizeHint {
+        x_size: u32,
+        y_size: u32,
+        z_size: u32,
+    },
     InputPoints,
     InputLines,
     InputLinesAdjacency,
@@ -9520,29 +9971,59 @@ pub enum ExecutionMode {
     InputTrianglesAdjacency,
     Quads,
     Isolines,
-    OutputVertices { vertex_count: u32 },
+    OutputVertices {
+        vertex_count: u32,
+    },
     OutputPoints,
     OutputLineStrip,
     OutputTriangleStrip,
-    VecTypeHint { vector_type: u32 },
+    VecTypeHint {
+        vector_type: u32,
+    },
     ContractionOff,
     Initializer,
     Finalizer,
-    SubgroupSize { subgroup_size: u32 },
-    SubgroupsPerWorkgroup { subgroups_per_workgroup: u32 },
-    SubgroupsPerWorkgroupId { subgroups_per_workgroup: Id },
-    LocalSizeId { x_size: Id, y_size: Id, z_size: Id },
-    LocalSizeHintId { x_size_hint: Id, y_size_hint: Id, z_size_hint: Id },
+    SubgroupSize {
+        subgroup_size: u32,
+    },
+    SubgroupsPerWorkgroup {
+        subgroups_per_workgroup: u32,
+    },
+    SubgroupsPerWorkgroupId {
+        subgroups_per_workgroup: Id,
+    },
+    LocalSizeId {
+        x_size: Id,
+        y_size: Id,
+        z_size: Id,
+    },
+    LocalSizeHintId {
+        x_size_hint: Id,
+        y_size_hint: Id,
+        z_size_hint: Id,
+    },
     SubgroupUniformControlFlowKHR,
     PostDepthCoverage,
-    DenormPreserve { target_width: u32 },
-    DenormFlushToZero { target_width: u32 },
-    SignedZeroInfNanPreserve { target_width: u32 },
-    RoundingModeRTE { target_width: u32 },
-    RoundingModeRTZ { target_width: u32 },
+    DenormPreserve {
+        target_width: u32,
+    },
+    DenormFlushToZero {
+        target_width: u32,
+    },
+    SignedZeroInfNanPreserve {
+        target_width: u32,
+    },
+    RoundingModeRTE {
+        target_width: u32,
+    },
+    RoundingModeRTZ {
+        target_width: u32,
+    },
     StencilRefReplacingEXT,
     OutputLinesNV,
-    OutputPrimitivesNV { primitive_count: u32 },
+    OutputPrimitivesNV {
+        primitive_count: u32,
+    },
     DerivativeGroupQuadsNV,
     DerivativeGroupLinearNV,
     OutputTrianglesNV,
@@ -9552,22 +10033,44 @@ pub enum ExecutionMode {
     SampleInterlockUnorderedEXT,
     ShadingRateInterlockOrderedEXT,
     ShadingRateInterlockUnorderedEXT,
-    SharedLocalMemorySizeINTEL { size: u32 },
-    RoundingModeRTPINTEL { target_width: u32 },
-    RoundingModeRTNINTEL { target_width: u32 },
-    FloatingPointModeALTINTEL { target_width: u32 },
-    FloatingPointModeIEEEINTEL { target_width: u32 },
-    MaxWorkgroupSizeINTEL { max_x_size: u32, max_y_size: u32, max_z_size: u32 },
-    MaxWorkDimINTEL { max_dimensions: u32 },
+    SharedLocalMemorySizeINTEL {
+        size: u32,
+    },
+    RoundingModeRTPINTEL {
+        target_width: u32,
+    },
+    RoundingModeRTNINTEL {
+        target_width: u32,
+    },
+    FloatingPointModeALTINTEL {
+        target_width: u32,
+    },
+    FloatingPointModeIEEEINTEL {
+        target_width: u32,
+    },
+    MaxWorkgroupSizeINTEL {
+        max_x_size: u32,
+        max_y_size: u32,
+        max_z_size: u32,
+    },
+    MaxWorkDimINTEL {
+        max_dimensions: u32,
+    },
     NoGlobalOffsetINTEL,
-    NumSIMDWorkitemsINTEL { vector_width: u32 },
-    SchedulerTargetFmaxMhzINTEL { target_fmax: u32 },
+    NumSIMDWorkitemsINTEL {
+        vector_width: u32,
+    },
+    SchedulerTargetFmaxMhzINTEL {
+        target_fmax: u32,
+    },
 }
 impl ExecutionMode {
     #[allow(dead_code)]
     fn parse(reader: &mut InstructionReader<'_>) -> Result<ExecutionMode, ParseError> {
         Ok(match reader.next_u32()? {
-            0u32 => Self::Invocations { number_of_invocation_invocations: reader.next_u32()? },
+            0u32 => Self::Invocations {
+                number_of_invocation_invocations: reader.next_u32()?,
+            },
             1u32 => Self::SpacingEqual,
             2u32 => Self::SpacingFractionalEven,
             3u32 => Self::SpacingFractionalOdd,
@@ -9600,19 +10103,27 @@ impl ExecutionMode {
             23u32 => Self::InputTrianglesAdjacency,
             24u32 => Self::Quads,
             25u32 => Self::Isolines,
-            26u32 => Self::OutputVertices { vertex_count: reader.next_u32()? },
+            26u32 => Self::OutputVertices {
+                vertex_count: reader.next_u32()?,
+            },
             27u32 => Self::OutputPoints,
             28u32 => Self::OutputLineStrip,
             29u32 => Self::OutputTriangleStrip,
-            30u32 => Self::VecTypeHint { vector_type: reader.next_u32()? },
+            30u32 => Self::VecTypeHint {
+                vector_type: reader.next_u32()?,
+            },
             31u32 => Self::ContractionOff,
             33u32 => Self::Initializer,
             34u32 => Self::Finalizer,
-            35u32 => Self::SubgroupSize { subgroup_size: reader.next_u32()? },
-            36u32 => Self::SubgroupsPerWorkgroup { subgroups_per_workgroup: reader.next_u32()? },
-            37u32 => {
-                Self::SubgroupsPerWorkgroupId { subgroups_per_workgroup: Id(reader.next_u32()?) }
-            }
+            35u32 => Self::SubgroupSize {
+                subgroup_size: reader.next_u32()?,
+            },
+            36u32 => Self::SubgroupsPerWorkgroup {
+                subgroups_per_workgroup: reader.next_u32()?,
+            },
+            37u32 => Self::SubgroupsPerWorkgroupId {
+                subgroups_per_workgroup: Id(reader.next_u32()?),
+            },
             38u32 => Self::LocalSizeId {
                 x_size: Id(reader.next_u32()?),
                 y_size: Id(reader.next_u32()?),
@@ -9625,14 +10136,26 @@ impl ExecutionMode {
             },
             4421u32 => Self::SubgroupUniformControlFlowKHR,
             4446u32 => Self::PostDepthCoverage,
-            4459u32 => Self::DenormPreserve { target_width: reader.next_u32()? },
-            4460u32 => Self::DenormFlushToZero { target_width: reader.next_u32()? },
-            4461u32 => Self::SignedZeroInfNanPreserve { target_width: reader.next_u32()? },
-            4462u32 => Self::RoundingModeRTE { target_width: reader.next_u32()? },
-            4463u32 => Self::RoundingModeRTZ { target_width: reader.next_u32()? },
+            4459u32 => Self::DenormPreserve {
+                target_width: reader.next_u32()?,
+            },
+            4460u32 => Self::DenormFlushToZero {
+                target_width: reader.next_u32()?,
+            },
+            4461u32 => Self::SignedZeroInfNanPreserve {
+                target_width: reader.next_u32()?,
+            },
+            4462u32 => Self::RoundingModeRTE {
+                target_width: reader.next_u32()?,
+            },
+            4463u32 => Self::RoundingModeRTZ {
+                target_width: reader.next_u32()?,
+            },
             5027u32 => Self::StencilRefReplacingEXT,
             5269u32 => Self::OutputLinesNV,
-            5270u32 => Self::OutputPrimitivesNV { primitive_count: reader.next_u32()? },
+            5270u32 => Self::OutputPrimitivesNV {
+                primitive_count: reader.next_u32()?,
+            },
             5289u32 => Self::DerivativeGroupQuadsNV,
             5290u32 => Self::DerivativeGroupLinearNV,
             5298u32 => Self::OutputTrianglesNV,
@@ -9642,20 +10165,36 @@ impl ExecutionMode {
             5369u32 => Self::SampleInterlockUnorderedEXT,
             5370u32 => Self::ShadingRateInterlockOrderedEXT,
             5371u32 => Self::ShadingRateInterlockUnorderedEXT,
-            5618u32 => Self::SharedLocalMemorySizeINTEL { size: reader.next_u32()? },
-            5620u32 => Self::RoundingModeRTPINTEL { target_width: reader.next_u32()? },
-            5621u32 => Self::RoundingModeRTNINTEL { target_width: reader.next_u32()? },
-            5622u32 => Self::FloatingPointModeALTINTEL { target_width: reader.next_u32()? },
-            5623u32 => Self::FloatingPointModeIEEEINTEL { target_width: reader.next_u32()? },
+            5618u32 => Self::SharedLocalMemorySizeINTEL {
+                size: reader.next_u32()?,
+            },
+            5620u32 => Self::RoundingModeRTPINTEL {
+                target_width: reader.next_u32()?,
+            },
+            5621u32 => Self::RoundingModeRTNINTEL {
+                target_width: reader.next_u32()?,
+            },
+            5622u32 => Self::FloatingPointModeALTINTEL {
+                target_width: reader.next_u32()?,
+            },
+            5623u32 => Self::FloatingPointModeIEEEINTEL {
+                target_width: reader.next_u32()?,
+            },
             5893u32 => Self::MaxWorkgroupSizeINTEL {
                 max_x_size: reader.next_u32()?,
                 max_y_size: reader.next_u32()?,
                 max_z_size: reader.next_u32()?,
             },
-            5894u32 => Self::MaxWorkDimINTEL { max_dimensions: reader.next_u32()? },
+            5894u32 => Self::MaxWorkDimINTEL {
+                max_dimensions: reader.next_u32()?,
+            },
             5895u32 => Self::NoGlobalOffsetINTEL,
-            5896u32 => Self::NumSIMDWorkitemsINTEL { vector_width: reader.next_u32()? },
-            5903u32 => Self::SchedulerTargetFmaxMhzINTEL { target_fmax: reader.next_u32()? },
+            5896u32 => Self::NumSIMDWorkitemsINTEL {
+                vector_width: reader.next_u32()?,
+            },
+            5903u32 => Self::SchedulerTargetFmaxMhzINTEL {
+                target_fmax: reader.next_u32()?,
+            },
             value => {
                 return Err(reader.map_err(ParseErrors::UnknownEnumerant("ExecutionMode", value)))
             }
@@ -9767,9 +10306,10 @@ impl SamplerAddressingMode {
             3u32 => Self::Repeat,
             4u32 => Self::RepeatMirrored,
             value => {
-                return Err(
-                    reader.map_err(ParseErrors::UnknownEnumerant("SamplerAddressingMode", value))
-                )
+                return Err(reader.map_err(ParseErrors::UnknownEnumerant(
+                    "SamplerAddressingMode",
+                    value,
+                )))
             }
         })
     }
@@ -10175,8 +10715,10 @@ impl FunctionParameterAttribute {
             6u32 => Self::NoWrite,
             7u32 => Self::NoReadWrite,
             value => {
-                return Err(reader
-                    .map_err(ParseErrors::UnknownEnumerant("FunctionParameterAttribute", value)))
+                return Err(reader.map_err(ParseErrors::UnknownEnumerant(
+                    "FunctionParameterAttribute",
+                    value,
+                )))
             }
         })
     }
@@ -10185,17 +10727,25 @@ impl FunctionParameterAttribute {
 #[allow(non_camel_case_types)]
 pub enum Decoration {
     RelaxedPrecision,
-    SpecId { specialization_constant_id: u32 },
+    SpecId {
+        specialization_constant_id: u32,
+    },
     Block,
     BufferBlock,
     RowMajor,
     ColMajor,
-    ArrayStride { array_stride: u32 },
-    MatrixStride { matrix_stride: u32 },
+    ArrayStride {
+        array_stride: u32,
+    },
+    MatrixStride {
+        matrix_stride: u32,
+    },
     GLSLShared,
     GLSLPacked,
     CPacked,
-    BuiltIn { built_in: BuiltIn },
+    BuiltIn {
+        built_in: BuiltIn,
+    },
     NoPerspective,
     Flat,
     Patch,
@@ -10210,34 +10760,75 @@ pub enum Decoration {
     NonWritable,
     NonReadable,
     Uniform,
-    UniformId { execution: Id },
+    UniformId {
+        execution: Id,
+    },
     SaturatedConversion,
-    Stream { stream_number: u32 },
-    Location { location: u32 },
-    Component { component: u32 },
-    Index { index: u32 },
-    Binding { binding_point: u32 },
-    DescriptorSet { descriptor_set: u32 },
-    Offset { byte_offset: u32 },
-    XfbBuffer { xfb_buffer_number: u32 },
-    XfbStride { xfb_stride: u32 },
-    FuncParamAttr { function_parameter_attribute: FunctionParameterAttribute },
-    FPRoundingMode { floating_point_rounding_mode: FPRoundingMode },
-    FPFastMathMode { fast_math_mode: FPFastMathMode },
-    LinkageAttributes { name: String, linkage_type: LinkageType },
+    Stream {
+        stream_number: u32,
+    },
+    Location {
+        location: u32,
+    },
+    Component {
+        component: u32,
+    },
+    Index {
+        index: u32,
+    },
+    Binding {
+        binding_point: u32,
+    },
+    DescriptorSet {
+        descriptor_set: u32,
+    },
+    Offset {
+        byte_offset: u32,
+    },
+    XfbBuffer {
+        xfb_buffer_number: u32,
+    },
+    XfbStride {
+        xfb_stride: u32,
+    },
+    FuncParamAttr {
+        function_parameter_attribute: FunctionParameterAttribute,
+    },
+    FPRoundingMode {
+        floating_point_rounding_mode: FPRoundingMode,
+    },
+    FPFastMathMode {
+        fast_math_mode: FPFastMathMode,
+    },
+    LinkageAttributes {
+        name: String,
+        linkage_type: LinkageType,
+    },
     NoContraction,
-    InputAttachmentIndex { attachment_index: u32 },
-    Alignment { alignment: u32 },
-    MaxByteOffset { max_byte_offset: u32 },
-    AlignmentId { alignment: Id },
-    MaxByteOffsetId { max_byte_offset: Id },
+    InputAttachmentIndex {
+        attachment_index: u32,
+    },
+    Alignment {
+        alignment: u32,
+    },
+    MaxByteOffset {
+        max_byte_offset: u32,
+    },
+    AlignmentId {
+        alignment: Id,
+    },
+    MaxByteOffsetId {
+        max_byte_offset: Id,
+    },
     NoSignedWrap,
     NoUnsignedWrap,
     ExplicitInterpAMD,
     OverrideCoverageNV,
     PassthroughNV,
     ViewportRelativeNV,
-    SecondaryViewportRelativeNV { offset: u32 },
+    SecondaryViewportRelativeNV {
+        offset: u32,
+    },
     PerPrimitiveNV,
     PerViewNV,
     PerTaskNV,
@@ -10249,41 +10840,89 @@ pub enum Decoration {
     BindlessImageNV,
     BoundSamplerNV,
     BoundImageNV,
-    SIMTCallINTEL { n: u32 },
+    SIMTCallINTEL {
+        n: u32,
+    },
     ReferencedIndirectlyINTEL,
-    ClobberINTEL { register: String },
+    ClobberINTEL {
+        register: String,
+    },
     SideEffectsINTEL,
     VectorComputeVariableINTEL,
-    FuncParamIOKindINTEL { kind: u32 },
+    FuncParamIOKindINTEL {
+        kind: u32,
+    },
     VectorComputeFunctionINTEL,
     StackCallINTEL,
-    GlobalVariableOffsetINTEL { offset: u32 },
-    CounterBuffer { counter_buffer: Id },
-    UserSemantic { semantic: String },
-    UserTypeGOOGLE { user_type: String },
-    FunctionRoundingModeINTEL { target_width: u32, fp_rounding_mode: FPRoundingMode },
-    FunctionDenormModeINTEL { target_width: u32, fp_denorm_mode: FPDenormMode },
+    GlobalVariableOffsetINTEL {
+        offset: u32,
+    },
+    CounterBuffer {
+        counter_buffer: Id,
+    },
+    UserSemantic {
+        semantic: String,
+    },
+    UserTypeGOOGLE {
+        user_type: String,
+    },
+    FunctionRoundingModeINTEL {
+        target_width: u32,
+        fp_rounding_mode: FPRoundingMode,
+    },
+    FunctionDenormModeINTEL {
+        target_width: u32,
+        fp_denorm_mode: FPDenormMode,
+    },
     RegisterINTEL,
-    MemoryINTEL { memory_type: String },
-    NumbanksINTEL { banks: u32 },
-    BankwidthINTEL { bank_width: u32 },
-    MaxPrivateCopiesINTEL { maximum_copies: u32 },
+    MemoryINTEL {
+        memory_type: String,
+    },
+    NumbanksINTEL {
+        banks: u32,
+    },
+    BankwidthINTEL {
+        bank_width: u32,
+    },
+    MaxPrivateCopiesINTEL {
+        maximum_copies: u32,
+    },
     SinglepumpINTEL,
     DoublepumpINTEL,
-    MaxReplicatesINTEL { maximum_replicates: u32 },
+    MaxReplicatesINTEL {
+        maximum_replicates: u32,
+    },
     SimpleDualPortINTEL,
-    MergeINTEL { merge_key: String, merge_type: String },
-    BankBitsINTEL { bank_bits: u32 },
-    ForcePow2DepthINTEL { force_key: u32 },
+    MergeINTEL {
+        merge_key: String,
+        merge_type: String,
+    },
+    BankBitsINTEL {
+        bank_bits: u32,
+    },
+    ForcePow2DepthINTEL {
+        force_key: u32,
+    },
     BurstCoalesceINTEL,
-    CacheSizeINTEL { cache_size_in_bytes: u32 },
+    CacheSizeINTEL {
+        cache_size_in_bytes: u32,
+    },
     DontStaticallyCoalesceINTEL,
-    PrefetchINTEL { prefetcher_size_in_bytes: u32 },
+    PrefetchINTEL {
+        prefetcher_size_in_bytes: u32,
+    },
     StallEnableINTEL,
     FuseLoopsInFunctionINTEL,
-    BufferLocationINTEL { buffer_location_id: u32 },
-    IOPipeStorageINTEL { io_pipe_id: u32 },
-    FunctionFloatingPointModeINTEL { target_width: u32, fp_operation_mode: FPOperationMode },
+    BufferLocationINTEL {
+        buffer_location_id: u32,
+    },
+    IOPipeStorageINTEL {
+        io_pipe_id: u32,
+    },
+    FunctionFloatingPointModeINTEL {
+        target_width: u32,
+        fp_operation_mode: FPOperationMode,
+    },
     SingleElementVectorINTEL,
     VectorComputeCallableFunctionINTEL,
     MediaBlockIOINTEL,
@@ -10293,17 +10932,25 @@ impl Decoration {
     fn parse(reader: &mut InstructionReader<'_>) -> Result<Decoration, ParseError> {
         Ok(match reader.next_u32()? {
             0u32 => Self::RelaxedPrecision,
-            1u32 => Self::SpecId { specialization_constant_id: reader.next_u32()? },
+            1u32 => Self::SpecId {
+                specialization_constant_id: reader.next_u32()?,
+            },
             2u32 => Self::Block,
             3u32 => Self::BufferBlock,
             4u32 => Self::RowMajor,
             5u32 => Self::ColMajor,
-            6u32 => Self::ArrayStride { array_stride: reader.next_u32()? },
-            7u32 => Self::MatrixStride { matrix_stride: reader.next_u32()? },
+            6u32 => Self::ArrayStride {
+                array_stride: reader.next_u32()?,
+            },
+            7u32 => Self::MatrixStride {
+                matrix_stride: reader.next_u32()?,
+            },
             8u32 => Self::GLSLShared,
             9u32 => Self::GLSLPacked,
             10u32 => Self::CPacked,
-            11u32 => Self::BuiltIn { built_in: BuiltIn::parse(reader)? },
+            11u32 => Self::BuiltIn {
+                built_in: BuiltIn::parse(reader)?,
+            },
             13u32 => Self::NoPerspective,
             14u32 => Self::Flat,
             15u32 => Self::Patch,
@@ -10318,41 +10965,75 @@ impl Decoration {
             24u32 => Self::NonWritable,
             25u32 => Self::NonReadable,
             26u32 => Self::Uniform,
-            27u32 => Self::UniformId { execution: Id(reader.next_u32()?) },
+            27u32 => Self::UniformId {
+                execution: Id(reader.next_u32()?),
+            },
             28u32 => Self::SaturatedConversion,
-            29u32 => Self::Stream { stream_number: reader.next_u32()? },
-            30u32 => Self::Location { location: reader.next_u32()? },
-            31u32 => Self::Component { component: reader.next_u32()? },
-            32u32 => Self::Index { index: reader.next_u32()? },
-            33u32 => Self::Binding { binding_point: reader.next_u32()? },
-            34u32 => Self::DescriptorSet { descriptor_set: reader.next_u32()? },
-            35u32 => Self::Offset { byte_offset: reader.next_u32()? },
-            36u32 => Self::XfbBuffer { xfb_buffer_number: reader.next_u32()? },
-            37u32 => Self::XfbStride { xfb_stride: reader.next_u32()? },
+            29u32 => Self::Stream {
+                stream_number: reader.next_u32()?,
+            },
+            30u32 => Self::Location {
+                location: reader.next_u32()?,
+            },
+            31u32 => Self::Component {
+                component: reader.next_u32()?,
+            },
+            32u32 => Self::Index {
+                index: reader.next_u32()?,
+            },
+            33u32 => Self::Binding {
+                binding_point: reader.next_u32()?,
+            },
+            34u32 => Self::DescriptorSet {
+                descriptor_set: reader.next_u32()?,
+            },
+            35u32 => Self::Offset {
+                byte_offset: reader.next_u32()?,
+            },
+            36u32 => Self::XfbBuffer {
+                xfb_buffer_number: reader.next_u32()?,
+            },
+            37u32 => Self::XfbStride {
+                xfb_stride: reader.next_u32()?,
+            },
             38u32 => Self::FuncParamAttr {
                 function_parameter_attribute: FunctionParameterAttribute::parse(reader)?,
             },
             39u32 => Self::FPRoundingMode {
                 floating_point_rounding_mode: FPRoundingMode::parse(reader)?,
             },
-            40u32 => Self::FPFastMathMode { fast_math_mode: FPFastMathMode::parse(reader)? },
+            40u32 => Self::FPFastMathMode {
+                fast_math_mode: FPFastMathMode::parse(reader)?,
+            },
             41u32 => Self::LinkageAttributes {
                 name: reader.next_string()?,
                 linkage_type: LinkageType::parse(reader)?,
             },
             42u32 => Self::NoContraction,
-            43u32 => Self::InputAttachmentIndex { attachment_index: reader.next_u32()? },
-            44u32 => Self::Alignment { alignment: reader.next_u32()? },
-            45u32 => Self::MaxByteOffset { max_byte_offset: reader.next_u32()? },
-            46u32 => Self::AlignmentId { alignment: Id(reader.next_u32()?) },
-            47u32 => Self::MaxByteOffsetId { max_byte_offset: Id(reader.next_u32()?) },
+            43u32 => Self::InputAttachmentIndex {
+                attachment_index: reader.next_u32()?,
+            },
+            44u32 => Self::Alignment {
+                alignment: reader.next_u32()?,
+            },
+            45u32 => Self::MaxByteOffset {
+                max_byte_offset: reader.next_u32()?,
+            },
+            46u32 => Self::AlignmentId {
+                alignment: Id(reader.next_u32()?),
+            },
+            47u32 => Self::MaxByteOffsetId {
+                max_byte_offset: Id(reader.next_u32()?),
+            },
             4469u32 => Self::NoSignedWrap,
             4470u32 => Self::NoUnsignedWrap,
             4999u32 => Self::ExplicitInterpAMD,
             5248u32 => Self::OverrideCoverageNV,
             5250u32 => Self::PassthroughNV,
             5252u32 => Self::ViewportRelativeNV,
-            5256u32 => Self::SecondaryViewportRelativeNV { offset: reader.next_u32()? },
+            5256u32 => Self::SecondaryViewportRelativeNV {
+                offset: reader.next_u32()?,
+            },
             5271u32 => Self::PerPrimitiveNV,
             5272u32 => Self::PerViewNV,
             5273u32 => Self::PerTaskNV,
@@ -10364,18 +11045,32 @@ impl Decoration {
             5399u32 => Self::BindlessImageNV,
             5400u32 => Self::BoundSamplerNV,
             5401u32 => Self::BoundImageNV,
-            5599u32 => Self::SIMTCallINTEL { n: reader.next_u32()? },
+            5599u32 => Self::SIMTCallINTEL {
+                n: reader.next_u32()?,
+            },
             5602u32 => Self::ReferencedIndirectlyINTEL,
-            5607u32 => Self::ClobberINTEL { register: reader.next_string()? },
+            5607u32 => Self::ClobberINTEL {
+                register: reader.next_string()?,
+            },
             5608u32 => Self::SideEffectsINTEL,
             5624u32 => Self::VectorComputeVariableINTEL,
-            5625u32 => Self::FuncParamIOKindINTEL { kind: reader.next_u32()? },
+            5625u32 => Self::FuncParamIOKindINTEL {
+                kind: reader.next_u32()?,
+            },
             5626u32 => Self::VectorComputeFunctionINTEL,
             5627u32 => Self::StackCallINTEL,
-            5628u32 => Self::GlobalVariableOffsetINTEL { offset: reader.next_u32()? },
-            5634u32 => Self::CounterBuffer { counter_buffer: Id(reader.next_u32()?) },
-            5635u32 => Self::UserSemantic { semantic: reader.next_string()? },
-            5636u32 => Self::UserTypeGOOGLE { user_type: reader.next_string()? },
+            5628u32 => Self::GlobalVariableOffsetINTEL {
+                offset: reader.next_u32()?,
+            },
+            5634u32 => Self::CounterBuffer {
+                counter_buffer: Id(reader.next_u32()?),
+            },
+            5635u32 => Self::UserSemantic {
+                semantic: reader.next_string()?,
+            },
+            5636u32 => Self::UserTypeGOOGLE {
+                user_type: reader.next_string()?,
+            },
             5822u32 => Self::FunctionRoundingModeINTEL {
                 target_width: reader.next_u32()?,
                 fp_rounding_mode: FPRoundingMode::parse(reader)?,
@@ -10385,28 +11080,50 @@ impl Decoration {
                 fp_denorm_mode: FPDenormMode::parse(reader)?,
             },
             5825u32 => Self::RegisterINTEL,
-            5826u32 => Self::MemoryINTEL { memory_type: reader.next_string()? },
-            5827u32 => Self::NumbanksINTEL { banks: reader.next_u32()? },
-            5828u32 => Self::BankwidthINTEL { bank_width: reader.next_u32()? },
-            5829u32 => Self::MaxPrivateCopiesINTEL { maximum_copies: reader.next_u32()? },
+            5826u32 => Self::MemoryINTEL {
+                memory_type: reader.next_string()?,
+            },
+            5827u32 => Self::NumbanksINTEL {
+                banks: reader.next_u32()?,
+            },
+            5828u32 => Self::BankwidthINTEL {
+                bank_width: reader.next_u32()?,
+            },
+            5829u32 => Self::MaxPrivateCopiesINTEL {
+                maximum_copies: reader.next_u32()?,
+            },
             5830u32 => Self::SinglepumpINTEL,
             5831u32 => Self::DoublepumpINTEL,
-            5832u32 => Self::MaxReplicatesINTEL { maximum_replicates: reader.next_u32()? },
+            5832u32 => Self::MaxReplicatesINTEL {
+                maximum_replicates: reader.next_u32()?,
+            },
             5833u32 => Self::SimpleDualPortINTEL,
             5834u32 => Self::MergeINTEL {
                 merge_key: reader.next_string()?,
                 merge_type: reader.next_string()?,
             },
-            5835u32 => Self::BankBitsINTEL { bank_bits: reader.next_u32()? },
-            5836u32 => Self::ForcePow2DepthINTEL { force_key: reader.next_u32()? },
+            5835u32 => Self::BankBitsINTEL {
+                bank_bits: reader.next_u32()?,
+            },
+            5836u32 => Self::ForcePow2DepthINTEL {
+                force_key: reader.next_u32()?,
+            },
             5899u32 => Self::BurstCoalesceINTEL,
-            5900u32 => Self::CacheSizeINTEL { cache_size_in_bytes: reader.next_u32()? },
+            5900u32 => Self::CacheSizeINTEL {
+                cache_size_in_bytes: reader.next_u32()?,
+            },
             5901u32 => Self::DontStaticallyCoalesceINTEL,
-            5902u32 => Self::PrefetchINTEL { prefetcher_size_in_bytes: reader.next_u32()? },
+            5902u32 => Self::PrefetchINTEL {
+                prefetcher_size_in_bytes: reader.next_u32()?,
+            },
             5905u32 => Self::StallEnableINTEL,
             5907u32 => Self::FuseLoopsInFunctionINTEL,
-            5921u32 => Self::BufferLocationINTEL { buffer_location_id: reader.next_u32()? },
-            5944u32 => Self::IOPipeStorageINTEL { io_pipe_id: reader.next_u32()? },
+            5921u32 => Self::BufferLocationINTEL {
+                buffer_location_id: reader.next_u32()?,
+            },
+            5944u32 => Self::IOPipeStorageINTEL {
+                io_pipe_id: reader.next_u32()?,
+            },
             6080u32 => Self::FunctionFloatingPointModeINTEL {
                 target_width: reader.next_u32()?,
                 fp_operation_mode: FPOperationMode::parse(reader)?,
