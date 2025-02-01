@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f10e1160_f7e2441c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2025-02-01T03:30:50Z",
+      "side": 1,
+      "message": "I have some quibbles with the naming. Do we need to talk about splitting and completing connections when all we\u0027re doing is delaying when we accept new connections?\n\nSecondly, couldn\u0027t the `VsockConnectionManager` or its `poll` method take a callback (`on_connection_request`) that receives enough info (e.g. the port) and returns true or false depending on whether to accept the port right away?\n\nConnection requests that are not accepted right away, could go in a separate list (`pending_connections`) and the `VsockConnectionManager` could get a new function (`accept` or `accept_pending`) which accepts one of these and moves it over to `connections`. This ensures that only pending connections can be accepted exactly once. \n\nLMK what you think.",
+      "revId": "f41f03cbd723c09ac45ec9b04f7938305b93a681",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "44849c2a_ed495e12",
+        "filename": "crates/virtio-drivers/src/device/socket/connectionmanager.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2025-02-01T03:30:50Z",
+      "side": 1,
+      "message": "nit: explicitly",
+      "range": {
+        "startLine": 108,
+        "startChar": 30,
+        "endLine": 108,
+        "endChar": 41
+      },
+      "revId": "f41f03cbd723c09ac45ec9b04f7938305b93a681",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f990acae_d4a01a1b",
+        "filename": "crates/virtio-drivers/src/device/socket/connectionmanager.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2025-02-01T03:30:50Z",
+      "side": 1,
+      "message": "The feature is called \"split_accept_connections\" but the operation is called `complete_connection`, not `accept`. Could we avoid talking about completion and just say accept everywhere? Calling this function `accept` would also make the connection to the lower-level API clearer.\n\nI would say that today, connections are automatically accepted. We need a feature to control when connections are accepted. I\u0027m not sure split is the right word there either. Why not `defer_accept`, `wait_to_accept`, `client_accept_connections`, or something along those lines? I don\u0027t know what is best but I would prefer to not introduce new concepts unless we absolutely must.",
+      "range": {
+        "startLine": 154,
+        "startChar": 11,
+        "endLine": 154,
+        "endChar": 30
+      },
+      "revId": "f41f03cbd723c09ac45ec9b04f7938305b93a681",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a5f8d1d4_991a7fff",
+        "filename": "crates/virtio-drivers/src/device/socket/connectionmanager.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1807569
+      },
+      "writtenOn": "2025-02-01T03:30:50Z",
+      "side": 1,
+      "message": "shouldn\u0027t it validate that `split_accept_connection` is `true` and fail otherwise?\n\nshould\u0027t we also validate that the connection wasn\u0027t already accepted?",
+      "range": {
+        "startLine": 157,
+        "startChar": 8,
+        "endLine": 157,
+        "endChar": 46
+      },
+      "revId": "f41f03cbd723c09ac45ec9b04f7938305b93a681",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
