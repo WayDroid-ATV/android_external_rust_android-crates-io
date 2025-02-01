@@ -52,6 +52,7 @@ pub struct VsockConnectionManager<
     per_connection_buffer_capacity: u32,
     connections: Vec<Connection>,
     listening_ports: Vec<u32>,
+    split_accept_connections: bool,
 }
 
 #[derive(Debug)]
@@ -94,12 +95,19 @@ impl<H: Hal, T: Transport, const RX_BUFFER_SIZE: usize>
             connections: Vec::new(),
             listening_ports: Vec::new(),
             per_connection_buffer_capacity,
+            split_accept_connections: false,
         }
     }
 
     /// Returns the CID which has been assigned to this guest.
     pub fn guest_cid(&self) -> u64 {
         self.driver.guest_cid()
+    }
+
+    /// Indicates to the connection manager that it should not complete a connection by default.
+    /// The manager user will explicitely tell it when to complete a connection.
+    pub fn split_accept_connections(&mut self) {
+        self.split_accept_connections = true;
     }
 
     /// Allows incoming connections on the given port number.
@@ -140,6 +148,14 @@ impl<H: Hal, T: Transport, const RX_BUFFER_SIZE: usize>
         let (_, connection) = get_connection(&mut self.connections, destination, src_port)?;
 
         self.driver.send(buffer, &mut connection.info)
+    }
+
+    /// Accept a connection. It is only used if split_accept_connections was requested
+    pub fn complete_connection(&mut self, peer_address: VsockAddr, local_port: u32) -> Result {
+        let connections = &mut self.connections;
+        let (_, connection) = get_connection(connections, peer_address, local_port)?;
+        self.driver.accept(&connection.info)?;
+        Ok(())
     }
 
     /// Polls the vsock device to receive data or other updates.
@@ -196,7 +212,12 @@ impl<H: Hal, T: Transport, const RX_BUFFER_SIZE: usize>
         match event.event_type {
             VsockEventType::ConnectionRequest => {
                 if self.listening_ports.contains(&event.destination.port) {
-                    self.driver.accept(&connection.info)?;
+                    if !self.split_accept_connections {
+                        self.driver.accept(&connection.info)?;
+                    } else {
+                        // We will accept the connection after the client tell us is ready
+                        return Ok(Some(event))
+                    }
                 } else {
                     // Reject the connection request and remove it from our list.
                     self.driver.force_close(&connection.info)?;
