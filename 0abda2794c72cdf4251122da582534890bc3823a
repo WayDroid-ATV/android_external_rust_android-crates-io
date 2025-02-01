@@ -16,6 +16,24 @@
       "message": "Did you mean to add this file?",
       "revId": "0abda2794c72cdf4251122da582534890bc3823a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d5ab7f53_d2668ea0",
+        "filename": "crates/serde/Cargo.lock",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-02-01T20:38:07Z",
+      "side": 1,
+      "message": "It\u0027s added by `crate_tool regenerate`. So yes! I imagine something changed around its handling of lockfiles.",
+      "parentUuid": "656656e5_5a194a57",
+      "revId": "0abda2794c72cdf4251122da582534890bc3823a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
