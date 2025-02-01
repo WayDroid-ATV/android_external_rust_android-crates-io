@@ -16,6 +16,24 @@
       "message": "You also need to run `./crate_tool regenerate csv ryu` to update the generated files and commit them too.",
       "revId": "e19d57aea2769d8c4f8c33056a4ca94b8e808472",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e91bdc61_99192682",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3753708
+      },
+      "writtenOn": "2025-02-01T21:15:54Z",
+      "side": 1,
+      "message": "Thanks for the comment. Done.",
+      "parentUuid": "c222e466_baa847e9",
+      "revId": "e19d57aea2769d8c4f8c33056a4ca94b8e808472",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
