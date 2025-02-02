@@ -1,4 +1,9 @@
 {
   "run_cargo": false,
-  "tests": true
+  "tests": true,
+  "package": {
+    "gdbstub_arch": {
+      "license_text": ["LICENSE-APACHE"]
+    }
+  }
 }

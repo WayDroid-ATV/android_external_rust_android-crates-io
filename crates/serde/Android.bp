@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "serde",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.195",
+    cargo_pkg_version: "1.0.217",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
@@ -43,7 +43,7 @@ rust_test {
     host_supported: true,
     crate_name: "serde",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.195",
+    cargo_pkg_version: "1.0.217",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -65,7 +65,7 @@ rust_library_rlib {
     name: "libserde_nostd",
     crate_name: "serde",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.195",
+    cargo_pkg_version: "1.0.217",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [

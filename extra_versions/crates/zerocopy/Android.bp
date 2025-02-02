@@ -99,9 +99,3 @@ rust_library_rlib {
     vendor_available: true,
     min_sdk_version: "29",
 }
-
-dirgroup {
-    name: "trusty_dirgroup_external_rust_crates_zerocopy",
-    visibility: ["//trusty/vendor/google/aosp/scripts"],
-    dirs: ["."],
-}

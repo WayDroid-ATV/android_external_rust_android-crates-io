@@ -12,11 +12,16 @@
 [package]
 edition = "2021"
 name = "virtio-vsock"
-version = "0.6.0"
+version = "0.8.0"
 authors = [
     "rust-vmm community",
     "rust-vmm AWS maintainers <rust-vmm-maintainers@amazon.com>",
 ]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "virtio vsock device implementation"
 readme = "README.md"
 keywords = [
@@ -25,23 +30,26 @@ keywords = [
 ]
 license = "Apache-2.0 OR BSD-3-Clause"
 repository = "https://github.com/rust-vmm/vm-virtio"
-resolver = "1"
+
+[lib]
+name = "virtio_vsock"
+path = "src/lib.rs"
 
 [dependencies.virtio-bindings]
-version = "0.2.2"
+version = "0.2.4"
 
 [dependencies.virtio-queue]
-version = "0.12.0"
-
-[dependencies.vm-memory]
 version = "0.14.0"
 
+[dependencies.vm-memory]
+version = "0.16.0"
+
 [dev-dependencies.virtio-queue]
-version = "0.12.0"
+version = "0.14.0"
 features = ["test-utils"]
 
 [dev-dependencies.vm-memory]
-version = "0.14.0"
+version = "0.16.0"
 features = [
     "backend-mmap",
     "backend-atomic",

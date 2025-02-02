@@ -13,110 +13,24 @@ license {
     license_text: ["LICENSE"],
 }
 
-rust_test {
-    name: "hashbrown_test_src_lib",
-    host_supported: true,
-    crate_name: "hashbrown",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.12.3",
-    crate_root: "src/lib.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2021",
-    features: [
-        "ahash",
-        "default",
-        "inline-more",
-        "raw",
-    ],
-    rustlibs: [
-        "libahash",
-        "libfnv",
-        "liblazy_static",
-        "librand",
-        "librayon",
-        "libserde_test",
-    ],
-}
-
-rust_test {
-    name: "hashbrown_test_tests_hasher",
-    host_supported: true,
-    crate_name: "hasher",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.12.3",
-    crate_root: "tests/hasher.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2021",
-    features: [
-        "ahash",
-        "default",
-        "inline-more",
-        "raw",
-    ],
-    rustlibs: [
-        "libahash",
-        "libfnv",
-        "libhashbrown",
-        "liblazy_static",
-        "librand",
-        "librayon",
-        "libserde_test",
-    ],
-}
-
-rust_test {
-    name: "hashbrown_test_tests_set",
-    host_supported: true,
-    crate_name: "set",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.12.3",
-    crate_root: "tests/set.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2021",
-    features: [
-        "ahash",
-        "default",
-        "inline-more",
-        "raw",
-    ],
-    rustlibs: [
-        "libahash",
-        "libfnv",
-        "libhashbrown",
-        "liblazy_static",
-        "librand",
-        "librayon",
-        "libserde_test",
-    ],
-}
-
 rust_library {
     name: "libhashbrown",
     host_supported: true,
     crate_name: "hashbrown",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.3",
+    cargo_pkg_version: "0.15.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
-        "ahash",
-        "default",
+        "default-hasher",
+        "equivalent",
         "inline-more",
-        "raw",
+        "raw-entry",
     ],
-    rustlibs: ["libahash"],
+    rustlibs: [
+        "libequivalent",
+        "libfoldhash",
+    ],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

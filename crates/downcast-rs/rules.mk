@@ -8,10 +8,11 @@ MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := downcast_rs
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
-MODULE_RUST_EDITION := 2015
+MODULE_RUST_EDITION := 2021
 MODULE_RUSTFLAGS += \
 	--cfg 'feature="default"' \
-	--cfg 'feature="std"'
+	--cfg 'feature="std"' \
+	--cfg 'feature="sync"'
 
 MODULE_LIBRARY_DEPS := \
 	

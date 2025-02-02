@@ -9,7 +9,7 @@ package {
 license {
     name: "external_rust_crates_libm_license",
     visibility: [":__subpackages__"],
-    license_kinds: ["SPDX-license-identifier-Apache-2.0"],
+    license_kinds: ["SPDX-license-identifier-MIT"],
     license_text: ["LICENSE"],
 }
 
@@ -18,9 +18,9 @@ rust_library {
     host_supported: true,
     crate_name: "libm",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.8",
+    cargo_pkg_version: "0.2.11",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     features: ["default"],
     apex_available: [
         "//apex_available:platform",
@@ -36,14 +36,14 @@ rust_test {
     host_supported: true,
     crate_name: "libm",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.8",
+    cargo_pkg_version: "0.2.11",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: ["default"],
     proc_macros: ["libno_panic"],
 }

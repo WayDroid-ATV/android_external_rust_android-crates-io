@@ -1,8 +1,6 @@
 {
   "package": {
     "unicode-ident": {
-      "device_supported": false,
-      "host_first_multilib": true,
       "license_text": ["LICENSE-APACHE", "LICENSE-UNICODE"]
     }
   },

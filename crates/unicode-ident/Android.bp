@@ -19,14 +19,20 @@ license {
     ],
 }
 
-rust_library_host {
+rust_library {
     name: "libunicode_ident",
+    host_supported: true,
     crate_name: "unicode_ident",
     cargo_env_compat: true,
     cargo_pkg_version: "1.0.8",
     crate_root: "src/lib.rs",
     edition: "2018",
-    compile_multilib: "first",
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    product_available: true,
+    vendor_available: true,
 }
 
 dirgroup {
