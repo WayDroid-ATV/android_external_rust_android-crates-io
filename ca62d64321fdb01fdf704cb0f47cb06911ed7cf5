@@ -16,6 +16,24 @@
       "message": "I don\u0027t use rust-analyzer!\n\nPerhaps my Cargo version is different from what is expected?",
       "revId": "ca62d64321fdb01fdf704cb0f47cb06911ed7cf5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e715248e_d538c8c1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-02-03T23:58:35Z",
+      "side": 1,
+      "message": "The only thing that should be running cargo is cargo_embargo, and I save and restore the Cargo.lock file when I run cargo_embargo.",
+      "parentUuid": "e604958c_fab487a4",
+      "revId": "ca62d64321fdb01fdf704cb0f47cb06911ed7cf5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
