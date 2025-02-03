@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "874a1789_aad021e1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-02-03T20:21:59Z",
+      "side": 1,
+      "message": "The error from the External Rust Crates analyzer is a bug/limitation in the analyzer.",
+      "revId": "2e198e5879563d71d7a6cb515fb05292e7c71fc5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
