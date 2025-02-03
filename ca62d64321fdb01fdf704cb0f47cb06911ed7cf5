@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e604958c_fab487a4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-02-03T23:40:59Z",
+      "side": 1,
+      "message": "I don\u0027t use rust-analyzer!\n\nPerhaps my Cargo version is different from what is expected?",
+      "revId": "ca62d64321fdb01fdf704cb0f47cb06911ed7cf5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
