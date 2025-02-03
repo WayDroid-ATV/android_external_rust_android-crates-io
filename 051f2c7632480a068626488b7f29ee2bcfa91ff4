@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c43eaaac_6b45ddb4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-02-03T17:37:20Z",
+      "side": 1,
+      "message": "When I decoupled the two CLs this got dropped.",
+      "revId": "051f2c7632480a068626488b7f29ee2bcfa91ff4",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
