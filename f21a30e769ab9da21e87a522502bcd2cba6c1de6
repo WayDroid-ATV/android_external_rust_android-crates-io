@@ -51,6 +51,23 @@
       "message": "Friendly ping @ajukumar@google.com for Security-Review.",
       "revId": "f21a30e769ab9da21e87a522502bcd2cba6c1de6",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "167b1820_66312097",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-02-04T19:40:37Z",
+      "side": 1,
+      "message": "The ComplianceLint warning is a bug/limitation in the linter.",
+      "revId": "f21a30e769ab9da21e87a522502bcd2cba6c1de6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
