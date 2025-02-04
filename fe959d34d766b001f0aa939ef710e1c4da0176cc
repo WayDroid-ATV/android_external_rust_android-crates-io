@@ -140,6 +140,24 @@
       "parentUuid": "d8a2e144_bd776366",
       "revId": "fe959d34d766b001f0aa939ef710e1c4da0176cc",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1e7115a3_12985664",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-04T22:50:17Z",
+      "side": 1,
+      "message": "Heh, I think we fixed the compliance linter here, but only after that patchset had failed. cl/718129849",
+      "parentUuid": "c68111e1_4e1630b6",
+      "revId": "fe959d34d766b001f0aa939ef710e1c4da0176cc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
