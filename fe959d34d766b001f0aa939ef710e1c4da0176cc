@@ -68,6 +68,24 @@
       "message": "Please include the text from both licenses in the LICENSE file",
       "revId": "fe959d34d766b001f0aa939ef710e1c4da0176cc",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "341cd237_f3b7c782",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1982430
+      },
+      "writtenOn": "2025-02-04T18:39:19Z",
+      "side": 1,
+      "message": "@jamesfarrell@google.com I think we don\u0027t do that for Rust packages?",
+      "parentUuid": "cd6abf88_b29559cd",
+      "revId": "fe959d34d766b001f0aa939ef710e1c4da0176cc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
