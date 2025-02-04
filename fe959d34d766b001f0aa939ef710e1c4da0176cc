@@ -51,6 +51,23 @@
       "parentUuid": "7acd3326_dece15a8",
       "revId": "fe959d34d766b001f0aa939ef710e1c4da0176cc",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cd6abf88_b29559cd",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3836831
+      },
+      "writtenOn": "2025-02-04T18:35:27Z",
+      "side": 1,
+      "message": "Please include the text from both licenses in the LICENSE file",
+      "revId": "fe959d34d766b001f0aa939ef710e1c4da0176cc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
