@@ -11,13 +11,14 @@
 
 [package]
 edition = "2021"
-rust-version = "1.58"
+rust-version = "1.70"
 name = "half"
-version = "2.2.1"
+version = "2.4.1"
 authors = ["Kathryn Long <squeeself@gmail.com>"]
 exclude = [
     ".git*",
     ".editorconfig",
+    ".circleci",
 ]
 description = "Half-precision floating point f16 and bf16 types for Rust implementing the IEEE 754-2008 standard binary16 and bfloat16 types."
 readme = "README.md"
@@ -35,16 +36,10 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/starkat99/half-rs"
 
 [package.metadata.docs.rs]
-rustc-args = [
+all-features = true
+rustdoc-args = [
     "--cfg",
     "docsrs",
-]
-features = [
-    "std",
-    "serde",
-    "bytemuck",
-    "num-traits",
-    "zerocopy",
 ]
 
 [[bench]]
@@ -57,11 +52,28 @@ features = ["derive"]
 optional = true
 default-features = false
 
+[dependencies.cfg-if]
+version = "1.0.0"
+
 [dependencies.num-traits]
 version = "0.2.14"
 features = ["libm"]
 optional = true
 default-features = false
+
+[dependencies.rand]
+version = "0.8.5"
+optional = true
+default-features = false
+
+[dependencies.rand_distr]
+version = "0.4.3"
+optional = true
+default-features = false
+
+[dependencies.rkyv]
+version = "0.7"
+optional = true
 
 [dependencies.serde]
 version = "1.0"
@@ -87,11 +99,15 @@ version = "1.0"
 version = "1.0"
 
 [dev-dependencies.rand]
-version = "0.8.4"
+version = "0.8.5"
 
 [features]
 alloc = []
 default = ["std"]
+rand_distr = [
+    "dep:rand",
+    "dep:rand_distr",
+]
 std = ["alloc"]
 use-intrinsics = []
 
