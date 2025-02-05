@@ -197,7 +197,7 @@ mod aarch64_mmio {
 /// ```
 macro_rules! volread {
     ($nonnull:expr, $field:ident) => {
-        $crate::volatile::VolatileReadable::vread(core::ptr::addr_of!((*$nonnull.as_ptr()).$field))
+        $crate::volatile::VolatileReadable::vread((&raw const (*$nonnull.as_ptr()).$field))
     };
 }
 
@@ -216,10 +216,7 @@ macro_rules! volread {
 /// ```
 macro_rules! volwrite {
     ($nonnull:expr, $field:ident, $value:expr) => {
-        $crate::volatile::VolatileWritable::vwrite(
-            core::ptr::addr_of_mut!((*$nonnull.as_ptr()).$field),
-            $value,
-        )
+        $crate::volatile::VolatileWritable::vwrite((&raw mut (*$nonnull.as_ptr()).$field), $value)
     };
 }
 

@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "virtio-drivers"
-version = "0.8.0"
+version = "0.9.0"
 authors = [
     "Jiajie Chen <noc@jiegec.ac.cn>",
     "Runji Wang <wangrunji0408@163.com>",
@@ -20,6 +20,7 @@ authors = [
     "Andrew Walbran <qwandor@google.com>",
 ]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -39,7 +40,7 @@ name = "virtio_drivers"
 path = "src/lib.rs"
 
 [dependencies.bitflags]
-version = "2.6.0"
+version = "2.8.0"
 
 [dependencies.embedded-io]
 version = "0.6.1"
@@ -49,18 +50,18 @@ optional = true
 version = "0.1.14"
 
 [dependencies.log]
-version = "0.4.22"
+version = "0.4.25"
 
 [dependencies.thiserror]
-version = "2.0.3"
+version = "2.0.11"
 default-features = false
 
 [dependencies.zerocopy]
-version = "0.8.10"
+version = "0.8.14"
 features = ["derive"]
 
 [dev-dependencies.zerocopy]
-version = "0.8.7"
+version = "0.8.14"
 features = ["alloc"]
 
 [features]

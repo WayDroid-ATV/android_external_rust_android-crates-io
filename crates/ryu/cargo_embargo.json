@@ -3,5 +3,6 @@
     "//apex_available:platform",
     "com.android.virt"
   ],
-  "tests": true
+  "tests": true,
+  "min_sdk_version": "29"
 }

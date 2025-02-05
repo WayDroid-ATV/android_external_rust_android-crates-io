@@ -1,3 +1,6 @@
 {
-    "features": ["alloc", "zerofrom", "zerovec", "yoke", "litemap", "serde"]
+    "features": ["alloc", "zerofrom", "zerovec", "yoke", "litemap", "serde"],
+    "ramdisk_available": true,
+    "recovery_available": true,
+    "vendor_ramdisk_available": true
 }
