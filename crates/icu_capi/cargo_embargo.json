@@ -1,11 +1,22 @@
 {
-    "features": ["compiled_data", "properties"],
-    "package": {
-        "icu_capi": {
-            "exported_c_header_dir": ["bindings/cpp"]
-        }
-    },
-    "ramdisk_available": true,
-    "recovery_available": true,
-    "vendor_ramdisk_available": true
+  "features": [
+    "compiled_data",
+    "properties"
+  ],
+  "package": {
+    "icu_capi": {
+      "exported_c_header_dir": [
+        "bindings/cpp"
+      ]
+    }
+  },
+  "ramdisk_available": true,
+  "recovery_available": true,
+  "vendor_ramdisk_available": true,
+  "native_bridge_supported": true,
+  "extra_targets": {
+    "linux_bionic_x86_64": false,
+    "linux_glibc_x86_64": false,
+    "linux_glibc_x86": false
+  }
 }
