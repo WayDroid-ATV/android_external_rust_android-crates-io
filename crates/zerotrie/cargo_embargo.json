@@ -1,6 +1,17 @@
 {
-    "features": ["alloc", "zerofrom", "zerovec", "yoke", "litemap", "serde"],
-    "ramdisk_available": true,
-    "recovery_available": true,
-    "vendor_ramdisk_available": true
+  "features": [
+    "alloc",
+    "zerofrom",
+    "zerovec",
+    "yoke",
+    "litemap",
+    "serde"
+  ],
+  "ramdisk_available": true,
+  "recovery_available": true,
+  "vendor_ramdisk_available": true,
+  "extra_targets": {
+    "linux_bionic": true
+  },
+  "native_bridge_supported": true
 }
