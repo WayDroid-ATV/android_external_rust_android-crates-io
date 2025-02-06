@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1c0d905d_425e301d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-02-06T22:08:57Z",
+      "side": 1,
+      "message": "Manish, if this change is still here when you start working, feel free to remove from the topic, I\u0027m just checking what presubmit has to say about just dropping windows from your config.",
+      "revId": "d0ebbf0ad2a32f72ee5ce5ad2ea15b88166934e6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
