@@ -1,6 +1,15 @@
 {
-    "features": ["alloc", "serde", "yoke"],
-    "ramdisk_available": true,
-    "recovery_available": true,
-    "vendor_ramdisk_available": true
+  "features": [
+    "alloc",
+    "serde",
+    "yoke"
+  ],
+  "ramdisk_available": true,
+  "recovery_available": true,
+  "vendor_ramdisk_available": true,
+  "native_bridge_supported": true,
+  "extra_targets": [
+    "windows",
+    "linux_bionic"
+  ]
 }
