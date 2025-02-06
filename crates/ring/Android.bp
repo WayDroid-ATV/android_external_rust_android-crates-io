@@ -52,13 +52,7 @@ rust_library {
     ],
     rustlibs: [
         "libgetrandom",
-        "liblibc",
-        "libspin",
         "libuntrusted",
-    ],
-    whole_static_libs: [
-        "libring-core",
-        "libring-test",
     ],
     apex_available: [
         "//apex_available:platform",
@@ -91,13 +85,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
-        "libspin",
         "libuntrusted",
-    ],
-    whole_static_libs: [
-        "libring-core",
-        "libring-test",
     ],
 }
 
@@ -123,9 +111,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -152,9 +138,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -181,9 +165,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -210,9 +192,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -239,9 +219,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -268,9 +246,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -297,9 +273,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -326,9 +300,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -355,9 +327,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -384,9 +354,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -413,9 +381,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -442,9 +408,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -471,9 +435,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -500,9 +462,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libgetrandom",
-        "liblibc",
         "libring",
-        "libspin",
         "libuntrusted",
     ],
 }
@@ -516,13 +476,7 @@ rust_library_rlib {
     edition: "2021",
     rustlibs: [
         "libgetrandom",
-        "liblibc",
-        "libspin_nostd",
         "libuntrusted",
-    ],
-    whole_static_libs: [
-        "libring-core",
-        "libring-test",
     ],
     apex_available: [
         "//apex_available:platform",

@@ -25,9 +25,6 @@ rust_library {
         linux_bionic: {
             enabled: true,
         },
-        windows: {
-            enabled: true,
-        },
     },
     apex_available: [
         "//apex_available:platform",
