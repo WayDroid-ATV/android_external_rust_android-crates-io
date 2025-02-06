@@ -52,7 +52,6 @@
   ],
   "native_bridge_supported": true,
   "extra_targets": [
-    "windows",
     "linux_bionic"
   ]
 }

@@ -43,9 +43,6 @@ rust_library {
         linux_bionic: {
             enabled: true,
         },
-        windows: {
-            enabled: true,
-        },
     },
     include_dirs: ["bindings/cpp"],
     apex_available: [

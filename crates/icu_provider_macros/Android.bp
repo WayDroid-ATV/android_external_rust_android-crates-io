@@ -29,9 +29,6 @@ rust_proc_macro {
         linux_bionic: {
             enabled: true,
         },
-        windows: {
-            enabled: true,
-        },
     },
     native_bridge_supported: true,
     product_available: true,
