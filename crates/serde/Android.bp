@@ -29,10 +29,16 @@ rust_library {
         "std",
     ],
     proc_macros: ["libserde_derive"],
+    target: {
+        linux_bionic: {
+            enabled: true,
+        },
+    },
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
     ],
+    native_bridge_supported: true,
     product_available: true,
     recovery_available: true,
     vendor_available: true,
@@ -77,6 +83,11 @@ rust_library_rlib {
         "serde_derive",
     ],
     proc_macros: ["libserde_derive"],
+    target: {
+        linux_bionic: {
+            enabled: true,
+        },
+    },
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -88,6 +99,7 @@ rust_library_rlib {
         "libcompiler_builtins.rust_sysroot",
         "libcore.rust_sysroot",
     ],
+    native_bridge_supported: true,
     product_available: true,
     recovery_available: true,
     vendor_available: true,
