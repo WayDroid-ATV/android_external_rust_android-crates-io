@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "61f96e6e_dcfbdc8c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-06T08:14:21Z",
+      "side": 1,
+      "message": "This is missing edits to the checksum files, because I don\u0027t think you knew to run `crate_tool`. Take a look at https://android.googlesource.com/platform/external/rust/android-crates-io/+/refs/heads/main#manual-updates and run `crate_tool regenerate either itertools`, which should re-run `cargo_embargo` and also generate the checksum files.",
+      "revId": "873cc695aa1ced503b262dafa9e028830c7ef746",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
