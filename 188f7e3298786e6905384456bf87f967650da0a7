@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a1404dff_ce5822fc",
+        "filename": "crates/serde/Cargo.lock",
+        "patchSetId": 3
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-02-07T17:33:15Z",
+      "side": 1,
+      "message": "I tried deleting this file multiple times, it was not okay with me doing so and would re-add this file on regenerate.",
+      "revId": "188f7e3298786e6905384456bf87f967650da0a7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
