@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "47e6dc4b_7111ea29",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1229163
+      },
+      "writtenOn": "2025-02-07T21:02:16Z",
+      "side": 1,
+      "message": "Hi Reviewers,\n\nThis is my first attempt to import a crate using the crate tool.\nWe are trying to import: gl, taffy. Starting with dependencies with not unimported transitive dependencies.\n(this one also imported cleanly using the crate_tool).\n\ngo/ds-android-migration has more details about the high-level effort we are starting.\n\nIn this CL we are trying to learn how this process goes usually, so we can give better estimations.\n\nWe transitively depend on this library and would like to have it in the Android repo.",
+      "revId": "f5826a58348f70f8b698e6d755fab7becdc865bc",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
