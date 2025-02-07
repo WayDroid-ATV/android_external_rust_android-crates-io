@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0a7443b5_87526903",
+        "filename": "crates/either/cargo_embargo.json",
+        "patchSetId": 3
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-07T04:04:11Z",
+      "side": 1,
+      "message": "This was the trick for getting it to retain the original `Android.bp` changes.",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 6,
+        "endChar": 7
+      },
+      "revId": "39780ad97a8ddfa01aca2cbfd22aaffce3603855",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c04ab7fe_28716341",
+        "filename": "pseudo_crate/Cargo.lock",
+        "patchSetId": 3
+      },
+      "lineNbr": 4005,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-07T04:04:11Z",
+      "side": 1,
+      "message": "This feels like a stray change, but everyone else will keep hitting it too when they upload, so let\u0027s handle it now.",
+      "revId": "39780ad97a8ddfa01aca2cbfd22aaffce3603855",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}

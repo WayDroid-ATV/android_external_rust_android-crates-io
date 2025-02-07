@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "7f34a1d0_0d347aa9",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-07T04:04:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9702ef64_9c5c48f4",
+      "revId": "873cc695aa1ced503b262dafa9e028830c7ef746",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "61f96e6e_dcfbdc8c",
@@ -67,6 +85,24 @@
       "side": 1,
       "message": "You\u0027re going to fail the checksums because you have to be able to `crate_tool regenerate` everything in `android-crates-io` today. That\u0027s not able to be avoided.\n\nAs for the `Android.bp` changes, you switched to `\"generate_androidbp\": false`, which I assume is probably going to result in removing the Android.bp files almost entirely. Is that intended?",
       "parentUuid": "2bd4eed6_bdbe7bc1",
+      "revId": "873cc695aa1ced503b262dafa9e028830c7ef746",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "76d35ad0_bbcc911f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-07T04:04:11Z",
+      "side": 1,
+      "message": "I figured out the mistake was missing an empty `variant` to ensure the base rules are handled still.",
+      "parentUuid": "d447b81a_c2fbe887",
       "revId": "873cc695aa1ced503b262dafa9e028830c7ef746",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
