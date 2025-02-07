@@ -16,6 +16,24 @@
       "message": "This is missing edits to the checksum files, because I don\u0027t think you knew to run `crate_tool`. Take a look at https://android.googlesource.com/platform/external/rust/android-crates-io/+/refs/heads/main#manual-updates and run `crate_tool regenerate either itertools`, which should re-run `cargo_embargo` and also generate the checksum files.",
       "revId": "873cc695aa1ced503b262dafa9e028830c7ef746",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2bd4eed6_bdbe7bc1",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1678423
+      },
+      "writtenOn": "2025-02-07T01:59:01Z",
+      "side": 1,
+      "message": "Thank you! I tried running this, but it incorrectly modifies the Android.pb files - i.e. it removes both `rust_test{}` and `rust_library` targets.\n\nCould it be because of any changes I have made to cargo_embargo.json?\n\nI didn\u0027t want to upload those changes to Android.bp files made by running the above script, because those changes are not correct. So I didn\u0027t include them in the commit and tried to upload. Then I get the error: \n\n```\nVerifying checksums for either\n    Error: Checksums do not match for: Android.bp\n```\n\nCan you please let me know what I am missing? Thank you!",
+      "parentUuid": "61f96e6e_dcfbdc8c",
+      "revId": "873cc695aa1ced503b262dafa9e028830c7ef746",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
