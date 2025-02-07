@@ -137,6 +137,7 @@ grpcio-compiler
 grpcio-sys
 h2
 half
+hash32
 hashbrown
 hashlink
 heck
