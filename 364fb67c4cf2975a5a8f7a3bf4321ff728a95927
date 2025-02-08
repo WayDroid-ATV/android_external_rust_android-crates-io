@@ -36,6 +36,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "821363b0_c7348133",
+        "filename": "crates/icu_capi/cargo_embargo.json",
+        "patchSetId": 5
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-02-08T08:30:04Z",
+      "side": 1,
+      "message": "removed its usage, used add_module_block",
+      "parentUuid": "c4bf85f1_77117134",
+      "revId": "364fb67c4cf2975a5a8f7a3bf4321ff728a95927",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "45a4a5e1_b1f2ad39",
@@ -67,6 +85,24 @@
       "side": 1,
       "message": "there are a couple json files here that need to be cleaned up, I plan to do that once I\u0027m on a more stable internet connection.",
       "parentUuid": "45a4a5e1_b1f2ad39",
+      "revId": "364fb67c4cf2975a5a8f7a3bf4321ff728a95927",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b013fd00_326f9eda",
+        "filename": "crates/icu_locale_data/cargo_embargo.json",
+        "patchSetId": 5
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-02-08T08:30:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "be1e81c8_5cacd709",
       "revId": "364fb67c4cf2975a5a8f7a3bf4321ff728a95927",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }

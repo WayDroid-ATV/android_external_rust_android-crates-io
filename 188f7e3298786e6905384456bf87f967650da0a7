@@ -16,6 +16,24 @@
       "message": "I tried deleting this file multiple times, it was not okay with me doing so and would re-add this file on regenerate.",
       "revId": "188f7e3298786e6905384456bf87f967650da0a7",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "70398b8e_643f797c",
+        "filename": "crates/serde/Cargo.lock",
+        "patchSetId": 3
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-02-08T08:30:04Z",
+      "side": 1,
+      "message": "(marking as resolved, this is just informative)",
+      "parentUuid": "a1404dff_ce5822fc",
+      "revId": "188f7e3298786e6905384456bf87f967650da0a7",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
