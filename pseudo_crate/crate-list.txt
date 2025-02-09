@@ -148,6 +148,19 @@ httparse
 httpdate
 hyper
 hyper-timeout
+icu_capi
+icu_casemap
+icu_casemap_data
+icu_collections
+icu_locale
+icu_locale_core
+icu_locale_data
+icu_properties
+icu_properties_data
+icu_provider
+icu_provider_adapters
+icu_provider_baked
+icu_provider_macros
 ident_case
 idna
 indexmap
@@ -334,6 +347,7 @@ thread_local
 threadpool
 tikv-jemalloc-sys
 tikv-jemallocator
+tinyjson
 tinystr
 tinytemplate
 tinyvec

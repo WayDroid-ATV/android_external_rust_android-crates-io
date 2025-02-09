@@ -5,13 +5,15 @@ pub mod fake;
 pub mod mmio;
 pub mod pci;
 mod some;
+#[cfg(target_arch = "x86_64")]
+pub mod x86_64;
 
 use crate::{PhysAddr, Result, PAGE_SIZE};
 use bitflags::{bitflags, Flags};
 use core::{fmt::Debug, ops::BitAnd};
 use log::debug;
 pub use some::SomeTransport;
-use zerocopy::{FromBytes, IntoBytes};
+use zerocopy::{FromBytes, Immutable, IntoBytes};
 
 /// A VirtIO transport layer.
 pub trait Transport {
@@ -101,11 +103,31 @@ pub trait Transport {
         );
     }
 
+    /// Reads the configuration space generation.
+    fn read_config_generation(&self) -> u32;
+
     /// Reads a value from the device config space.
     fn read_config_space<T: FromBytes>(&self, offset: usize) -> Result<T>;
 
     /// Writes a value to the device config space.
-    fn write_config_space<T: IntoBytes>(&mut self, offset: usize, value: T) -> Result<()>;
+    fn write_config_space<T: IntoBytes + Immutable>(
+        &mut self,
+        offset: usize,
+        value: T,
+    ) -> Result<()>;
+
+    /// Safely reads multiple fields from config space by ensuring that the config generation is the
+    /// same before and after all reads, and retrying if not.
+    fn read_consistent<T>(&self, f: impl Fn() -> Result<T>) -> Result<T> {
+        loop {
+            let before = self.read_config_generation();
+            let result = f();
+            let after = self.read_config_generation();
+            if before == after {
+                break result;
+            }
+        }
+    }
 }
 
 bitflags! {

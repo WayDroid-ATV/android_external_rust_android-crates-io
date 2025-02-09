@@ -1,9 +1,8 @@
 {
-  "apex_available": [
-    "//apex_available:platform",
-    "com.android.resolv"
-  ],
   "min_sdk_version": "29",
   "run_cargo": false,
-  "tests": true
+  "tests": true,
+  "ramdisk_available": true,
+  "recovery_available": true,
+  "vendor_ramdisk_available": true
 }

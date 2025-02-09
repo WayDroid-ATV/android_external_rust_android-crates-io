@@ -164,7 +164,7 @@ macro_rules! unsafe_impl {
 
     (@method TryFromBytes ; |$candidate:ident: MaybeAligned<$repr:ty>| $is_bit_valid:expr) => {
         #[allow(clippy::missing_inline_in_public_items)]
-        #[cfg_attr(coverage_nightly, coverage(off))]
+        #[cfg_attr(all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS), coverage(off))]
         fn only_derive_is_allowed_to_implement_this_trait() {}
 
         #[inline]
@@ -188,7 +188,7 @@ macro_rules! unsafe_impl {
     };
     (@method TryFromBytes ; |$candidate:ident: Maybe<$repr:ty>| $is_bit_valid:expr) => {
         #[allow(clippy::missing_inline_in_public_items)]
-        #[cfg_attr(coverage_nightly, coverage(off))]
+        #[cfg_attr(all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS), coverage(off))]
         fn only_derive_is_allowed_to_implement_this_trait() {}
 
         #[inline]
@@ -214,13 +214,13 @@ macro_rules! unsafe_impl {
     };
     (@method TryFromBytes) => {
         #[allow(clippy::missing_inline_in_public_items)]
-        #[cfg_attr(coverage_nightly, coverage(off))]
+        #[cfg_attr(all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS), coverage(off))]
         fn only_derive_is_allowed_to_implement_this_trait() {}
         #[inline(always)] fn is_bit_valid<A: invariant::Aliasing + invariant::AtLeast<invariant::Shared>>(_: Maybe<'_, Self, A>) -> bool { true }
     };
     (@method $trait:ident) => {
         #[allow(clippy::missing_inline_in_public_items)]
-        #[cfg_attr(coverage_nightly, coverage(off))]
+        #[cfg_attr(all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS), coverage(off))]
         fn only_derive_is_allowed_to_implement_this_trait() {}
     };
     (@method $trait:ident; |$_candidate:ident $(: &$_ref_repr:ty)? $(: NonNull<$_ptr_repr:ty>)?| $_is_bit_valid:expr) => {
@@ -275,13 +275,13 @@ macro_rules! impl_for_transparent_wrapper {
         // slightly different for each trait.
         unsafe impl<$($tyvar $(: $(? $optbound +)* $($bound +)*)?)?> $trait for $ty {
             #[allow(dead_code, clippy::missing_inline_in_public_items)]
-            #[cfg_attr(coverage_nightly, coverage(off))]
+            #[cfg_attr(all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS), coverage(off))]
             fn only_derive_is_allowed_to_implement_this_trait() {
                 use crate::{pointer::invariant::Invariants, util::*};
 
                 impl_for_transparent_wrapper!(@define_is_transparent_wrapper $trait);
 
-                #[cfg_attr(coverage_nightly, coverage(off))]
+                #[cfg_attr(all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS), coverage(off))]
                 fn f<I: Invariants, $($tyvar $(: $(? $optbound +)* $($bound +)*)?)?>() {
                     is_transparent_wrapper::<I, $ty>();
                 }
@@ -353,7 +353,7 @@ macro_rules! impl_for_transparent_wrapper {
         impl_for_transparent_wrapper!(@define_is_transparent_wrapper TryFromBytes, ValidityVariance)
     };
     (@define_is_transparent_wrapper $trait:ident, $variance:ident) => {
-        #[cfg_attr(coverage_nightly, coverage(off))]
+        #[cfg_attr(all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS), coverage(off))]
         fn is_transparent_wrapper<I: Invariants, W: TransparentWrapper<I, $variance = Covariant> + ?Sized>()
         where
             W::Inner: $trait,
@@ -543,16 +543,17 @@ macro_rules! impl_known_layout {
     ($($tyvar:ident $(: ?$optbound:ident)? => $ty:ty),* $(,)?) => {
         $(impl_known_layout!(@inner , $tyvar $(: ?$optbound)? => $ty);)*
     };
-    ($($ty:ty),*) => { $(impl_known_layout!(@inner , => $ty);)* };
-    (@inner $(const $constvar:ident : $constty:ty)? , $($tyvar:ident $(: ?$optbound:ident)?)? => $ty:ty) => {
+    ($($(#[$attrs:meta])* $ty:ty),*) => { $(impl_known_layout!(@inner , => $(#[$attrs])* $ty);)* };
+    (@inner $(const $constvar:ident : $constty:ty)? , $($tyvar:ident $(: ?$optbound:ident)?)? => $(#[$attrs:meta])* $ty:ty) => {
         const _: () = {
             use core::ptr::NonNull;
 
             #[allow(non_local_definitions)]
+            $(#[$attrs])*
             // SAFETY: Delegates safety to `DstLayout::for_type`.
             unsafe impl<$($tyvar $(: ?$optbound)?)? $(, const $constvar : $constty)?> KnownLayout for $ty {
                 #[allow(clippy::missing_inline_in_public_items)]
-                #[cfg_attr(coverage_nightly, coverage(off))]
+                #[cfg_attr(all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS), coverage(off))]
                 fn only_derive_is_allowed_to_implement_this_trait() where Self: Sized {}
 
                 type PointerMetadata = ();
@@ -606,7 +607,7 @@ macro_rules! unsafe_impl_known_layout {
             #[allow(non_local_definitions)]
             unsafe impl<$($tyvar: ?Sized + KnownLayout)?> KnownLayout for $ty {
                 #[allow(clippy::missing_inline_in_public_items)]
-                #[cfg_attr(coverage_nightly, coverage(off))]
+                #[cfg_attr(all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS), coverage(off))]
                 fn only_derive_is_allowed_to_implement_this_trait() {}
 
                 type PointerMetadata = <$repr as KnownLayout>::PointerMetadata;

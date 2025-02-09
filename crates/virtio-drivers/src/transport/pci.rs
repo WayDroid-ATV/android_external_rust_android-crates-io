@@ -16,11 +16,12 @@ use crate::{
 };
 use core::{
     mem::{align_of, size_of},
-    ptr::{addr_of_mut, NonNull},
+    ptr::NonNull,
 };
+use zerocopy::{FromBytes, Immutable, IntoBytes};
 
 /// The PCI vendor ID for VirtIO devices.
-const VIRTIO_VENDOR_ID: u16 = 0x1af4;
+pub const VIRTIO_VENDOR_ID: u16 = 0x1af4;
 
 /// The offset to add to a VirtIO device ID to get the corresponding PCI device ID.
 const PCI_DEVICE_ID_OFFSET: u16 = 0x1040;
@@ -34,24 +35,24 @@ const TRANSITIONAL_ENTROPY_SOURCE: u16 = 0x1005;
 const TRANSITIONAL_9P_TRANSPORT: u16 = 0x1009;
 
 /// The offset of the bar field within `virtio_pci_cap`.
-const CAP_BAR_OFFSET: u8 = 4;
+pub(crate) const CAP_BAR_OFFSET: u8 = 4;
 /// The offset of the offset field with `virtio_pci_cap`.
-const CAP_BAR_OFFSET_OFFSET: u8 = 8;
+pub(crate) const CAP_BAR_OFFSET_OFFSET: u8 = 8;
 /// The offset of the `length` field within `virtio_pci_cap`.
-const CAP_LENGTH_OFFSET: u8 = 12;
+pub(crate) const CAP_LENGTH_OFFSET: u8 = 12;
 /// The offset of the`notify_off_multiplier` field within `virtio_pci_notify_cap`.
-const CAP_NOTIFY_OFF_MULTIPLIER_OFFSET: u8 = 16;
+pub(crate) const CAP_NOTIFY_OFF_MULTIPLIER_OFFSET: u8 = 16;
 
 /// Common configuration.
-const VIRTIO_PCI_CAP_COMMON_CFG: u8 = 1;
+pub const VIRTIO_PCI_CAP_COMMON_CFG: u8 = 1;
 /// Notifications.
-const VIRTIO_PCI_CAP_NOTIFY_CFG: u8 = 2;
+pub const VIRTIO_PCI_CAP_NOTIFY_CFG: u8 = 2;
 /// ISR Status.
-const VIRTIO_PCI_CAP_ISR_CFG: u8 = 3;
+pub const VIRTIO_PCI_CAP_ISR_CFG: u8 = 3;
 /// Device specific configuration.
-const VIRTIO_PCI_CAP_DEVICE_CFG: u8 = 4;
+pub const VIRTIO_PCI_CAP_DEVICE_CFG: u8 = 4;
 
-fn device_type(pci_device_id: u16) -> DeviceType {
+pub(crate) fn device_type(pci_device_id: u16) -> DeviceType {
     match pci_device_id {
         TRANSITIONAL_NETWORK => DeviceType::Network,
         TRANSITIONAL_BLOCK => DeviceType::Block,
@@ -255,7 +256,7 @@ impl Transport for PciTransport {
 
             let offset_bytes = usize::from(queue_notify_off) * self.notify_off_multiplier as usize;
             let index = offset_bytes / size_of::<u16>();
-            addr_of_mut!((*self.notify_region.as_ptr())[index]).vwrite(queue);
+            (&raw mut (*self.notify_region.as_ptr())[index]).vwrite(queue);
         }
     }
 
@@ -325,7 +326,12 @@ impl Transport for PciTransport {
         isr_status & 0x3 != 0
     }
 
-    fn read_config_space<T>(&self, offset: usize) -> Result<T, Error> {
+    fn read_config_generation(&self) -> u32 {
+        // SAFETY: self.header points to a valid VirtIO MMIO region.
+        unsafe { volread!(self.common_cfg, config_generation) }.into()
+    }
+
+    fn read_config_space<T: FromBytes>(&self, offset: usize) -> Result<T, Error> {
         assert!(align_of::<T>() <= 4,
             "Driver expected config space alignment of {} bytes, but VirtIO only guarantees 4 byte alignment.",
             align_of::<T>());
@@ -338,15 +344,18 @@ impl Transport for PciTransport {
             // SAFETY: If we have a config space pointer it must be valid for its length, and we just
             // checked that the offset and size of the access was within the length.
             unsafe {
-                // TODO: Use NonNull::as_non_null_ptr once it is stable.
-                Ok((config_space.as_ptr() as *mut T)
+                Ok((config_space.as_ptr().cast::<T>())
                     .byte_add(offset)
                     .read_volatile())
             }
         }
     }
 
-    fn write_config_space<T>(&mut self, offset: usize, value: T) -> Result<(), Error> {
+    fn write_config_space<T: IntoBytes + Immutable>(
+        &mut self,
+        offset: usize,
+        value: T,
+    ) -> Result<(), Error> {
         assert!(align_of::<T>() <= 4,
             "Driver expected config space alignment of {} bytes, but VirtIO only guarantees 4 byte alignment.",
             align_of::<T>());
@@ -359,8 +368,7 @@ impl Transport for PciTransport {
             // SAFETY: If we have a config space pointer it must be valid for its length, and we just
             // checked that the offset and size of the access was within the length.
             unsafe {
-                // TODO: Use NonNull::as_non_null_ptr once it is stable.
-                (config_space.as_ptr() as *mut T)
+                (config_space.as_ptr().cast::<T>())
                     .byte_add(offset)
                     .write_volatile(value);
             }
@@ -386,34 +394,34 @@ impl Drop for PciTransport {
 
 /// `virtio_pci_common_cfg`, see 4.1.4.3 "Common configuration structure layout".
 #[repr(C)]
-struct CommonCfg {
-    device_feature_select: Volatile<u32>,
-    device_feature: ReadOnly<u32>,
-    driver_feature_select: Volatile<u32>,
-    driver_feature: Volatile<u32>,
-    msix_config: Volatile<u16>,
-    num_queues: ReadOnly<u16>,
-    device_status: Volatile<u8>,
-    config_generation: ReadOnly<u8>,
-    queue_select: Volatile<u16>,
-    queue_size: Volatile<u16>,
-    queue_msix_vector: Volatile<u16>,
-    queue_enable: Volatile<u16>,
-    queue_notify_off: Volatile<u16>,
-    queue_desc: Volatile<u64>,
-    queue_driver: Volatile<u64>,
-    queue_device: Volatile<u64>,
+pub(crate) struct CommonCfg {
+    pub device_feature_select: Volatile<u32>,
+    pub device_feature: ReadOnly<u32>,
+    pub driver_feature_select: Volatile<u32>,
+    pub driver_feature: Volatile<u32>,
+    pub msix_config: Volatile<u16>,
+    pub num_queues: ReadOnly<u16>,
+    pub device_status: Volatile<u8>,
+    pub config_generation: ReadOnly<u8>,
+    pub queue_select: Volatile<u16>,
+    pub queue_size: Volatile<u16>,
+    pub queue_msix_vector: Volatile<u16>,
+    pub queue_enable: Volatile<u16>,
+    pub queue_notify_off: Volatile<u16>,
+    pub queue_desc: Volatile<u64>,
+    pub queue_driver: Volatile<u64>,
+    pub queue_device: Volatile<u64>,
 }
 
 /// Information about a VirtIO structure within some BAR, as provided by a `virtio_pci_cap`.
 #[derive(Clone, Debug, Eq, PartialEq)]
-struct VirtioCapabilityInfo {
+pub(crate) struct VirtioCapabilityInfo {
     /// The bar in which the structure can be found.
-    bar: u8,
+    pub bar: u8,
     /// The offset within the bar.
-    offset: u32,
+    pub offset: u32,
     /// The length in bytes of the structure within the bar.
-    length: u32,
+    pub length: u32,
 }
 
 fn get_bar_region<H: Hal, T, C: ConfigurationAccess>(
@@ -439,7 +447,7 @@ fn get_bar_region<H: Hal, T, C: ConfigurationAccess>(
     let vaddr = unsafe { H::mmio_phys_to_virt(paddr, struct_info.length as usize) };
     if vaddr.as_ptr() as usize % align_of::<T>() != 0 {
         return Err(VirtioPciError::Misaligned {
-            vaddr,
+            address: vaddr.as_ptr() as usize,
             alignment: align_of::<T>(),
         });
     }
@@ -486,13 +494,11 @@ pub enum VirtioPciError {
     /// The offset for some capability was greater than the length of the BAR.
     #[error("Capability offset greater than BAR length.")]
     BarOffsetOutOfRange,
-    /// The virtual address was not aligned as expected.
-    #[error(
-        "Virtual address {vaddr:#018?} was not aligned to a {alignment} byte boundary as expected."
-    )]
+    /// The address was not aligned as expected.
+    #[error("Address {address:#018} was not aligned to a {alignment} byte boundary as expected.")]
     Misaligned {
-        /// The virtual address in question.
-        vaddr: NonNull<u8>,
+        /// The address in question.
+        address: usize,
         /// The expected alignment in bytes.
         alignment: usize,
     },

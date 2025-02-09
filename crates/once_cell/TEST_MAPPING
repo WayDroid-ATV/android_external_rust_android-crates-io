@@ -16,7 +16,7 @@
       "path": "external/rust/android-crates-io/crates/hashlink"
     },
     {
-      "path": "external/rust/crates/libsqlite3-sys"
+      "path": "external/rust/android-crates-io/crates/libsqlite3-sys"
     },
     {
       "path": "external/rust/android-crates-io/crates/quiche"
