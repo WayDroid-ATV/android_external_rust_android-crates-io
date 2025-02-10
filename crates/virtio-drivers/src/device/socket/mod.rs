@@ -15,11 +15,14 @@ mod protocol;
 mod vsock;
 
 #[cfg(feature = "alloc")]
-pub use connectionmanager::VsockConnectionManager;
+pub use connectionmanager::{VsockConnectionManager, VsockDeviceConnectionManager};
 pub use error::SocketError;
 pub use protocol::{StreamShutdown, VsockAddr, VMADDR_CID_HOST};
 #[cfg(feature = "alloc")]
-pub use vsock::{ConnectionInfo, DisconnectReason, VirtIOSocket, VsockEvent, VsockEventType};
+pub use vsock::{ConnectionInfo, DisconnectReason, VirtIOSocket, VirtIOSocketDevice, VsockEvent, VsockEventType};
+
+#[cfg(feature = "alloc")]
+pub(crate) use vsock::VirtIOSocketManager;
 
 /// The size in bytes of each buffer used in the RX virtqueue. This must be bigger than
 /// `size_of::<VirtioVsockHdr>()`.
