@@ -70,7 +70,7 @@ impl<T: Copy> VolatileWritable<T> for *mut Volatile<T> {
 #[cfg(target_arch = "aarch64")]
 mod aarch64_mmio {
     use super::{ReadOnly, Volatile, VolatileReadable, VolatileWritable, WriteOnly};
-    use crate::{device::net::Status, transport::DeviceStatus};
+    use crate::transport::DeviceStatus;
     use core::arch::asm;
 
     macro_rules! asm_mmio_write {
@@ -180,44 +180,6 @@ mod aarch64_mmio {
             DeviceStatus::from_bits_retain(value)
         }
     }
-
-    impl VolatileReadable<Status> for *const ReadOnly<Status> {
-        unsafe fn vread(self) -> Status {
-            let value: u16;
-            asm!(
-                "ldrh {value:w}, [{ptr}]",
-                value = out(reg) value,
-                ptr = in(reg) (self as *const u16),
-            );
-            Status::from_bits_retain(value)
-        }
-    }
-
-    impl VolatileReadable<Status> for *const Volatile<Status> {
-        unsafe fn vread(self) -> Status {
-            let value: u16;
-            asm!(
-                "ldrh {value:w}, [{ptr}]",
-                value = out(reg) value,
-                ptr = in(reg) (self as *const u16),
-            );
-            Status::from_bits_retain(value)
-        }
-    }
-
-    impl<const SIZE: usize> VolatileReadable<[u8; SIZE]> for *const ReadOnly<[u8; SIZE]> {
-        unsafe fn vread(self) -> [u8; SIZE] {
-            let mut value = [0; SIZE];
-            for i in 0..SIZE {
-                asm!(
-                    "ldrb {value:w}, [{ptr}]",
-                    value = out(reg) value[i],
-                    ptr = in(reg) (self as *const u8).add(i),
-                );
-            }
-            value
-        }
-    }
 }
 
 /// Performs a volatile read from the given field of pointer to a struct representing an MMIO region.
@@ -235,7 +197,7 @@ mod aarch64_mmio {
 /// ```
 macro_rules! volread {
     ($nonnull:expr, $field:ident) => {
-        $crate::volatile::VolatileReadable::vread(core::ptr::addr_of!((*$nonnull.as_ptr()).$field))
+        $crate::volatile::VolatileReadable::vread((&raw const (*$nonnull.as_ptr()).$field))
     };
 }
 
@@ -254,10 +216,7 @@ macro_rules! volread {
 /// ```
 macro_rules! volwrite {
     ($nonnull:expr, $field:ident, $value:expr) => {
-        $crate::volatile::VolatileWritable::vwrite(
-            core::ptr::addr_of_mut!((*$nonnull.as_ptr()).$field),
-            $value,
-        )
+        $crate::volatile::VolatileWritable::vwrite((&raw mut (*$nonnull.as_ptr()).$field), $value)
     };
 }
 

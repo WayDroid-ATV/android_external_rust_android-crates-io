@@ -18,7 +18,7 @@ rust_library_host {
     host_cross_supported: false,
     crate_name: "syn",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.0.96",
+    cargo_pkg_version: "2.0.98",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [

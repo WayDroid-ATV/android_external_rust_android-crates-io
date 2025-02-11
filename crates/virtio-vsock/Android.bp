@@ -17,7 +17,7 @@ rust_library_host {
     name: "libvirtio_vsock",
     crate_name: "virtio_vsock",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.6.0",
+    cargo_pkg_version: "0.8.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
@@ -25,4 +25,5 @@ rust_library_host {
         "libvirtio_queue",
         "libvm_memory_android",
     ],
+    compile_multilib: "first",
 }

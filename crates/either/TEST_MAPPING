@@ -7,7 +7,7 @@
       "path": "external/rust/android-crates-io/crates/hashbrown"
     },
     {
-      "path": "external/rust/crates/libsqlite3-sys"
+      "path": "external/rust/android-crates-io/crates/libsqlite3-sys"
     },
     {
       "path": "external/rust/android-crates-io/crates/tinytemplate"

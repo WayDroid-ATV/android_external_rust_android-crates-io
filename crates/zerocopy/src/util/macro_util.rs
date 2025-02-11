@@ -29,7 +29,7 @@ use crate::{
         invariant::{self, AtLeast, Invariants},
         AliasingSafe, AliasingSafeReason, BecauseExclusive, BecauseImmutable,
     },
-    Immutable, IntoBytes, Ptr, TryFromBytes, Unalign, ValidityError,
+    FromBytes, Immutable, IntoBytes, Ptr, TryFromBytes, Unalign, ValidityError,
 };
 
 /// Projects the type of the field at `Index` in `Self`.
@@ -74,7 +74,10 @@ pub struct AlignOf<T> {
 
 impl<T> AlignOf<T> {
     #[inline(never)] // Make `missing_inline_in_public_items` happy.
-    #[cfg_attr(coverage_nightly, coverage(off))]
+    #[cfg_attr(
+        all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS),
+        coverage(off)
+    )]
     pub fn into_t(self) -> T {
         unreachable!()
     }
@@ -89,7 +92,10 @@ pub union MaxAlignsOf<T, U> {
 
 impl<T, U> MaxAlignsOf<T, U> {
     #[inline(never)] // Make `missing_inline_in_public_items` happy.
-    #[cfg_attr(coverage_nightly, coverage(off))]
+    #[cfg_attr(
+        all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS),
+        coverage(off)
+    )]
     pub fn new(_t: T, _u: U) -> MaxAlignsOf<T, U> {
         unreachable!()
     }
@@ -546,6 +552,8 @@ fn try_cast_or_pme<Src, Dst, I, R>(
     ValidityError<Ptr<'_, Src, I>, Dst>,
 >
 where
+    // TODO(#2226): There should be a `Src: FromBytes` bound here, but doing so
+    // requires deeper surgery.
     Src: IntoBytes,
     Dst: TryFromBytes + AliasingSafe<Src, I::Aliasing, R>,
     I: Invariants<Validity = invariant::Valid>,
@@ -675,7 +683,7 @@ where
 #[inline(always)]
 pub fn try_transmute_mut<Src, Dst>(src: &mut Src) -> Result<&mut Dst, ValidityError<&mut Src, Dst>>
 where
-    Src: IntoBytes,
+    Src: FromBytes + IntoBytes,
     Dst: TryFromBytes,
 {
     match try_cast_or_pme::<Src, Dst, _, BecauseExclusive>(Ptr::from_mut(src)) {

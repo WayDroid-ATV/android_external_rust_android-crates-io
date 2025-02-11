@@ -1,4 +1,6 @@
 #![warn(missing_docs)]
+#![allow(clippy::type_complexity)]
+#![cfg_attr(doc_cfg, feature(doc_cfg))]
 /*!
 
 # Plotters - A Rust drawing library focusing on data plotting for both WASM and native applications 🦀📈🚀
@@ -152,7 +154,7 @@ including bitmap, vector graph, piston window, GTK/Cairo and WebAssembly.
     </a>
     <div class="galleryText">
         The 1D Gaussian Distribution
-        <a href="https://github.com/plotters-rs/plotters/blob/master/plotters/examples/nomal-dist2.rs">[code]</a>
+        <a href="https://github.com/plotters-rs/plotters/blob/master/plotters/examples/normal-dist2.rs">[code]</a>
     </div>
 </div>
 
@@ -361,7 +363,7 @@ The feature `evcxr` should be enabled when including Plotters to Jupyter Noteboo
 The following code shows a minimal example of this.
 
 ```text
-:dep plotters = { version = "^0.3.5", default_features = false, features = ["evcxr", "all_series", "all_elements"] }
+:dep plotters = { version = "^0.3.6", default-features = false, features = ["evcxr", "all_series", "all_elements"] }
 extern crate plotters;
 use plotters::prelude::*;
 
@@ -419,19 +421,19 @@ Also, there's a static HTML version of this notebook available at [this location
 Rust is a perfect language for data visualization. Although there are many mature visualization libraries in many different languages, Rust is one of the best languages that fits the need.
 
 * **Easy to use** Rust has a very good iterator system built into the standard library. With the help of iterators,
-plotting in Rust can be as easy as most of the high-level programming languages. The Rust based plotting library
-can be very easy to use.
+  plotting in Rust can be as easy as most of the high-level programming languages. The Rust based plotting library
+  can be very easy to use.
 
 * **Fast** If you need to render a figure with trillions of data points,
-Rust is a good choice. Rust's performance allows you to combine the data processing step
-and rendering step into a single application. When plotting in high-level programming languages,
-e.g. Javascript or Python, data points must be down-sampled before feeding into the plotting
-program because of the performance considerations. Rust is fast enough to do the data processing and visualization
-within a single program. You can also integrate the
-figure rendering code into your application to handle a huge amount of data and visualize it in real-time.
+  Rust is a good choice. Rust's performance allows you to combine the data processing step
+  and rendering step into a single application. When plotting in high-level programming languages,
+  e.g. Javascript or Python, data points must be down-sampled before feeding into the plotting
+  program because of the performance considerations. Rust is fast enough to do the data processing and visualization
+  within a single program. You can also integrate the
+  figure rendering code into your application to handle a huge amount of data and visualize it in real-time.
 
 * **WebAssembly Support** Rust is one of the languages with the best WASM support. Plotting in Rust could be
-very useful for visualization on a web page and would have a huge performance improvement comparing to Javascript.
+  very useful for visualization on a web page and would have a huge performance improvement comparing to Javascript.
 
 ## Plotting on HTML5 canvas with WASM Backend
 
@@ -639,7 +641,7 @@ plotters = { git = "https://github.com/plotters-rs/plotters.git" }
 
 ### Reducing Depending Libraries && Turning Off Backends
 Plotters now supports use features to control the backend dependencies. By default, `BitMapBackend` and `SVGBackend` are supported,
-use `default_features = false` in the dependency description in `Cargo.toml` and you can cherry-pick the backend implementations.
+use `default-features = false` in the dependency description in `Cargo.toml` and you can cherry-pick the backend implementations.
 
 - `svg` Enable the `SVGBackend`
 - `bitmap` Enable the `BitMapBackend`
@@ -648,16 +650,16 @@ For example, the following dependency description would avoid compiling with bit
 
 ```toml
 [dependencies]
-plotters = { git = "https://github.com/plotters-rs/plotters.git", default_features = false, features = ["svg"] }
+plotters = { git = "https://github.com/plotters-rs/plotters.git", default-features = false, features = ["svg"] }
 ```
 
 The library also allows consumers to make use of the [`Palette`](https://crates.io/crates/palette/) crate's color types by default.
-This behavior can also be turned off by setting `default_features = false`.
+This behavior can also be turned off by setting `default-features = false`.
 
 ### List of Features
 
 This is the full list of features that is defined by `Plotters` crate.
-Use `default_features = false` to disable those default enabled features,
+Use `default-features = false` to disable those default enabled features,
 and then you should be able to cherry-pick what features you want to include into `Plotters` crate.
 By doing so, you can minimize the number of dependencies down to only `itertools` and compile time is less than 6s.
 
@@ -796,13 +798,11 @@ pub mod style;
 
 /// Evaluation Context for Rust. See [the evcxr crate](https://crates.io/crates/evcxr) for more information.
 #[cfg(feature = "evcxr")]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "evcxr")))]
 pub mod evcxr;
 
 #[cfg(test)]
 pub use crate::drawing::{check_color, create_mocked_drawing_area};
-
-#[cfg(feature = "palette_ext")]
-pub use palette;
 
 /// The module imports the most commonly used types and modules in Plotters
 pub mod prelude {
@@ -825,6 +825,7 @@ pub mod prelude {
     pub use crate::coord::combinators::LogRange;
 
     #[cfg(feature = "chrono")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "chrono")))]
     pub use crate::coord::types::{
         IntoMonthly, IntoYearly, RangedDate, RangedDateTime, RangedDuration,
     };
@@ -836,23 +837,30 @@ pub mod prelude {
 
     // Series helpers
     #[cfg(feature = "area_series")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "area_series")))]
     pub use crate::series::AreaSeries;
     #[cfg(feature = "histogram")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "histogram")))]
     pub use crate::series::Histogram;
-    #[cfg(feature = "line_series")]
-    pub use crate::series::LineSeries;
     #[cfg(feature = "point_series")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "point_series")))]
     pub use crate::series::PointSeries;
     #[cfg(feature = "surface_series")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "surface_series")))]
     pub use crate::series::SurfaceSeries;
+    #[cfg(feature = "line_series")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "line_series")))]
+    pub use crate::series::{DashedLineSeries, DottedLineSeries, LineSeries};
 
     // Styles
     pub use crate::style::{BLACK, BLUE, CYAN, GREEN, MAGENTA, RED, TRANSPARENT, WHITE, YELLOW};
 
     #[cfg(feature = "full_palette")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "full_palette")))]
     pub use crate::style::full_palette;
 
     #[cfg(feature = "colormaps")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "colormaps")))]
     pub use crate::style::colors::colormaps::*;
 
     pub use crate::style::{
@@ -868,13 +876,17 @@ pub mod prelude {
     };
 
     #[cfg(feature = "boxplot")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "boxplot")))]
     pub use crate::element::Boxplot;
     #[cfg(feature = "candlestick")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "candlestick")))]
     pub use crate::element::CandleStick;
     #[cfg(feature = "errorbar")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "errorbar")))]
     pub use crate::element::ErrorBar;
 
     #[cfg(feature = "bitmap_backend")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "bitmap_backend")))]
     pub use crate::element::BitMapElement;
 
     // Data
@@ -882,6 +894,7 @@ pub mod prelude {
 
     // TODO: This should be deprecated and completely removed
     #[cfg(feature = "deprecated_items")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "deprecated_items")))]
     #[allow(deprecated)]
     pub use crate::element::Path;
 
@@ -893,13 +906,16 @@ pub mod prelude {
         Result<T, crate::drawing::DrawingAreaErrorKind<D::ErrorType>>;
 
     #[cfg(feature = "evcxr")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "evcxr")))]
     pub use crate::evcxr::evcxr_figure;
 
     // Re-export tier 1 backends for backward compatibility
     #[cfg(feature = "bitmap_backend")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "bitmap_backend")))]
     pub use plotters_bitmap::BitMapBackend;
 
     #[cfg(feature = "svg_backend")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "svg_backend")))]
     pub use plotters_svg::SVGBackend;
 }
 
@@ -907,11 +923,13 @@ pub mod prelude {
 pub mod backend {
     pub use plotters_backend::DrawingBackend;
     #[cfg(feature = "bitmap_backend")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "bitmap_backend")))]
     pub use plotters_bitmap::{
         bitmap_pixel::{BGRXPixel, PixelFormat, RGBPixel},
         BitMapBackend,
     };
     #[cfg(feature = "svg_backend")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "svg_backend")))]
     pub use plotters_svg::SVGBackend;
 }
 

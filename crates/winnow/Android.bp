@@ -17,7 +17,7 @@ rust_library_host {
     name: "libwinnow",
     crate_name: "winnow",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.5.37",
+    cargo_pkg_version: "0.6.26",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [

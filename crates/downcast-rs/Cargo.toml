@@ -10,27 +10,18 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
+edition = "2021"
+rust-version = "1.56"
 name = "downcast-rs"
-version = "1.2.1"
-authors = [
-    "Ashish Myles <marcianx@gmail.com>",
-    "Runji Wang <wangrunji0408@163.com>",
-]
-description = """
-Trait object downcasting support using only safe Rust. It supports type
-parameters, associated types, and type constraints.
-"""
+version = "2.0.1"
+description = "Trait object downcasting support using only safe Rust. It supports type\nparameters, associated types, and type constraints.\n"
 readme = "README.md"
-keywords = [
-    "downcast",
-    "any",
-    "trait",
-    "associated",
-    "no_std",
-]
+keywords = ["downcast", "any", "trait", "associated", "no_std"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/marcianx/downcast-rs"
+resolver = "2"
 
 [features]
-default = ["std"]
+default = ["std", "sync"]
 std = []
+sync = []

@@ -38,7 +38,7 @@
 /// ```
 ///
 /// Using this macro is equivalent to using the
-/// [`and`][crate::matcher::Matcher::and] method:
+/// [`and`][crate::matcher::MatcherBase::and] method:
 ///
 /// ```
 /// # use googletest::prelude::*;
@@ -50,109 +50,41 @@
 /// ```
 ///
 /// Assertion failure messages are not guaranteed to be identical, however.
+///
+///  If an inner matcher is `eq(...)`, it can be omitted:
+///
+/// ```
+/// # use googletest::prelude::*;
+///
+/// verify_that!(123, all![123, lt(1000), gt(100)])
+/// #     .unwrap();
+/// ```
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __all {
-    ($($matcher:expr),* $(,)?) => {{
-        use $crate::matchers::__internal_unstable_do_not_depend_on_these::AllMatcher;
-        AllMatcher::new([$(Box::new($matcher)),*])
+    ($(,)?) => {{
+        $crate::matchers::anything()
+    }} ;
+    ($matcher:expr $(,)?) => {{
+        use $crate::matcher_support::__internal_unstable_do_not_depend_on_these::auto_eq;
+        auto_eq!($matcher)
+    }};
+    ($head:expr, $head2:expr $(,)?) => {{
+        use $crate::matcher_support::__internal_unstable_do_not_depend_on_these::auto_eq;
+        $crate::matchers::__internal_unstable_do_not_depend_on_these::ConjunctionMatcher::new(auto_eq!($head), auto_eq!($head2))
+    }};
+    ($head:expr, $head2:expr, $($tail:expr),+ $(,)?) => {{
+        use $crate::matcher_support::__internal_unstable_do_not_depend_on_these::auto_eq;
+        $crate::__all![
+            $crate::matchers::__internal_unstable_do_not_depend_on_these::ConjunctionMatcher::new(auto_eq!($head), auto_eq!($head2)),
+            $($tail),+
+        ]
     }}
-}
-
-/// Functionality needed by the [`all`] macro.
-///
-/// For internal use only. API stablility is not guaranteed!
-#[doc(hidden)]
-pub mod internal {
-    use crate::description::Description;
-    use crate::matcher::{Matcher, MatcherResult};
-    use crate::matchers::anything;
-    use std::fmt::Debug;
-
-    /// A matcher which matches an input value matched by all matchers in the
-    /// array `components`.
-    ///
-    /// For internal use only. API stablility is not guaranteed!
-    #[doc(hidden)]
-    pub struct AllMatcher<'a, T: Debug + ?Sized, const N: usize> {
-        components: [Box<dyn Matcher<ActualT = T> + 'a>; N],
-    }
-
-    impl<'a, T: Debug + ?Sized, const N: usize> AllMatcher<'a, T, N> {
-        /// Constructs an [`AllMatcher`] with the given component matchers.
-        ///
-        /// Intended for use only by the [`all`] macro.
-        pub fn new(components: [Box<dyn Matcher<ActualT = T> + 'a>; N]) -> Self {
-            Self { components }
-        }
-    }
-
-    impl<'a, T: Debug + ?Sized, const N: usize> Matcher for AllMatcher<'a, T, N> {
-        type ActualT = T;
-
-        fn matches(&self, actual: &Self::ActualT) -> MatcherResult {
-            for component in &self.components {
-                match component.matches(actual) {
-                    MatcherResult::NoMatch => {
-                        return MatcherResult::NoMatch;
-                    }
-                    MatcherResult::Match => {}
-                }
-            }
-            MatcherResult::Match
-        }
-
-        fn explain_match(&self, actual: &Self::ActualT) -> Description {
-            match N {
-                0 => anything::<T>().explain_match(actual),
-                1 => self.components[0].explain_match(actual),
-                _ => {
-                    let failures = self
-                        .components
-                        .iter()
-                        .filter(|component| component.matches(actual).is_no_match())
-                        .collect::<Vec<_>>();
-
-                    if failures.len() == 1 {
-                        failures[0].explain_match(actual)
-                    } else {
-                        Description::new()
-                            .collect(
-                                failures
-                                    .into_iter()
-                                    .map(|component| component.explain_match(actual)),
-                            )
-                            .bullet_list()
-                    }
-                }
-            }
-        }
-
-        fn describe(&self, matcher_result: MatcherResult) -> Description {
-            match N {
-                0 => anything::<T>().describe(matcher_result),
-                1 => self.components[0].describe(matcher_result),
-                _ => {
-                    let header = if matcher_result.into() {
-                        "has all the following properties:"
-                    } else {
-                        "has at least one of the following properties:"
-                    };
-                    Description::new().text(header).nested(
-                        Description::new()
-                            .bullet_list()
-                            .collect(self.components.iter().map(|m| m.describe(matcher_result))),
-                    )
-                }
-            }
-        }
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::internal;
-    use crate::matcher::{Matcher, MatcherResult};
+    use crate::matcher::MatcherResult;
     use crate::prelude::*;
     use indoc::indoc;
 
@@ -160,10 +92,10 @@ mod tests {
     fn description_shows_more_than_one_matcher() -> Result<()> {
         let first_matcher = starts_with("A");
         let second_matcher = ends_with("string");
-        let matcher: internal::AllMatcher<String, 2> = all!(first_matcher, second_matcher);
+        let matcher = all!(first_matcher, second_matcher);
 
         verify_that!(
-            matcher.describe(MatcherResult::Match),
+            Matcher::<&String>::describe(&matcher, MatcherResult::Match),
             displays_as(eq(indoc!(
                 "
                 has all the following properties:
@@ -176,10 +108,10 @@ mod tests {
     #[test]
     fn description_shows_one_matcher_directly() -> Result<()> {
         let first_matcher = starts_with("A");
-        let matcher: internal::AllMatcher<String, 1> = all!(first_matcher);
+        let matcher = all!(first_matcher);
 
         verify_that!(
-            matcher.describe(MatcherResult::Match),
+            Matcher::<&String>::describe(&matcher, MatcherResult::Match),
             displays_as(eq("starts with prefix \"A\""))
         )
     }
@@ -189,7 +121,7 @@ mod tests {
     {
         let first_matcher = starts_with("Another");
         let second_matcher = ends_with("string");
-        let matcher: internal::AllMatcher<str, 2> = all!(first_matcher, second_matcher);
+        let matcher = all!(first_matcher, second_matcher);
 
         verify_that!(
             matcher.explain_match("A string"),
@@ -200,11 +132,16 @@ mod tests {
     #[test]
     fn mismatch_description_is_simple_when_only_one_consistuent() -> Result<()> {
         let first_matcher = starts_with("Another");
-        let matcher: internal::AllMatcher<str, 1> = all!(first_matcher);
+        let matcher = all!(first_matcher);
 
         verify_that!(
             matcher.explain_match("A string"),
             displays_as(eq("which does not start with \"Another\""))
         )
+    }
+
+    #[test]
+    fn all_with_auto_eq() -> Result<()> {
+        verify_that!(42, all![eq(42), 42, lt(100)])
     }
 }

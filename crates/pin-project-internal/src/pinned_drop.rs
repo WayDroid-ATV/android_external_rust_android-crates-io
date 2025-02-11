@@ -1,4 +1,6 @@
-use proc_macro2::TokenStream;
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
+use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use syn::{
     parse_quote, spanned::Spanned, token::Colon, visit_mut::VisitMut, Error, FnArg,
@@ -114,7 +116,7 @@ fn validate_sig(sig: &Signature) -> Result<()> {
     const INVALID_ARGUMENT: &str = "method `drop` must take an argument `self: Pin<&mut Self>`";
 
     if sig.ident != "drop" {
-        bail!(sig.ident, "method `{}` is not a member of trait `PinnedDrop", sig.ident,);
+        bail!(sig.ident, "method `{}` is not a member of trait `PinnedDrop", sig.ident);
     }
 
     if let ReturnType::Type(_, ty) = &sig.output {
@@ -182,7 +184,7 @@ fn expand_impl(item: &mut ItemImpl) {
     item.attrs.push(parse_quote!(#[doc(hidden)]));
 
     let path = &mut item.trait_.as_mut().expect("unexpected inherent impl").1;
-    *path = parse_quote_spanned! { path.span() =>
+    *path = parse_quote_spanned! { Span::call_site().located_at(path.span()) =>
         ::pin_project::__private::PinnedDrop
     };
 
@@ -199,7 +201,7 @@ fn expand_impl(item: &mut ItemImpl) {
         drop_inner.sig.generics = item.generics.clone();
         let receiver = drop_inner.sig.receiver().expect("drop() should have a receiver").clone();
         let pat = Box::new(Pat::Ident(PatIdent {
-            attrs: Vec::new(),
+            attrs: vec![],
             by_ref: None,
             mutability: receiver.mutability,
             ident: Ident::new("__self", receiver.self_token.span()),
@@ -228,7 +230,10 @@ fn expand_impl(item: &mut ItemImpl) {
     };
 
     method.block.stmts = parse_quote! {
-        #[allow(clippy::needless_pass_by_value)] // This lint does not warn the receiver.
+        #[allow(
+            clippy::needless_pass_by_value, // This lint does not warn the receiver.
+            clippy::single_call_fn
+        )]
         #drop_inner
         __drop_inner(#self_token);
     };

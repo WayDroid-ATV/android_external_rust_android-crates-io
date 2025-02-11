@@ -21,14 +21,14 @@ diff --git b/tests/test_fmt.rs a/tests/test_fmt.rs
 index 9766d366..016b4b8c 100644
 --- b/tests/test_fmt.rs
 +++ a/tests/test_fmt.rs
-@@ -68,27 +68,27 @@ Error {
- 
+@@ -68,26 +68,26 @@
+
  #[test]
  fn test_display() {
 -    assert_eq!("g failed", h().unwrap_err().to_string());
 +    assert!(h().unwrap_err().to_string().starts_with("g failed"));
  }
- 
+
  #[test]
  fn test_altdisplay() {
 -    assert_eq!(EXPECTED_ALTDISPLAY_F, format!("{:#}", f().unwrap_err()));
@@ -38,9 +38,8 @@ index 9766d366..016b4b8c 100644
 +    assert!(format!("{:#}", g().unwrap_err()).starts_with(EXPECTED_ALTDISPLAY_G));
 +    assert!(format!("{:#}", h().unwrap_err()).starts_with(EXPECTED_ALTDISPLAY_H));
  }
- 
+
  #[test]
- #[cfg_attr(not(std_backtrace), ignore)]
  fn test_debug() {
 -    assert_eq!(EXPECTED_DEBUG_F, format!("{:?}", f().unwrap_err()));
 -    assert_eq!(EXPECTED_DEBUG_G, format!("{:?}", g().unwrap_err()));
@@ -49,7 +48,7 @@ index 9766d366..016b4b8c 100644
 +    assert!(format!("{:?}", g().unwrap_err()).starts_with(EXPECTED_DEBUG_G));
 +    assert!(format!("{:?}", h().unwrap_err()).starts_with(EXPECTED_DEBUG_H));
  }
- 
+
  #[test]
  fn test_altdebug() {
 -    assert_eq!(EXPECTED_ALTDEBUG_F, format!("{:#?}", f().unwrap_err()));

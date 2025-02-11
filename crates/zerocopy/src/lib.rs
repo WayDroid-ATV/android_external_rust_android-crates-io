@@ -864,7 +864,10 @@ impl PointerMetadata for usize {
 // SAFETY: Delegates safety to `DstLayout::for_slice`.
 unsafe impl<T> KnownLayout for [T] {
     #[allow(clippy::missing_inline_in_public_items)]
-    #[cfg_attr(coverage_nightly, coverage(off))]
+    #[cfg_attr(
+        all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS),
+        coverage(off)
+    )]
     fn only_derive_is_allowed_to_implement_this_trait()
     where
         Self: Sized,
@@ -948,6 +951,14 @@ impl_known_layout!(
     bool, char,
     NonZeroU8, NonZeroI8, NonZeroU16, NonZeroI16, NonZeroU32, NonZeroI32,
     NonZeroU64, NonZeroI64, NonZeroU128, NonZeroI128, NonZeroUsize, NonZeroIsize
+);
+#[rustfmt::skip]
+#[cfg(feature = "float-nightly")]
+impl_known_layout!(
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "float-nightly")))]
+    f16,
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "float-nightly")))]
+    f128
 );
 #[rustfmt::skip]
 impl_known_layout!(
@@ -5447,6 +5458,17 @@ pub unsafe trait Unaligned {
 #[cfg(any(feature = "derive", test))]
 #[cfg_attr(doc_cfg, doc(cfg(feature = "derive")))]
 pub use zerocopy_derive::ByteHash;
+
+/// Derives an optimized implementation of [`PartialEq`] and [`Eq`] for types
+/// that implement [`IntoBytes`] and [`Immutable`].
+///
+/// The standard library's derive for [`PartialEq`] generates a recursive
+/// descent into the fields of the type it is applied to. Instead, the
+/// implementation derived by this macro performs a single slice comparison of
+/// the bytes of the two values being compared.
+#[cfg(any(feature = "derive", test))]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "derive")))]
+pub use zerocopy_derive::ByteEq;
 
 #[cfg(feature = "alloc")]
 #[cfg_attr(doc_cfg, doc(cfg(feature = "alloc")))]

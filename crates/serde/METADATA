@@ -1,17 +1,17 @@
 name: "serde"
 description: "A generic serialization/deserialization framework"
 third_party {
-  version: "1.0.195"
+  version: "1.0.217"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 10
-    day: 24
+    year: 2025
+    month: 1
+    day: 22
   }
   homepage: "https://crates.io/crates/serde"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/serde/serde-1.0.195.crate"
-    version: "1.0.195"
+    value: "https://static.crates.io/crates/serde/serde-1.0.217.crate"
+    version: "1.0.217"
   }
 }

@@ -11,21 +11,66 @@
 
 [package]
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.66"
 name = "drm"
-version = "0.12.0"
+version = "0.14.1"
 authors = [
     "Tyler Slabinski <tslabinski@slabity.net>",
     "Victoria Brekenfeld <crates-io@drakulix.de>",
 ]
+build = false
 exclude = [
     ".gitignore",
     ".github",
 ]
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Safe, low-level bindings to the Direct Rendering Manager API"
 readme = "README.md"
 license = "MIT"
 repository = "https://github.com/Smithay/drm-rs"
+
+[lib]
+name = "drm"
+path = "src/lib.rs"
+
+[[example]]
+name = "atomic_modeset"
+path = "examples/atomic_modeset.rs"
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+
+[[example]]
+name = "ffi"
+path = "examples/ffi.rs"
+
+[[example]]
+name = "kms_interactive"
+path = "examples/kms_interactive.rs"
+
+[[example]]
+name = "legacy_modeset"
+path = "examples/legacy_modeset.rs"
+
+[[example]]
+name = "list_modes"
+path = "examples/list_modes.rs"
+
+[[example]]
+name = "properties"
+path = "examples/properties.rs"
+
+[[example]]
+name = "resources"
+path = "examples/resources.rs"
+
+[[example]]
+name = "syncobj"
+path = "examples/syncobj.rs"
 
 [dependencies.bitflags]
 version = "2"
@@ -38,7 +83,7 @@ features = [
 ]
 
 [dependencies.drm-ffi]
-version = "0.8.0"
+version = "0.9.0"
 
 [dependencies.drm-fourcc]
 version = "^2.2.0"
@@ -67,3 +112,6 @@ version = "13"
 
 [features]
 use_bindgen = ["drm-ffi/use_bindgen"]
+
+[target.'cfg(target_os = "freebsd")'.dependencies.libc]
+version = "0.2"

@@ -28,6 +28,7 @@ rust_library {
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "apex_inherit",
     visibility: [
         "//external/rust/android-crates-io/crates/der:__subpackages__",
         "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
@@ -56,6 +57,7 @@ rust_library_rlib {
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "apex_inherit",
     visibility: [
         "//external/rust/android-crates-io/crates/der:__subpackages__",
         "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",

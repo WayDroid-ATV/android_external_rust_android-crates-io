@@ -4,7 +4,7 @@
       "path": "external/rust/android-crates-io/crates/argh"
     },
     {
-      "path": "external/rust/crates/libsqlite3-sys"
+      "path": "external/rust/android-crates-io/crates/libsqlite3-sys"
     },
     {
       "path": "packages/modules/Virtualization/apkdmverity"

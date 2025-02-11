@@ -1,0 +1,17 @@
+name: "zerovec"
+description: "Zero-copy vector backed by a byte array"
+third_party {
+  version: "0.11.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 1
+    day: 24
+  }
+  homepage: "https://crates.io/crates/zerovec"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/zerovec/zerovec-0.11.0.crate"
+    version: "0.11.0"
+  }
+}

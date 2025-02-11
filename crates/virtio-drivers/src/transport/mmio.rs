@@ -9,10 +9,10 @@ use crate::{
 };
 use core::{
     convert::{TryFrom, TryInto},
-    fmt::{self, Display, Formatter},
     mem::{align_of, size_of},
     ptr::NonNull,
 };
+use zerocopy::{FromBytes, Immutable, IntoBytes};
 
 const MAGIC_VALUE: u32 = 0x7472_6976;
 pub(crate) const LEGACY_VERSION: u32 = 1;
@@ -51,30 +51,20 @@ impl From<MmioVersion> for u32 {
 }
 
 /// An error encountered initialising a VirtIO MMIO transport.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, Error, PartialEq)]
 pub enum MmioError {
     /// The header doesn't start with the expected magic value 0x74726976.
+    #[error("Invalid magic value {0:#010x} (expected 0x74726976)")]
     BadMagic(u32),
     /// The header reports a version number that is neither 1 (legacy) nor 2 (modern).
+    #[error("Unsupported Virtio MMIO version {0}")]
     UnsupportedVersion(u32),
     /// The header reports a device ID of 0.
+    #[error("Device ID was zero")]
     ZeroDeviceId,
-}
-
-impl Display for MmioError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self {
-            Self::BadMagic(magic) => write!(
-                f,
-                "Invalid magic value {:#010x} (expected 0x74726976).",
-                magic
-            ),
-            Self::UnsupportedVersion(version) => {
-                write!(f, "Unsupported Virtio MMIO version {}.", version)
-            }
-            Self::ZeroDeviceId => write!(f, "Device ID was zero."),
-        }
-    }
+    /// The MMIO region size was smaller than the header size we expect.
+    #[error("MMIO region too small")]
+    MmioRegionTooSmall,
 }
 
 /// MMIO Device Register Interface, both legacy and modern.
@@ -277,6 +267,8 @@ impl VirtIOHeader {
 pub struct MmioTransport {
     header: NonNull<VirtIOHeader>,
     version: MmioVersion,
+    /// The size in bytes of the config space.
+    config_space_size: usize,
 }
 
 impl MmioTransport {
@@ -286,7 +278,7 @@ impl MmioTransport {
     /// # Safety
     /// `header` must point to a properly aligned valid VirtIO MMIO region, which must remain valid
     /// for the lifetime of the transport that is returned.
-    pub unsafe fn new(header: NonNull<VirtIOHeader>) -> Result<Self, MmioError> {
+    pub unsafe fn new(header: NonNull<VirtIOHeader>, mmio_size: usize) -> Result<Self, MmioError> {
         let magic = volread!(header, magic);
         if magic != MAGIC_VALUE {
             return Err(MmioError::BadMagic(magic));
@@ -294,8 +286,15 @@ impl MmioTransport {
         if volread!(header, device_id) == 0 {
             return Err(MmioError::ZeroDeviceId);
         }
+        let Some(config_space_size) = mmio_size.checked_sub(CONFIG_SPACE_OFFSET) else {
+            return Err(MmioError::MmioRegionTooSmall);
+        };
         let version = volread!(header, version).try_into()?;
-        Ok(Self { header, version })
+        Ok(Self {
+            header,
+            version,
+            config_space_size,
+        })
     }
 
     /// Gets the version of the VirtIO MMIO transport.
@@ -498,15 +497,57 @@ impl Transport for MmioTransport {
         }
     }
 
-    fn config_space<T>(&self) -> Result<NonNull<T>, Error> {
-        if align_of::<T>() > 4 {
-            // Panic as this should only happen if the driver is written incorrectly.
-            panic!(
-                "Driver expected config space alignment of {} bytes, but VirtIO only guarantees 4 byte alignment.",
-                align_of::<T>()
-            );
+    fn read_config_generation(&self) -> u32 {
+        // SAFETY: self.header points to a valid VirtIO MMIO region.
+        unsafe { volread!(self.header, config_generation) }
+    }
+
+    fn read_config_space<T: FromBytes>(&self, offset: usize) -> Result<T, Error> {
+        assert!(align_of::<T>() <= 4,
+            "Driver expected config space alignment of {} bytes, but VirtIO only guarantees 4 byte alignment.",
+            align_of::<T>());
+        assert!(offset % align_of::<T>() == 0);
+
+        if self.config_space_size < offset + size_of::<T>() {
+            Err(Error::ConfigSpaceTooSmall)
+        } else {
+            // SAFETY: The caller of `MmioTransport::new` guaranteed that the header pointer was valid,
+            // which includes the config space.
+            unsafe {
+                Ok(self
+                    .header
+                    .cast::<T>()
+                    .byte_add(CONFIG_SPACE_OFFSET)
+                    .byte_add(offset)
+                    .read_volatile())
+            }
         }
-        Ok(NonNull::new((self.header.as_ptr() as usize + CONFIG_SPACE_OFFSET) as _).unwrap())
+    }
+
+    fn write_config_space<T: IntoBytes + Immutable>(
+        &mut self,
+        offset: usize,
+        value: T,
+    ) -> Result<(), Error> {
+        assert!(align_of::<T>() <= 4,
+            "Driver expected config space alignment of {} bytes, but VirtIO only guarantees 4 byte alignment.",
+            align_of::<T>());
+        assert!(offset % align_of::<T>() == 0);
+
+        if self.config_space_size < offset + size_of::<T>() {
+            Err(Error::ConfigSpaceTooSmall)
+        } else {
+            // SAFETY: The caller of `MmioTransport::new` guaranteed that the header pointer was valid,
+            // which includes the config space.
+            unsafe {
+                self.header
+                    .cast::<T>()
+                    .byte_add(CONFIG_SPACE_OFFSET)
+                    .byte_add(offset)
+                    .write_volatile(value);
+            }
+            Ok(())
+        }
     }
 }
 

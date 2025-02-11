@@ -108,6 +108,7 @@ derive!(FromBytes => derive_from_bytes => derive_from_bytes_inner);
 derive!(IntoBytes => derive_into_bytes => derive_into_bytes_inner);
 derive!(Unaligned => derive_unaligned => derive_unaligned_inner);
 derive!(ByteHash => derive_hash => derive_hash_inner);
+derive!(ByteEq => derive_eq => derive_eq_inner);
 
 /// Deprecated: prefer [`FromZeros`] instead.
 #[deprecated(since = "0.8.0", note = "`FromZeroes` was renamed to `FromZeros`")]
@@ -331,7 +332,15 @@ fn derive_known_layout_inner(ast: &DeriveInput, _top_level: Trait) -> Result<Tok
                             ::zerocopy::util::macro_util::Field<#leading_field_indices>
                         >::Type
                     >,)*
-                    <#trailing_field_ty as ::zerocopy::KnownLayout>::MaybeUninit
+                    // NOTE(#2302): We wrap in `ManuallyDrop` here in case the
+                    // type we're operating on is both generic and
+                    // `repr(packed)`. In that case, Rust needs to know that the
+                    // type is *either* `Sized` or has a trivial `Drop`.
+                    // `ManuallyDrop` has a trivial `Drop`, and so satisfies
+                    // this requirement.
+                    ::zerocopy::util::macro_util::core_reexport::mem::ManuallyDrop<
+                        <#trailing_field_ty as ::zerocopy::KnownLayout>::MaybeUninit
+                    >
                 )
                 where
                     #trailing_field_ty: ::zerocopy::KnownLayout,
@@ -573,6 +582,50 @@ fn derive_hash_inner(ast: &DeriveInput, _top_level: Trait) -> Result<TokenStream
                     ::zerocopy::IntoBytes::as_bytes(data)
                 )
             }
+        }
+    })
+}
+
+fn derive_eq_inner(ast: &DeriveInput, _top_level: Trait) -> Result<TokenStream, Error> {
+    // This doesn't delegate to `impl_block` because `impl_block` assumes it is deriving a
+    // `zerocopy`-defined trait, and these trait impls share a common shape that `Eq` does not.
+    // In particular, `zerocopy` traits contain a method that only `zerocopy_derive` macros
+    // are supposed to implement, and `impl_block` generating this trait method is incompatible
+    // with `Eq`.
+    let type_ident = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+    let where_predicates = where_clause.map(|clause| &clause.predicates);
+    Ok(quote! {
+        // TODO(#553): Add a test that generates a warning when
+        // `#[allow(deprecated)]` isn't present.
+        #[allow(deprecated)]
+        // While there are not currently any warnings that this suppresses (that
+        // we're aware of), it's good future-proofing hygiene.
+        #[automatically_derived]
+        impl #impl_generics ::zerocopy::util::macro_util::core_reexport::cmp::PartialEq for #type_ident #ty_generics
+        where
+            Self: ::zerocopy::IntoBytes + ::zerocopy::Immutable,
+            #where_predicates
+        {
+            fn eq(&self, other: &Self) -> bool {
+                ::zerocopy::util::macro_util::core_reexport::cmp::PartialEq::eq(
+                    ::zerocopy::IntoBytes::as_bytes(self),
+                    ::zerocopy::IntoBytes::as_bytes(other),
+                )
+            }
+        }
+
+        // TODO(#553): Add a test that generates a warning when
+        // `#[allow(deprecated)]` isn't present.
+        #[allow(deprecated)]
+        // While there are not currently any warnings that this suppresses (that
+        // we're aware of), it's good future-proofing hygiene.
+        #[automatically_derived]
+        impl #impl_generics ::zerocopy::util::macro_util::core_reexport::cmp::Eq for #type_ident #ty_generics
+        where
+            Self: ::zerocopy::IntoBytes + ::zerocopy::Immutable,
+            #where_predicates
+        {
         }
     })
 }
@@ -1344,6 +1397,7 @@ enum Trait {
     Unaligned,
     Sized,
     ByteHash,
+    ByteEq,
 }
 
 impl ToTokens for Trait {
@@ -1367,6 +1421,7 @@ impl ToTokens for Trait {
             Trait::Unaligned => "Unaligned",
             Trait::Sized => "Sized",
             Trait::ByteHash => "ByteHash",
+            Trait::ByteEq => "ByteEq",
         };
         let ident = Ident::new(s, Span::call_site());
         tokens.extend(core::iter::once(TokenTree::Ident(ident)));

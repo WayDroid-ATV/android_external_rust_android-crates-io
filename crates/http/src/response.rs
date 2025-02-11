@@ -546,9 +546,6 @@ impl Builder {
 
     /// Set the HTTP status for this response.
     ///
-    /// This function will configure the HTTP status code of the `Response` that
-    /// will be returned from `Builder::build`.
-    ///
     /// By default this is `200`.
     ///
     /// # Examples
@@ -573,9 +570,6 @@ impl Builder {
     }
 
     /// Set the HTTP version for this response.
-    ///
-    /// This function will configure the HTTP version of the `Response` that
-    /// will be returned from `Builder::build`.
     ///
     /// By default this is HTTP/1.1
     ///
@@ -625,7 +619,7 @@ impl Builder {
         self.and_then(move |mut head| {
             let name = <HeaderName as TryFrom<K>>::try_from(key).map_err(Into::into)?;
             let value = <HeaderValue as TryFrom<V>>::try_from(value).map_err(Into::into)?;
-            head.headers.append(name, value);
+            head.headers.try_append(name, value)?;
             Ok(head)
         })
     }

@@ -8,7 +8,7 @@ use core::cmp::min;
 use core::convert::TryInto;
 use core::hint::spin_loop;
 use log::debug;
-use zerocopy::FromZeroes;
+use zerocopy::FromZeros;
 
 const DEFAULT_PER_CONNECTION_BUFFER_CAPACITY: u32 = 1024;
 
@@ -343,7 +343,7 @@ struct RingBuffer {
 impl RingBuffer {
     pub fn new(capacity: usize) -> Self {
         Self {
-            buffer: FromZeroes::new_box_slice_zeroed(capacity),
+            buffer: FromZeros::new_box_zeroed_with_elems(capacity).unwrap(),
             used: 0,
             start: 0,
         }
@@ -415,6 +415,7 @@ impl RingBuffer {
 mod tests {
     use super::*;
     use crate::{
+        config::ReadOnly,
         device::socket::{
             protocol::{
                 SocketType, StreamShutdown, VirtioVsockConfig, VirtioVsockHdr, VirtioVsockOp,
@@ -426,12 +427,11 @@ mod tests {
             fake::{FakeTransport, QueueStatus, State},
             DeviceType,
         },
-        volatile::ReadOnly,
     };
     use alloc::{sync::Arc, vec};
-    use core::{mem::size_of, ptr::NonNull};
+    use core::mem::size_of;
     use std::{sync::Mutex, thread};
-    use zerocopy::{AsBytes, FromBytes};
+    use zerocopy::{FromBytes, IntoBytes};
 
     #[test]
     fn send_recv() {
@@ -446,23 +446,22 @@ mod tests {
         let hello_from_guest = "Hello from guest";
         let hello_from_host = "Hello from host";
 
-        let mut config_space = VirtioVsockConfig {
+        let config_space = VirtioVsockConfig {
             guest_cid_low: ReadOnly::new(66),
             guest_cid_high: ReadOnly::new(0),
         };
-        let state = Arc::new(Mutex::new(State {
-            queues: vec![
+        let state = Arc::new(Mutex::new(State::new(
+            vec![
                 QueueStatus::default(),
                 QueueStatus::default(),
                 QueueStatus::default(),
             ],
-            ..Default::default()
-        }));
+            config_space,
+        )));
         let transport = FakeTransport {
             device_type: DeviceType::Socket,
             max_queue_size: 32,
             device_features: 0,
-            config_space: NonNull::from(&mut config_space),
             state: state.clone(),
         };
         let mut socket = VsockConnectionManager::new(
@@ -474,7 +473,7 @@ mod tests {
             // Wait for connection request.
             State::wait_until_queue_notified(&state, TX_QUEUE_IDX);
             assert_eq!(
-                VirtioVsockHdr::read_from(
+                VirtioVsockHdr::read_from_bytes(
                     state
                         .lock()
                         .unwrap()
@@ -525,7 +524,9 @@ mod tests {
                 size_of::<VirtioVsockHdr>() + hello_from_guest.len()
             );
             assert_eq!(
-                VirtioVsockHdr::read_from_prefix(request.as_slice()).unwrap(),
+                VirtioVsockHdr::read_from_prefix(request.as_slice())
+                    .unwrap()
+                    .0,
                 VirtioVsockHdr {
                     op: VirtioVsockOp::Rw.into(),
                     src_cid: guest_cid.into(),
@@ -560,7 +561,8 @@ mod tests {
                 buf_alloc: 50.into(),
                 fwd_cnt: (hello_from_guest.len() as u32).into(),
             }
-            .write_to_prefix(response.as_mut_slice());
+            .write_to_prefix(response.as_mut_slice())
+            .unwrap();
             response[size_of::<VirtioVsockHdr>()..].copy_from_slice(hello_from_host.as_bytes());
             state
                 .lock()
@@ -570,7 +572,7 @@ mod tests {
             // Expect a shutdown.
             State::wait_until_queue_notified(&state, TX_QUEUE_IDX);
             assert_eq!(
-                VirtioVsockHdr::read_from(
+                VirtioVsockHdr::read_from_bytes(
                     state
                         .lock()
                         .unwrap()
@@ -658,23 +660,22 @@ mod tests {
             port: host_port,
         };
 
-        let mut config_space = VirtioVsockConfig {
+        let config_space = VirtioVsockConfig {
             guest_cid_low: ReadOnly::new(66),
             guest_cid_high: ReadOnly::new(0),
         };
-        let state = Arc::new(Mutex::new(State {
-            queues: vec![
+        let state = Arc::new(Mutex::new(State::new(
+            vec![
                 QueueStatus::default(),
                 QueueStatus::default(),
                 QueueStatus::default(),
             ],
-            ..Default::default()
-        }));
+            config_space,
+        )));
         let transport = FakeTransport {
             device_type: DeviceType::Socket,
             max_queue_size: 32,
             device_features: 0,
-            config_space: NonNull::from(&mut config_space),
             state: state.clone(),
         };
         let mut socket = VsockConnectionManager::new(
@@ -708,7 +709,7 @@ mod tests {
             println!("Host waiting for rejection");
             State::wait_until_queue_notified(&state, TX_QUEUE_IDX);
             assert_eq!(
-                VirtioVsockHdr::read_from(
+                VirtioVsockHdr::read_from_bytes(
                     state
                         .lock()
                         .unwrap()
@@ -753,7 +754,7 @@ mod tests {
             println!("Host waiting for response");
             State::wait_until_queue_notified(&state, TX_QUEUE_IDX);
             assert_eq!(
-                VirtioVsockHdr::read_from(
+                VirtioVsockHdr::read_from_bytes(
                     state
                         .lock()
                         .unwrap()

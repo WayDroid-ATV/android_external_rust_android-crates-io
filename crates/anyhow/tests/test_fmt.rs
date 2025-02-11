@@ -79,7 +79,6 @@ fn test_altdisplay() {
 }
 
 #[test]
-#[cfg_attr(not(std_backtrace), ignore)]
 fn test_debug() {
     assert!(format!("{:?}", f().unwrap_err()).starts_with(EXPECTED_DEBUG_F));
     assert!(format!("{:?}", g().unwrap_err()).starts_with(EXPECTED_DEBUG_G));

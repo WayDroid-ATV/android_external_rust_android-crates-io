@@ -11,19 +11,10 @@
   },
   "package": {
     "vm-memory": {
-      "device_supported": false
+      "device_supported": false,
+      "host_first_multilib": true,
+      "add_module_block": "cargo2android_module.bp.fragment"
     }
   },
-  "run_cargo": false,
-  "variants": [
-    {
-      "features": [
-        "default"
-      ],
-      "generate_rulesmk": true,
-      "generate_androidbp": false
-    },
-    {
-    }
-  ]
+  "run_cargo": false
 }

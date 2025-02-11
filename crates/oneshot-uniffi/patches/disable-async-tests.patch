@@ -1,9 +1,0 @@
-diff --git a/tests/async.rs b/tests/async.rs
-index e7633aa..59acbf5 100644
---- a/tests/async.rs
-+++ b/tests/async.rs
-@@ -1,3 +1,4 @@
-+#![cfg(not(soong))]
- #![cfg(all(feature = "async", not(loom)))]
- 
- use core::mem;

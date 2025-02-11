@@ -1,5 +1,5 @@
 #[derive(Copy, Clone)]
-pub struct Decoder;
+pub(crate) struct Decoder;
 
 impl toml_test_harness::Decoder for Decoder {
     fn name(&self) -> &str {
@@ -9,14 +9,14 @@ impl toml_test_harness::Decoder for Decoder {
     fn decode(&self, data: &[u8]) -> Result<toml_test_harness::Decoded, toml_test_harness::Error> {
         let data = std::str::from_utf8(data).map_err(toml_test_harness::Error::new)?;
         let document = data
-            .parse::<toml_edit::Document>()
+            .parse::<toml_edit::DocumentMut>()
             .map_err(toml_test_harness::Error::new)?;
         document_to_decoded(&document)
     }
 }
 
 fn document_to_decoded(
-    value: &toml_edit::Document,
+    value: &toml_edit::DocumentMut,
 ) -> Result<toml_test_harness::Decoded, toml_test_harness::Error> {
     table_to_decoded(value)
 }

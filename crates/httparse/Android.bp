@@ -18,7 +18,7 @@ rust_test {
     host_supported: true,
     crate_name: "httparse",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.9.5",
+    cargo_pkg_version: "1.10.0",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -34,7 +34,10 @@ rust_test {
         "httparse_simd",
         "httparse_simd_neon_intrinsics",
     ],
-    rustlibs: ["libcriterion"],
+    rustlibs: [
+        "libcriterion",
+        "librand",
+    ],
 }
 
 rust_test {
@@ -42,7 +45,7 @@ rust_test {
     host_supported: true,
     crate_name: "uri",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.9.5",
+    cargo_pkg_version: "1.10.0",
     crate_root: "tests/uri.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -61,6 +64,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libhttparse",
+        "librand",
     ],
 }
 
@@ -69,7 +73,7 @@ rust_library {
     host_supported: true,
     crate_name: "httparse",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.9.5",
+    cargo_pkg_version: "1.10.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [

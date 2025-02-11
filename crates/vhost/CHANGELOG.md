@@ -5,9 +5,72 @@
 
 ### Changed
 
+### Deprecated
+
 ### Fixed
 
-### Deprecated
+## [0.13.0]
+
+### Added
+- [[#266]](https://github.com/rust-vmm/vhost/pull/266) Add support for `VHOST_USER_RESET_DEVICE`
+
+### Changed
+- [[#269]](https://github.com/rust-vmm/vhost/pull/269) Update vm-memory to 0.16.0 and virtio-queue to 0.13.0
+
+## [0.12.1]
+
+### Fixed
+- [[#267](https://github.com/rust-vmm/vhost/pull/267)] Fix feature unification issues with gpu-socket feature.
+
+## [0.12.0] - yanked
+
+This version got yanked because the `gpu_socket` feature introduced in this
+release was causing problems
+(see [#265](https://github.com/rust-vmm/vhost/issues/265)).
+Starting with the next version (v0.12.1), the `gpu_socket` feature was removed.
+
+### Added
+- [[#241]](https://github.com/rust-vmm/vhost/pull/241) Add shared objects support
+- [[#239]](https://github.com/rust-vmm/vhost/pull/239) Add support for `VHOST_USER_GPU_SET_SOCKET`
+
+### Changed
+- [[#257]](https://github.com/rust-vmm/vhost/pull/257) Update vm-memory from 0.14.0 to 0.15.0.
+- [[#243]](https://github.com/rust-vmm/vhost/pull/243) Ignore unknown bits in `VHOST_USER_GET_PROTOCOL_FEATURES` response.
+
+### Remove
+- [[#246]](https://github.com/rust-vmm/vhost/pull/246) Remove support for FS_* requests
+
+## [0.11.0]
+
+### Added
+- [[#203]](https://github.com/rust-vmm/vhost/pull/203) Add back-end's internal state migration support
+- [[#218]](https://github.com/rust-vmm/vhost/pull/218) Adding POSTCOPY support
+- [[#206]](https://github.com/rust-vmm/vhost/pull/206) Add bitmap support for tracking dirty pages during migration
+
+## [0.10.0]
+
+### Changed
+- [[#219]](https://github.com/rust-vmm/vhost/pull/219) Update vmm-sys-util dependency to 0.12.1.
+
+### Remove
+- [[#202](https://github.com/rust-vmm/vhost/pull/202)] Do not expose for internal-usage-only `NOOP` and `MAX_CMD` requests.
+- [[#205](https://github.com/rust-vmm/vhost/pull/205)] Remove some commented out code.
+
+### Fixed
+- [[#208](https://github.com/rust-vmm/vhost/pull/208)] Fix various message structs being `repr(Rust)` instead of `repr(C)`.
+
+## [0.9.0]
+
+### Changed
+- [[#187]](https://github.com/rust-vmm/vhost/pull/187) Clean master slave
+  - Replaced master/slave with frontend/backend in the codebase and public API.
+  - Replaced master/slave with frontend/backend in the crate features.
+- Updated dependency bitflags from 1.0 to 2.4
+- [[#116]](https://github.com/rust-vmm/vhost/pull/116) Upgrade to 2021 edition
+
+### Fixed
+- [[#184]](https://github.com/rust-vmm/vhost/pull/184) Safety fixes
+- [[#186]](https://github.com/rust-vmm/vhost/pull/186) vhost: Fix clippy warnings.
 
 ## [0.8.1]
 
