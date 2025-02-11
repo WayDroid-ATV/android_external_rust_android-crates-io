@@ -127,6 +127,7 @@ gbm
 gdbstub
 gdbstub_arch
 getrandom
+gl
 gl_common
 glam
 glob
