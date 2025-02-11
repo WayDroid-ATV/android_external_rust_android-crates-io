@@ -340,6 +340,7 @@ syn
 syn-mid
 sync_wrapper
 synstructure
+taffy
 tempfile
 termcolor
 termtree
