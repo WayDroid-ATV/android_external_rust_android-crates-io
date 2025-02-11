@@ -324,6 +324,7 @@ signal-hook
 signal-hook-registry
 siphasher
 slab
+slotmap
 smallvec
 smccc
 socket2
