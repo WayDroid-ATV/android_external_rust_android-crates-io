@@ -233,7 +233,7 @@ dependencies = [
  "googletest",
  "googletest_macro",
  "gpio-cdev",
- "grid",
+ "grid 0.16.1",
  "grpcio",
  "grpcio-compiler",
  "grpcio-sys",
@@ -440,6 +440,7 @@ dependencies = [
  "syn-mid",
  "sync_wrapper 1.0.2",
  "synstructure",
+ "taffy",
  "tempfile",
  "termcolor",
  "termtree",
@@ -2549,6 +2550,12 @@ dependencies = [
  "libc 0.2.161",
  "nix 0.27.1",
 ]
+
+[[package]]
+name = "grid"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36119f3a540b086b4e436bb2b588cf98a68863470e0e880f4d0842f112a3183a"
 
 [[package]]
 name = "grid"
@@ -5939,6 +5946,18 @@ dependencies = [
  "proc-macro2 1.0.93",
  "quote 1.0.38",
  "syn 2.0.98",
+]
+
+[[package]]
+name = "taffy"
+version = "0.7.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "944a2a0b6070d217b69afb819f65f84ba093c43d627571fdac1c46f03a14d326"
+dependencies = [
+ "arrayvec",
+ "grid 0.15.0",
+ "serde",
+ "slotmap",
 ]
 
 [[package]]
