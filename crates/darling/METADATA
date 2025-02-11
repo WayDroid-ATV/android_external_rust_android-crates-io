@@ -1,5 +1,5 @@
 name: "darling"
-description: "()"
+description: "A proc-macro library for reading attributes into structs when implementing custom derives."
 third_party {
   version: "0.20.10"
   license_type: NOTICE

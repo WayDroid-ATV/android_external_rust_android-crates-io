@@ -1,5 +1,5 @@
 name: "tikv-jemallocator"
-description: "()"
+description: "A Rust allocator backed by jemalloc"
 third_party {
   version: "0.5.4"
   license_type: NOTICE

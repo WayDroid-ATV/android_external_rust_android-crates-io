@@ -2,7 +2,7 @@ name: "managed"
 description: "An interface for logically owning objects, whether or not heap allocation is available."
 third_party {
   version: "0.8.0"
-  license_type: UNENCUMBERED
+  license_type: PERMISSIVE
   last_upgrade_date {
     year: 2021
     month: 2

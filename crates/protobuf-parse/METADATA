@@ -1,5 +1,5 @@
 name: "protobuf-parse"
-description: "()"
+description: "Parse `.proto` files.  Files are parsed into a `protobuf::descriptor::FileDescriptorSet` object using either: * pure rust parser (no dependencies) * `protoc` binary (more reliable and compatible with Google\'s implementation)"
 third_party {
   version: "3.2.0"
   license_type: NOTICE

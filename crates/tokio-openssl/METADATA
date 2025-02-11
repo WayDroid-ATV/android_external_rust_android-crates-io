@@ -1,5 +1,5 @@
 name: "tokio-openssl"
-description: "An implementation of SSL streams for Tokio built on top of the openssl crate"
+description: "An implementation of SSL streams for Tokio backed by OpenSSL"
 third_party {
   version: "0.6.5"
   license_type: NOTICE

@@ -1,5 +1,5 @@
 name: "protobuf-support"
-description: "()"
+description: "Code supporting protobuf implementation. None of code in this crate is public API."
 third_party {
   version: "3.2.0"
   license_type: NOTICE
