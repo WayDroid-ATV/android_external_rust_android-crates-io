@@ -1,5 +1,5 @@
 name: "inotify-sys"
-description: "Low-level inotify bindings for the Rust programming language. This crate\'s main purpose is to serve as the base for inotify-rs, the idiomatic Rust wrapper around inotify. Unless you\'re sure you specifically need this crate, please use inotify-rs instead."
+description: "inotify bindings for the Rust programming language"
 third_party {
   version: "0.1.5"
   license_type: NOTICE

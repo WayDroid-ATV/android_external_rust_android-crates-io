@@ -1,5 +1,5 @@
 name: "tonic"
-description: "()"
+description: "A gRPC over HTTP/2 implementation focused on high performance, interoperability, and flexibility."
 third_party {
   version: "0.11.0"
   license_type: NOTICE

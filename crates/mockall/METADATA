@@ -1,5 +1,5 @@
 name: "mockall"
-description: "()"
+description: "A powerful mock object library for Rust."
 third_party {
   version: "0.13.1"
   license_type: NOTICE

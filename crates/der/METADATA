@@ -1,5 +1,5 @@
 name: "der"
-description: "Pure Rust embedded-friendly implementation of the Distinguished Encoding Rules (DER) for Abstract Syntax Notation One (ASN.1) as described in ITU X.690."
+description: "Pure Rust embedded-friendly implementation of the Distinguished Encoding Rules (DER) for Abstract Syntax Notation One (ASN.1) as described in ITU X.690 with full support for heapless no_std targets"
 third_party {
   version: "0.7.9"
   license_type: NOTICE

@@ -1,5 +1,5 @@
 name: "os_str_bytes"
-description: "()"
+description: "Convert between byte sequences and platform-native strings"
 third_party {
   version: "6.6.1"
   license_type: NOTICE

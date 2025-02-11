@@ -1,5 +1,5 @@
 name: "displaydoc"
-description: "()"
+description: "A derive macro for implementing the display Trait via a doc comment and string interpolation"
 third_party {
   version: "0.2.5"
   license_type: NOTICE
