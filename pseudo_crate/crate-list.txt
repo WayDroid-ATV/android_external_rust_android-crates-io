@@ -317,6 +317,8 @@ sharded-slab
 shared_child
 shared_library
 shlex
+signal-hook
+signal-hook-registry
 siphasher
 slab
 smallvec
