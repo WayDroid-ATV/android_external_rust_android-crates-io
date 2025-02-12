@@ -49,5 +49,6 @@
       "generate_rulesmk": true,
       "generate_androidbp": false
     }
-  ]
+  ],
+  "native_bridge_supported": true
 }
