@@ -48,6 +48,9 @@ rust_library {
     ],
     product_available: true,
     vendor_available: true,
+    ramdisk_available: true,
+    vendor_ramdisk_available: true,
+    recovery_available: true,
     min_sdk_version: "30",
     target: {
         linux: {
