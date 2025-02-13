@@ -94,6 +94,7 @@ drm-ffi
 drm-fourcc
 either
 enumn
+env_filter
 env_logger
 epoll
 equivalent

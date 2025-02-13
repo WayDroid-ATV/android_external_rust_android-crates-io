@@ -193,6 +193,7 @@ dependencies = [
  "drm-fourcc",
  "either",
  "enumn",
+ "env_filter",
  "env_logger 0.10.2",
  "epoll",
  "equivalent",
@@ -311,7 +312,7 @@ dependencies = [
  "minimal-lexical",
  "mio",
  "mls-rs",
- "mls-rs-codec",
+ "mls-rs-codec 0.6.0",
  "mls-rs-codec-derive 0.2.0",
  "mls-rs-core",
  "mls-rs-crypto-traits",
@@ -1682,9 +1683,9 @@ dependencies = [
 
 [[package]]
 name = "data-encoding"
-version = "2.7.0"
+version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e60eed09d8c01d3cee5b7d30acb059b76614c918fa0f992e0dd6eeb10daad6f"
+checksum = "575f75dfd25738df5b91b8e43e14d44bda14637a58fae779fd2b064f8bf3e010"
 
 [[package]]
 name = "debug_tree"
@@ -1971,6 +1972,16 @@ dependencies = [
  "proc-macro2 1.0.93",
  "quote 1.0.38",
  "syn 2.0.98",
+]
+
+[[package]]
+name = "env_filter"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "186e05a59d4c50738528153b83b0b0194d3a29507dfec16eccd4b342903397d0"
+dependencies = [
+ "log",
+ "regex",
 ]
 
 [[package]]
@@ -3957,7 +3968,7 @@ dependencies = [
  "hex",
  "itertools 0.12.1",
  "maybe-async",
- "mls-rs-codec",
+ "mls-rs-codec 0.5.3",
  "mls-rs-core",
  "mls-rs-identity-x509",
  "portable-atomic",
@@ -3979,6 +3990,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f84f5344d759b6f5e64870845b90f0829a3402534582be354deb12e23de8741"
 dependencies = [
  "mls-rs-codec-derive 0.1.1",
+ "thiserror 1.0.49",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "mls-rs-codec"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f865c30512488ec839e934208ff2ca4b2491cb3cde5a929f2b0cfed064e05511"
+dependencies = [
+ "mls-rs-codec-derive 0.2.0",
  "thiserror 1.0.49",
  "wasm-bindgen",
 ]
@@ -4016,7 +4038,7 @@ dependencies = [
  "async-trait",
  "hex",
  "maybe-async",
- "mls-rs-codec",
+ "mls-rs-codec 0.5.3",
  "safer-ffi-gen",
  "serde",
  "thiserror 1.0.49",
