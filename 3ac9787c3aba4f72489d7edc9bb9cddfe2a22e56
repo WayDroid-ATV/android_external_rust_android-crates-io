@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b10d9b64_7d37f655",
+        "filename": "crates/gl/cargo_embargo.json",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-13T01:38:12Z",
+      "side": 1,
+      "message": "nit: indentation seems off, but I think this is probably fine.",
+      "revId": "3ac9787c3aba4f72489d7edc9bb9cddfe2a22e56",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
