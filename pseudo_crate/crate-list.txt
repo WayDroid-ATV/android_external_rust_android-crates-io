@@ -272,6 +272,7 @@ plotters
 plotters-backend
 plotters-svg
 poll_token_derive
+portable-atomic
 potential_utf
 ppv-lite86
 predicates
