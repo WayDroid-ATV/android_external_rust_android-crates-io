@@ -14,7 +14,8 @@
       "//packages/modules/Virtualization:__subpackages__",
       "//system/keymint:__subpackages__",
       "//system/security/keystore2/tests:__subpackages__",
-      "//system/security/keystore2/test_utils:__subpackages__"
+      "//system/security/keystore2/test_utils:__subpackages__",
+      "//system/software_defined_vehicle/core_services:__subpackages__"
     ],
     "libspki_nostd": [
       "//external/rust/android-crates-io/crates/pkcs1:__subpackages__",
