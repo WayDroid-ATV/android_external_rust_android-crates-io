@@ -66,6 +66,7 @@ crc-catalog
 crc32fast
 criterion
 criterion-plot
+critical-section
 crossbeam-channel
 crossbeam-deque
 crossbeam-epoch
