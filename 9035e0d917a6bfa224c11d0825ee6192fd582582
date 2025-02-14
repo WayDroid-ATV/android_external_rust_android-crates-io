@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f39cf421_7084cb31",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-14T16:19:38Z",
+      "side": 1,
+      "message": "Ugh, James and I just deleted the migration code assuming that all of our crates had been migrated over (because everything in the `main` manifest had indeed been migrated over a while ago). Are there more than these 5 crates that you need? Should we restore that code? I guess that one problem with restoring it would be that you\u0027re doing some version upgrades here as well.",
+      "revId": "9035e0d917a6bfa224c11d0825ee6192fd582582",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
