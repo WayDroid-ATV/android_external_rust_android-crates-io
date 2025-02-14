@@ -1,0 +1,17 @@
+name: "hickory-proto"
+description: "Hickory DNS is a safe and secure DNS library. This is the foundational DNS protocol library for all Hickory DNS projects.\n"
+third_party {
+  version: "0.24.1"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 2
+    day: 14
+  }
+  homepage: "https://crates.io/crates/hickory-proto"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/hickory-proto/hickory-proto-0.24.1.crate"
+    version: "0.24.1"
+  }
+}
