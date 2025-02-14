@@ -144,6 +144,7 @@ hashbrown
 hashlink
 heck
 hex
+hickory-proto
 hound
 http
 http-body
