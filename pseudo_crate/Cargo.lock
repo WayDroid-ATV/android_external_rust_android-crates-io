@@ -193,6 +193,7 @@ dependencies = [
  "drm-ffi 0.9.0",
  "drm-fourcc",
  "either",
+ "enum-as-inner",
  "enumn",
  "env_filter",
  "env_logger 0.10.2",
@@ -1964,6 +1965,18 @@ name = "embedded-io"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "edd0f118536f44f5ccd48bcb8b111bdc3de888b58c74639dfb034a357d0f206d"
+
+[[package]]
+name = "enum-as-inner"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ffccbb6966c05b32ef8fbac435df276c4ae4d3dc55a8cd0eb9745e6c12f546a"
+dependencies = [
+ "heck",
+ "proc-macro2 1.0.93",
+ "quote 1.0.38",
+ "syn 2.0.98",
+]
 
 [[package]]
 name = "enumn"
