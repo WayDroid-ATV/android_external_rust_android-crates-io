@@ -171,6 +171,7 @@ inotify
 inotify-sys
 instant
 intrusive-collections
+ipnet
 is-terminal
 itertools
 itoa
