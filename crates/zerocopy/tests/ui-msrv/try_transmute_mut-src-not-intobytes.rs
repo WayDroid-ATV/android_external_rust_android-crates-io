@@ -6,15 +6,19 @@
 // This file may not be copied, modified, or distributed except according to
 // those terms.
 
-include!("../../zerocopy-derive/tests/include.rs");
-
 extern crate zerocopy;
 
-use util::{NotZerocopy, AU16};
-use zerocopy::try_transmute_mut;
+use zerocopy::transmute_mut;
+
+#[derive(zerocopy::FromBytes)]
+#[repr(C)]
+struct Src;
+
+#[derive(zerocopy::TryFromBytes)]
+#[repr(C)]
+struct Dst;
 
 fn main() {
     // `try_transmute_mut` requires that the source type implements `IntoBytes`
-    let src = &mut NotZerocopy(AU16(0));
-    let src_not_into_bytes: Result<&mut AU16, _> = try_transmute_mut!(src);
+    let src_not_from_bytes: &mut Dst = transmute_mut!(&mut Src);
 }

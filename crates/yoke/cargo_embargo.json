@@ -1,6 +1,17 @@
 {
-    "features": ["alloc", "serde", "zerofrom", "derive"],
-    "ramdisk_available": true,
-    "recovery_available": true,
-    "vendor_ramdisk_available": true
+  "features": [
+    "alloc",
+    "serde",
+    "zerofrom",
+    "derive"
+  ],
+  "ramdisk_available": true,
+  "recovery_available": true,
+  "vendor_ramdisk_available": true,
+  "native_bridge_supported": true,
+  "package": {
+    "yoke": {
+      "add_module_block": "icu4x_bionic_dep.bp.fragment"
+    }
+  }
 }
