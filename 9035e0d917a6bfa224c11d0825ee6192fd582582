@@ -16,6 +16,24 @@
       "message": "Ugh, James and I just deleted the migration code assuming that all of our crates had been migrated over (because everything in the `main` manifest had indeed been migrated over a while ago). Are there more than these 5 crates that you need? Should we restore that code? I guess that one problem with restoring it would be that you\u0027re doing some version upgrades here as well.",
       "revId": "9035e0d917a6bfa224c11d0825ee6192fd582582",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6f3dd4df_1e3a9101",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3334832
+      },
+      "writtenOn": "2025-02-16T02:11:32Z",
+      "side": 1,
+      "message": "Ah sorry, there was some delay on my side as well to port them over.\n\n\u003e  Are there more than these 5 crates that you need?\n\nNo, that\u0027s the only 5 crates that needs to migrate.\n\n\u003e Should we restore that code?\n\nMay not be necessary. As long as, the current way of `import` crate to android-crates-io is a valid way for migrating. Also, the old repos in `external/rust/crates` does not have a cargo_embarge build, the old `migrate` script may not directly runnable on them\n\n\u003e I guess that one problem with restoring it would be that you\u0027re doing some version upgrades here as well.\n\nYeah, I upgraded critical-section, ipnet and downgrade enum-as-inner. The upgrading of `critical-section` seems unavoidable, because the old version is \"yanked\" on crates-io (https://crates.io/crates/critical-section/1.1.3). The enum-as-inner is downgrade because the dependencies requirements of heck is not satisfied. I can change ipnet to be the exact version of `external/rust/crates`. Let me know if that\u0027s needed.",
+      "parentUuid": "f39cf421_7084cb31",
+      "revId": "9035e0d917a6bfa224c11d0825ee6192fd582582",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
