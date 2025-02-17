@@ -1,3 +1,15 @@
 {
-  "tests": true
+  "tests": true,
+  "variants": [
+    {
+      "features": []
+    },
+    {
+      "features": ["enable"],
+      "module_name_overrides": {
+        "libcov_mark": "libcov_mark_enable",
+        "cov-mark_test_tests_smoke": "cov-mark_enable_test_tests_smoke"
+      }
+    }
+  ]
 }

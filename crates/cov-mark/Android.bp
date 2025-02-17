@@ -26,10 +26,6 @@ rust_test {
         unit_test: true,
     },
     edition: "2021",
-    features: [
-        "default",
-        "enable",
-    ],
     rustlibs: ["libcov_mark"],
 }
 
@@ -41,10 +37,40 @@ rust_library {
     cargo_pkg_version: "2.0.0",
     crate_root: "src/lib.rs",
     edition: "2021",
-    features: [
-        "default",
-        "enable",
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
     ],
+    product_available: true,
+    vendor_available: true,
+}
+
+rust_test {
+    name: "cov-mark_enable_test_tests_smoke",
+    host_supported: true,
+    crate_name: "smoke",
+    cargo_env_compat: true,
+    cargo_pkg_version: "2.0.0",
+    crate_root: "tests/smoke.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2021",
+    features: ["enable"],
+    rustlibs: ["libcov_mark_enable"],
+}
+
+rust_library {
+    name: "libcov_mark_enable",
+    host_supported: true,
+    crate_name: "cov_mark",
+    cargo_env_compat: true,
+    cargo_pkg_version: "2.0.0",
+    crate_root: "src/lib.rs",
+    edition: "2021",
+    features: ["enable"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
