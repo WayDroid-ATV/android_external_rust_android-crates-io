@@ -16,6 +16,24 @@
       "message": "Can you explain the motivation for this change?",
       "revId": "64038a3f50c3b6c150fbb1a66254c030f2e3d16d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6fc730c6_f227ff38",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1982430
+      },
+      "writtenOn": "2025-02-17T10:55:12Z",
+      "side": 1,
+      "message": "Added in the commit message, PTAL.",
+      "parentUuid": "c297a8af_b638ed90",
+      "revId": "64038a3f50c3b6c150fbb1a66254c030f2e3d16d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
