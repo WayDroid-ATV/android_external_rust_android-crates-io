@@ -16,6 +16,24 @@
       "message": "How about swapping these around, so the default `libcov_mark` variant has coverage enabled, and you have a `libcov_mark_disabled` variant that disables the coverage? That seems like it would be less confusing for other people using this, as the default variant would work as expected.",
       "revId": "d1e361c7dc8edf56895127fb2a3d410a52f8e6b8",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b567e526_d748a396",
+        "filename": "crates/cov-mark/cargo_embargo.json",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1982430
+      },
+      "writtenOn": "2025-02-17T13:53:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0960d7d6_ae2fb5ba",
+      "revId": "d1e361c7dc8edf56895127fb2a3d410a52f8e6b8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
