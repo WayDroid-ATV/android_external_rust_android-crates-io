@@ -181,7 +181,6 @@ dependencies = [
  "der",
  "der_derive",
  "derive_arbitrary",
- "diplomat-runtime",
  "displaydoc",
  "document-features",
  "downcast",
@@ -1694,12 +1693,6 @@ dependencies = [
  "crypto-common",
  "subtle",
 ]
-
-[[package]]
-name = "diplomat-runtime"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc1708f176e12755d6d6571ad9b0ebbd3b428223b5cdf63a38eecf1479c13e70"
 
 [[package]]
 name = "dirs"
