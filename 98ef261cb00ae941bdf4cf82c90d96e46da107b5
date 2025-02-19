@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7223bdd5_720eb32d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-19T10:28:59Z",
+      "side": 1,
+      "message": "Can you file a bug to handle this update? I can understand importing what we currently have (pre-monorepo), but the reality is that this is also the kind of tech debt we can\u0027t afford. If we can\u0027t handle the additional imports/updates, this should be rejected. @jamesfarrell@google.com as FYI",
+      "revId": "98ef261cb00ae941bdf4cf82c90d96e46da107b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
