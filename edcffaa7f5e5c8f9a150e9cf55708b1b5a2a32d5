@@ -16,6 +16,24 @@
       "message": "Doesn\u0027t this basically imply that `heck` should get updated to the latest version instead? I feel like importing an older crate is just creating tech debt that shouldn\u0027t exist in the first place. Can you try to update `heck`? @jamesfarrell@google.com as FYI",
       "revId": "edcffaa7f5e5c8f9a150e9cf55708b1b5a2a32d5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "27d22e81_2886d0f6",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-02-19T15:14:00Z",
+      "side": 1,
+      "message": "+1 for trying to update heck. It\u0027s not a trivial update, though, because the crate features have changed.",
+      "parentUuid": "e97872cd_cfc5db4f",
+      "revId": "edcffaa7f5e5c8f9a150e9cf55708b1b5a2a32d5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
