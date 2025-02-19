@@ -160,7 +160,7 @@ impl Vec4 {
     ///
     /// Truncation to [`Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
     ///
-    /// To truncate to [`Vec3A`] use [`Vec3A::from()`].
+    /// To truncate to [`Vec3A`] use [`Vec3A::from_vec4()`].
     #[inline]
     #[must_use]
     pub fn truncate(self) -> Vec3 {
@@ -1012,9 +1012,9 @@ impl DivAssign<Vec4> for Vec4 {
     }
 }
 
-impl DivAssign<&Self> for Vec4 {
+impl DivAssign<&Vec4> for Vec4 {
     #[inline]
-    fn div_assign(&mut self, rhs: &Self) {
+    fn div_assign(&mut self, rhs: &Vec4) {
         self.div_assign(*rhs)
     }
 }
@@ -1136,9 +1136,9 @@ impl MulAssign<Vec4> for Vec4 {
     }
 }
 
-impl MulAssign<&Self> for Vec4 {
+impl MulAssign<&Vec4> for Vec4 {
     #[inline]
-    fn mul_assign(&mut self, rhs: &Self) {
+    fn mul_assign(&mut self, rhs: &Vec4) {
         self.mul_assign(*rhs)
     }
 }
@@ -1260,9 +1260,9 @@ impl AddAssign<Vec4> for Vec4 {
     }
 }
 
-impl AddAssign<&Self> for Vec4 {
+impl AddAssign<&Vec4> for Vec4 {
     #[inline]
-    fn add_assign(&mut self, rhs: &Self) {
+    fn add_assign(&mut self, rhs: &Vec4) {
         self.add_assign(*rhs)
     }
 }
@@ -1384,9 +1384,9 @@ impl SubAssign<Vec4> for Vec4 {
     }
 }
 
-impl SubAssign<&Self> for Vec4 {
+impl SubAssign<&Vec4> for Vec4 {
     #[inline]
-    fn sub_assign(&mut self, rhs: &Self) {
+    fn sub_assign(&mut self, rhs: &Vec4) {
         self.sub_assign(*rhs)
     }
 }
@@ -1511,9 +1511,9 @@ impl RemAssign<Vec4> for Vec4 {
     }
 }
 
-impl RemAssign<&Self> for Vec4 {
+impl RemAssign<&Vec4> for Vec4 {
     #[inline]
-    fn rem_assign(&mut self, rhs: &Self) {
+    fn rem_assign(&mut self, rhs: &Vec4) {
         self.rem_assign(*rhs)
     }
 }
@@ -1844,7 +1844,6 @@ impl From<BVec4> for Vec4 {
 }
 
 #[cfg(not(feature = "scalar-math"))]
-
 impl From<BVec4A> for Vec4 {
     #[inline]
     fn from(v: BVec4A) -> Self {
