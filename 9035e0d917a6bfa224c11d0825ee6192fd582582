@@ -56,6 +56,23 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "192db480_b45624b2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1799116
+      },
+      "writtenOn": "2025-02-19T20:01:02Z",
+      "side": 1,
+      "message": "third-party-review: lgtm.",
+      "revId": "9035e0d917a6bfa224c11d0825ee6192fd582582",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "973e35d7_6322ecaf",
         "filename": "crates/critical-section/cargo_embargo.json",
         "patchSetId": 1
