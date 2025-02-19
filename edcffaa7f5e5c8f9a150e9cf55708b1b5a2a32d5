@@ -34,6 +34,24 @@
       "parentUuid": "e97872cd_cfc5db4f",
       "revId": "edcffaa7f5e5c8f9a150e9cf55708b1b5a2a32d5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "cada823d_4619882a",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-02-19T16:29:42Z",
+      "side": 1,
+      "message": "I sent aosp/3501350 to update heck to 0.5.0.",
+      "parentUuid": "27d22e81_2886d0f6",
+      "revId": "edcffaa7f5e5c8f9a150e9cf55708b1b5a2a32d5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
