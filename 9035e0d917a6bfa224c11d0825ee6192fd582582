@@ -52,6 +52,29 @@
       "parentUuid": "6f3dd4df_1e3a9101",
       "revId": "9035e0d917a6bfa224c11d0825ee6192fd582582",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "973e35d7_6322ecaf",
+        "filename": "crates/critical-section/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-19T10:18:45Z",
+      "side": 1,
+      "message": "nit: trailing whitespace could just be deleted (but don\u0027t add a comma, because it is a syntax error)).",
+      "range": {
+        "startLine": 3,
+        "startChar": 15,
+        "endLine": 3,
+        "endChar": 16
+      },
+      "revId": "9035e0d917a6bfa224c11d0825ee6192fd582582",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
