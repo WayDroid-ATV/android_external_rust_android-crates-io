@@ -16,6 +16,23 @@
       "message": "Can you file a bug to handle this update? I can understand importing what we currently have (pre-monorepo), but the reality is that this is also the kind of tech debt we can\u0027t afford. If we can\u0027t handle the additional imports/updates, this should be rejected. @jamesfarrell@google.com as FYI",
       "revId": "98ef261cb00ae941bdf4cf82c90d96e46da107b5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a9bf7de7_591e0bae",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-02-19T15:11:50Z",
+      "side": 1,
+      "message": "Please fix the lint error by running \"./crate_tool regenerate hickory-proto\".",
+      "revId": "98ef261cb00ae941bdf4cf82c90d96e46da107b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
