@@ -73,6 +73,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "bc17a0cc_a4dc7e46",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3334832
+      },
+      "writtenOn": "2025-02-20T07:11:03Z",
+      "side": 1,
+      "message": "Make sense. Thanks!",
+      "parentUuid": "89fa74af_7b8446d3",
+      "revId": "9035e0d917a6bfa224c11d0825ee6192fd582582",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "973e35d7_6322ecaf",
         "filename": "crates/critical-section/cargo_embargo.json",
         "patchSetId": 1
@@ -84,6 +102,30 @@
       "writtenOn": "2025-02-19T10:18:45Z",
       "side": 1,
       "message": "nit: trailing whitespace could just be deleted (but don\u0027t add a comma, because it is a syntax error)).",
+      "range": {
+        "startLine": 3,
+        "startChar": 15,
+        "endLine": 3,
+        "endChar": 16
+      },
+      "revId": "9035e0d917a6bfa224c11d0825ee6192fd582582",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1c0c44cb_bb3f4ca4",
+        "filename": "crates/critical-section/cargo_embargo.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 3334832
+      },
+      "writtenOn": "2025-02-20T07:11:03Z",
+      "side": 1,
+      "message": "Thanks for catching it!",
+      "parentUuid": "973e35d7_6322ecaf",
       "range": {
         "startLine": 3,
         "startChar": 15,
