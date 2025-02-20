@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0c3fbec5_9e4f816c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1799116
+      },
+      "writtenOn": "2025-02-20T19:21:28Z",
+      "side": 1,
+      "message": "third-party-review: lgtm.",
+      "revId": "7df6469a4dd65cc39e30453413fbc87c33e2e0da",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
