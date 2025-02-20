@@ -349,10 +349,8 @@ pub(crate) struct Method {
     /// Output type
     pub output_type: ProtobufPath,
     /// If this method is client streaming
-    #[allow(dead_code)] // TODO
     pub client_streaming: bool,
     /// If this method is server streaming
-    #[allow(dead_code)] // TODO
     pub server_streaming: bool,
     /// Method options
     pub options: Vec<ProtobufOption>,
