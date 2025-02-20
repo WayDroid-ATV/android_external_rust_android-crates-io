@@ -4007,9 +4007,9 @@ dependencies = [
 
 [[package]]
 name = "mls-rs-core"
-version = "0.18.1"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02e954709b09503192bba7b79f9ef907106bb25e68607342971e8b2dbbbbddec"
+checksum = "55cdac7a57ab7953e63ee1c6a05d273ca435a32c149968d11d8aba300cb4143f"
 dependencies = [
  "async-trait",
  "hex",
