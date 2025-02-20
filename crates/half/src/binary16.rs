@@ -1,3 +1,6 @@
+#[cfg(all(feature = "serde", feature = "alloc"))]
+#[allow(unused_imports)]
+use alloc::string::ToString;
 #[cfg(feature = "bytemuck")]
 use bytemuck::{Pod, Zeroable};
 use core::{
@@ -19,24 +22,27 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "zerocopy")]
 use zerocopy::{AsBytes, FromBytes};
 
-pub(crate) mod convert;
+pub(crate) mod arch;
 
-/// A 16-bit floating point type implementing the IEEE 754-2008 standard [`binary16`] a.k.a `half`
+/// A 16-bit floating point type implementing the IEEE 754-2008 standard [`binary16`] a.k.a "half"
 /// format.
 ///
 /// This 16-bit floating point type is intended for efficient storage where the full range and
-/// precision of a larger floating point value is not required. Because [`f16`] is primarily for
-/// efficient storage, floating point operations such as addition, multiplication, etc. are not
-/// implemented. Operations should be performed with [`f32`] or higher-precision types and converted
-/// to/from [`f16`] as necessary.
+/// precision of a larger floating point value is not required.
 ///
 /// [`binary16`]: https://en.wikipedia.org/wiki/Half-precision_floating-point_format
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy, Default)]
 #[repr(transparent)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
+#[cfg_attr(
+    feature = "rkyv",
+    derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize)
+)]
+#[cfg_attr(feature = "rkyv", archive(resolver = "F16Resolver"))]
 #[cfg_attr(feature = "bytemuck", derive(Zeroable, Pod))]
 #[cfg_attr(feature = "zerocopy", derive(AsBytes, FromBytes))]
+#[cfg_attr(kani, derive(kani::Arbitrary))]
 pub struct f16(u16);
 
 impl f16 {
@@ -49,15 +55,15 @@ impl f16 {
 
     /// Constructs a 16-bit floating point value from a 32-bit floating point value.
     ///
-    /// If the 32-bit value is to large to fit in 16-bits, ±∞ will result. NaN values are
-    /// preserved. 32-bit subnormal values are too tiny to be represented in 16-bits and result in
-    /// ±0. Exponents that underflow the minimum 16-bit exponent will result in 16-bit subnormals
-    /// or ±0. All other values are truncated and rounded to the nearest representable 16-bit
-    /// value.
+    /// This operation is lossy. If the 32-bit value is to large to fit in 16-bits, ±∞ will result.
+    /// NaN values are preserved. 32-bit subnormal values are too tiny to be represented in 16-bits
+    /// and result in ±0. Exponents that underflow the minimum 16-bit exponent will result in 16-bit
+    /// subnormals or ±0. All other values are truncated and rounded to the nearest representable
+    /// 16-bit value.
     #[inline]
     #[must_use]
     pub fn from_f32(value: f32) -> f16 {
-        f16(convert::f32_to_f16(value))
+        f16(arch::f32_to_f16(value))
     }
 
     /// Constructs a 16-bit floating point value from a 32-bit floating point value.
@@ -66,28 +72,28 @@ impl f16 {
     /// intrinsics, which allows it to be `const`. [`from_f32`][Self::from_f32] should be preferred
     /// in any non-`const` context.
     ///
-    /// If the 32-bit value is to large to fit in 16-bits, ±∞ will result. NaN values are
-    /// preserved. 32-bit subnormal values are too tiny to be represented in 16-bits and result in
-    /// ±0. Exponents that underflow the minimum 16-bit exponent will result in 16-bit subnormals
-    /// or ±0. All other values are truncated and rounded to the nearest representable 16-bit
-    /// value.
+    /// This operation is lossy. If the 32-bit value is to large to fit in 16-bits, ±∞ will result.
+    /// NaN values are preserved. 32-bit subnormal values are too tiny to be represented in 16-bits
+    /// and result in ±0. Exponents that underflow the minimum 16-bit exponent will result in 16-bit
+    /// subnormals or ±0. All other values are truncated and rounded to the nearest representable
+    /// 16-bit value.
     #[inline]
     #[must_use]
     pub const fn from_f32_const(value: f32) -> f16 {
-        f16(convert::f32_to_f16_fallback(value))
+        f16(arch::f32_to_f16_fallback(value))
     }
 
     /// Constructs a 16-bit floating point value from a 64-bit floating point value.
     ///
-    /// If the 64-bit value is to large to fit in 16-bits, ±∞ will result. NaN values are
-    /// preserved. 64-bit subnormal values are too tiny to be represented in 16-bits and result in
-    /// ±0. Exponents that underflow the minimum 16-bit exponent will result in 16-bit subnormals
-    /// or ±0. All other values are truncated and rounded to the nearest representable 16-bit
-    /// value.
+    /// This operation is lossy. If the 64-bit value is to large to fit in 16-bits, ±∞ will result.
+    /// NaN values are preserved. 64-bit subnormal values are too tiny to be represented in 16-bits
+    /// and result in ±0. Exponents that underflow the minimum 16-bit exponent will result in 16-bit
+    /// subnormals or ±0. All other values are truncated and rounded to the nearest representable
+    /// 16-bit value.
     #[inline]
     #[must_use]
     pub fn from_f64(value: f64) -> f16 {
-        f16(convert::f64_to_f16(value))
+        f16(arch::f64_to_f16(value))
     }
 
     /// Constructs a 16-bit floating point value from a 64-bit floating point value.
@@ -96,15 +102,15 @@ impl f16 {
     /// intrinsics, which allows it to be `const`. [`from_f64`][Self::from_f64] should be preferred
     /// in any non-`const` context.
     ///
-    /// If the 64-bit value is to large to fit in 16-bits, ±∞ will result. NaN values are
-    /// preserved. 64-bit subnormal values are too tiny to be represented in 16-bits and result in
-    /// ±0. Exponents that underflow the minimum 16-bit exponent will result in 16-bit subnormals
-    /// or ±0. All other values are truncated and rounded to the nearest representable 16-bit
-    /// value.
+    /// This operation is lossy. If the 64-bit value is to large to fit in 16-bits, ±∞ will result.
+    /// NaN values are preserved. 64-bit subnormal values are too tiny to be represented in 16-bits
+    /// and result in ±0. Exponents that underflow the minimum 16-bit exponent will result in 16-bit
+    /// subnormals or ±0. All other values are truncated and rounded to the nearest representable
+    /// 16-bit value.
     #[inline]
     #[must_use]
     pub const fn from_f64_const(value: f64) -> f16 {
-        f16(convert::f64_to_f16_fallback(value))
+        f16(arch::f64_to_f16_fallback(value))
     }
 
     /// Converts a [`f16`] into the underlying bit representation.
@@ -230,7 +236,7 @@ impl f16 {
     #[inline]
     #[must_use]
     pub fn to_f32(self) -> f32 {
-        convert::f16_to_f32(self.0)
+        arch::f16_to_f32(self.0)
     }
 
     /// Converts a [`f16`] value into a `f32` value.
@@ -244,7 +250,7 @@ impl f16 {
     #[inline]
     #[must_use]
     pub const fn to_f32_const(self) -> f32 {
-        convert::f16_to_f32_fallback(self.0)
+        arch::f16_to_f32_fallback(self.0)
     }
 
     /// Converts a [`f16`] value into a `f64` value.
@@ -254,7 +260,7 @@ impl f16 {
     #[inline]
     #[must_use]
     pub fn to_f64(self) -> f64 {
-        convert::f16_to_f64(self.0)
+        arch::f16_to_f64(self.0)
     }
 
     /// Converts a [`f16`] value into a `f64` value.
@@ -268,7 +274,7 @@ impl f16 {
     #[inline]
     #[must_use]
     pub const fn to_f64_const(self) -> f64 {
-        convert::f16_to_f64_fallback(self.0)
+        arch::f16_to_f64_fallback(self.0)
     }
 
     /// Returns `true` if this value is `NaN` and `false` otherwise.
@@ -698,7 +704,7 @@ impl f16 {
     ///     value: f16 // Will be serialized as a string instead of u16
     /// }
     /// ```
-    #[cfg(feature = "serde")]
+    #[cfg(all(feature = "serde", feature = "alloc"))]
     pub fn serialize_as_string<S: serde::Serializer>(
         &self,
         serializer: S,
@@ -930,14 +936,14 @@ impl FromStr for f16 {
 #[cfg(not(target_arch = "spirv"))]
 impl Debug for f16 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        write!(f, "{:?}", self.to_f32())
+        Debug::fmt(&self.to_f32(), f)
     }
 }
 
 #[cfg(not(target_arch = "spirv"))]
 impl Display for f16 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        write!(f, "{}", self.to_f32())
+        Display::fmt(&self.to_f32(), f)
     }
 }
 
@@ -1006,7 +1012,7 @@ impl Add for f16 {
 
     #[inline]
     fn add(self, rhs: Self) -> Self::Output {
-        Self::from_f32(Self::to_f32(self) + Self::to_f32(rhs))
+        f16(arch::add_f16(self.0, rhs.0))
     }
 }
 
@@ -1056,7 +1062,7 @@ impl Sub for f16 {
 
     #[inline]
     fn sub(self, rhs: Self) -> Self::Output {
-        Self::from_f32(Self::to_f32(self) - Self::to_f32(rhs))
+        f16(arch::subtract_f16(self.0, rhs.0))
     }
 }
 
@@ -1106,7 +1112,7 @@ impl Mul for f16 {
 
     #[inline]
     fn mul(self, rhs: Self) -> Self::Output {
-        Self::from_f32(Self::to_f32(self) * Self::to_f32(rhs))
+        f16(arch::multiply_f16(self.0, rhs.0))
     }
 }
 
@@ -1156,7 +1162,7 @@ impl Div for f16 {
 
     #[inline]
     fn div(self, rhs: Self) -> Self::Output {
-        Self::from_f32(Self::to_f32(self) / Self::to_f32(rhs))
+        f16(arch::divide_f16(self.0, rhs.0))
     }
 }
 
@@ -1206,7 +1212,7 @@ impl Rem for f16 {
 
     #[inline]
     fn rem(self, rhs: Self) -> Self::Output {
-        Self::from_f32(Self::to_f32(self) % Self::to_f32(rhs))
+        f16(arch::remainder_f16(self.0, rhs.0))
     }
 }
 
@@ -1254,28 +1260,28 @@ impl RemAssign<&f16> for f16 {
 impl Product for f16 {
     #[inline]
     fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-        f16::from_f32(iter.map(|f| f.to_f32()).product())
+        f16(arch::product_f16(iter.map(|f| f.to_bits())))
     }
 }
 
 impl<'a> Product<&'a f16> for f16 {
     #[inline]
     fn product<I: Iterator<Item = &'a f16>>(iter: I) -> Self {
-        f16::from_f32(iter.map(|f| f.to_f32()).product())
+        f16(arch::product_f16(iter.map(|f| f.to_bits())))
     }
 }
 
 impl Sum for f16 {
     #[inline]
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        f16::from_f32(iter.map(|f| f.to_f32()).sum())
+        f16(arch::sum_f16(iter.map(|f| f.to_bits())))
     }
 }
 
 impl<'a> Sum<&'a f16> for f16 {
     #[inline]
     fn sum<I: Iterator<Item = &'a f16>>(iter: I) -> Self {
-        f16::from_f32(iter.map(|f| f.to_f32()).product())
+        f16(arch::sum_f16(iter.map(|f| f.to_bits())))
     }
 }
 
@@ -1296,7 +1302,7 @@ impl<'de> Deserialize<'de> for f16 {
 impl<'de> serde::de::Visitor<'de> for Visitor {
     type Value = f16;
 
-    fn expecting(&self, formatter: &mut alloc::fmt::Formatter) -> alloc::fmt::Result {
+    fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(formatter, "tuple struct f16")
     }
 
@@ -1339,6 +1345,7 @@ impl<'de> serde::de::Visitor<'de> for Visitor {
 #[cfg(test)]
 mod test {
     use super::*;
+    #[allow(unused_imports)]
     use core::cmp::Ordering;
     #[cfg(feature = "num-traits")]
     use num_traits::{AsPrimitive, FromPrimitive, ToPrimitive};
@@ -1566,12 +1573,14 @@ mod test {
         assert!(neg_nan64.is_nan() && neg_nan64.is_sign_negative());
         assert!(nan32.is_nan() && nan32.is_sign_positive());
         assert!(neg_nan32.is_nan() && neg_nan32.is_sign_negative());
-        assert!(nan32_from_64.is_nan() && nan32_from_64.is_sign_positive());
-        assert!(neg_nan32_from_64.is_nan() && neg_nan32_from_64.is_sign_negative());
-        assert!(nan16_from_64.is_nan() && nan16_from_64.is_sign_positive());
-        assert!(neg_nan16_from_64.is_nan() && neg_nan16_from_64.is_sign_negative());
-        assert!(nan16_from_32.is_nan() && nan16_from_32.is_sign_positive());
-        assert!(neg_nan16_from_32.is_nan() && neg_nan16_from_32.is_sign_negative());
+
+        // f32/f64 NaN conversion sign is non-deterministic: https://github.com/starkat99/half-rs/issues/103
+        assert!(nan32_from_64.is_nan());
+        assert!(neg_nan32_from_64.is_nan());
+        assert!(nan16_from_64.is_nan());
+        assert!(neg_nan16_from_64.is_nan());
+        assert!(nan16_from_32.is_nan());
+        assert!(neg_nan16_from_32.is_nan());
     }
 
     #[test]
@@ -1591,12 +1600,14 @@ mod test {
         assert!(neg_nan16.is_nan() && neg_nan16.is_sign_negative());
         assert!(nan32.is_nan() && nan32.is_sign_positive());
         assert!(neg_nan32.is_nan() && neg_nan32.is_sign_negative());
-        assert!(nan32_from_16.is_nan() && nan32_from_16.is_sign_positive());
-        assert!(neg_nan32_from_16.is_nan() && neg_nan32_from_16.is_sign_negative());
-        assert!(nan64_from_16.is_nan() && nan64_from_16.is_sign_positive());
-        assert!(neg_nan64_from_16.is_nan() && neg_nan64_from_16.is_sign_negative());
-        assert!(nan64_from_32.is_nan() && nan64_from_32.is_sign_positive());
-        assert!(neg_nan64_from_32.is_nan() && neg_nan64_from_32.is_sign_negative());
+
+        // f32/f64 NaN conversion sign is non-deterministic: https://github.com/starkat99/half-rs/issues/103
+        assert!(nan32_from_16.is_nan());
+        assert!(neg_nan32_from_16.is_nan());
+        assert!(nan64_from_16.is_nan());
+        assert!(neg_nan64_from_16.is_nan());
+        assert!(nan64_from_32.is_nan());
+        assert!(neg_nan64_from_32.is_nan());
     }
 
     #[test]
@@ -1882,6 +1893,33 @@ mod test {
             f16::from_f64(2002.51f64).to_bits(),
             f16::from_f64(2003.0).to_bits()
         );
+    }
+
+    #[test]
+    fn arithmetic() {
+        assert_eq!(f16::ONE + f16::ONE, f16::from_f32(2.));
+        assert_eq!(f16::ONE - f16::ONE, f16::ZERO);
+        assert_eq!(f16::ONE * f16::ONE, f16::ONE);
+        assert_eq!(f16::from_f32(2.) * f16::from_f32(2.), f16::from_f32(4.));
+        assert_eq!(f16::ONE / f16::ONE, f16::ONE);
+        assert_eq!(f16::from_f32(4.) / f16::from_f32(2.), f16::from_f32(2.));
+        assert_eq!(f16::from_f32(4.) % f16::from_f32(3.), f16::from_f32(1.));
+    }
+
+    #[cfg(feature = "std")]
+    #[test]
+    fn formatting() {
+        let f = f16::from_f32(0.1152344);
+
+        assert_eq!(format!("{:.3}", f), "0.115");
+        assert_eq!(format!("{:.4}", f), "0.1152");
+        assert_eq!(format!("{:+.4}", f), "+0.1152");
+        assert_eq!(format!("{:>+10.4}", f), "   +0.1152");
+
+        assert_eq!(format!("{:.3?}", f), "0.115");
+        assert_eq!(format!("{:.4?}", f), "0.1152");
+        assert_eq!(format!("{:+.4?}", f), "+0.1152");
+        assert_eq!(format!("{:>+10.4?}", f), "   +0.1152");
     }
 
     impl quickcheck::Arbitrary for f16 {

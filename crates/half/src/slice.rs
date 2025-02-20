@@ -7,9 +7,10 @@
 //! larger buffers of floating point values, and are automatically included in the
 //! [`prelude`][crate::prelude] module.
 
-use crate::{bf16, binary16::convert, f16};
+use crate::{bf16, binary16::arch, f16};
 #[cfg(feature = "alloc")]
-use alloc::vec::Vec;
+#[allow(unused_imports)]
+use alloc::{vec, vec::Vec};
 use core::slice;
 
 /// Extensions to `[f16]` and `[bf16]` slices to support conversion and reinterpret operations.
@@ -195,7 +196,6 @@ pub trait HalfFloatSliceExt: private::SealedHalfFloatSlice {
     /// assert_eq!(vec, vec![1., 2., 3., 4.]);
     /// ```
     #[cfg(any(feature = "alloc", feature = "std"))]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     #[must_use]
     fn to_f32_vec(&self) -> Vec<f32>;
 
@@ -218,7 +218,6 @@ pub trait HalfFloatSliceExt: private::SealedHalfFloatSlice {
     /// assert_eq!(vec, vec![1., 2., 3., 4.]);
     /// ```
     #[cfg(feature = "alloc")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     #[must_use]
     fn to_f64_vec(&self) -> Vec<f64>;
 }
@@ -318,6 +317,7 @@ impl HalfFloatSliceExt for [f16] {
         unsafe { slice::from_raw_parts_mut(pointer, length) }
     }
 
+    #[inline]
     fn convert_from_f32_slice(&mut self, src: &[f32]) {
         assert_eq!(
             self.len(),
@@ -325,9 +325,10 @@ impl HalfFloatSliceExt for [f16] {
             "destination and source slices have different lengths"
         );
 
-        convert::f32_to_f16_slice(src, self.reinterpret_cast_mut())
+        arch::f32_to_f16_slice(src, self.reinterpret_cast_mut())
     }
 
+    #[inline]
     fn convert_from_f64_slice(&mut self, src: &[f64]) {
         assert_eq!(
             self.len(),
@@ -335,9 +336,10 @@ impl HalfFloatSliceExt for [f16] {
             "destination and source slices have different lengths"
         );
 
-        convert::f64_to_f16_slice(src, self.reinterpret_cast_mut())
+        arch::f64_to_f16_slice(src, self.reinterpret_cast_mut())
     }
 
+    #[inline]
     fn convert_to_f32_slice(&self, dst: &mut [f32]) {
         assert_eq!(
             self.len(),
@@ -345,9 +347,10 @@ impl HalfFloatSliceExt for [f16] {
             "destination and source slices have different lengths"
         );
 
-        convert::f16_to_f32_slice(self.reinterpret_cast(), dst)
+        arch::f16_to_f32_slice(self.reinterpret_cast(), dst)
     }
 
+    #[inline]
     fn convert_to_f64_slice(&self, dst: &mut [f64]) {
         assert_eq!(
             self.len(),
@@ -355,18 +358,14 @@ impl HalfFloatSliceExt for [f16] {
             "destination and source slices have different lengths"
         );
 
-        convert::f16_to_f64_slice(self.reinterpret_cast(), dst)
+        arch::f16_to_f64_slice(self.reinterpret_cast(), dst)
     }
 
     #[cfg(any(feature = "alloc", feature = "std"))]
     #[inline]
     #[allow(clippy::uninit_vec)]
     fn to_f32_vec(&self) -> Vec<f32> {
-        let mut vec = Vec::with_capacity(self.len());
-        // SAFETY: convert will initialize every value in the vector without reading them,
-        // so this is safe to do instead of double initialize from resize, and we're setting it to
-        // same value as capacity.
-        unsafe { vec.set_len(self.len()) };
+        let mut vec = vec![0f32; self.len()];
         self.convert_to_f32_slice(&mut vec);
         vec
     }
@@ -375,11 +374,7 @@ impl HalfFloatSliceExt for [f16] {
     #[inline]
     #[allow(clippy::uninit_vec)]
     fn to_f64_vec(&self) -> Vec<f64> {
-        let mut vec = Vec::with_capacity(self.len());
-        // SAFETY: convert will initialize every value in the vector without reading them,
-        // so this is safe to do instead of double initialize from resize, and we're setting it to
-        // same value as capacity.
-        unsafe { vec.set_len(self.len()) };
+        let mut vec = vec![0f64; self.len()];
         self.convert_to_f64_slice(&mut vec);
         vec
     }
@@ -404,6 +399,7 @@ impl HalfFloatSliceExt for [bf16] {
         unsafe { slice::from_raw_parts_mut(pointer, length) }
     }
 
+    #[inline]
     fn convert_from_f32_slice(&mut self, src: &[f32]) {
         assert_eq!(
             self.len(),
@@ -417,6 +413,7 @@ impl HalfFloatSliceExt for [bf16] {
         }
     }
 
+    #[inline]
     fn convert_from_f64_slice(&mut self, src: &[f64]) {
         assert_eq!(
             self.len(),
@@ -430,6 +427,7 @@ impl HalfFloatSliceExt for [bf16] {
         }
     }
 
+    #[inline]
     fn convert_to_f32_slice(&self, dst: &mut [f32]) {
         assert_eq!(
             self.len(),
@@ -443,6 +441,7 @@ impl HalfFloatSliceExt for [bf16] {
         }
     }
 
+    #[inline]
     fn convert_to_f64_slice(&self, dst: &mut [f64]) {
         assert_eq!(
             self.len(),
@@ -460,11 +459,7 @@ impl HalfFloatSliceExt for [bf16] {
     #[inline]
     #[allow(clippy::uninit_vec)]
     fn to_f32_vec(&self) -> Vec<f32> {
-        let mut vec = Vec::with_capacity(self.len());
-        // SAFETY: convert will initialize every value in the vector without reading them,
-        // so this is safe to do instead of double initialize from resize, and we're setting it to
-        // same value as capacity.
-        unsafe { vec.set_len(self.len()) };
+        let mut vec = vec![0f32; self.len()];
         self.convert_to_f32_slice(&mut vec);
         vec
     }
@@ -473,11 +468,7 @@ impl HalfFloatSliceExt for [bf16] {
     #[inline]
     #[allow(clippy::uninit_vec)]
     fn to_f64_vec(&self) -> Vec<f64> {
-        let mut vec = Vec::with_capacity(self.len());
-        // SAFETY: convert will initialize every value in the vector without reading them,
-        // so this is safe to do instead of double initialize from resize, and we're setting it to
-        // same value as capacity.
-        unsafe { vec.set_len(self.len()) };
+        let mut vec = vec![0f64; self.len()];
         self.convert_to_f64_slice(&mut vec);
         vec
     }
