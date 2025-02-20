@@ -11,9 +11,9 @@
 
 [package]
 edition = "2018"
-rust-version = "1.56.0"
+rust-version = "1.70.0"
 name = "miette"
-version = "5.10.0"
+version = "6.0.1"
 authors = ["Kat Marchán <kzm@zkat.tech>"]
 exclude = [
     "images/",
@@ -38,18 +38,12 @@ optional = true
 version = "0.2.1"
 optional = true
 
-[dependencies.is-terminal]
-version = "0.4.0"
+[dependencies.miette-derive]
+version = "=6.0.1"
 optional = true
 
-[dependencies.miette-derive]
-version = "=5.10.0"
-
-[dependencies.once_cell]
-version = "1.8.0"
-
 [dependencies.owo-colors]
-version = "3.0.0"
+version = "3.4.0"
 optional = true
 
 [dependencies.serde]
@@ -58,23 +52,27 @@ features = ["derive"]
 optional = true
 
 [dependencies.supports-color]
-version = "2.0.0"
+version = "3.0.0"
 optional = true
 
 [dependencies.supports-hyperlinks]
-version = "2.0.0"
+version = "3.0.0"
 optional = true
 
 [dependencies.supports-unicode]
-version = "2.0.0"
+version = "3.0.0"
+optional = true
+
+[dependencies.syntect]
+version = "5.1.0"
 optional = true
 
 [dependencies.terminal_size]
-version = "0.1.17"
+version = "0.3.0"
 optional = true
 
 [dependencies.textwrap]
-version = "0.15.0"
+version = "0.16.0"
 optional = true
 
 [dependencies.thiserror]
@@ -105,6 +103,9 @@ version = "1.0.4"
 [dev-dependencies.serde_json]
 version = "1.0.64"
 
+[dev-dependencies.strip-ansi-escapes]
+version = "0.2.0"
+
 [dev-dependencies.syn]
 version = "2.0"
 features = ["full"]
@@ -114,7 +115,8 @@ version = "1.0.19"
 features = ["diff"]
 
 [features]
-default = []
+default = ["derive"]
+derive = ["miette-derive"]
 fancy = [
     "fancy-no-backtrace",
     "backtrace",
@@ -122,7 +124,6 @@ fancy = [
 ]
 fancy-no-backtrace = [
     "owo-colors",
-    "is-terminal",
     "textwrap",
     "terminal_size",
     "supports-hyperlinks",
@@ -130,3 +131,7 @@ fancy-no-backtrace = [
     "supports-unicode",
 ]
 no-format-args-capture = []
+syntect-highlighter = [
+    "fancy-no-backtrace",
+    "syntect",
+]
