@@ -38,6 +38,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "6a6a00a8_502dc60e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 3334832
+      },
+      "writtenOn": "2025-02-20T08:05:05Z",
+      "side": 1,
+      "message": "\u003e If we can\u0027t handle the additional imports/updates\n\nAgree it would be bad if that\u0027s the case. Just to assure, the work I am doing here going to keep updating hickory-proto to the latest version (in fact I still depending on some changes in the upstreaming process). I am trying to take small step at a time by migrating the legacy v0.24.x versions first.\n\n\nThat said, I realize this v0.24.x, it\u0027s depending on an old version of \"thiserror\"\n```\nlujc@lujc-android-builder:~/android/master/external/rust/android-crates-io$ ./crate_tool analyze-updates hickory-proto\nAnalyzing updates to hickory-proto v0.24.1\nVersion 0.24.2\n  Dep idna ^1.0 is not satisfied by v0.5.0 at external/rust/android-crates-io/crates/idna\n  Dep thiserror ^1.0.20 is not satisfied by v2.0.11 at external/rust/android-crates-io/crates/thiserror\n    But the current version has the same dependency and it seems to work.\n```\n\nI will hold on this change for a while, to see if I can update and have the dependencies exact matching the vendored crates. \nOther crates imported in this chain has no issues.",
+      "parentUuid": "cec552cd_74a86eb3",
+      "revId": "98ef261cb00ae941bdf4cf82c90d96e46da107b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "a9bf7de7_591e0bae",
         "filename": "/PATCHSET_LEVEL",
         "patchSetId": 1
@@ -49,6 +67,24 @@
       "writtenOn": "2025-02-19T15:11:50Z",
       "side": 1,
       "message": "Please fix the lint error by running \"./crate_tool regenerate hickory-proto\".",
+      "revId": "98ef261cb00ae941bdf4cf82c90d96e46da107b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5ac5aa8f_01986f14",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3334832
+      },
+      "writtenOn": "2025-02-20T08:05:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a9bf7de7_591e0bae",
       "revId": "98ef261cb00ae941bdf4cf82c90d96e46da107b5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
