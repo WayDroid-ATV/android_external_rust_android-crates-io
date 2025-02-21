@@ -341,6 +341,8 @@ impl<'a> Resolver<'a> {
                 .full_name
                 .to_string(),
         );
+        output.set_client_streaming(input.client_streaming);
+        output.set_server_streaming(input.server_streaming);
         Ok(output)
     }
 
