@@ -1,6 +1,9 @@
 {
   "postsubmit": [
     {
+      "name": "cov-mark_disabled_test_tests_smoke"
+    },
+    {
       "name": "cov-mark_test_tests_smoke"
     }
   ]

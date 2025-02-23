@@ -47,6 +47,7 @@
 //!   - [... delayed source code](#-delayed-source-code)
 //!   - [... handler options](#-handler-options)
 //!   - [... dynamic diagnostics](#-dynamic-diagnostics)
+//!   - [... syntax highlighting](#-syntax-highlighting)
 //! - [Acknowledgements](#acknowledgements)
 //! - [License](#license)
 //!
@@ -109,7 +110,7 @@
 //!     // The Source that we're gonna be printing snippets out of.
 //!     // This can be a String if you don't have or care about file names.
 //!     #[source_code]
-//!     src: NamedSource,
+//!     src: NamedSource<String>,
 //!     // Snippets and highlights can be included in the diagnostic!
 //!     #[label("This bit here")]
 //!     bad_bit: SourceSpan,
@@ -302,6 +303,23 @@
 //!
 //! ```toml
 //! miette = { version = "X.Y.Z", features = ["fancy"] }
+//! ```
+//!
+//! Another way to display a diagnostic is by printing them using the debug formatter.
+//! This is, in fact, what returning diagnostics from main ends up doing.
+//! To do it yourself, you can write the following:
+//!
+//! ```rust
+//! use miette::{IntoDiagnostic, Result};
+//! use semver::Version;
+//!
+//! fn just_a_random_function() {
+//!     let version_result: Result<Version> = "1.2.x".parse().into_diagnostic();
+//!     match version_result {
+//!         Err(e) => println!("{:?}", e),
+//!         Ok(version) => println!("{}", version),
+//!     }
+//! }
 //! ```
 //!
 //! ### ... diagnostic code URLs
@@ -593,6 +611,7 @@
 //!             .unicode(false)
 //!             .context_lines(3)
 //!             .tab_width(4)
+//!             .break_words(true)
 //!             .build(),
 //!     )
 //! }))
@@ -625,6 +644,38 @@
 //! println!("{:?}", report)
 //! ```
 //!
+//! ### ... syntax highlighting
+//!
+//! `miette` can be configured to highlight syntax in source code snippets.
+//!
+//! <!-- TODO: screenshot goes here once default Theme is decided -->
+//!
+//! To use the built-in highlighting functionality, you must enable the
+//! `syntect-highlighter` crate feature. When this feature is enabled, `miette` will
+//! automatically use the [`syntect`] crate to highlight the `#[source_code]`
+//! field of your [`Diagnostic`].
+//!
+//! Syntax detection with [`syntect`] is handled by checking 2 methods on the [`SpanContents`] trait, in order:
+//! * [language()](SpanContents::language) - Provides the name of the language
+//!   as a string. For example `"Rust"` will indicate Rust syntax highlighting.
+//!   You can set the language of the [`SpanContents`] produced by a
+//!   [`NamedSource`] via the [`with_language`](NamedSource::with_language)
+//!   method.
+//! * [name()](SpanContents::name) - In the absence of an explicitly set
+//!   language, the name is assumed to contain a file name or file path.
+//!   The highlighter will check for a file extension at the end of the name and
+//!   try to guess the syntax from that.
+//!
+//! If you want to use a custom highlighter, you can provide a custom
+//! implementation of the [`Highlighter`](highlighters::Highlighter)
+//! trait to [`MietteHandlerOpts`] by calling the
+//! [`with_syntax_highlighting`](MietteHandlerOpts::with_syntax_highlighting)
+//! method. See the [`highlighters`] module docs for more details.
+//!
+//! ## MSRV
+//!
+//! This crate requires rustc 1.70.0 or later.
+//!
 //! ## Acknowledgements
 //!
 //! `miette` was not developed in a void. It owes enormous credit to various
@@ -652,6 +703,7 @@
 //! and some from [`thiserror`](https://github.com/dtolnay/thiserror), also
 //! under the Apache License. Some code is taken from
 //! [`ariadne`](https://github.com/zesterer/ariadne), which is MIT licensed.
+#[cfg(feature = "derive")]
 pub use miette_derive::*;
 
 pub use error::*;
@@ -672,6 +724,8 @@ mod eyreish;
 #[cfg(feature = "fancy-no-backtrace")]
 mod handler;
 mod handlers;
+#[cfg(feature = "fancy-no-backtrace")]
+pub mod highlighters;
 #[doc(hidden)]
 pub mod macro_helpers;
 mod miette_diagnostic;

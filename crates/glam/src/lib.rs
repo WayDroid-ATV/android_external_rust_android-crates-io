@@ -256,7 +256,7 @@ and benchmarks.
 The minimum supported Rust version is `1.68.2`.
 
 */
-#![doc(html_root_url = "https://docs.rs/glam/0.29.2")]
+#![doc(html_root_url = "https://docs.rs/glam/0.30.0")]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(target_arch = "spirv", feature(repr_simd))]
 #![deny(
@@ -271,6 +271,9 @@ The minimum supported Rust version is `1.68.2`.
     all(feature = "core-simd", not(feature = "scalar-math")),
     feature(portable_simd)
 )]
+
+#[cfg(all(not(feature = "std"), not(feature = "libm")))]
+compile_error!("You must specify a math backend using either the `std` feature or `libm` feature");
 
 #[macro_use]
 mod macros;
