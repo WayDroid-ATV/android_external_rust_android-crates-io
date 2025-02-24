@@ -1,4 +1,7 @@
 {
   "run_cargo": false,
-  "tests": false
+  "tests": false,
+  "module_name_overrides": {
+    "libindexmap": "libindexmap-1.9.3"
+  }
 }

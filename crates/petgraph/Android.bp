@@ -29,7 +29,7 @@ rust_library {
     ],
     rustlibs: [
         "libfixedbitset",
-        "libindexmap",
+        "libindexmap-1.9.3",
     ],
     apex_available: [
         "//apex_available:platform",

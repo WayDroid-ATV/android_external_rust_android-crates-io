@@ -8,5 +8,8 @@
       "device_supported": false
     }
   },
-  "run_cargo": false
+  "run_cargo": false,
+  "module_name_overrides": {
+    "libindexmap": "libindexmap-1.9.3"
+  }
 }
