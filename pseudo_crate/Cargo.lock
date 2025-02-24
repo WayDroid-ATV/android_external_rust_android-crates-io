@@ -260,6 +260,7 @@ dependencies = [
  "httpdate",
  "hyper 1.6.0",
  "hyper-timeout",
+ "hyper-util",
  "icu_capi",
  "icu_casemap",
  "icu_casemap_data",
