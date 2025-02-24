@@ -317,6 +317,7 @@ serde_json
 serde_spanned
 serde_test
 serde_yaml
+serialport
 sharded-slab
 shared_child
 shared_library
