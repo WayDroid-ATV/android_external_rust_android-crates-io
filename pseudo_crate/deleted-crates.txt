@@ -1,3 +1,5 @@
+axum
+axum-core
 instant
 oneshot-uniffi
 uniffi
