@@ -254,7 +254,7 @@ dependencies = [
  "home",
  "hound",
  "http 1.2.0",
- "http-body 0.4.6",
+ "http-body 1.0.1",
  "httparse",
  "httpdate",
  "hyper 0.14.32",
