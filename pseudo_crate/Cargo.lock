@@ -258,7 +258,7 @@ dependencies = [
  "http-body-util",
  "httparse",
  "httpdate",
- "hyper 0.14.32",
+ "hyper 1.6.0",
  "hyper-timeout",
  "icu_capi",
  "icu_casemap",
