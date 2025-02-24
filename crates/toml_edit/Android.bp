@@ -27,7 +27,7 @@ rust_library_host {
         "serde",
     ],
     rustlibs: [
-        "libindexmap",
+        "libindexmap-1.9.3",
         "libserde",
         "libserde_spanned",
         "libtoml_datetime",

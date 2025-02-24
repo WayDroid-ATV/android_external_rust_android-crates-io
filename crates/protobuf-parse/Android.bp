@@ -23,7 +23,7 @@ rust_library {
     edition: "2021",
     rustlibs: [
         "libanyhow",
-        "libindexmap",
+        "libindexmap-1.9.3",
         "liblog_rust",
         "libprotobuf",
         "libprotobuf_support",
@@ -50,7 +50,7 @@ rust_binary {
     edition: "2021",
     rustlibs: [
         "libanyhow",
-        "libindexmap",
+        "libindexmap-1.9.3",
         "liblog_rust",
         "libprotobuf",
         "libprotobuf_parse",
