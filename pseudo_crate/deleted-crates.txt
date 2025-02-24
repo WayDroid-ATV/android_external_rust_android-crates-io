@@ -1,5 +1,6 @@
 axum
 axum-core
+hyper-timeout
 instant
 oneshot-uniffi
 uniffi

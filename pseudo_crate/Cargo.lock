@@ -247,7 +247,6 @@ dependencies = [
  "httparse",
  "httpdate",
  "hyper",
- "hyper-timeout",
  "icu_capi",
  "icu_casemap",
  "icu_casemap_data",
@@ -2833,18 +2832,6 @@ dependencies = [
  "tower-service",
  "tracing",
  "want",
-]
-
-[[package]]
-name = "hyper-timeout"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbb958482e8c7be4bc3cf272a766a2b0bf1a6755e7a6ae777f017a31d11b13b1"
-dependencies = [
- "hyper",
- "pin-project-lite",
- "tokio",
- "tokio-io-timeout",
 ]
 
 [[package]]
