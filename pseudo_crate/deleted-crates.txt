@@ -1,5 +1,11 @@
+axum
+axum-core
 instant
 oneshot-uniffi
+tonic
+tower
+tower-layer
+tower-service
 uniffi
 uniffi_checksum_derive
 uniffi_core
