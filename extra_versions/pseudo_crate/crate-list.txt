@@ -3,6 +3,7 @@ clap
 clap_lex
 hashbrown
 http
+indexmap
 jni
 protobuf
 protobuf-codegen
