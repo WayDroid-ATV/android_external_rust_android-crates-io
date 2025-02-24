@@ -244,7 +244,7 @@ dependencies = [
  "heck 0.5.0",
  "hex",
  "hound",
- "http 0.2.12",
+ "http 1.2.0",
  "http-body",
  "httparse",
  "httpdate",
@@ -2628,7 +2628,7 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "futures-util",
- "http 1.1.0",
+ "http 1.2.0",
  "indexmap 2.4.0",
  "slab",
  "tokio",
@@ -2769,9 +2769,9 @@ dependencies = [
 
 [[package]]
 name = "http"
-version = "1.1.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21b9ddb458710bc376481b842f5da65cdf31522de232c1ca8146abce2a358258"
+checksum = "f16ca2af56261c99fba8bac40a10251ce8188205a4c448fbb745a2e4daa76fea"
 dependencies = [
  "bytes",
  "fnv",
@@ -6456,7 +6456,7 @@ dependencies = [
  "byteorder",
  "bytes",
  "data-encoding",
- "http 1.1.0",
+ "http 1.2.0",
  "httparse",
  "log",
  "rand",
