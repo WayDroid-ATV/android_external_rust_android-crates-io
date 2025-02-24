@@ -152,6 +152,7 @@ httparse
 httpdate
 hyper
 hyper-timeout
+hyper-util
 icu_capi
 icu_casemap
 icu_casemap_data

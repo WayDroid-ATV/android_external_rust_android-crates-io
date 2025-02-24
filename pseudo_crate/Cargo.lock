@@ -251,6 +251,7 @@ dependencies = [
  "httpdate",
  "hyper 1.6.0",
  "hyper-timeout",
+ "hyper-util",
  "icu_capi",
  "icu_casemap",
  "icu_casemap_data",
@@ -2877,6 +2878,20 @@ dependencies = [
  "pin-project-lite",
  "tokio",
  "tokio-io-timeout",
+]
+
+[[package]]
+name = "hyper-util"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df2dcfbe0677734ab2f3ffa7fa7bfd4706bfdc1ef393f2ee30184aed67e631b4"
+dependencies = [
+ "bytes",
+ "futures-util",
+ "http 1.2.0",
+ "http-body 1.0.1",
+ "hyper 1.6.0",
+ "pin-project-lite",
 ]
 
 [[package]]
