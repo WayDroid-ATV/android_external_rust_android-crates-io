@@ -277,6 +277,7 @@ dependencies = [
  "jni-sys",
  "json-strip-comments",
  "kernlog",
+ "khronos",
  "lazy_static",
  "lazycell",
  "libbpf-rs",
@@ -3598,6 +3599,15 @@ checksum = "f0dd79b6ea06a97c93bc5587fba4c2ed6d723b939d35d5e3fb3c6870d12e6d17"
 dependencies = [
  "libc 0.2.161",
  "log",
+]
+
+[[package]]
+name = "khronos"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c0711aaa80e6ba6eb1fa8978f1f46bfcb38ceb2f3f33f3736efbff39dac89f50"
+dependencies = [
+ "libc 0.1.12",
 ]
 
 [[package]]

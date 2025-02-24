@@ -179,6 +179,7 @@ jni
 jni-sys
 json-strip-comments
 kernlog
+khronos
 lazy_static
 lazycell
 libbpf-rs
