@@ -1,0 +1,121 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 0b3509a3..ca3fc17f 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -177,7 +177,7 @@ version = "0.1.16"
+ default-features = false
+ 
+ [dependencies.tower]
+-version = "0.4.7"
++version = "0.5"
+ optional = true
+ default-features = false
+ 
+@@ -221,7 +221,7 @@ features = [
+ ]
+ 
+ [dev-dependencies.tower]
+-version = "0.4.7"
++version = "0.5"
+ features = ["full"]
+ 
+ [features]
+diff --git a/src/transport/channel/mod.rs b/src/transport/channel/mod.rs
+index ed8d22275..d22ced98d 100644
+--- a/src/transport/channel/mod.rs
++++ b/src/transport/channel/mod.rs
+@@ -29,14 +29,13 @@ use tokio::sync::mpsc::{channel, Sender};
+ use hyper::rt;
+ use tower::balance::p2c::Balance;
+ use tower::{
+-    buffer::{self, Buffer},
++    buffer::{future::ResponseFuture as BufferResponseFuture, Buffer},
+     discover::{Change, Discover},
+-    util::{BoxService, Either},
++    util::BoxService,
+     Service,
+ };
+ 
+ type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
+-type Svc = Either<Connection, BoxService<Request<BoxBody>, Response<BoxBody>, crate::Error>>;
+ 
+ const DEFAULT_BUFFER_SIZE: usize = 1024;
+ 
+@@ -65,14 +64,14 @@ const DEFAULT_BUFFER_SIZE: usize = 1024;
+ /// cloning the `Channel` type is cheap and encouraged.
+ #[derive(Clone)]
+ pub struct Channel {
+-    svc: Buffer<Svc, Request<BoxBody>>,
++    svc: Buffer<Request<BoxBody>, BoxFuture<'static, Result<Response<BoxBody>, crate::Error>>>,
+ }
+ 
+ /// A future that resolves to an HTTP response.
+ ///
+ /// This is returned by the `Service::call` on [`Channel`].
+ pub struct ResponseFuture {
+-    inner: buffer::future::ResponseFuture<<Svc as Service<Request<BoxBody>>>::Future>,
++    inner: BufferResponseFuture<BoxFuture<'static, Result<Response<BoxBody>, crate::Error>>>,
+ }
+ 
+ impl Channel {
+@@ -156,7 +155,8 @@ impl Channel {
+         let executor = endpoint.executor.clone();
+ 
+         let svc = Connection::lazy(connector, endpoint);
+-        let (svc, worker) = Buffer::pair(Either::A(svc), buffer_size);
++        let (svc, worker) = Buffer::pair(svc, buffer_size);
++
+         executor.execute(worker);
+ 
+         Channel { svc }
+@@ -175,7 +175,7 @@ impl Channel {
+         let svc = Connection::connect(connector, endpoint)
+             .await
+             .map_err(super::Error::from_source)?;
+-        let (svc, worker) = Buffer::pair(Either::A(svc), buffer_size);
++        let (svc, worker) = Buffer::pair(svc, buffer_size);
+         executor.execute(worker);
+ 
+         Ok(Channel { svc })
+@@ -191,7 +191,7 @@ impl Channel {
+         let svc = Balance::new(discover);
+ 
+         let svc = BoxService::new(svc);
+-        let (svc, worker) = Buffer::pair(Either::B(svc), buffer_size);
++        let (svc, worker) = Buffer::pair(svc, buffer_size);
+         executor.execute(Box::pin(worker));
+ 
+         Channel { svc }
+diff --git a/src/transport/server/mod.rs b/src/transport/server/mod.rs
+index 25659b81b..6e1fcc461 100644
+--- a/src/transport/server/mod.rs
++++ b/src/transport/server/mod.rs
+@@ -1030,10 +1030,10 @@ where
+             .layer(BoxCloneService::layer())
+             .map_request(move |mut request: Request<BoxBody>| {
+                 match &conn_info {
+-                    tower::util::Either::A(inner) => {
++                    tower::util::Either::Left(inner) => {
+                         request.extensions_mut().insert(inner.clone());
+                     }
+-                    tower::util::Either::B(inner) => {
++                    tower::util::Either::Right(inner) => {
+                         #[cfg(feature = "tls")]
+                         {
+                             request.extensions_mut().insert(inner.clone());
+diff --git a/src/transport/server/service/io.rs b/src/transport/server/service/io.rs
+index e4588abe7..bfb441e88 100644
+--- a/src/transport/server/service/io.rs
++++ b/src/transport/server/service/io.rs
+@@ -37,9 +37,9 @@ impl<IO> ServerIo<IO> {
+         IO: Connected,
+     {
+         match self {
+-            Self::Io(io) => Either::A(io.connect_info()),
++            Self::Io(io) => Either::Left(io.connect_info()),
+             #[cfg(feature = "tls")]
+-            Self::TlsIo(io) => Either::B(io.connect_info()),
++            Self::TlsIo(io) => Either::Right(io.connect_info()),
+         }
+     }
+ }
