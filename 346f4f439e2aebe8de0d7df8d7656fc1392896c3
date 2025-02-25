@@ -34,6 +34,24 @@
       "parentUuid": "da7034b6_6d577ad1",
       "revId": "346f4f439e2aebe8de0d7df8d7656fc1392896c3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1826b0ce_445704f6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-02-25T23:01:55Z",
+      "side": 1,
+      "message": "Unfortunately, since the compliance linter is unhappy with the header-only version of the license, I think we need to roll back aosp/3494914 and add a patch for the full version of the license.",
+      "parentUuid": "7c2a9c86_f6b8fc86",
+      "revId": "346f4f439e2aebe8de0d7df8d7656fc1392896c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
