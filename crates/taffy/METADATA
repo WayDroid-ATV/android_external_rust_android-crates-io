@@ -1,5 +1,5 @@
 name: "taffy"
-description: "A flexible UI layout library "
+description: "A flexible UI layout library"
 third_party {
   version: "0.7.5"
   license_type: NOTICE

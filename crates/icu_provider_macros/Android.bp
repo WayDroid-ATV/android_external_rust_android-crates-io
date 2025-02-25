@@ -25,6 +25,10 @@ rust_proc_macro {
         "libquote",
         "libsyn",
     ],
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
     native_bridge_supported: true,
     product_available: true,
     recovery_available: true,
