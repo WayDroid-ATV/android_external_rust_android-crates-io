@@ -177,7 +177,7 @@ version = "0.1.16"
 default-features = false
 
 [dependencies.tower]
-version = "0.4.7"
+version = "0.5"
 optional = true
 default-features = false
 
@@ -221,7 +221,7 @@ features = [
 ]
 
 [dev-dependencies.tower]
-version = "0.4.7"
+version = "0.5"
 features = ["full"]
 
 [features]
