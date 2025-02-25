@@ -16,6 +16,24 @@
       "message": "❌ FullLicenseIncluded\n- Please add the full license text for \"MPL-2.0\"; at\nthe moment the LICENSE file only contains the\nheader version of the license.\nThe full license text can be found at\ngo/full-license-files/MPL-2.0\n🗒️ crates/serialport/LICENSE\nLine(s): 1 - 2\n\n📖 See go/compliancelint-checks#FullLicenseIncluded\n\nPlease fix.",
       "revId": "346f4f439e2aebe8de0d7df8d7656fc1392896c3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7c2a9c86_f6b8fc86",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1996085
+      },
+      "writtenOn": "2025-02-25T20:47:20Z",
+      "side": 1,
+      "message": "@jamesfarrell@google.com WDYT about this, in light of b/396413216?",
+      "parentUuid": "da7034b6_6d577ad1",
+      "revId": "346f4f439e2aebe8de0d7df8d7656fc1392896c3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
