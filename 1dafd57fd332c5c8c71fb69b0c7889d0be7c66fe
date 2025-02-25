@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7d33c76c_c113a86f",
+        "filename": "crates/libfuzzer-sys/LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-02-25T23:15:00Z",
+      "side": 0,
+      "message": "Did you mean to change this too?",
+      "revId": "1dafd57fd332c5c8c71fb69b0c7889d0be7c66fe",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
