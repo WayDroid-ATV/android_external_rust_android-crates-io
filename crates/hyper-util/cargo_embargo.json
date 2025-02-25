@@ -7,5 +7,6 @@
     "server-graceful",
     "service",
     "tokio"
-  ]
+  ],
+  "min_sdk_version": "29"
 }
