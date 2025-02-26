@@ -16,6 +16,24 @@
       "message": "Did you mean to change this too?",
       "revId": "1dafd57fd332c5c8c71fb69b0c7889d0be7c66fe",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "87253aca_2e7c5cd3",
+        "filename": "crates/libfuzzer-sys/LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-02-26T17:27:20Z",
+      "side": 0,
+      "message": "Sort of. The crate regeneration code apparently wanted to make some modifications, and in general I tend to include everything when running \"regenerate --all\". But I agree it doesn\u0027t really belong with this change, so I\u0027ll revert it.",
+      "parentUuid": "7d33c76c_c113a86f",
+      "revId": "1dafd57fd332c5c8c71fb69b0c7889d0be7c66fe",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
