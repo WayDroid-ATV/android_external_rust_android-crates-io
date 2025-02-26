@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9a9f7b5c_9531a5d0",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-02-26T18:26:33Z",
+      "side": 1,
+      "message": "I think you can do this with with module_visibility in cargo_embargo.json. See go/cargo_embargo.",
+      "revId": "d6322116727abf4ca31d6750f8019558e97de6d1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
