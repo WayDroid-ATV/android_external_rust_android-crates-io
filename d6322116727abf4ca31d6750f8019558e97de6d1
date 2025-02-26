@@ -34,6 +34,24 @@
       "parentUuid": "9a9f7b5c_9531a5d0",
       "revId": "d6322116727abf4ca31d6750f8019558e97de6d1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e6f51c97_b396281a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-26T18:35:24Z",
+      "side": 1,
+      "message": "https://cs.android.com/search?q\u003dmodule_visibility\u0026ss\u003dandroid%2Fplatform%2Fsuperproject%2Fmain:external%2Frust%2Fandroid-crates-io%2F shows examples of this. Yes, `cargo_embargo.json` is used to produce the `Android.bp` files.",
+      "parentUuid": "fd725e44_dfbc0288",
+      "revId": "d6322116727abf4ca31d6750f8019558e97de6d1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
