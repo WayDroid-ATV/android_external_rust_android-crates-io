@@ -9,7 +9,7 @@ use std::str::FromStr;
 
 use super::{
     Attrs, Docs, Enum, Ident, Lifetime, LifetimeEnv, LifetimeTransitivity, Method, NamedLifetime,
-    OpaqueStruct, Path, RustLink, Struct, Trait,
+    OpaqueType, Path, RustLink, Struct, Trait,
 };
 use crate::Env;
 
@@ -19,8 +19,8 @@ use crate::Env;
 pub enum CustomType {
     /// A non-opaque struct whose fields will be visible across the FFI boundary.
     Struct(Struct),
-    /// A struct annotated with [`diplomat::opaque`] whose fields are not visible.
-    Opaque(OpaqueStruct),
+    /// A type annotated with [`diplomat::opaque`] whose fields are not visible.
+    Opaque(OpaqueType),
     /// A fieldless enum.
     Enum(Enum),
 }
@@ -451,7 +451,7 @@ pub enum TypeName {
         PrimitiveType,
         StdlibOrDiplomat,
     ),
-    /// `&[&DiplomatStr]`, etc. Equivalent to `&[&str]`
+    /// `&[DiplomatStrSlice]`, etc. Equivalent to `&[&str]`
     ///
     /// If StdlibOrDiplomat::Stdlib, it's specified as `&[&DiplomatFoo]`, if StdlibOrDiplomat::Diplomat it's specified
     /// as `DiplomatSlice<&DiplomatFoo>`
@@ -614,7 +614,10 @@ impl TypeName {
                     TypeName::Option(inner.clone(), StdlibOrDiplomat::Stdlib)
                 }
                 // For other types (primitives, structs, enums) we need DiplomatOption
-                _ => TypeName::Option(inner.clone(), StdlibOrDiplomat::Diplomat),
+                _ => TypeName::Option(
+                    Box::new(inner.ffi_safe_version()),
+                    StdlibOrDiplomat::Diplomat,
+                ),
             },
             _ => self.clone(),
         }
@@ -951,6 +954,11 @@ impl TypeName {
                     if let syn::PathArguments::AngleBracketed(type_args) =
                         &p.path.segments.last().unwrap().arguments
                     {
+                        assert!(
+                            type_args.args.len() > 1,
+                            "Not enough arguments given to Result<T,E>. Are you using a non-std Result type?"
+                        );
+
                         if let (syn::GenericArgument::Type(ok), syn::GenericArgument::Type(err)) =
                             (&type_args.args[0], &type_args.args[1])
                         {

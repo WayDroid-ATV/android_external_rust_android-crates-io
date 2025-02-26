@@ -179,7 +179,7 @@ impl<'ast> LoweringContext<'ast> {
     }
     pub(super) fn lower_all_opaques(
         &mut self,
-        ast_defs: impl ExactSizeIterator<Item = ItemAndInfo<'ast, ast::OpaqueStruct>>,
+        ast_defs: impl ExactSizeIterator<Item = ItemAndInfo<'ast, ast::OpaqueType>>,
     ) -> Result<Vec<OpaqueDef>, ()> {
         self.lower_all(ast_defs, Self::lower_opaque)
     }
@@ -257,10 +257,7 @@ impl<'ast> LoweringContext<'ast> {
         Ok(def)
     }
 
-    fn lower_opaque(
-        &mut self,
-        item: ItemAndInfo<'ast, ast::OpaqueStruct>,
-    ) -> Result<OpaqueDef, ()> {
+    fn lower_opaque(&mut self, item: ItemAndInfo<'ast, ast::OpaqueType>) -> Result<OpaqueDef, ()> {
         let ast_opaque = item.item;
         self.errors.set_item(ast_opaque.name.as_str());
         let name = self.lower_ident(&ast_opaque.name, "opaque name");
@@ -404,6 +401,17 @@ impl<'ast> LoweringContext<'ast> {
             &item.ty_parent_attrs,
             &mut self.errors,
         );
+
+        if ast_trait.is_send && !self.attr_validator.attrs_supported().traits_are_send {
+            self.errors.push(LoweringError::Other(
+                "Traits are not safe to std::marker::Send in this backend".into(),
+            ));
+        }
+        if ast_trait.is_sync && !self.attr_validator.attrs_supported().traits_are_sync {
+            self.errors.push(LoweringError::Other(
+                "Traits are not safe to std::marker::Send in this backend".into(),
+            ));
+        }
 
         let fcts = if attrs.disable {
             Vec::new()
@@ -841,6 +849,13 @@ impl<'ast> LoweringContext<'ast> {
                             PrimitiveType::from_ast(*prim),
                         ))))
                     }
+                    ast::TypeName::StrSlice(encoding, _stdlib) => Ok(Type::DiplomatOption(
+                        Box::new(Type::Slice(Slice::Strs(*encoding))),
+                    )),
+                    ast::TypeName::StrReference(..) | ast::TypeName::PrimitiveSlice(..) => {
+                        let inner = self.lower_type(opt_ty, ltl, in_struct, in_path)?;
+                        Ok(Type::DiplomatOption(Box::new(inner)))
+                    }
                     ast::TypeName::Box(box_ty) => {
                         // we could see whats in the box here too
                         self.errors.push(LoweringError::Other(format!("found Option<Box<T>> in input, but box isn't allowed in inputs. T = {box_ty}")));
@@ -913,8 +928,13 @@ impl<'ast> LoweringContext<'ast> {
                     let hir_in_ty = self
                         .lower_out_type(in_ty, ltl, in_path, false, false)
                         .unwrap();
-                    if hir_in_ty.lifetimes().next().is_some() {
-                        self.errors.push(LoweringError::Other("Callback parameters can't be borrowed, and therefore can't have lifetimes".into()));
+
+                    if !matches!(hir_in_ty, super::Type::Slice(super::Slice::Str(_, _)))
+                        && hir_in_ty.lifetimes().next().is_some()
+                    {
+                        self.errors.push(LoweringError::Other(
+                            "Callback parameters can't be borrowed, and therefore can't have lifetimes".into(),
+                        ));
                         return Err(());
                     }
                     params.push(CallbackParam {
