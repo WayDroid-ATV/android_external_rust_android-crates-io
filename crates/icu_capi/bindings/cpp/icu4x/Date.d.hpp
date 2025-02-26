@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <memory>
+#include <functional>
 #include <optional>
 #include "../diplomat_runtime.hpp"
 
@@ -21,7 +22,7 @@ class WeekCalculator;
 struct WeekOf;
 class CalendarError;
 class CalendarParseError;
-class IsoWeekday;
+class Weekday;
 }
 
 
@@ -39,7 +40,7 @@ public:
 
   inline static diplomat::result<std::unique_ptr<icu4x::Date>, icu4x::CalendarError> from_codes_in_calendar(std::string_view era_code, int32_t year, std::string_view month_code, uint8_t day, const icu4x::Calendar& calendar);
 
-  inline static diplomat::result<std::unique_ptr<icu4x::Date>, icu4x::CalendarParseError> from_string(std::string_view v);
+  inline static diplomat::result<std::unique_ptr<icu4x::Date>, icu4x::CalendarParseError> from_string(std::string_view v, const icu4x::Calendar& calendar);
 
   inline std::unique_ptr<icu4x::Date> to_calendar(const icu4x::Calendar& calendar) const;
 
@@ -49,9 +50,9 @@ public:
 
   inline uint8_t day_of_month() const;
 
-  inline icu4x::IsoWeekday day_of_week() const;
+  inline icu4x::Weekday day_of_week() const;
 
-  inline uint8_t week_of_month(icu4x::IsoWeekday first_weekday) const;
+  inline uint8_t week_of_month(icu4x::Weekday first_weekday) const;
 
   inline icu4x::WeekOf week_of_year(const icu4x::WeekCalculator& calculator) const;
 

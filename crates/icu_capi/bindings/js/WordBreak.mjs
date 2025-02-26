@@ -2,10 +2,13 @@
 import wasm from "./diplomat-wasm.mjs";
 import * as diplomatRuntime from "./diplomat-runtime.mjs";
 
-// Base enumerator definition
+
 /** See the [Rust documentation for `WordBreak`](https://docs.rs/icu/latest/icu/properties/props/struct.WordBreak.html) for more information.
 */
+
+
 export class WordBreak {
+    
     #value = undefined;
 
     static #values = new Map([
@@ -37,14 +40,14 @@ export class WordBreak {
     static getAllEntries() {
         return WordBreak.#values.entries();
     }
-
-    constructor(value) {
+    
+    #internalConstructor(value) {
         if (arguments.length > 1 && arguments[0] === diplomatRuntime.internalConstructor) {
             // We pass in two internalConstructor arguments to create *new*
             // instances of this type, otherwise the enums are treated as singletons.
             if (arguments[1] === diplomatRuntime.internalConstructor ) {
                 this.#value = arguments[2];
-                return;
+                return this;
             }
             return WordBreak.#objectValues[arguments[1]];
         }
@@ -56,11 +59,15 @@ export class WordBreak {
         let intVal = WordBreak.#values.get(value);
 
         // Nullish check, checks for null or undefined
-        if (intVal == null) {
+        if (intVal != null) {
             return WordBreak.#objectValues[intVal];
         }
 
         throw TypeError(value + " is not a WordBreak and does not correspond to any of its enumerator values.");
+    }
+
+    static fromValue(value) {
+        return new WordBreak(value);
     }
 
     get value() {
@@ -120,8 +127,52 @@ export class WordBreak {
     static Zwj = WordBreak.#objectValues[21];
     static WSegSpace = WordBreak.#objectValues[22];
 
-    toInteger() {
-        const result = wasm.icu4x_WordBreak_to_integer_mv1(this.ffiValue);
+    static forChar(ch) {
+        const result = wasm.icu4x_WordBreak_for_char_mv1(ch);
+    
+        try {
+            return new WordBreak(diplomatRuntime.internalConstructor, result);
+        }
+        
+        finally {}
+    }
+
+    longName() {
+        const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 9, 4, true);
+        
+        const result = wasm.icu4x_WordBreak_long_name_mv1(diplomatReceive.buffer, this.ffiValue);
+    
+        try {
+            if (!diplomatReceive.resultFlag) {
+                return null;
+            }
+            return new diplomatRuntime.DiplomatSliceStr(wasm, diplomatReceive.buffer,  "string8", []).getValue();
+        }
+        
+        finally {
+            diplomatReceive.free();
+        }
+    }
+
+    shortName() {
+        const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 9, 4, true);
+        
+        const result = wasm.icu4x_WordBreak_short_name_mv1(diplomatReceive.buffer, this.ffiValue);
+    
+        try {
+            if (!diplomatReceive.resultFlag) {
+                return null;
+            }
+            return new diplomatRuntime.DiplomatSliceStr(wasm, diplomatReceive.buffer,  "string8", []).getValue();
+        }
+        
+        finally {
+            diplomatReceive.free();
+        }
+    }
+
+    toIntegerValue() {
+        const result = wasm.icu4x_WordBreak_to_integer_value_mv1(this.ffiValue);
     
         try {
             return result;
@@ -130,10 +181,10 @@ export class WordBreak {
         finally {}
     }
 
-    static fromInteger(other) {
+    static fromIntegerValue(other) {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 5, 4, true);
         
-        const result = wasm.icu4x_WordBreak_from_integer_mv1(diplomatReceive.buffer, other);
+        const result = wasm.icu4x_WordBreak_from_integer_value_mv1(diplomatReceive.buffer, other);
     
         try {
             if (!diplomatReceive.resultFlag) {
@@ -145,5 +196,9 @@ export class WordBreak {
         finally {
             diplomatReceive.free();
         }
+    }
+
+    constructor(value) {
+        return this.#internalConstructor(...arguments)
     }
 }

@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.71.1"
+rust-version = "1.81"
 name = "icu_provider_adapters"
-version = "2.0.0-beta1"
+version = "2.0.0-beta2"
 authors = ["The ICU4X Project Developers"]
 build = false
 include = [
@@ -26,6 +26,7 @@ include = [
     "LICENSE",
     "README.md",
 ]
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -36,6 +37,9 @@ readme = "README.md"
 categories = ["internationalization"]
 license = "Unicode-3.0"
 repository = "https://github.com/unicode-org/icu4x"
+
+[features]
+export = ["icu_provider/export"]
 
 [lib]
 name = "icu_provider_adapters"
@@ -48,12 +52,12 @@ optional = true
 default-features = false
 
 [dependencies.icu_locale]
-version = "~2.0.0-beta1"
+version = "~2.0.0-beta2"
 default-features = false
 
 [dependencies.icu_provider]
-version = "2.0.0-beta1"
-features = ["macros"]
+version = "2.0.0-beta2"
+features = ["alloc"]
 default-features = false
 
 [dependencies.serde]
@@ -71,15 +75,8 @@ features = ["zerovec"]
 default-features = false
 
 [dependencies.zerovec]
-version = "0.11.0"
+version = "0.11.1"
 features = ["yoke"]
 default-features = false
 
 [dev-dependencies]
-
-[features]
-export = [
-    "icu_provider/export",
-    "std",
-]
-std = []
