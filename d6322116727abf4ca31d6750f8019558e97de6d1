@@ -16,6 +16,24 @@
       "message": "I think you can do this with with module_visibility in cargo_embargo.json. See go/cargo_embargo.",
       "revId": "d6322116727abf4ca31d6750f8019558e97de6d1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fd725e44_dfbc0288",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1003224
+      },
+      "writtenOn": "2025-02-26T18:34:18Z",
+      "side": 1,
+      "message": "so the rust .bp files are generated, and generated _from_ the cargo_embargo.json stuff?",
+      "parentUuid": "9a9f7b5c_9531a5d0",
+      "revId": "d6322116727abf4ca31d6750f8019558e97de6d1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
