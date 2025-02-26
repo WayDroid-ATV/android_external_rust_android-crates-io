@@ -2,10 +2,13 @@
 import wasm from "./diplomat-wasm.mjs";
 import * as diplomatRuntime from "./diplomat-runtime.mjs";
 
-// Base enumerator definition
+
 /** See the [Rust documentation for `CanonicalCombiningClass`](https://docs.rs/icu/latest/icu/properties/props/struct.CanonicalCombiningClass.html) for more information.
 */
+
+
 export class CanonicalCombiningClass {
+    
     #value = undefined;
 
     static #values = new Map([
@@ -72,14 +75,14 @@ export class CanonicalCombiningClass {
     static getAllEntries() {
         return CanonicalCombiningClass.#values.entries();
     }
-
-    constructor(value) {
+    
+    #internalConstructor(value) {
         if (arguments.length > 1 && arguments[0] === diplomatRuntime.internalConstructor) {
             // We pass in two internalConstructor arguments to create *new*
             // instances of this type, otherwise the enums are treated as singletons.
             if (arguments[1] === diplomatRuntime.internalConstructor ) {
                 this.#value = arguments[2];
-                return;
+                return this;
             }
             return CanonicalCombiningClass.#objectValues[arguments[1]];
         }
@@ -91,11 +94,15 @@ export class CanonicalCombiningClass {
         let intVal = CanonicalCombiningClass.#values.get(value);
 
         // Nullish check, checks for null or undefined
-        if (intVal == null) {
+        if (intVal != null) {
             return CanonicalCombiningClass.#objectValues[intVal];
         }
 
         throw TypeError(value + " is not a CanonicalCombiningClass and does not correspond to any of its enumerator values.");
+    }
+
+    static fromValue(value) {
+        return new CanonicalCombiningClass(value);
     }
 
     get value() {
@@ -229,8 +236,18 @@ export class CanonicalCombiningClass {
     static DoubleAbove = CanonicalCombiningClass.#objectValues[234];
     static IotaSubscript = CanonicalCombiningClass.#objectValues[240];
 
-    toInteger() {
-        const result = wasm.icu4x_CanonicalCombiningClass_to_integer_mv1(this.ffiValue);
+    static forChar(ch) {
+        const result = wasm.icu4x_CanonicalCombiningClass_for_char_mv1(ch);
+    
+        try {
+            return new CanonicalCombiningClass(diplomatRuntime.internalConstructor, result);
+        }
+        
+        finally {}
+    }
+
+    toIntegerValue() {
+        const result = wasm.icu4x_CanonicalCombiningClass_to_integer_value_mv1(this.ffiValue);
     
         try {
             return result;
@@ -239,10 +256,10 @@ export class CanonicalCombiningClass {
         finally {}
     }
 
-    static fromInteger(other) {
+    static fromIntegerValue(other) {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 5, 4, true);
         
-        const result = wasm.icu4x_CanonicalCombiningClass_from_integer_mv1(diplomatReceive.buffer, other);
+        const result = wasm.icu4x_CanonicalCombiningClass_from_integer_value_mv1(diplomatReceive.buffer, other);
     
         try {
             if (!diplomatReceive.resultFlag) {
@@ -254,5 +271,9 @@ export class CanonicalCombiningClass {
         finally {
             diplomatReceive.free();
         }
+    }
+
+    constructor(value) {
+        return this.#internalConstructor(...arguments)
     }
 }

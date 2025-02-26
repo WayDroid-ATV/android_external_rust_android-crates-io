@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "icu_locale_data",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.0.0-beta1",
+    cargo_pkg_version: "2.0.0-beta2",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: ["libicu_provider_baked"],

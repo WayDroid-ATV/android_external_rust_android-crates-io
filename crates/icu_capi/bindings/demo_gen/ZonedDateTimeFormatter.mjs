@@ -1,111 +1,55 @@
 import { Calendar } from "icu4x"
-import { DataProvider } from "icu4x"
-import { DateTime } from "icu4x"
-import { IsoDateTime } from "icu4x"
+import { Date } from "icu4x"
+import { IsoDate } from "icu4x"
 import { Locale } from "icu4x"
+import { Time } from "icu4x"
+import { TimeZone } from "icu4x"
 import { TimeZoneInfo } from "icu4x"
+import { UtcOffset } from "icu4x"
 import { ZonedDateTimeFormatter } from "icu4x"
-export function formatDatetimeWithCustomTimeZone(name, length, year, month, day, hour, minute, second, nanosecond, name_1, bcp47Id, offsetSeconds, dst) {
-    return (function (...args) { return args[0].formatDatetimeWithCustomTimeZone(...args.slice(1)) }).apply(
-        null,
-        [
-            ZonedDateTimeFormatter.createWithLength.apply(
-                null,
-                [
-                    DataProvider.compiled.apply(
-                        null,
-                        [
-                        ]
-                    ),
-                    Locale.fromString.apply(
-                        null,
-                        [
-                            name
-                        ]
-                    ),
-                    length
-                ]
-            ),
-            DateTime.fromIsoInCalendar.apply(
-                null,
-                [
-                    year,
-                    month,
-                    day,
-                    hour,
-                    minute,
-                    second,
-                    nanosecond,
-                    Calendar.createForLocale.apply(
-                        null,
-                        [
-                            DataProvider.compiled.apply(
-                                null,
-                                [
-                                ]
-                            ),
-                            Locale.fromString.apply(
-                                null,
-                                [
-                                    name_1
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
-            TimeZoneInfo.fromParts.apply(
-                null,
-                [
-                    bcp47Id,
-                    offsetSeconds,
-                    dst
-                ]
-            )
-        ]
-    );
+export function format(zonedDateTimeFormatterLocaleName, zonedDateTimeFormatterLength, dateYear, dateMonth, dateDay, dateCalendarLocaleName, timeHour, timeMinute, timeSecond, timeSubsecond, zoneTimeZoneIdId, zoneOffsetOffset, zoneZoneVariant) {
+    
+    let zonedDateTimeFormatterLocale = Locale.fromString(zonedDateTimeFormatterLocaleName);
+    
+    let zonedDateTimeFormatter = ZonedDateTimeFormatter.createWithLength(zonedDateTimeFormatterLocale,zonedDateTimeFormatterLength);
+    
+    let dateCalendarLocale = Locale.fromString(dateCalendarLocaleName);
+    
+    let dateCalendar = Calendar.createForLocale(dateCalendarLocale);
+    
+    let date = Date.fromIsoInCalendar(dateYear,dateMonth,dateDay,dateCalendar);
+    
+    let time = new Time(timeHour,timeMinute,timeSecond,timeSubsecond);
+    
+    let zoneTimeZoneId = TimeZone.createFromBcp47(zoneTimeZoneIdId);
+    
+    let zoneOffset = UtcOffset.fromString(zoneOffsetOffset);
+    
+    let zone = new TimeZoneInfo(zoneTimeZoneId,zoneOffset,zoneZoneVariant);
+    
+    let out = zonedDateTimeFormatter.format(date,time,zone);
+    
+
+    return out;
 }
-export function formatIsoDatetimeWithCustomTimeZone(name, length, year, month, day, hour, minute, second, nanosecond, bcp47Id, offsetSeconds, dst) {
-    return (function (...args) { return args[0].formatIsoDatetimeWithCustomTimeZone(...args.slice(1)) }).apply(
-        null,
-        [
-            ZonedDateTimeFormatter.createWithLength.apply(
-                null,
-                [
-                    DataProvider.compiled.apply(
-                        null,
-                        [
-                        ]
-                    ),
-                    Locale.fromString.apply(
-                        null,
-                        [
-                            name
-                        ]
-                    ),
-                    length
-                ]
-            ),
-            IsoDateTime.create.apply(
-                null,
-                [
-                    year,
-                    month,
-                    day,
-                    hour,
-                    minute,
-                    second,
-                    nanosecond
-                ]
-            ),
-            TimeZoneInfo.fromParts.apply(
-                null,
-                [
-                    bcp47Id,
-                    offsetSeconds,
-                    dst
-                ]
-            )
-        ]
-    );
+export function formatIso(zonedDateTimeFormatterLocaleName, zonedDateTimeFormatterLength, dateYear, dateMonth, dateDay, timeHour, timeMinute, timeSecond, timeSubsecond, zoneTimeZoneIdId, zoneOffsetOffset, zoneZoneVariant) {
+    
+    let zonedDateTimeFormatterLocale = Locale.fromString(zonedDateTimeFormatterLocaleName);
+    
+    let zonedDateTimeFormatter = ZonedDateTimeFormatter.createWithLength(zonedDateTimeFormatterLocale,zonedDateTimeFormatterLength);
+    
+    let date = new IsoDate(dateYear,dateMonth,dateDay);
+    
+    let time = new Time(timeHour,timeMinute,timeSecond,timeSubsecond);
+    
+    let zoneTimeZoneId = TimeZone.createFromBcp47(zoneTimeZoneIdId);
+    
+    let zoneOffset = UtcOffset.fromString(zoneOffsetOffset);
+    
+    let zone = new TimeZoneInfo(zoneTimeZoneId,zoneOffset,zoneZoneVariant);
+    
+    let out = zonedDateTimeFormatter.formatIso(date,time,zone);
+    
+
+    return out;
 }
