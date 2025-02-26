@@ -1,5 +1,5 @@
 name: "android_logger"
-description: "()"
+description: "A logging implementation for `log` which hooks to android log output."
 third_party {
   version: "0.13.3"
   license_type: NOTICE

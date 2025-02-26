@@ -17,7 +17,7 @@ impl core::fmt::Display for HeaderError {
         use HeaderError::*;
         match self {
             UnsupportedPacketTypeField { packet_type } => write!(f, "Linux cooked capture v1 (SLL) Header Error: Encountered '{}' as the packet type, but its not supported.", packet_type),
-            UnsupportedArpHardwareId { arp_hardware_type } => write!(f, "Linux cooked capture v1 (SLL)  Header Error:  Encountered '{}' as the ARP harware type, but its not supported.", arp_hardware_type),
+            UnsupportedArpHardwareId { arp_hardware_type } => write!(f, "Linux cooked capture v1 (SLL)  Header Error:  Encountered '{:?}' as the ARP harware type, but its not supported.", arp_hardware_type),
         }
     }
 }
@@ -78,8 +78,8 @@ mod tests {
             format!("{}", UnsupportedPacketTypeField{ packet_type: 6 })
         );
         assert_eq!(
-            "Linux cooked capture v1 (SLL)  Header Error:  Encountered '1 (Ethernet 10Mbps)' as the ARP harware type, but its not supported.",
-            format!("{}", UnsupportedArpHardwareId{ arp_hardware_type: ArpHardwareId::ETHER })
+            "Linux cooked capture v1 (SLL)  Header Error:  Encountered '1 (Ethernet)' as the ARP harware type, but its not supported.",
+            format!("{}", UnsupportedArpHardwareId{ arp_hardware_type: ArpHardwareId::ETHERNET })
         );
     }
 
@@ -89,7 +89,7 @@ mod tests {
         let values = [
             UnsupportedPacketTypeField { packet_type: 6 },
             UnsupportedArpHardwareId {
-                arp_hardware_type: ArpHardwareId::ETHER,
+                arp_hardware_type: ArpHardwareId::ETHERNET,
             },
         ];
         for v in values {

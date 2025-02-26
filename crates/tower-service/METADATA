@@ -1,5 +1,5 @@
 name: "tower-service"
-description: "()"
+description: "Trait representing an asynchronous, request / response based, client or server."
 third_party {
   version: "0.3.3"
   license_type: NOTICE

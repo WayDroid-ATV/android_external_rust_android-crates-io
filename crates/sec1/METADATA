@@ -1,5 +1,5 @@
 name: "sec1"
-description: "Pure Rust implementation of SEC1: Elliptic Curve Cryptography encoding formats including ASN.1 DER-serialized private keys (also described in RFC5915) as well as the Elliptic-Curve-Point-to-Octet-String and Octet-String-to-Elliptic Curve-Point encoding algorithms."
+description: "Pure Rust implementation of SEC1: Elliptic Curve Cryptography encoding formats including ASN.1 DER-serialized private keys as well as the Elliptic-Curve-Point-to-Octet-String encoding"
 third_party {
   version: "0.7.3"
   license_type: NOTICE
