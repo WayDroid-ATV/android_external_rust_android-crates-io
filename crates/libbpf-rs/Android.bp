@@ -34,5 +34,8 @@ rust_library {
         "//apex_available:platform",
         "//apex_available:anyapex",
     ],
+    visibility: [
+        "//system/bpf/loader",
+    ],
     shared_libs: ["libbpf"],
 }
