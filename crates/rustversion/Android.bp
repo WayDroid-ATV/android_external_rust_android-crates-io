@@ -20,6 +20,10 @@ rust_proc_macro {
     cargo_pkg_version: "1.0.19",
     crate_root: "src/lib.rs",
     edition: "2018",
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
     product_available: true,
     vendor_available: true,
 }

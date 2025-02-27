@@ -179,6 +179,8 @@ jni
 jni-sys
 json-strip-comments
 kernlog
+khronos
+khronos-egl
 lazy_static
 lazycell
 libbpf-rs
@@ -311,12 +313,14 @@ sec1
 semver
 serde
 serde-xml-rs
+serde_bytes
 serde_cbor
 serde_derive
 serde_json
 serde_spanned
 serde_test
 serde_yaml
+serialport
 sharded-slab
 shared_child
 shared_library

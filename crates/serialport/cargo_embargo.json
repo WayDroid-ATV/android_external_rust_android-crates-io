@@ -1,0 +1,8 @@
+{
+    "features": [],
+    "package": {
+        "serialport": {
+            "dep_blocklist": ["libunescaper"]
+        }
+    }
+}

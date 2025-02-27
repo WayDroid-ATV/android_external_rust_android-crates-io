@@ -1,5 +1,5 @@
 name: "maplit"
-description: "Collection \342\200\234literal\342\200\235 macros for HashMap, HashSet, BTreeMap, and BTreeSet."
+description: "Collection \"literal\" macros for HashMap, HashSet, BTreeMap, and BTreeSet."
 third_party {
   version: "1.0.2"
   license_type: NOTICE
