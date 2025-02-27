@@ -16,6 +16,24 @@
       "message": "This file shouldn\u0027t be needed anymore, right?",
       "revId": "019952e3907b56942fffab531556719457549d9a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "6c7732cb_465a3684",
+        "filename": "crates/libbpf-rs/patches/Android.bp.patch",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-02-27T00:16:22Z",
+      "side": 1,
+      "message": "Oh, I confused myself. This patch was already present, and this just has extra context now. Looks great!",
+      "parentUuid": "1dac313f_09491462",
+      "revId": "019952e3907b56942fffab531556719457549d9a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
