@@ -52,6 +52,24 @@
       "parentUuid": "fd725e44_dfbc0288",
       "revId": "d6322116727abf4ca31d6750f8019558e97de6d1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d7ae252b_703def8d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1947461
+      },
+      "writtenOn": "2025-02-27T00:12:06Z",
+      "side": 1,
+      "message": "I have updated cargo_embargo.json and regenerate Android.bp",
+      "parentUuid": "e6f51c97_b396281a",
+      "revId": "d6322116727abf4ca31d6750f8019558e97de6d1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
