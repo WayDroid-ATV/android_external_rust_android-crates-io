@@ -1,0 +1,17 @@
+name: "dcv-color-primitives"
+description: "a library to perform image color model conversion"
+third_party {
+  version: "0.6.1"
+  license_type: PERMISSIVE
+  last_upgrade_date {
+    year: 2025
+    month: 2
+    day: 27
+  }
+  homepage: "https://crates.io/crates/dcv-color-primitives"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/dcv-color-primitives/dcv-color-primitives-0.6.1.crate"
+    version: "0.6.1"
+  }
+}

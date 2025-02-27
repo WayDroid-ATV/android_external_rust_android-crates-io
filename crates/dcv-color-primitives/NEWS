@@ -1,0 +1,150 @@
+News in 0.6.1
+-------------
+* Added debug traits for public structs.
+
+News in 0.6.0
+-------------
+* Added {i420,i444,nv12} > rgba conversions.
+* Perform thread-safe, automatic library initialization:
+  https://github.com/aws/dcv-color-primitives/issues/66
+* Removed function initialize().
+* describe_acceleration() is always successful, so it does
+  not wrap the value in a Result anymore.
+* Removed deprecated ColorSpace::Lrgb.
+
+News in 0.5.4
+-------------
+* Fix C-bindings compilation on Windows
+
+News in 0.5.3
+-------------
+* Fix documentation examples
+
+News in 0.5.2
+-------------
+* Add nv12 to rgb conversion
+
+News in 0.5.1
+-------------
+* Avoid reading invalid data for rgb to bgra conversion
+
+News in 0.5.0
+-------------
+* Renamed ColorSpace::Lrgb in favor of ColorSpace::Rgb
+  https://github.com/aws/dcv-color-primitives/issues/63
+* Refactor internal conversion functions using the paste! macro
+
+News in 0.4.1
+-------------
+* BGR to RGB conversion
+
+News in 0.4.0
+-------------
+* YCbCr full range support
+* Fixed C bindings documentation
+* Fixed C bindings unit tests
+
+News in 0.3.1
+-------------
+* Fix build issue by linking bcrypt
+* Fixed clippy warnings
+
+News in 0.3.0
+-------------
+* Fix build issue by linking mathlib (Rust 1.55 and newer)
+* Updated dependencies
+
+News in 0.2.0
+-------------
+* Make the C api public
+
+News in 0.1.18
+--------------
+* Image conversion is now using the most performant available path (sse2 or avx2)
+  even when the image width is not a multiple of 16 (sse2) or 32 (avx2)
+* Added code coverage through tarpaulin
+* Fixed bug in plane constraint computation
+* Check if the buffers contain enough data according to the
+  desired conversion
+
+News in 0.1.17
+--------------
+* Fixed 32-bit build
+
+News in 0.1.16
+--------------
+* Added bgra to rgb conversion
+
+News in 0.1.15
+--------------
+* Improved rgb to bgra conversion
+
+News in 0.1.14
+--------------
+* Add support for wasm32 target
+
+News in 0.1.13
+--------------
+* Fixed all compilation errors and warnings on the C unit tests
+
+News in 0.1.12
+--------------
+* Handle overflow in bgr to i444 conversion
+* Handle zero-width images
+* Avoid triggering panic in get_buffers_size
+* Avoid triggering panic in avx2 rgb to nv12 conversion (and viceversa)
+* Synchronized C unit tests with rust ones
+* Benchmark: ensure fair comparison between algorithms and operating systems
+
+News in 0.1.11
+--------------
+* Add support for ARM platform
+* Fixed performance regression when using SSE2 and AVX2
+
+News in 0.1.10
+--------------
+* Added argb, bgra, bgr to i444 conversion
+
+News in 0.1.9
+--------------
+* Added argb, bgra, bgr to i420 conversion
+
+News in 0.1.8
+--------------
+* Fix chroma unpacking for i420_lrgb avx2 conversion
+
+News in 0.1.7
+--------------
+* Fix suboptimal performance due to a regression in 0.1.6
+
+News in 0.1.6
+--------------
+* Fix crashes to illegal instructions execution
+
+News in 0.1.5
+--------------
+* Meson fixes
+ - Fixes for release build
+
+News in 0.1.4
+--------------
+* Meson fixes
+ - Support debugoptimized
+ - Link to librt in old systems
+ - Support full path for pkgconfig
+
+News in 0.1.3
+--------------
+* Added i444 to bgra conversion
+
+News in 0.1.2
+--------------
+* Added i420 to bgra conversion
+
+News in 0.1.1
+--------------
+* Added rgb to bgra conversion
+
+News in 0.1
+--------------
+* First version of DCV Color Primitives
