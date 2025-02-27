@@ -1,5 +1,5 @@
 name: "tracing-subscriber"
-description: "Utilities for implementing and composing `tracing` subscribers."
+description: "()"
 third_party {
   version: "0.3.19"
   license_type: NOTICE

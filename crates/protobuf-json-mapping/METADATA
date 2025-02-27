@@ -1,5 +1,5 @@
 name: "protobuf-json-mapping"
-description: "JSON mapping for Protocol Buffers messages."
+description: "JSON printer and parser which tries to follow protobuf conventions."
 third_party {
   version: "3.2.0"
   license_type: NOTICE

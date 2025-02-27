@@ -1,17 +1,16 @@
 name: "maplit"
-description: "Collection \342\200\234literal\342\200\235 macros for HashMap, HashSet, BTreeMap, and BTreeSet."
+description:
+    "Collection “literal” macros for HashMap, HashSet, BTreeMap, and BTreeSet."
+
 third_party {
-  version: "1.0.2"
-  license_type: NOTICE
-  last_upgrade_date {
-    year: 2024
-    month: 11
-    day: 12
-  }
-  homepage: "https://crates.io/crates/maplit"
+homepage: "https://crates.io/crates/maplit"
   identifier {
     type: "Archive"
     value: "https://static.crates.io/crates/maplit/maplit-1.0.2.crate"
+    primary_source: true
     version: "1.0.2"
   }
+  version: "1.0.2"
+  license_type: NOTICE
+  last_upgrade_date { year: 2024 month: 11 day: 12 }
 }

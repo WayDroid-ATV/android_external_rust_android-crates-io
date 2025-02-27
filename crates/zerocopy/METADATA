@@ -1,5 +1,5 @@
 name: "zerocopy"
-description: "Zerocopy makes zero-cost memory manipulation effortless. We write \"unsafe\" so you don\'t have to."
+description: "Utilities for zero-copy parsing and serialization"
 third_party {
   version: "0.8.19"
   license_type: NOTICE

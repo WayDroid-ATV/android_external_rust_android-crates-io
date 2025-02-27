@@ -1,5 +1,5 @@
 name: "tracing"
-description: "Application-level tracing for Rust."
+description: "A scoped, structured logging and diagnostics system."
 third_party {
   version: "0.1.41"
   license_type: NOTICE

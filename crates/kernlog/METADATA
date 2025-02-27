@@ -1,5 +1,5 @@
 name: "kernlog"
-description: "Kernel logger implementation (for low level logging to `/dev/kmsg`)."
+description: "Logger implementation for low level kernel log"
 third_party {
   version: "0.3.1"
   license_type: NOTICE

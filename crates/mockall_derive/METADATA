@@ -1,5 +1,5 @@
 name: "mockall_derive"
-description: "Procedural macros for Mockall"
+description: "()"
 third_party {
   version: "0.13.1"
   license_type: NOTICE

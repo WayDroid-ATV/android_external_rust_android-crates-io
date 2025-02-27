@@ -1,5 +1,5 @@
 name: "libc"
-description: "Raw FFI bindings to platform libraries like libc."
+description: "()"
 third_party {
   version: "0.2.161"
   license_type: NOTICE
