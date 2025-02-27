@@ -2,7 +2,7 @@ name: "merge"
 description: "Merge multiple values into one"
 third_party {
   version: "0.1.0"
-  license_type: NOTICE
+  license_type: UNKNOWN
   last_upgrade_date {
     year: 2022
     month: 11
