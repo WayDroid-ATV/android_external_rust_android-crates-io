@@ -16,6 +16,24 @@
       "message": "Hmm, I don\u0027t know how this happened. I didn\u0027t modify the file manually.",
       "revId": "253662bac6db338eae1473ee31274cb794b13c3e",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ff252243_63cdda35",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-02-27T16:50:20Z",
+      "side": 1,
+      "message": "Most likely some other change affected the sorting, and that was tip-of-tree when you did your import.",
+      "parentUuid": "7f6f37d5_75806787",
+      "revId": "253662bac6db338eae1473ee31274cb794b13c3e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
