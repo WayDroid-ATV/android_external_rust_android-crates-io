@@ -79,6 +79,7 @@ darling_core
 darling_macro
 dashmap
 data-encoding
+dcv-color-primitives
 debug_tree
 der
 der_derive
