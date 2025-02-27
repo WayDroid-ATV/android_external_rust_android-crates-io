@@ -1,14 +1,9 @@
-diff --git b/LICENSE a/LICENSE
-index 3077098..bba52f5 100644
---- b/LICENSE
-+++ a/LICENSE
-@@ -17,3 +17,223 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
-+
-+------------------
-+
+diff --git a/LICENSE-APACHE b/LICENSE-APACHE
+new file mode 100644
+index 00000000..18d86f0d
+--- /dev/null
++++ b/LICENSE-APACHE
+@@ -0,0 +1,217 @@
 +File: benches-disabled/proto/helloworld/helloworld.proto
 +
 +Copyright 2015 gRPC authors.
