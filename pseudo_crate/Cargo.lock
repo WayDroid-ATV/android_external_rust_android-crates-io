@@ -505,6 +505,7 @@ dependencies = [
  "vhost-user-backend",
  "virtio-bindings",
  "virtio-drivers",
+ "virtio-drivers-and-devices",
  "virtio-queue",
  "virtio-vsock",
  "vm-memory",
@@ -6923,6 +6924,20 @@ name = "virtio-drivers"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e60cc41fc5890e0ddc74e9a5dac1aff3af2e5cc09a8453d6dc94962f0505addb"
+dependencies = [
+ "bitflags 2.8.0",
+ "embedded-io",
+ "enumn",
+ "log",
+ "thiserror 2.0.11",
+ "zerocopy 0.8.20",
+]
+
+[[package]]
+name = "virtio-drivers-and-devices"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "087f2286ad55b6c36ec93267bcd1cbb740d7f9784879a001f76eea329d488273"
 dependencies = [
  "bitflags 2.8.0",
  "embedded-io",
