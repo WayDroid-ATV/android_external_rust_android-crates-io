@@ -4,6 +4,8 @@ use crate::value::{to_value, Value};
 use alloc::borrow::ToOwned;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+#[cfg(not(feature = "arbitrary_precision"))]
+use core::convert::TryFrom;
 use core::fmt::Display;
 use core::result;
 use serde::ser::{Impossible, Serialize};
@@ -29,8 +31,6 @@ impl Serialize for Value {
                 }
                 map.end()
             }
-            #[cfg(not(any(feature = "std", feature = "alloc")))]
-            Value::Object(_) => unreachable!(),
         }
     }
 }
@@ -261,9 +261,9 @@ impl serde::Serializer for Serializer {
         })
     }
 
-    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap> {
+    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap> {
         Ok(SerializeMap::Map {
-            map: Map::with_capacity(len.unwrap_or(0)),
+            map: Map::new(),
             next_key: None,
         })
     }
@@ -451,10 +451,6 @@ fn key_must_be_a_string() -> Error {
     Error::syntax(ErrorCode::KeyMustBeAString, 0, 0)
 }
 
-fn float_key_must_be_finite() -> Error {
-    Error::syntax(ErrorCode::FloatKeyMustBeFinite, 0, 0)
-}
-
 impl serde::Serializer for MapKeySerializer {
     type Ok = String;
     type Error = Error;
@@ -485,64 +481,48 @@ impl serde::Serializer for MapKeySerializer {
         value.serialize(self)
     }
 
-    fn serialize_bool(self, value: bool) -> Result<String> {
-        Ok(if value { "true" } else { "false" }.to_owned())
+    fn serialize_bool(self, _value: bool) -> Result<String> {
+        Err(key_must_be_a_string())
     }
 
     fn serialize_i8(self, value: i8) -> Result<String> {
-        Ok(itoa::Buffer::new().format(value).to_owned())
+        Ok(value.to_string())
     }
 
     fn serialize_i16(self, value: i16) -> Result<String> {
-        Ok(itoa::Buffer::new().format(value).to_owned())
+        Ok(value.to_string())
     }
 
     fn serialize_i32(self, value: i32) -> Result<String> {
-        Ok(itoa::Buffer::new().format(value).to_owned())
+        Ok(value.to_string())
     }
 
     fn serialize_i64(self, value: i64) -> Result<String> {
-        Ok(itoa::Buffer::new().format(value).to_owned())
-    }
-
-    fn serialize_i128(self, value: i128) -> Result<String> {
-        Ok(itoa::Buffer::new().format(value).to_owned())
+        Ok(value.to_string())
     }
 
     fn serialize_u8(self, value: u8) -> Result<String> {
-        Ok(itoa::Buffer::new().format(value).to_owned())
+        Ok(value.to_string())
     }
 
     fn serialize_u16(self, value: u16) -> Result<String> {
-        Ok(itoa::Buffer::new().format(value).to_owned())
+        Ok(value.to_string())
     }
 
     fn serialize_u32(self, value: u32) -> Result<String> {
-        Ok(itoa::Buffer::new().format(value).to_owned())
+        Ok(value.to_string())
     }
 
     fn serialize_u64(self, value: u64) -> Result<String> {
-        Ok(itoa::Buffer::new().format(value).to_owned())
+        Ok(value.to_string())
     }
 
-    fn serialize_u128(self, value: u128) -> Result<String> {
-        Ok(itoa::Buffer::new().format(value).to_owned())
+    fn serialize_f32(self, _value: f32) -> Result<String> {
+        Err(key_must_be_a_string())
     }
 
-    fn serialize_f32(self, value: f32) -> Result<String> {
-        if value.is_finite() {
-            Ok(ryu::Buffer::new().format_finite(value).to_owned())
-        } else {
-            Err(float_key_must_be_finite())
-        }
-    }
-
-    fn serialize_f64(self, value: f64) -> Result<String> {
-        if value.is_finite() {
-            Ok(ryu::Buffer::new().format_finite(value).to_owned())
-        } else {
-            Err(float_key_must_be_finite())
-        }
+    fn serialize_f64(self, _value: f64) -> Result<String> {
+        Err(key_must_be_a_string())
     }
 
     #[inline]
@@ -660,7 +640,7 @@ impl serde::ser::SerializeStruct for SerializeMap {
             #[cfg(feature = "arbitrary_precision")]
             SerializeMap::Number { out_value } => {
                 if key == crate::number::TOKEN {
-                    *out_value = Some(tri!(value.serialize(NumberValueEmitter)));
+                    *out_value = Some(value.serialize(NumberValueEmitter)?);
                     Ok(())
                 } else {
                     Err(invalid_number())
@@ -669,7 +649,7 @@ impl serde::ser::SerializeStruct for SerializeMap {
             #[cfg(feature = "raw_value")]
             SerializeMap::RawValue { out_value } => {
                 if key == crate::raw::TOKEN {
-                    *out_value = Some(tri!(value.serialize(RawValueEmitter)));
+                    *out_value = Some(value.serialize(RawValueEmitter)?);
                     Ok(())
                 } else {
                     Err(invalid_raw_value())
