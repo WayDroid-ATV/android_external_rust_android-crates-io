@@ -1,5 +1,5 @@
 name: "tower"
-description: "()"
+description: "Tower is a library of modular and reusable components for building robust clients and servers."
 third_party {
   version: "0.4.13"
   license_type: NOTICE

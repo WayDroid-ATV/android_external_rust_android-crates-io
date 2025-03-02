@@ -48,6 +48,7 @@ impl<'a> SlicedPacketCursor<'a> {
 
         //continue parsing (if required)
         match ether_type {
+            ARP => self.slice_arp(),
             IPV4 => self.slice_ipv4(),
             IPV6 => self.slice_ipv6(),
             VLAN_TAGGED_FRAME | PROVIDER_BRIDGING | VLAN_DOUBLE_TAGGED_FRAME => self.slice_vlan(),
@@ -74,6 +75,7 @@ impl<'a> SlicedPacketCursor<'a> {
 
         //continue parsing (if required)
         match protocol_type {
+            LinuxSllProtocolType::EtherType(EtherType::ARP) => self.slice_arp(),
             LinuxSllProtocolType::EtherType(EtherType::IPV4) => self.slice_ipv4(),
             LinuxSllProtocolType::EtherType(EtherType::IPV6) => self.slice_ipv6(),
             _ => Ok(self.result),
@@ -107,11 +109,13 @@ impl<'a> SlicedPacketCursor<'a> {
                 }));
 
                 match inner_ether_type {
+                    ARP => self.slice_arp(),
                     IPV4 => self.slice_ipv4(),
                     IPV6 => self.slice_ipv6(),
                     _ => Ok(self.result),
                 }
             }
+            ARP => self.slice_arp(),
             IPV4 => self.slice_ipv4(),
             IPV6 => self.slice_ipv6(),
             _ => Ok(self.result),
@@ -272,6 +276,19 @@ impl<'a> SlicedPacketCursor<'a> {
                 _ => Ok(self.result),
             }
         }
+    }
+
+    pub fn slice_arp(mut self) -> Result<SlicedPacket<'a>, err::packet::SliceError> {
+        let result = ArpPacketSlice::from_slice(self.slice).map_err(|mut err| {
+            err.layer_start_offset += self.offset;
+            err::packet::SliceError::Len(err)
+        })?;
+
+        //set the new data
+        self.move_by(result.slice().len());
+        self.result.net = Some(NetSlice::Arp(result.clone()));
+
+        Ok(self.result)
     }
 
     pub fn slice_icmp4(mut self) -> Result<SlicedPacket<'a>, err::LenError> {

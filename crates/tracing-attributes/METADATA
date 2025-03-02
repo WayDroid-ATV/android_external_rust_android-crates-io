@@ -1,5 +1,5 @@
 name: "tracing-attributes"
-description: "Macro attributes for application-level tracing."
+description: "Procedural macro attributes for automatically instrumenting functions."
 third_party {
   version: "0.1.28"
   license_type: NOTICE

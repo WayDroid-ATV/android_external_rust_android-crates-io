@@ -8,4 +8,10 @@ third_party {
     month: 12
     day: 19
   }
+  homepage: "https://crates.io/crates/tinyvec"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/tinyvec/tinyvec-1.6.0.crate"
+    version: "1.6.0"
+  }
 }

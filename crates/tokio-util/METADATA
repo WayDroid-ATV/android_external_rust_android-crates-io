@@ -1,5 +1,5 @@
 name: "tokio-util"
-description: "Utilities for working with Tokio."
+description: "Additional utilities for working with Tokio."
 third_party {
   version: "0.7.13"
   license_type: NOTICE

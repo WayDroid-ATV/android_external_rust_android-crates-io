@@ -1,5 +1,5 @@
 name: "futures-test"
-description: "()"
+description: "Common utilities for testing components built off futures-rs."
 third_party {
   version: "0.3.31"
   license_type: NOTICE

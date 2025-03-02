@@ -12,9 +12,17 @@ pub enum NetHeaders {
     Ipv4(Ipv4Header, Ipv4Extensions),
     /// IPv6 header & extension headers.
     Ipv6(Ipv6Header, Ipv6Extensions),
+    /// Address Resolution Protocol packet.
+    Arp(ArpPacket),
 }
 
 impl NetHeaders {
+    /// Returns true if the NetHeaders contains either IPv4 or IPv6.
+    pub fn is_ip(&self) -> bool {
+        use NetHeaders::*;
+        matches!(self, Ipv4(_, _) | Ipv6(_, _))
+    }
+
     /// Returns references to the IPv4 header & extensions if the header contains IPv4 values.
     pub fn ipv4_ref(&self) -> Option<(&Ipv4Header, &Ipv4Extensions)> {
         if let NetHeaders::Ipv4(header, exts) = self {
@@ -33,12 +41,37 @@ impl NetHeaders {
         }
     }
 
+    /// Sets all the next_header fields in the ipv4 & ipv6 header
+    /// as well as in all extension headers and returns the ether
+    /// type number.
+    ///
+    /// The given number will be set as the last "next_header" or
+    /// protocol number.
+    pub fn try_set_next_headers(
+        &mut self,
+        last_next_header: IpNumber,
+    ) -> Result<EtherType, err::net::NetSetNextHeaderError> {
+        use NetHeaders::*;
+        match self {
+            Ipv4(ref mut header, ref mut extensions) => {
+                header.protocol = extensions.set_next_headers(last_next_header);
+                Ok(EtherType::IPV4)
+            }
+            Ipv6(ref mut header, ref mut extensions) => {
+                header.next_header = extensions.set_next_headers(last_next_header);
+                Ok(EtherType::IPV4)
+            }
+            Arp(_) => Err(err::net::NetSetNextHeaderError::ArpHeader),
+        }
+    }
+
     /// Returns the size when the header & extension headers are serialized
     pub fn header_len(&self) -> usize {
         use crate::NetHeaders::*;
         match *self {
             Ipv4(ref header, ref extensions) => header.header_len() + extensions.header_len(),
             Ipv6(_, ref extensions) => Ipv6Header::LEN + extensions.header_len(),
+            Arp(ref arp) => arp.packet_len(),
         }
     }
 }
@@ -50,6 +83,13 @@ impl From<IpHeaders> for NetHeaders {
             IpHeaders::Ipv4(h, e) => NetHeaders::Ipv4(h, e),
             IpHeaders::Ipv6(h, e) => NetHeaders::Ipv6(h, e),
         }
+    }
+}
+
+impl From<ArpPacket> for NetHeaders {
+    #[inline]
+    fn from(value: ArpPacket) -> Self {
+        NetHeaders::Arp(value)
     }
 }
 
