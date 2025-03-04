@@ -3,8 +3,6 @@ use crate::*;
 /// Payload together with an identifier the type of content.
 #[derive(Debug, Clone, Eq, PartialEq, Hash, PartialOrd, Ord)]
 pub enum PayloadSlice<'a> {
-    /// No specific payload (e.g. ARP packet).
-    Empty,
     /// Payload with it's type identified by an ether type number
     /// (e.g. after an ethernet II or vlan header).
     Ether(EtherPayloadSlice<'a>),
@@ -26,7 +24,6 @@ pub enum PayloadSlice<'a> {
 impl<'a> PayloadSlice<'a> {
     pub fn slice(&self) -> &'a [u8] {
         match self {
-            PayloadSlice::Empty => &[],
             PayloadSlice::Ether(s) => s.payload,
             PayloadSlice::Ip(s) => s.payload,
             PayloadSlice::Udp(s) => s,

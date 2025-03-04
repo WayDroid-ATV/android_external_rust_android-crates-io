@@ -1,4 +1,3 @@
-pub mod arp;
 pub mod double_vlan;
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
@@ -11,7 +10,6 @@ pub mod ipv4_exts;
 pub mod ipv6;
 pub mod ipv6_exts;
 pub mod linux_sll;
-pub mod net;
 pub mod packet;
 pub mod tcp;
 

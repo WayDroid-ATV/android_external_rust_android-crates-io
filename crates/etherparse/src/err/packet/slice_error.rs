@@ -177,7 +177,7 @@ mod tests {
         // IpHeaders
         {
             let err = err::linux_sll::HeaderError::UnsupportedArpHardwareId {
-                arp_hardware_type: ArpHardwareId::ETHERNET,
+                arp_hardware_type: ArpHardwareId::ETHER,
             };
             assert!(LinuxSll(err).source().is_some());
         }

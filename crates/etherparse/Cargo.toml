@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "etherparse"
-version = "0.17.0"
+version = "0.16.0"
 authors = ["Julian Schmid <info@julianschmid.name>"]
 build = false
 exclude = [
@@ -23,7 +23,6 @@ exclude = [
     ".travis/*",
     "appveyor.yml",
 ]
-autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -52,10 +51,6 @@ rustdoc-args = [
     "--cfg",
     "docsrs",
 ]
-
-[features]
-default = ["std"]
-std = ["arrayvec/std"]
 
 [lib]
 name = "etherparse"
@@ -91,3 +86,7 @@ default-features = false
 
 [dev-dependencies.proptest]
 version = "1.4.0"
+
+[features]
+default = ["std"]
+std = ["arrayvec/std"]

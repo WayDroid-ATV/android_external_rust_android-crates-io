@@ -8,7 +8,7 @@ pub struct Ipv6ExtensionSliceIter<'a> {
     pub(crate) rest: &'a [u8],
 }
 
-impl Default for Ipv6ExtensionSliceIter<'_> {
+impl<'a> Default for Ipv6ExtensionSliceIter<'a> {
     fn default() -> Self {
         Ipv6ExtensionSliceIter {
             // don't use 0 as this is the reserved value

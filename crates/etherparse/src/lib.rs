@@ -3,7 +3,6 @@
 //! Currently supported are:
 //! * Ethernet II
 //! * IEEE 802.1Q VLAN Tagging Header
-//! * ARP
 //! * IPv4
 //! * IPv6 (supporting the most common extension headers, but not all)
 //! * UDP
@@ -18,7 +17,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! etherparse = "0.17"
+//! etherparse = "0.16"
 //! ```
 //!
 //! # What is etherparse?
@@ -58,7 +57,7 @@
 //!     Ok(value) => {
 //!         println!("link: {:?}", value.link);
 //!         println!("vlan: {:?}", value.vlan);
-//!         println!("net: {:?}", value.net); // contains ip & arp
+//!         println!("net: {:?}", value.net); // contains ip
 //!         println!("transport: {:?}", value.transport);
 //!     }
 //! }
@@ -102,7 +101,7 @@
 //!     Ok(value) => {
 //!         println!("link: {:?}", value.link);
 //!         println!("vlan: {:?}", value.vlan);
-//!         println!("net: {:?}", value.net); // contains ip & arp
+//!         println!("net: {:?}", value.net); // contains ip
 //!         println!("transport: {:?}", value.transport);
 //!     }
 //! }
@@ -150,7 +149,6 @@
 //! * [`LinuxSllHeaderSlice::from_slice`]
 //! * [`SingleVlanHeaderSlice::from_slice`]
 //! * [`DoubleVlanHeaderSlice::from_slice`]
-//! * [`ArpPacketSlice::from_slice`]
 //! * [`Ipv4HeaderSlice::from_slice`]
 //! * [`Ipv4ExtensionsSlice::from_slice`]
 //! * [`Ipv6HeaderSlice::from_slice`]
@@ -167,7 +165,6 @@
 //! * [`LinuxSllHeader::read`] & [`LinuxSllHeader::from_slice`]
 //! * [`SingleVlanHeader::read`] & [`SingleVlanHeader::from_slice`]
 //! * [`DoubleVlanHeader::read`] & [`DoubleVlanHeader::from_slice`]
-//! * [`ArpPacket::read`] & [`ArpPacket::from_slice`]
 //! * [`IpHeaders::read`] & [`IpHeaders::from_slice`]
 //! * [`Ipv4Header::read`] & [`Ipv4Header::from_slice`]
 //! * [`Ipv4Extensions::read`] & [`Ipv4Extensions::from_slice`]
@@ -232,8 +229,6 @@
 //! * [`LinuxSllHeader::to_bytes`] & [`LinuxSllHeader::write`]
 //! * [`SingleVlanHeader::to_bytes`] & [`SingleVlanHeader::write`]
 //! * [`DoubleVlanHeader::to_bytes`] & [`DoubleVlanHeader::write`]
-//! * [`ArpPacket::to_bytes`] & [`ArpPacket::write`]
-//! * [`ArpEthIpv4Packet::to_bytes`]
 //! * [`Ipv4Header::to_bytes`] & [`Ipv4Header::write`] & [`Ipv4Header::write_raw`]
 //! * [`Ipv4Extensions::write`]
 //! * [`Ipv6Header::to_bytes`] & [`Ipv6Header::write`]
@@ -315,7 +310,31 @@ pub mod err;
 pub mod defrag;
 
 mod link;
-pub use link::*;
+pub use crate::link::arp_hardware_id::*;
+pub use crate::link::double_vlan_header::*;
+pub use crate::link::double_vlan_header_slice::*;
+pub use crate::link::double_vlan_slice::*;
+pub use crate::link::ether_payload_slice::*;
+pub use crate::link::ether_type_impl::*;
+pub use crate::link::ethernet2_header::*;
+pub use crate::link::ethernet2_header_slice::*;
+pub use crate::link::ethernet2_slice::*;
+pub use crate::link::link_header::*;
+pub use crate::link::link_slice::*;
+pub use crate::link::linux_nonstandard_ether_type::*;
+pub use crate::link::linux_sll_header::*;
+pub use crate::link::linux_sll_header_slice::*;
+pub use crate::link::linux_sll_packet_type::*;
+pub use crate::link::linux_sll_payload_slice::*;
+pub use crate::link::linux_sll_protocol_type::*;
+pub use crate::link::linux_sll_slice::*;
+pub use crate::link::single_vlan_header::*;
+pub use crate::link::single_vlan_header_slice::*;
+pub use crate::link::single_vlan_slice::*;
+pub use crate::link::vlan_header::*;
+pub use crate::link::vlan_id::*;
+pub use crate::link::vlan_pcp::*;
+pub use crate::link::vlan_slice::*;
 
 #[cfg(test)]
 pub(crate) mod test_gens;
@@ -328,7 +347,29 @@ pub use net::*;
 pub mod io;
 
 mod transport;
-pub use transport::*;
+pub use crate::transport::icmp_echo_header::*;
+pub use crate::transport::icmpv4;
+pub use crate::transport::icmpv4_header::*;
+pub use crate::transport::icmpv4_slice::*;
+pub use crate::transport::icmpv4_type::*;
+pub use crate::transport::icmpv6;
+pub use crate::transport::icmpv6_header::*;
+pub use crate::transport::icmpv6_slice::*;
+pub use crate::transport::icmpv6_type::*;
+pub use crate::transport::tcp_header::*;
+pub use crate::transport::tcp_header_slice::*;
+pub use crate::transport::tcp_option_element::*;
+pub use crate::transport::tcp_option_impl::*;
+pub use crate::transport::tcp_option_read_error::*;
+pub use crate::transport::tcp_option_write_error::*;
+pub use crate::transport::tcp_options::*;
+pub use crate::transport::tcp_options_iterator::*;
+pub use crate::transport::tcp_slice::*;
+pub use crate::transport::transport_header::*;
+pub use crate::transport::transport_slice::*;
+pub use crate::transport::udp_header::*;
+pub use crate::transport::udp_header_slice::*;
+pub use crate::transport::udp_slice::*;
 
 /// Helpers for calculating checksums.
 pub mod checksum;

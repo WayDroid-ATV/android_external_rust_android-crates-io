@@ -45,8 +45,6 @@ pub enum Layer {
     Icmpv4TimestampReply,
     /// Error occurred while parsing an ICMPv6 packet.
     Icmpv6,
-    /// Error occurred while parsing an Address Resolution Protocol packet.
-    Arp,
 }
 
 impl Layer {
@@ -76,7 +74,6 @@ impl Layer {
             Icmpv4Timestamp => "ICMP Timestamp Error",
             Icmpv4TimestampReply => "ICMP Timestamp Reply Error",
             Icmpv6 => "ICMPv6 Packet Error",
-            Arp => "Address Resolution Protocol Packet Error",
         }
     }
 }
@@ -107,7 +104,6 @@ impl core::fmt::Display for Layer {
             Icmpv4Timestamp => write!(f, "ICMP timestamp message"),
             Icmpv4TimestampReply => write!(f, "ICMP timestamp reply message"),
             Icmpv6 => write!(f, "ICMPv6 packet"),
-            Arp => write!(f, "Address Resolution Protocol packet"),
         }
     }
 }
@@ -149,9 +145,7 @@ mod test {
     #[test]
     fn error_title() {
         let tests = [
-            (LinuxSllHeader, "Linux Cooked Capture v1 Error"),
             (Ethernet2Header, "Ethernet 2 Header Error"),
-            (EtherPayload, "Payload with Ether Type Error"),
             (VlanHeader, "VLAN Header Error"),
             (IpHeader, "IP Header Error"),
             (Ipv4Header, "IPv4 Header Error"),
@@ -183,9 +177,7 @@ mod test {
     #[test]
     fn fmt() {
         let tests = [
-            (LinuxSllHeader, "Linux Cooked Capture v1 header"),
             (Ethernet2Header, "Ethernet 2 header"),
-            (EtherPayload, "Ether type payload"),
             (VlanHeader, "VLAN header"),
             (IpHeader, "IP header"),
             (Ipv4Header, "IPv4 header"),

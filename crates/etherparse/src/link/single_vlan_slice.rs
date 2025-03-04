@@ -133,7 +133,7 @@ impl<'a> SingleVlanSlice<'a> {
     }
 }
 
-impl core::fmt::Debug for SingleVlanSlice<'_> {
+impl<'a> core::fmt::Debug for SingleVlanSlice<'a> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("SingleVlanSlice")
             .field("header", &self.to_header())
