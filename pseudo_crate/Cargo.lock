@@ -204,6 +204,7 @@ dependencies = [
  "fallible-iterator",
  "fallible-streaming-iterator",
  "fastrand",
+ "fdeflate",
  "fixedbitset 0.5.7",
  "flagset",
  "flate2",
