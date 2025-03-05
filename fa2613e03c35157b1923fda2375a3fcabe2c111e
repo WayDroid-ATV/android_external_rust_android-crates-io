@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b66f30df_042afcd2",
+        "filename": "crates/ring/src/lib.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-03-05T17:56:27Z",
+      "side": 1,
+      "message": "We can do this, but I think the actual fix is to build with -Zcap-lints\u003dwarn",
+      "revId": "fa2613e03c35157b1923fda2375a3fcabe2c111e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
