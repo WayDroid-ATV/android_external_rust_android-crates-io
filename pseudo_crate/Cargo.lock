@@ -327,7 +327,7 @@ dependencies = [
  "mockall_derive",
  "moveit",
  "named-lock",
- "nix 0.28.0",
+ "nix 0.29.0",
  "no-panic",
  "nom",
  "num-bigint",
