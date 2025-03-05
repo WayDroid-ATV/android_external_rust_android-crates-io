@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d18f6f3d_e0926817",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1885365
+      },
+      "writtenOn": "2025-03-05T02:13:18Z",
+      "side": 1,
+      "message": "cargo_embargo fails with the current version since zerovec needs new features. The actual Android build is hooked up correctly, it\u0027s just the pure-cargo build that\u0027s wonky",
+      "revId": "0782df7dea7b08430fbd4658ff81b80e88c20773",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
