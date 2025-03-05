@@ -1,9 +1,7 @@
 #![cfg(feature = "serde_impl")]
 
-use std::hash::BuildHasherDefault;
-
+use fxhash::FxBuildHasher;
 use hashlink::{LinkedHashMap, LinkedHashSet};
-use rustc_hash::FxHasher;
 use serde_test::{assert_tokens, Token};
 
 #[test]
@@ -37,14 +35,14 @@ fn map_serde_tokens() {
 
 #[test]
 fn map_serde_tokens_empty_generic() {
-    let map = LinkedHashMap::<char, u32, BuildHasherDefault<FxHasher>>::default();
+    let map = LinkedHashMap::<char, u32, FxBuildHasher>::with_hasher(FxBuildHasher::default());
 
     assert_tokens(&map, &[Token::Map { len: Some(0) }, Token::MapEnd]);
 }
 
 #[test]
 fn map_serde_tokens_generic() {
-    let mut map = LinkedHashMap::<char, i32, BuildHasherDefault<FxHasher>>::default();
+    let mut map = LinkedHashMap::with_hasher(FxBuildHasher::default());
     map.insert('a', 10);
     map.insert('b', 20);
     map.insert('c', 30);
@@ -92,7 +90,7 @@ fn set_serde_tokens() {
 
 #[test]
 fn set_serde_tokens_generic() {
-    let mut set = LinkedHashSet::<char, BuildHasherDefault<FxHasher>>::default();
+    let mut set = LinkedHashSet::with_hasher(FxBuildHasher::default());
     set.insert('a');
     set.insert('b');
     set.insert('c');

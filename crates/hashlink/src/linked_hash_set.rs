@@ -1,4 +1,4 @@
-use core::{
+use std::{
     borrow::Borrow,
     fmt,
     hash::{BuildHasher, Hash, Hasher},
@@ -6,8 +6,9 @@ use core::{
     ops::{BitAnd, BitOr, BitXor, Sub},
 };
 
+use hashbrown::hash_map::DefaultHashBuilder;
+
 use crate::linked_hash_map::{self, LinkedHashMap, TryReserveError};
-use crate::DefaultHashBuilder;
 
 pub struct LinkedHashSet<T, S = DefaultHashBuilder> {
     map: LinkedHashMap<T, (), S>,
@@ -146,19 +147,19 @@ where
     }
 
     #[inline]
-    pub fn contains<Q>(&self, value: &Q) -> bool
+    pub fn contains<Q: ?Sized>(&self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + ?Sized,
+        Q: Hash + Eq,
     {
         self.map.contains_key(value)
     }
 
     #[inline]
-    pub fn get<Q>(&self, value: &Q) -> Option<&T>
+    pub fn get<Q: ?Sized>(&self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + ?Sized,
+        Q: Hash + Eq,
     {
         self.map.raw_entry().from_key(value).map(|p| p.0)
     }
@@ -173,10 +174,10 @@ where
     }
 
     #[inline]
-    pub fn get_or_insert_with<Q, F>(&mut self, value: &Q, f: F) -> &T
+    pub fn get_or_insert_with<Q: ?Sized, F>(&mut self, value: &Q, f: F) -> &T
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + ?Sized,
+        Q: Hash + Eq,
         F: FnOnce(&Q) -> T,
     {
         self.map
@@ -227,19 +228,19 @@ where
     }
 
     #[inline]
-    pub fn remove<Q>(&mut self, value: &Q) -> bool
+    pub fn remove<Q: ?Sized>(&mut self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + ?Sized,
+        Q: Hash + Eq,
     {
         self.map.remove(value).is_some()
     }
 
     #[inline]
-    pub fn take<Q>(&mut self, value: &Q) -> Option<T>
+    pub fn take<Q: ?Sized>(&mut self, value: &Q) -> Option<T>
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + ?Sized,
+        Q: Hash + Eq,
     {
         match self.map.raw_entry_mut().from_key(value) {
             linked_hash_map::RawEntryMut::Occupied(occupied) => Some(occupied.remove_entry().0),
@@ -268,10 +269,10 @@ where
     }
 
     #[inline]
-    pub fn to_front<Q>(&mut self, value: &Q) -> bool
+    pub fn to_front<Q: ?Sized>(&mut self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + ?Sized,
+        Q: Hash + Eq,
     {
         match self.map.raw_entry_mut().from_key(value) {
             linked_hash_map::RawEntryMut::Occupied(mut occupied) => {
@@ -283,10 +284,10 @@ where
     }
 
     #[inline]
-    pub fn to_back<Q>(&mut self, value: &Q) -> bool
+    pub fn to_back<Q: ?Sized>(&mut self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq + ?Sized,
+        Q: Hash + Eq,
     {
         match self.map.raw_entry_mut().from_key(value) {
             linked_hash_map::RawEntryMut::Occupied(mut occupied) => {
@@ -402,7 +403,7 @@ where
     }
 }
 
-impl<T, S> BitOr<&LinkedHashSet<T, S>> for &LinkedHashSet<T, S>
+impl<'a, 'b, T, S> BitOr<&'b LinkedHashSet<T, S>> for &'a LinkedHashSet<T, S>
 where
     T: Eq + Hash + Clone,
     S: BuildHasher + Default,
@@ -415,7 +416,7 @@ where
     }
 }
 
-impl<T, S> BitAnd<&LinkedHashSet<T, S>> for &LinkedHashSet<T, S>
+impl<'a, 'b, T, S> BitAnd<&'b LinkedHashSet<T, S>> for &'a LinkedHashSet<T, S>
 where
     T: Eq + Hash + Clone,
     S: BuildHasher + Default,
@@ -428,7 +429,7 @@ where
     }
 }
 
-impl<T, S> BitXor<&LinkedHashSet<T, S>> for &LinkedHashSet<T, S>
+impl<'a, 'b, T, S> BitXor<&'b LinkedHashSet<T, S>> for &'a LinkedHashSet<T, S>
 where
     T: Eq + Hash + Clone,
     S: BuildHasher + Default,
@@ -441,7 +442,7 @@ where
     }
 }
 
-impl<T, S> Sub<&LinkedHashSet<T, S>> for &LinkedHashSet<T, S>
+impl<'a, 'b, T, S> Sub<&'b LinkedHashSet<T, S>> for &'a LinkedHashSet<T, S>
 where
     T: Eq + Hash + Clone,
     S: BuildHasher + Default,
@@ -528,7 +529,7 @@ impl<'a, K> Iterator for Iter<'a, K> {
     }
 }
 
-impl<K> ExactSizeIterator for Iter<'_, K> {}
+impl<'a, K> ExactSizeIterator for Iter<'a, K> {}
 
 impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
     #[inline]
@@ -537,7 +538,7 @@ impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
     }
 }
 
-impl<K: fmt::Debug> fmt::Debug for Iter<'_, K> {
+impl<'a, K: fmt::Debug> fmt::Debug for Iter<'a, K> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.clone()).finish()
@@ -567,7 +568,7 @@ impl<K> DoubleEndedIterator for IntoIter<K> {
     }
 }
 
-impl<K> Iterator for Drain<'_, K> {
+impl<'a, K> Iterator for Drain<'a, K> {
     type Item = K;
 
     #[inline]
@@ -581,14 +582,14 @@ impl<K> Iterator for Drain<'_, K> {
     }
 }
 
-impl<K> DoubleEndedIterator for Drain<'_, K> {
+impl<'a, K> DoubleEndedIterator for Drain<'a, K> {
     #[inline]
     fn next_back(&mut self) -> Option<K> {
         self.iter.next_back().map(|(k, _)| k)
     }
 }
 
-impl<K> ExactSizeIterator for Drain<'_, K> {}
+impl<'a, K> ExactSizeIterator for Drain<'a, K> {}
 
 impl<'a, T, S> Clone for Intersection<'a, T, S> {
     #[inline]
@@ -628,7 +629,7 @@ where
     }
 }
 
-impl<T, S> fmt::Debug for Intersection<'_, T, S>
+impl<'a, T, S> fmt::Debug for Intersection<'a, T, S>
 where
     T: fmt::Debug + Eq + Hash,
     S: BuildHasher,
@@ -677,7 +678,7 @@ where
     }
 }
 
-impl<T, S> fmt::Debug for Difference<'_, T, S>
+impl<'a, T, S> fmt::Debug for Difference<'a, T, S>
 where
     T: fmt::Debug + Eq + Hash,
     S: BuildHasher,
@@ -715,7 +716,7 @@ where
     }
 }
 
-impl<T, S> fmt::Debug for SymmetricDifference<'_, T, S>
+impl<'a, T, S> fmt::Debug for SymmetricDifference<'a, T, S>
 where
     T: fmt::Debug + Eq + Hash,
     S: BuildHasher,
@@ -735,7 +736,7 @@ impl<'a, T, S> Clone for Union<'a, T, S> {
     }
 }
 
-impl<T, S> fmt::Debug for Union<'_, T, S>
+impl<'a, T, S> fmt::Debug for Union<'a, T, S>
 where
     T: fmt::Debug + Eq + Hash,
     S: BuildHasher,

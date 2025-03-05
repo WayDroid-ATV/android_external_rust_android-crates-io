@@ -1,18 +1,20 @@
-use core::{
+use std::{
     borrow::Borrow,
     fmt,
     hash::{BuildHasher, Hash},
+    usize,
 };
 
+use hashbrown::hash_map;
+
 use crate::linked_hash_map::{self, LinkedHashMap};
-use crate::DefaultHashBuilder;
 
 pub use crate::linked_hash_map::{
     Drain, Entry, IntoIter, Iter, IterMut, OccupiedEntry, RawEntryBuilder, RawEntryBuilderMut,
     RawOccupiedEntryMut, RawVacantEntryMut, VacantEntry,
 };
 
-pub struct LruCache<K, V, S = DefaultHashBuilder> {
+pub struct LruCache<K, V, S = hash_map::DefaultHashBuilder> {
     map: LinkedHashMap<K, V, S>,
     max_size: usize,
 }
@@ -85,12 +87,12 @@ where
     S: BuildHasher,
 {
     #[inline]
-    pub fn contains_key<Q>(&self, key: &Q) -> bool
+    pub fn contains_key<Q>(&mut self, key: &Q) -> bool
     where
         K: Borrow<Q>,
         Q: Hash + Eq + ?Sized,
     {
-        self.map.contains_key(key)
+        self.get_mut(key).is_some()
     }
 
     /// Insert a new value into the `LruCache`.

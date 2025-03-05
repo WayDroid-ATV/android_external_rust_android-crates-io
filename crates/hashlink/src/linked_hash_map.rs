@@ -1,4 +1,4 @@
-use core::{
+use std::{
     alloc::Layout,
     borrow::Borrow,
     cmp::Ordering,
@@ -11,10 +11,7 @@ use core::{
     ptr::{self, NonNull},
 };
 
-use alloc::boxed::Box;
-use hashbrown::hash_table::{self, HashTable};
-
-use crate::DefaultHashBuilder;
+use hashbrown::{hash_map, HashMap};
 
 pub enum TryReserveError {
     CapacityOverflow,
@@ -36,10 +33,10 @@ pub enum TryReserveError {
 /// * Methods that have the word `insert` will insert a new entry ot the back of the list, and if
 ///   that method might replace an entry, that method will *also move that existing entry to the
 ///   back*.
-pub struct LinkedHashMap<K, V, S = DefaultHashBuilder> {
-    table: HashTable<NonNull<Node<K, V>>>,
-    // We always need to keep our custom hash builder outside of the HashTable, because it doesn't
-    // know how to do any hashing itself.
+pub struct LinkedHashMap<K, V, S = hash_map::DefaultHashBuilder> {
+    map: HashMap<NonNull<Node<K, V>>, (), NullHasher>,
+    // We need to keep any custom hash builder outside of the HashMap so we can access it alongside
+    // the entry API without mutable aliasing.
     hash_builder: S,
     // Circular linked list of nodes.  If `values` is non-null, it will point to a "guard node"
     // which will never have an initialized key or value, `values.prev` will contain the last key /
@@ -54,8 +51,8 @@ impl<K, V> LinkedHashMap<K, V> {
     #[inline]
     pub fn new() -> Self {
         Self {
-            hash_builder: DefaultHashBuilder::default(),
-            table: HashTable::new(),
+            hash_builder: hash_map::DefaultHashBuilder::default(),
+            map: HashMap::with_hasher(NullHasher),
             values: None,
             free: None,
         }
@@ -64,8 +61,8 @@ impl<K, V> LinkedHashMap<K, V> {
     #[inline]
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
-            hash_builder: DefaultHashBuilder::default(),
-            table: HashTable::with_capacity(capacity),
+            hash_builder: hash_map::DefaultHashBuilder::default(),
+            map: HashMap::with_capacity_and_hasher(capacity, NullHasher),
             values: None,
             free: None,
         }
@@ -77,7 +74,7 @@ impl<K, V, S> LinkedHashMap<K, V, S> {
     pub fn with_hasher(hash_builder: S) -> Self {
         Self {
             hash_builder,
-            table: HashTable::new(),
+            map: HashMap::with_hasher(NullHasher),
             values: None,
             free: None,
         }
@@ -87,15 +84,30 @@ impl<K, V, S> LinkedHashMap<K, V, S> {
     pub fn with_capacity_and_hasher(capacity: usize, hash_builder: S) -> Self {
         Self {
             hash_builder,
-            table: HashTable::with_capacity(capacity),
+            map: HashMap::with_capacity_and_hasher(capacity, NullHasher),
             values: None,
             free: None,
         }
     }
 
     #[inline]
+    pub fn reserve(&mut self, additional: usize) {
+        self.map.reserve(additional);
+    }
+
+    #[inline]
+    pub fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.map.try_reserve(additional).map_err(|e| match e {
+            hashbrown::TryReserveError::CapacityOverflow => TryReserveError::CapacityOverflow,
+            hashbrown::TryReserveError::AllocError { layout } => {
+                TryReserveError::AllocError { layout }
+            }
+        })
+    }
+
+    #[inline]
     pub fn len(&self) -> usize {
-        self.table.len()
+        self.map.len()
     }
 
     #[inline]
@@ -105,7 +117,7 @@ impl<K, V, S> LinkedHashMap<K, V, S> {
 
     #[inline]
     pub fn clear(&mut self) {
-        self.table.clear();
+        self.map.clear();
         if let Some(mut values) = self.values {
             unsafe {
                 drop_value_nodes(values);
@@ -170,7 +182,7 @@ impl<K, V, S> LinkedHashMap<K, V, S> {
             };
             let len = self.len();
 
-            self.table.clear();
+            self.map.clear();
 
             Drain {
                 free: (&mut self.free).into(),
@@ -234,7 +246,7 @@ impl<K, V, S> LinkedHashMap<K, V, S> {
             cur_free: free,
         };
 
-        self.table.retain(|&mut node| unsafe {
+        self.map.retain(|&node, _| unsafe {
             let (k, v) = (*node.as_ptr()).entry_mut();
             if f(k, v) {
                 true
@@ -252,7 +264,7 @@ impl<K, V, S> LinkedHashMap<K, V, S> {
 
     #[inline]
     pub fn capacity(&self) -> usize {
-        self.table.capacity()
+        self.map.capacity()
     }
 }
 
@@ -353,7 +365,7 @@ where
         K: Borrow<Q>,
         Q: Hash + Eq + ?Sized,
     {
-        match self.raw_entry_mut().from_key(k) {
+        match self.raw_entry_mut().from_key(&k) {
             RawEntryMut::Occupied(occupied) => Some(occupied.remove()),
             RawEntryMut::Vacant(_) => None,
         }
@@ -365,7 +377,7 @@ where
         K: Borrow<Q>,
         Q: Hash + Eq + ?Sized,
     {
-        match self.raw_entry_mut().from_key(k) {
+        match self.raw_entry_mut().from_key(&k) {
             RawEntryMut::Occupied(occupied) => Some(occupied.remove_entry()),
             RawEntryMut::Vacant(_) => None,
         }
@@ -378,13 +390,14 @@ where
         }
         unsafe {
             let front = (*self.values.as_ptr()).links.value.next;
-            let hash = hash_node(&self.hash_builder, front);
-            match self
-                .raw_entry_mut()
-                .from_hash(hash, |k| k.eq(front.as_ref().key_ref()))
-            {
-                RawEntryMut::Occupied(occupied) => Some(occupied.remove_entry()),
-                RawEntryMut::Vacant(_) => None,
+            match self.map.raw_entry_mut().from_hash(
+                hash_key(&self.hash_builder, front.as_ref().key_ref()),
+                |k| (*k).as_ref().key_ref().eq(front.as_ref().key_ref()),
+            ) {
+                hash_map::RawEntryMut::Occupied(occupied) => {
+                    Some(remove_node(&mut self.free, occupied.remove_entry().0))
+                }
+                hash_map::RawEntryMut::Vacant(_) => None,
             }
         }
     }
@@ -396,13 +409,16 @@ where
         }
         unsafe {
             let back = (*self.values.as_ptr()).links.value.prev;
-            let hash = hash_node(&self.hash_builder, back);
             match self
+                .map
                 .raw_entry_mut()
-                .from_hash(hash, |k| k.eq(back.as_ref().key_ref()))
-            {
-                RawEntryMut::Occupied(occupied) => Some(occupied.remove_entry()),
-                RawEntryMut::Vacant(_) => None,
+                .from_hash(hash_key(&self.hash_builder, back.as_ref().key_ref()), |k| {
+                    (*k).as_ref().key_ref().eq(back.as_ref().key_ref())
+                }) {
+                hash_map::RawEntryMut::Occupied(occupied) => {
+                    Some(remove_node(&mut self.free, occupied.remove_entry().0))
+                }
+                hash_map::RawEntryMut::Vacant(_) => None,
             }
         }
     }
@@ -442,32 +458,37 @@ where
     }
 
     #[inline]
-    pub fn reserve(&mut self, additional: usize) {
-        let hash_builder = &self.hash_builder;
-        self.table
-            .reserve(additional, move |&n| unsafe { hash_node(hash_builder, n) });
-    }
-
-    #[inline]
-    pub fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
-        let hash_builder = &self.hash_builder;
-        self.table
-            .try_reserve(additional, move |&n| unsafe { hash_node(hash_builder, n) })
-            .map_err(|e| match e {
-                hashbrown::TryReserveError::CapacityOverflow => TryReserveError::CapacityOverflow,
-                hashbrown::TryReserveError::AllocError { layout } => {
-                    TryReserveError::AllocError { layout }
-                }
-            })
-    }
-
-    #[inline]
     pub fn shrink_to_fit(&mut self) {
-        let hash_builder = &self.hash_builder;
         unsafe {
-            self.table
-                .shrink_to_fit(move |&n| hash_node(hash_builder, n));
-            drop_free_nodes(self.free.take());
+            let len = self.map.len();
+            if len != self.map.capacity() {
+                self.map = HashMap::with_hasher(NullHasher);
+                self.map.reserve(len);
+
+                if let Some(guard) = self.values {
+                    let mut cur = guard.as_ref().links.value.next;
+                    while cur != guard {
+                        let hash = hash_key(&self.hash_builder, cur.as_ref().key_ref());
+                        match self
+                            .map
+                            .raw_entry_mut()
+                            .from_hash(hash, |k| (*k).as_ref().key_ref().eq(cur.as_ref().key_ref()))
+                        {
+                            hash_map::RawEntryMut::Occupied(_) => unreachable!(),
+                            hash_map::RawEntryMut::Vacant(vacant) => {
+                                let hash_builder = &self.hash_builder;
+                                vacant.insert_with_hasher(hash, cur, (), |k| {
+                                    hash_key(hash_builder, (*k).as_ref().key_ref())
+                                });
+                            }
+                        }
+                        cur = cur.as_ref().links.value.next;
+                    }
+                }
+            }
+
+            drop_free_nodes(self.free);
+            self.free = None;
         }
     }
 
@@ -493,50 +514,22 @@ where
                     if filter {
                         let k = (*cur.as_ptr()).key_ref();
                         let hash = hash_key(&self.hash_builder, k);
-                        self.table
-                            .find_entry(hash, |o| (*o).as_ref().key_ref().eq(k))
-                            .unwrap()
-                            .remove();
-                        drop_filtered_values.drop_later(cur);
+                        match self
+                            .map
+                            .raw_entry_mut()
+                            .from_hash(hash, |o| (*o).as_ref().key_ref().eq(k))
+                        {
+                            hash_map::RawEntryMut::Occupied(entry) => {
+                                entry.remove();
+                                drop_filtered_values.drop_later(cur);
+                            }
+                            hash_map::RawEntryMut::Vacant(_) => unreachable!(),
+                        }
                     }
                     cur = next;
                 }
             }
         }
-    }
-
-    // Returns the `CursorMut` over the _guard_ node.
-    fn cursor_mut(&mut self) -> CursorMut<K, V, S> {
-        unsafe { ensure_guard_node(&mut self.values) };
-        CursorMut {
-            cur: self.values.as_ptr(),
-            hash_builder: &self.hash_builder,
-            free: &mut self.free,
-            values: &mut self.values,
-            table: &mut self.table,
-        }
-    }
-
-    /// Returns the `CursorMut` over the front node.
-    ///
-    /// Note: The `CursorMut` is pointing to the _guard_ node in an empty `LinkedHashMap` and
-    ///       will always return `None` as its current element, regardless of any move in any
-    ///       direction.
-    pub fn cursor_front_mut(&mut self) -> CursorMut<K, V, S> {
-        let mut c = self.cursor_mut();
-        c.move_next();
-        c
-    }
-
-    /// Returns the `CursorMut` over the back node.
-    ///
-    /// Note: The `CursorMut` is pointing to the _guard_ node in an empty `LinkedHashMap` and
-    ///       will always return `None` as its current element, regardless of any move in any
-    ///       direction.
-    pub fn cursor_back_mut(&mut self) -> CursorMut<K, V, S> {
-        let mut c = self.cursor_mut();
-        c.move_prev();
-        c
     }
 }
 
@@ -546,12 +539,20 @@ where
 {
     #[inline]
     pub fn raw_entry(&self) -> RawEntryBuilder<'_, K, V, S> {
-        RawEntryBuilder { map: self }
+        RawEntryBuilder {
+            hash_builder: &self.hash_builder,
+            entry: self.map.raw_entry(),
+        }
     }
 
     #[inline]
     pub fn raw_entry_mut(&mut self) -> RawEntryBuilderMut<'_, K, V, S> {
-        RawEntryBuilderMut { map: self }
+        RawEntryBuilderMut {
+            hash_builder: &self.hash_builder,
+            values: &mut self.values,
+            free: &mut self.free,
+            entry: self.map.raw_entry_mut(),
+        }
     }
 }
 
@@ -715,7 +716,7 @@ where
 }
 
 pub enum Entry<'a, K, V, S> {
-    Occupied(OccupiedEntry<'a, K, V, S>),
+    Occupied(OccupiedEntry<'a, K, V>),
     Vacant(VacantEntry<'a, K, V, S>),
 }
 
@@ -790,12 +791,12 @@ impl<'a, K, V, S> Entry<'a, K, V, S> {
     }
 }
 
-pub struct OccupiedEntry<'a, K, V, S> {
+pub struct OccupiedEntry<'a, K, V> {
     key: K,
-    raw_entry: RawOccupiedEntryMut<'a, K, V, S>,
+    raw_entry: RawOccupiedEntryMut<'a, K, V>,
 }
 
-impl<K: fmt::Debug, V: fmt::Debug, S> fmt::Debug for OccupiedEntry<'_, K, V, S> {
+impl<K: fmt::Debug, V: fmt::Debug> fmt::Debug for OccupiedEntry<'_, K, V> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("OccupiedEntry")
@@ -805,7 +806,7 @@ impl<K: fmt::Debug, V: fmt::Debug, S> fmt::Debug for OccupiedEntry<'_, K, V, S> 
     }
 }
 
-impl<'a, K, V, S> OccupiedEntry<'a, K, V, S> {
+impl<'a, K, V> OccupiedEntry<'a, K, V> {
     #[inline]
     pub fn key(&self) -> &K {
         self.raw_entry.key()
@@ -864,16 +865,6 @@ impl<'a, K, V, S> OccupiedEntry<'a, K, V, S> {
         self.replace_entry(value)
     }
 
-    /// Returns a `CursorMut` over the current entry.
-    #[inline]
-    pub fn cursor_mut(self) -> CursorMut<'a, K, V, S>
-    where
-        K: Eq + Hash,
-        S: BuildHasher,
-    {
-        self.raw_entry.cursor_mut()
-    }
-
     /// Replaces the entry's key with the key provided to `LinkedHashMap::entry`, and replaces the
     /// entry's value with the given `value` parameter.
     ///
@@ -929,7 +920,8 @@ impl<'a, K, V, S> VacantEntry<'a, K, V, S> {
 }
 
 pub struct RawEntryBuilder<'a, K, V, S> {
-    map: &'a LinkedHashMap<K, V, S>,
+    hash_builder: &'a S,
+    entry: hash_map::RawEntryBuilder<'a, NonNull<Node<K, V>>, (), NullHasher>,
 }
 
 impl<'a, K, V, S> RawEntryBuilder<'a, K, V, S>
@@ -942,7 +934,7 @@ where
         K: Borrow<Q>,
         Q: Hash + Eq + ?Sized,
     {
-        let hash = hash_key(&self.map.hash_builder, k);
+        let hash = hash_key(self.hash_builder, k);
         self.from_key_hashed_nocheck(hash, k)
     }
 
@@ -962,10 +954,10 @@ where
         mut is_match: impl FnMut(&K) -> bool,
     ) -> Option<(&'a K, &'a V)> {
         unsafe {
-            let node = self
-                .map
-                .table
-                .find(hash, move |k| is_match((*k).as_ref().key_ref()))?;
+            let node = *self
+                .entry
+                .from_hash(hash, move |k| is_match((*k).as_ref().key_ref()))?
+                .0;
 
             let (key, value) = (*node.as_ptr()).entry_ref();
             Some((key, value))
@@ -973,7 +965,7 @@ where
     }
 }
 
-unsafe impl<K, V, S> Send for RawEntryBuilder<'_, K, V, S>
+unsafe impl<'a, K, V, S> Send for RawEntryBuilder<'a, K, V, S>
 where
     K: Send,
     V: Send,
@@ -981,7 +973,7 @@ where
 {
 }
 
-unsafe impl<K, V, S> Sync for RawEntryBuilder<'_, K, V, S>
+unsafe impl<'a, K, V, S> Sync for RawEntryBuilder<'a, K, V, S>
 where
     K: Sync,
     V: Sync,
@@ -990,7 +982,10 @@ where
 }
 
 pub struct RawEntryBuilderMut<'a, K, V, S> {
-    map: &'a mut LinkedHashMap<K, V, S>,
+    hash_builder: &'a S,
+    values: &'a mut Option<NonNull<Node<K, V>>>,
+    free: &'a mut Option<NonNull<Node<K, V>>>,
+    entry: hash_map::RawEntryBuilderMut<'a, NonNull<Node<K, V>>, (), NullHasher>,
 }
 
 impl<'a, K, V, S> RawEntryBuilderMut<'a, K, V, S>
@@ -1003,7 +998,7 @@ where
         K: Borrow<Q>,
         Q: Hash + Eq + ?Sized,
     {
-        let hash = hash_key(&self.map.hash_builder, k);
+        let hash = hash_key(self.hash_builder, k);
         self.from_key_hashed_nocheck(hash, k)
     }
 
@@ -1023,28 +1018,28 @@ where
         mut is_match: impl FnMut(&K) -> bool,
     ) -> RawEntryMut<'a, K, V, S> {
         let entry = self
-            .map
-            .table
-            .find_entry(hash, move |k| is_match(unsafe { (*k).as_ref().key_ref() }));
+            .entry
+            .from_hash(hash, move |k| is_match(unsafe { (*k).as_ref().key_ref() }));
 
         match entry {
-            Ok(occupied) => RawEntryMut::Occupied(RawOccupiedEntryMut {
-                hash_builder: &self.map.hash_builder,
-                free: &mut self.map.free,
-                values: &mut self.map.values,
-                entry: occupied,
-            }),
-            Err(absent) => RawEntryMut::Vacant(RawVacantEntryMut {
-                hash_builder: &self.map.hash_builder,
-                values: &mut self.map.values,
-                free: &mut self.map.free,
-                entry: absent,
+            hash_map::RawEntryMut::Occupied(occupied) => {
+                RawEntryMut::Occupied(RawOccupiedEntryMut {
+                    free: self.free,
+                    values: self.values,
+                    entry: occupied,
+                })
+            }
+            hash_map::RawEntryMut::Vacant(vacant) => RawEntryMut::Vacant(RawVacantEntryMut {
+                hash_builder: self.hash_builder,
+                values: self.values,
+                free: self.free,
+                entry: vacant,
             }),
         }
     }
 }
 
-unsafe impl<K, V, S> Send for RawEntryBuilderMut<'_, K, V, S>
+unsafe impl<'a, K, V, S> Send for RawEntryBuilderMut<'a, K, V, S>
 where
     K: Send,
     V: Send,
@@ -1052,7 +1047,7 @@ where
 {
 }
 
-unsafe impl<K, V, S> Sync for RawEntryBuilderMut<'_, K, V, S>
+unsafe impl<'a, K, V, S> Sync for RawEntryBuilderMut<'a, K, V, S>
 where
     K: Sync,
     V: Sync,
@@ -1061,7 +1056,7 @@ where
 }
 
 pub enum RawEntryMut<'a, K, V, S> {
-    Occupied(RawOccupiedEntryMut<'a, K, V, S>),
+    Occupied(RawOccupiedEntryMut<'a, K, V>),
     Vacant(RawVacantEntryMut<'a, K, V, S>),
 }
 
@@ -1122,14 +1117,13 @@ impl<'a, K, V, S> RawEntryMut<'a, K, V, S> {
     }
 }
 
-pub struct RawOccupiedEntryMut<'a, K, V, S> {
-    hash_builder: &'a S,
+pub struct RawOccupiedEntryMut<'a, K, V> {
     free: &'a mut Option<NonNull<Node<K, V>>>,
     values: &'a mut Option<NonNull<Node<K, V>>>,
-    entry: hash_table::OccupiedEntry<'a, NonNull<Node<K, V>>>,
+    entry: hash_map::RawOccupiedEntryMut<'a, NonNull<Node<K, V>>, (), NullHasher>,
 }
 
-impl<'a, K, V, S> RawOccupiedEntryMut<'a, K, V, S> {
+impl<'a, K, V> RawOccupiedEntryMut<'a, K, V> {
     #[inline]
     pub fn key(&self) -> &K {
         self.get_key_value().0
@@ -1163,7 +1157,7 @@ impl<'a, K, V, S> RawOccupiedEntryMut<'a, K, V, S> {
     #[inline]
     pub fn get_key_value(&self) -> (&K, &V) {
         unsafe {
-            let node = *self.entry.get();
+            let node = *self.entry.key();
             let (key, value) = (*node.as_ptr()).entry_ref();
             (key, value)
         }
@@ -1172,7 +1166,7 @@ impl<'a, K, V, S> RawOccupiedEntryMut<'a, K, V, S> {
     #[inline]
     pub fn get_key_value_mut(&mut self) -> (&mut K, &mut V) {
         unsafe {
-            let node = *self.entry.get_mut();
+            let node = *self.entry.key_mut();
             let (key, value) = (*node.as_ptr()).entry_mut();
             (key, value)
         }
@@ -1181,7 +1175,7 @@ impl<'a, K, V, S> RawOccupiedEntryMut<'a, K, V, S> {
     #[inline]
     pub fn into_key_value(self) -> (&'a mut K, &'a mut V) {
         unsafe {
-            let node = *self.entry.into_mut();
+            let node = *self.entry.into_key();
             let (key, value) = (*node.as_ptr()).entry_mut();
             (key, value)
         }
@@ -1190,7 +1184,7 @@ impl<'a, K, V, S> RawOccupiedEntryMut<'a, K, V, S> {
     #[inline]
     pub fn to_back(&mut self) {
         unsafe {
-            let node = *self.entry.get_mut();
+            let node = *self.entry.key_mut();
             detach_node(node);
             attach_before(node, NonNull::new_unchecked(self.values.as_ptr()));
         }
@@ -1199,7 +1193,7 @@ impl<'a, K, V, S> RawOccupiedEntryMut<'a, K, V, S> {
     #[inline]
     pub fn to_front(&mut self) {
         unsafe {
-            let node = *self.entry.get_mut();
+            let node = *self.entry.key_mut();
             detach_node(node);
             attach_before(node, (*self.values.as_ptr()).links.value.next);
         }
@@ -1208,7 +1202,7 @@ impl<'a, K, V, S> RawOccupiedEntryMut<'a, K, V, S> {
     #[inline]
     pub fn replace_value(&mut self, value: V) -> V {
         unsafe {
-            let mut node = *self.entry.get_mut();
+            let mut node = *self.entry.key_mut();
             mem::replace(&mut node.as_mut().entry_mut().1, value)
         }
     }
@@ -1216,7 +1210,7 @@ impl<'a, K, V, S> RawOccupiedEntryMut<'a, K, V, S> {
     #[inline]
     pub fn replace_key(&mut self, key: K) -> K {
         unsafe {
-            let mut node = *self.entry.get_mut();
+            let mut node = *self.entry.key_mut();
             mem::replace(&mut node.as_mut().entry_mut().0, key)
         }
     }
@@ -1228,24 +1222,8 @@ impl<'a, K, V, S> RawOccupiedEntryMut<'a, K, V, S> {
 
     #[inline]
     pub fn remove_entry(self) -> (K, V) {
-        let node = self.entry.remove().0;
+        let node = self.entry.remove_entry().0;
         unsafe { remove_node(self.free, node) }
-    }
-
-    /// Returns a `CursorMut` over the current entry.
-    #[inline]
-    pub fn cursor_mut(self) -> CursorMut<'a, K, V, S>
-    where
-        K: Eq + Hash,
-        S: BuildHasher,
-    {
-        CursorMut {
-            cur: self.entry.get().as_ptr(),
-            hash_builder: self.hash_builder,
-            free: self.free,
-            values: self.values,
-            table: self.entry.into_table(),
-        }
     }
 }
 
@@ -1253,7 +1231,7 @@ pub struct RawVacantEntryMut<'a, K, V, S> {
     hash_builder: &'a S,
     values: &'a mut Option<NonNull<Node<K, V>>>,
     free: &'a mut Option<NonNull<Node<K, V>>>,
-    entry: hash_table::AbsentEntry<'a, NonNull<Node<K, V>>>,
+    entry: hash_map::RawVacantEntryMut<'a, NonNull<Node<K, V>>, (), NullHasher>,
 }
 
 impl<'a, K, V, S> RawVacantEntryMut<'a, K, V, S> {
@@ -1294,11 +1272,10 @@ impl<'a, K, V, S> RawVacantEntryMut<'a, K, V, S> {
             new_node.as_mut().put_entry((key, value));
             attach_before(new_node, NonNull::new_unchecked(self.values.as_ptr()));
 
-            let node = self
+            let node = *self
                 .entry
-                .into_table()
-                .insert_unique(hash, new_node, move |k| hasher((*k).as_ref().key_ref()))
-                .into_mut();
+                .insert_with_hasher(hash, new_node, (), move |k| hasher((*k).as_ref().key_ref()))
+                .0;
 
             let (key, value) = (*node.as_ptr()).entry_mut();
             (key, value)
@@ -1323,7 +1300,7 @@ impl<K: fmt::Debug, V: fmt::Debug, S> fmt::Debug for RawEntryMut<'_, K, V, S> {
     }
 }
 
-impl<K: fmt::Debug, V: fmt::Debug, S> fmt::Debug for RawOccupiedEntryMut<'_, K, V, S> {
+impl<K: fmt::Debug, V: fmt::Debug> fmt::Debug for RawOccupiedEntryMut<'_, K, V> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("RawOccupiedEntryMut")
@@ -1347,23 +1324,21 @@ impl<K, V, S> fmt::Debug for RawEntryBuilder<'_, K, V, S> {
     }
 }
 
-unsafe impl<K, V, S> Send for RawOccupiedEntryMut<'_, K, V, S>
+unsafe impl<'a, K, V> Send for RawOccupiedEntryMut<'a, K, V>
 where
     K: Send,
     V: Send,
-    S: Send,
 {
 }
 
-unsafe impl<K, V, S> Sync for RawOccupiedEntryMut<'_, K, V, S>
+unsafe impl<'a, K, V> Sync for RawOccupiedEntryMut<'a, K, V>
 where
     K: Sync,
     V: Sync,
-    S: Sync,
 {
 }
 
-unsafe impl<K, V, S> Send for RawVacantEntryMut<'_, K, V, S>
+unsafe impl<'a, K, V, S> Send for RawVacantEntryMut<'a, K, V, S>
 where
     K: Send,
     V: Send,
@@ -1371,7 +1346,7 @@ where
 {
 }
 
-unsafe impl<K, V, S> Sync for RawVacantEntryMut<'_, K, V, S>
+unsafe impl<'a, K, V, S> Sync for RawVacantEntryMut<'a, K, V, S>
 where
     K: Sync,
     V: Sync,
@@ -1445,14 +1420,14 @@ impl<K, V> Drain<'_, K, V> {
     }
 }
 
-unsafe impl<K, V> Send for Iter<'_, K, V>
+unsafe impl<'a, K, V> Send for Iter<'a, K, V>
 where
     K: Send,
     V: Send,
 {
 }
 
-unsafe impl<K, V> Send for IterMut<'_, K, V>
+unsafe impl<'a, K, V> Send for IterMut<'a, K, V>
 where
     K: Send,
     V: Send,
@@ -1466,21 +1441,21 @@ where
 {
 }
 
-unsafe impl<K, V> Send for Drain<'_, K, V>
+unsafe impl<'a, K, V> Send for Drain<'a, K, V>
 where
     K: Send,
     V: Send,
 {
 }
 
-unsafe impl<K, V> Sync for Iter<'_, K, V>
+unsafe impl<'a, K, V> Sync for Iter<'a, K, V>
 where
     K: Sync,
     V: Sync,
 {
 }
 
-unsafe impl<K, V> Sync for IterMut<'_, K, V>
+unsafe impl<'a, K, V> Sync for IterMut<'a, K, V>
 where
     K: Sync,
     V: Sync,
@@ -1494,14 +1469,14 @@ where
 {
 }
 
-unsafe impl<K, V> Sync for Drain<'_, K, V>
+unsafe impl<'a, K, V> Sync for Drain<'a, K, V>
 where
     K: Sync,
     V: Sync,
 {
 }
 
-impl<K, V> Clone for Iter<'_, K, V> {
+impl<'a, K, V> Clone for Iter<'a, K, V> {
     #[inline]
     fn clone(&self) -> Self {
         Iter { ..*self }
@@ -1618,7 +1593,7 @@ impl<K, V> Iterator for IntoIter<K, V> {
     }
 }
 
-impl<K, V> Iterator for Drain<'_, K, V> {
+impl<'a, K, V> Iterator for Drain<'a, K, V> {
     type Item = (K, V);
 
     #[inline]
@@ -1691,7 +1666,7 @@ impl<K, V> DoubleEndedIterator for IntoIter<K, V> {
     }
 }
 
-impl<K, V> DoubleEndedIterator for Drain<'_, K, V> {
+impl<'a, K, V> DoubleEndedIterator for Drain<'a, K, V> {
     #[inline]
     fn next_back(&mut self) -> Option<(K, V)> {
         if self.remaining == 0 {
@@ -1708,9 +1683,9 @@ impl<K, V> DoubleEndedIterator for Drain<'_, K, V> {
     }
 }
 
-impl<K, V> ExactSizeIterator for Iter<'_, K, V> {}
+impl<'a, K, V> ExactSizeIterator for Iter<'a, K, V> {}
 
-impl<K, V> ExactSizeIterator for IterMut<'_, K, V> {}
+impl<'a, K, V> ExactSizeIterator for IterMut<'a, K, V> {}
 
 impl<K, V> ExactSizeIterator for IntoIter<K, V> {}
 
@@ -1728,7 +1703,7 @@ impl<K, V> Drop for IntoIter<K, V> {
     }
 }
 
-impl<K, V> Drop for Drain<'_, K, V> {
+impl<'a, K, V> Drop for Drain<'a, K, V> {
     #[inline]
     fn drop(&mut self) {
         for _ in 0..self.remaining {
@@ -1737,168 +1712,6 @@ impl<K, V> Drop for Drain<'_, K, V> {
                 self.tail = Some(tail.as_ref().links.value.prev);
                 tail.as_mut().take_entry();
                 push_free(&mut *self.free.as_ptr(), tail);
-            }
-        }
-    }
-}
-
-/// The `CursorMut` struct and its implementation provide the basic mutable Cursor API for Linked
-/// lists as proposed in
-/// [here](https://github.com/rust-lang/rfcs/blob/master/text/2570-linked-list-cursors.md), with
-/// several exceptions:
-///
-/// - It behaves similarly to Rust's Iterators, returning `None` when the end of the list is
-///   reached. A _guard_ node is positioned between the head and tail of the linked list to
-///   facilitate this. If the cursor is over this guard node, `None` is returned, signaling the end
-///   or start of the list. From this position, the cursor can move in either direction as the
-///   linked list is circular, with the guard node connecting the two ends.
-/// - The current implementation does not include an `index` method, as it does not track the index
-///   of its elements. It provides access to each map entry as a tuple of `(&K, &mut V)`.
-///
-pub struct CursorMut<'a, K, V, S> {
-    cur: *mut Node<K, V>,
-    hash_builder: &'a S,
-    free: &'a mut Option<NonNull<Node<K, V>>>,
-    values: &'a mut Option<NonNull<Node<K, V>>>,
-    table: &'a mut hashbrown::HashTable<NonNull<Node<K, V>>>,
-}
-
-impl<K, V, S> CursorMut<'_, K, V, S> {
-    /// Returns an `Option` of the current element in the list, provided it is not the
-    /// _guard_ node, and `None` overwise.
-    #[inline]
-    pub fn current(&mut self) -> Option<(&K, &mut V)> {
-        unsafe {
-            let at = NonNull::new_unchecked(self.cur);
-            self.peek(at)
-        }
-    }
-
-    /// Retrieves the next element in the list (moving towards the end).
-    #[inline]
-    pub fn peek_next(&mut self) -> Option<(&K, &mut V)> {
-        unsafe {
-            let at = (*self.cur).links.value.next;
-            self.peek(at)
-        }
-    }
-
-    /// Retrieves the previous element in the list (moving towards the front).
-    #[inline]
-    pub fn peek_prev(&mut self) -> Option<(&K, &mut V)> {
-        unsafe {
-            let at = (*self.cur).links.value.prev;
-            self.peek(at)
-        }
-    }
-
-    // Retrieves the element without advancing current position to it.
-    #[inline]
-    fn peek(&mut self, at: NonNull<Node<K, V>>) -> Option<(&K, &mut V)> {
-        if let Some(values) = self.values {
-            unsafe {
-                let node = at.as_ptr();
-                if node == values.as_ptr() {
-                    None
-                } else {
-                    let entry = (*node).entry_mut();
-                    Some((&entry.0, &mut entry.1))
-                }
-            }
-        } else {
-            None
-        }
-    }
-
-    /// Updates the pointer to the current element to the next element in the
-    /// list (that is, moving towards the end).
-    #[inline]
-    pub fn move_next(&mut self) {
-        let at = unsafe { (*self.cur).links.value.next };
-        self.muv(at);
-    }
-
-    /// Updates the pointer to the current element to the previous element in the
-    /// list (that is, moving towards the front).
-    #[inline]
-    pub fn move_prev(&mut self) {
-        let at = unsafe { (*self.cur).links.value.prev };
-        self.muv(at);
-    }
-
-    // Updates the pointer to the current element to the one returned by the at closure function.
-    #[inline]
-    fn muv(&mut self, at: NonNull<Node<K, V>>) {
-        self.cur = at.as_ptr();
-    }
-
-    /// Inserts the provided key and value before the current element. It checks if an entry
-    /// with the given key exists and, if so, replaces its value with the provided `key`
-    /// parameter. The key is not updated; this matters for types that can be `==` without
-    /// being identical.
-    ///
-    /// If the entry doesn't exist, it creates a new one. If a value has been updated, the
-    /// function returns the *old* value wrapped with `Some`  and `None` otherwise.
-    #[inline]
-    pub fn insert_before(&mut self, key: K, value: V) -> Option<V>
-    where
-        K: Eq + Hash,
-        S: BuildHasher,
-    {
-        let before = unsafe { NonNull::new_unchecked(self.cur) };
-        self.insert(key, value, before)
-    }
-
-    /// Inserts the provided key and value after the current element. It checks if an entry
-    /// with the given key exists and, if so, replaces its value with the provided `key`
-    /// parameter. The key is not updated; this matters for types that can be `==` without
-    /// being identical.
-    ///
-    /// If the entry doesn't exist, it creates a new one. If a value has been updated, the
-    /// function returns the *old* value wrapped with `Some`  and `None` otherwise.
-    #[inline]
-    pub fn insert_after(&mut self, key: K, value: V) -> Option<V>
-    where
-        K: Eq + Hash,
-        S: BuildHasher,
-    {
-        let before = unsafe { (*self.cur).links.value.next };
-        self.insert(key, value, before)
-    }
-
-    // Inserts an element immediately before the given `before` node.
-    #[inline]
-    fn insert(&mut self, key: K, value: V, before: NonNull<Node<K, V>>) -> Option<V>
-    where
-        K: Eq + Hash,
-        S: BuildHasher,
-    {
-        unsafe {
-            let hash = hash_key(self.hash_builder, &key);
-            let i_entry = self
-                .table
-                .find_entry(hash, |o| (*o).as_ref().key_ref().eq(&key));
-
-            match i_entry {
-                Ok(occupied) => {
-                    let mut node = *occupied.into_mut();
-                    let pv = mem::replace(&mut node.as_mut().entry_mut().1, value);
-                    if node != before {
-                        detach_node(node);
-                        attach_before(node, before);
-                    }
-                    Some(pv)
-                }
-                Err(_) => {
-                    let mut new_node = allocate_node(self.free);
-                    new_node.as_mut().put_entry((key, value));
-                    attach_before(new_node, before);
-                    let hash_builder = self.hash_builder;
-                    self.table.insert_unique(hash, new_node, move |k| {
-                        hash_key(hash_builder, (*k).as_ref().key_ref())
-                    });
-                    None
-                }
             }
         }
     }
@@ -1945,7 +1758,7 @@ impl<'a, K, V> DoubleEndedIterator for Keys<'a, K, V> {
     }
 }
 
-impl<K, V> ExactSizeIterator for Keys<'_, K, V> {
+impl<'a, K, V> ExactSizeIterator for Keys<'a, K, V> {
     #[inline]
     fn len(&self) -> usize {
         self.inner.len()
@@ -1993,7 +1806,7 @@ impl<'a, K, V> DoubleEndedIterator for Values<'a, K, V> {
     }
 }
 
-impl<K, V> ExactSizeIterator for Values<'_, K, V> {
+impl<'a, K, V> ExactSizeIterator for Values<'a, K, V> {
     #[inline]
     fn len(&self) -> usize {
         self.inner.len()
@@ -2036,7 +1849,7 @@ impl<'a, K, V> DoubleEndedIterator for ValuesMut<'a, K, V> {
     }
 }
 
-impl<K, V> ExactSizeIterator for ValuesMut<'_, K, V> {
+impl<'a, K, V> ExactSizeIterator for ValuesMut<'a, K, V> {
     #[inline]
     fn len(&self) -> usize {
         self.inner.len()
@@ -2085,9 +1898,10 @@ impl<K, V, S> IntoIterator for LinkedHashMap<K, V, S> {
             };
             let len = self.len();
 
-            drop_free_nodes(self.free.take());
+            drop_free_nodes(self.free);
+            self.free = None;
 
-            self.table.clear();
+            self.map.clear();
 
             IntoIter {
                 head,
@@ -2099,6 +1913,30 @@ impl<K, V, S> IntoIterator for LinkedHashMap<K, V, S> {
     }
 }
 
+// A ZST that asserts that the inner HashMap will not do its own key hashing
+struct NullHasher;
+
+impl BuildHasher for NullHasher {
+    type Hasher = Self;
+
+    #[inline]
+    fn build_hasher(&self) -> Self {
+        Self
+    }
+}
+
+impl Hasher for NullHasher {
+    #[inline]
+    fn write(&mut self, _bytes: &[u8]) {
+        unreachable!("inner map should not be using its built-in hasher")
+    }
+
+    #[inline]
+    fn finish(&self) -> u64 {
+        unreachable!("inner map should not be using its built-in hasher")
+    }
+}
+
 struct ValueLinks<K, V> {
     next: NonNull<Node<K, V>>,
     prev: NonNull<Node<K, V>>,
@@ -2107,7 +1945,10 @@ struct ValueLinks<K, V> {
 impl<K, V> Clone for ValueLinks<K, V> {
     #[inline]
     fn clone(&self) -> Self {
-        *self
+        ValueLinks {
+            next: self.next,
+            prev: self.prev,
+        }
     }
 }
 
@@ -2120,7 +1961,7 @@ struct FreeLink<K, V> {
 impl<K, V> Clone for FreeLink<K, V> {
     #[inline]
     fn clone(&self) -> Self {
-        *self
+        FreeLink { next: self.next }
     }
 }
 
@@ -2164,7 +2005,6 @@ impl<K, V> Node<K, V> {
 }
 
 trait OptNonNullExt<T> {
-    #[allow(clippy::wrong_self_convention)]
     fn as_ptr(self) -> *mut T;
 }
 
@@ -2292,15 +2132,6 @@ unsafe fn remove_node<K, V>(
 }
 
 #[inline]
-unsafe fn hash_node<S, K, V>(s: &S, node: NonNull<Node<K, V>>) -> u64
-where
-    S: BuildHasher,
-    K: Hash,
-{
-    hash_key(s, node.as_ref().key_ref())
-}
-
-#[inline]
 fn hash_key<S, Q>(s: &S, k: &Q) -> u64
 where
     S: BuildHasher,
@@ -2323,7 +2154,7 @@ struct DropFilteredValues<'a, K, V> {
     cur_free: Option<NonNull<Node<K, V>>>,
 }
 
-impl<K, V> DropFilteredValues<'_, K, V> {
+impl<'a, K, V> DropFilteredValues<'a, K, V> {
     #[inline]
     fn drop_later(&mut self, node: NonNull<Node<K, V>>) {
         unsafe {
@@ -2333,7 +2164,7 @@ impl<K, V> DropFilteredValues<'_, K, V> {
     }
 }
 
-impl<K, V> Drop for DropFilteredValues<'_, K, V> {
+impl<'a, K, V> Drop for DropFilteredValues<'a, K, V> {
     fn drop(&mut self) {
         unsafe {
             let end_free = self.cur_free;
