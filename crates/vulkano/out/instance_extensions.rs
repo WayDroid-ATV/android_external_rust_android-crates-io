@@ -1107,44 +1107,17 @@ impl IntoIterator for InstanceExtensions {
     fn into_iter(self) -> Self::IntoIter {
         [
             ("VK_KHR_android_surface", self.khr_android_surface),
-            (
-                "VK_KHR_device_group_creation",
-                self.khr_device_group_creation,
-            ),
+            ("VK_KHR_device_group_creation", self.khr_device_group_creation),
             ("VK_KHR_display", self.khr_display),
-            (
-                "VK_KHR_external_fence_capabilities",
-                self.khr_external_fence_capabilities,
-            ),
-            (
-                "VK_KHR_external_memory_capabilities",
-                self.khr_external_memory_capabilities,
-            ),
-            (
-                "VK_KHR_external_semaphore_capabilities",
-                self.khr_external_semaphore_capabilities,
-            ),
-            (
-                "VK_KHR_get_display_properties2",
-                self.khr_get_display_properties2,
-            ),
-            (
-                "VK_KHR_get_physical_device_properties2",
-                self.khr_get_physical_device_properties2,
-            ),
-            (
-                "VK_KHR_get_surface_capabilities2",
-                self.khr_get_surface_capabilities2,
-            ),
-            (
-                "VK_KHR_portability_enumeration",
-                self.khr_portability_enumeration,
-            ),
+            ("VK_KHR_external_fence_capabilities", self.khr_external_fence_capabilities),
+            ("VK_KHR_external_memory_capabilities", self.khr_external_memory_capabilities),
+            ("VK_KHR_external_semaphore_capabilities", self.khr_external_semaphore_capabilities),
+            ("VK_KHR_get_display_properties2", self.khr_get_display_properties2),
+            ("VK_KHR_get_physical_device_properties2", self.khr_get_physical_device_properties2),
+            ("VK_KHR_get_surface_capabilities2", self.khr_get_surface_capabilities2),
+            ("VK_KHR_portability_enumeration", self.khr_portability_enumeration),
             ("VK_KHR_surface", self.khr_surface),
-            (
-                "VK_KHR_surface_protected_capabilities",
-                self.khr_surface_protected_capabilities,
-            ),
+            ("VK_KHR_surface_protected_capabilities", self.khr_surface_protected_capabilities),
             ("VK_KHR_wayland_surface", self.khr_wayland_surface),
             ("VK_KHR_win32_surface", self.khr_win32_surface),
             ("VK_KHR_xcb_surface", self.khr_xcb_surface),
@@ -1155,36 +1128,21 @@ impl IntoIterator for InstanceExtensions {
             ("VK_EXT_debug_utils", self.ext_debug_utils),
             ("VK_EXT_direct_mode_display", self.ext_direct_mode_display),
             ("VK_EXT_directfb_surface", self.ext_directfb_surface),
-            (
-                "VK_EXT_display_surface_counter",
-                self.ext_display_surface_counter,
-            ),
+            ("VK_EXT_display_surface_counter", self.ext_display_surface_counter),
             ("VK_EXT_headless_surface", self.ext_headless_surface),
             ("VK_EXT_metal_surface", self.ext_metal_surface),
             ("VK_EXT_surface_maintenance1", self.ext_surface_maintenance1),
             ("VK_EXT_swapchain_colorspace", self.ext_swapchain_colorspace),
             ("VK_EXT_validation_features", self.ext_validation_features),
             ("VK_EXT_validation_flags", self.ext_validation_flags),
-            (
-                "VK_FUCHSIA_imagepipe_surface",
-                self.fuchsia_imagepipe_surface,
-            ),
-            (
-                "VK_GGP_stream_descriptor_surface",
-                self.ggp_stream_descriptor_surface,
-            ),
+            ("VK_FUCHSIA_imagepipe_surface", self.fuchsia_imagepipe_surface),
+            ("VK_GGP_stream_descriptor_surface", self.ggp_stream_descriptor_surface),
             ("VK_GOOGLE_surfaceless_query", self.google_surfaceless_query),
-            (
-                "VK_LUNARG_direct_driver_loading",
-                self.lunarg_direct_driver_loading,
-            ),
+            ("VK_LUNARG_direct_driver_loading", self.lunarg_direct_driver_loading),
             ("VK_MVK_ios_surface", self.mvk_ios_surface),
             ("VK_MVK_macos_surface", self.mvk_macos_surface),
             ("VK_NN_vi_surface", self.nn_vi_surface),
-            (
-                "VK_NV_external_memory_capabilities",
-                self.nv_external_memory_capabilities,
-            ),
+            ("VK_NV_external_memory_capabilities", self.nv_external_memory_capabilities),
             ("VK_QNX_screen_surface", self.qnx_screen_surface),
         ]
         .into_iter()
