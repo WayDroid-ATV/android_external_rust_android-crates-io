@@ -45,7 +45,7 @@
 )]
 // `#[derive(...)]` uses `trivial_numeric_casts` and `unused_qualifications`
 // internally.
-#![deny(missing_docs, variant_size_differences)]
+#![deny(variant_size_differences)]
 #![forbid(unused_results)]
 #![no_std]
 
