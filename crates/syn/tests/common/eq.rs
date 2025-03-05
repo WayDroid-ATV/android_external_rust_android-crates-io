@@ -49,6 +49,7 @@ use rustc_ast::ast::Extern;
 use rustc_ast::ast::FieldDef;
 use rustc_ast::ast::FloatTy;
 use rustc_ast::ast::Fn;
+use rustc_ast::ast::FnContract;
 use rustc_ast::ast::FnDecl;
 use rustc_ast::ast::FnHeader;
 use rustc_ast::ast::FnRetTy;
@@ -147,6 +148,8 @@ use rustc_ast::ast::TyAlias;
 use rustc_ast::ast::TyAliasWhereClause;
 use rustc_ast::ast::TyAliasWhereClauses;
 use rustc_ast::ast::TyKind;
+use rustc_ast::ast::TyPat;
+use rustc_ast::ast::TyPatKind;
 use rustc_ast::ast::UintTy;
 use rustc_ast::ast::UnOp;
 use rustc_ast::ast::UnsafeBinderCastKind;
@@ -173,13 +176,13 @@ use rustc_ast::tokenstream::{
     Spacing, TokenStream, TokenTree,
 };
 use rustc_data_structures::packed::Pu128;
-use rustc_data_structures::sync::Lrc;
 use rustc_span::source_map::Spanned;
 use rustc_span::symbol::{sym, Ident};
 use rustc_span::{ErrorGuaranteed, Span, Symbol, SyntaxContext, DUMMY_SP};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::hash::{BuildHasher, Hash};
+use std::sync::Arc;
 use thin_vec::ThinVec;
 
 pub trait SpanlessEq {
@@ -198,7 +201,7 @@ impl<T: ?Sized + SpanlessEq> SpanlessEq for P<T> {
     }
 }
 
-impl<T: ?Sized + SpanlessEq> SpanlessEq for Lrc<T> {
+impl<T: ?Sized + SpanlessEq> SpanlessEq for Arc<T> {
     fn eq(&self, other: &Self) -> bool {
         SpanlessEq::eq(&**self, &**other)
     }
@@ -497,7 +500,8 @@ spanless_eq_struct!(EnumDef; variants);
 spanless_eq_struct!(Expr; id kind span attrs !tokens);
 spanless_eq_struct!(ExprField; attrs id span ident expr is_shorthand is_placeholder);
 spanless_eq_struct!(FieldDef; attrs id span vis safety ident ty default is_placeholder);
-spanless_eq_struct!(Fn; defaultness generics sig body);
+spanless_eq_struct!(Fn; defaultness generics sig contract body);
+spanless_eq_struct!(FnContract; requires ensures);
 spanless_eq_struct!(FnDecl; inputs output);
 spanless_eq_struct!(FnHeader; constness coroutine_kind safety ext);
 spanless_eq_struct!(FnSig; header decl span);
@@ -545,6 +549,7 @@ spanless_eq_struct!(Ty; id kind span tokens);
 spanless_eq_struct!(TyAlias; defaultness generics where_clauses bounds ty);
 spanless_eq_struct!(TyAliasWhereClause; !has_where_token span);
 spanless_eq_struct!(TyAliasWhereClauses; before after !split);
+spanless_eq_struct!(TyPat; id kind span tokens);
 spanless_eq_struct!(UnsafeBinderTy; generic_params inner_ty);
 spanless_eq_struct!(UseTree; prefix kind span);
 spanless_eq_struct!(Variant; attrs id span !vis ident data disr_expr is_placeholder);
@@ -618,6 +623,7 @@ spanless_eq_enum!(StructRest; Base(0) Rest(0) None);
 spanless_eq_enum!(Term; Ty(0) Const(0));
 spanless_eq_enum!(TokenTree; Token(0 1) Delimited(0 1 2 3));
 spanless_eq_enum!(TraitObjectSyntax; Dyn DynStar None);
+spanless_eq_enum!(TyPatKind; Range(0 1 2) Err(0));
 spanless_eq_enum!(UintTy; Usize U8 U16 U32 U64 U128);
 spanless_eq_enum!(UnOp; Deref Not Neg);
 spanless_eq_enum!(UnsafeBinderCastKind; Wrap Unwrap);
