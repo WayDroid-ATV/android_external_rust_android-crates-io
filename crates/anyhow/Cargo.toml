@@ -13,7 +13,7 @@
 edition = "2018"
 rust-version = "1.39"
 name = "anyhow"
-version = "1.0.95"
+version = "1.0.96"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 build = "build.rs"
 autolib = false
@@ -46,7 +46,6 @@ std = []
 [lib]
 name = "anyhow"
 path = "src/lib.rs"
-doc-scrape-examples = false
 
 [[test]]
 name = "compiletest"

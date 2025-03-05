@@ -12,8 +12,11 @@
 [package]
 edition = "2021"
 name = "zerocopy-derive"
-version = "0.8.19"
-authors = ["Joshua Liebow-Feeser <joshlf@google.com>"]
+version = "0.8.20"
+authors = [
+    "Joshua Liebow-Feeser <joshlf@google.com>",
+    "Jack Wrenn <jswrenn@amazon.com>",
+]
 build = false
 exclude = [
     ".*",

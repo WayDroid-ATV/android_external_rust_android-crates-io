@@ -18,10 +18,10 @@ rust_library {
     host_supported: true,
     crate_name: "icu_provider",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.0.0-beta1",
+    cargo_pkg_version: "2.0.0-beta2",
     crate_root: "src/lib.rs",
     edition: "2021",
-    features: ["macros"],
+    features: ["alloc"],
     rustlibs: [
         "libicu_locale_core",
         "libstable_deref_trait",
@@ -31,10 +31,7 @@ rust_library {
         "libzerofrom",
         "libzerovec",
     ],
-    proc_macros: [
-        "libdisplaydoc",
-        "libicu_provider_macros",
-    ],
+    proc_macros: ["libdisplaydoc"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

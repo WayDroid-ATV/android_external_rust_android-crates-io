@@ -10,14 +10,20 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
-rust-version = "1.36"
+edition = "2021"
+rust-version = "1.56"
 name = "serde_json"
-version = "1.0.96"
+version = "1.0.139"
 authors = [
     "Erick Tryzelaar <erick.tryzelaar@gmail.com>",
     "David Tolnay <dtolnay@gmail.com>",
 ]
+build = "build.rs"
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "A JSON serialization file format"
 documentation = "https://docs.rs/serde_json"
 readme = "README.md"
@@ -36,64 +42,19 @@ repository = "https://github.com/serde-rs/json"
 
 [package.metadata.docs.rs]
 features = [
+    "preserve_order",
     "raw_value",
     "unbounded_depth",
 ]
-rustdoc-args = [
-    "--cfg",
-    "docsrs",
-]
+rustdoc-args = ["--generate-link-to-definition"]
 targets = ["x86_64-unknown-linux-gnu"]
 
 [package.metadata.playground]
-features = ["raw_value"]
-
-[lib]
-doc-scrape-examples = false
-
-[dependencies.indexmap]
-version = "1.5.2"
-features = ["std"]
-optional = true
-
-[dependencies.itoa]
-version = "1.0"
-
-[dependencies.ryu]
-version = "1.0"
-
-[dependencies.serde]
-version = "1.0.100"
-default-features = false
-
-[dev-dependencies.automod]
-version = "1.0"
-
-[dev-dependencies.indoc]
-version = "2.0"
-
-[dev-dependencies.ref-cast]
-version = "1.0"
-
-[dev-dependencies.rustversion]
-version = "1.0"
-
-[dev-dependencies.serde]
-version = "1.0.100"
-features = ["derive"]
-
-[dev-dependencies.serde_bytes]
-version = "0.11"
-
-[dev-dependencies.serde_derive]
-version = "1.0"
-
-[dev-dependencies.serde_stacker]
-version = "0.1"
-
-[dev-dependencies.trybuild]
-version = "1.0.49"
-features = ["diff"]
+features = [
+    "float_roundtrip",
+    "raw_value",
+    "unbounded_depth",
+]
 
 [features]
 alloc = ["serde/alloc"]
@@ -105,5 +66,87 @@ preserve_order = [
     "std",
 ]
 raw_value = []
-std = ["serde/std"]
+std = [
+    "memchr/std",
+    "serde/std",
+]
 unbounded_depth = []
+
+[lib]
+name = "serde_json"
+path = "src/lib.rs"
+
+[[test]]
+name = "compiletest"
+path = "tests/compiletest.rs"
+
+[[test]]
+name = "debug"
+path = "tests/debug.rs"
+
+[[test]]
+name = "lexical"
+path = "tests/lexical.rs"
+
+[[test]]
+name = "map"
+path = "tests/map.rs"
+
+[[test]]
+name = "regression"
+path = "tests/regression.rs"
+
+[[test]]
+name = "stream"
+path = "tests/stream.rs"
+
+[[test]]
+name = "test"
+path = "tests/test.rs"
+
+[dependencies.indexmap]
+version = "2.2.3"
+optional = true
+
+[dependencies.itoa]
+version = "1.0"
+
+[dependencies.memchr]
+version = "2"
+default-features = false
+
+[dependencies.ryu]
+version = "1.0"
+
+[dependencies.serde]
+version = "1.0.194"
+default-features = false
+
+[dev-dependencies.automod]
+version = "1.0.11"
+
+[dev-dependencies.indoc]
+version = "2.0.2"
+
+[dev-dependencies.ref-cast]
+version = "1.0.18"
+
+[dev-dependencies.rustversion]
+version = "1.0.13"
+
+[dev-dependencies.serde]
+version = "1.0.194"
+features = ["derive"]
+
+[dev-dependencies.serde_bytes]
+version = "0.11.10"
+
+[dev-dependencies.serde_derive]
+version = "1.0.166"
+
+[dev-dependencies.serde_stacker]
+version = "0.1.8"
+
+[dev-dependencies.trybuild]
+version = "1.0.81"
+features = ["diff"]
