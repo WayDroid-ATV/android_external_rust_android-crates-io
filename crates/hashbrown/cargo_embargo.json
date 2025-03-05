@@ -1,9 +1,9 @@
 {
   "features": [
-    "default-hasher",
+    "ahash",
+    "default",
     "inline-more",
-    "equivalent",
-    "raw-entry"
+    "raw"
   ],
   "package": {
     "hashbrown": {
@@ -12,5 +12,6 @@
       ]
     }
   },
+  "tests": true,
   "min_sdk_version": "29"
 }
