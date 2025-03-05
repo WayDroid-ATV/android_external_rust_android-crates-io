@@ -101,7 +101,9 @@ pub enum Error {
     #[allow(dead_code)]
     ModuleError(String),
 
-    /// An unwinding panic occurs in a UDF (user-defined function).
+    /// An unwinding panic occurs in an UDF (user-defined function).
+    #[cfg(feature = "functions")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "functions")))]
     UnwindingPanic,
 
     /// An error returned when
@@ -139,15 +141,6 @@ pub enum Error {
         /// byte offset of the start of invalid token
         offset: c_int,
     },
-    /// Loadable extension initialization error
-    #[cfg(feature = "loadable_extension")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "loadable_extension")))]
-    InitError(ffi::InitError),
-    /// Error when the schema of a particular database is requested, but the index
-    /// is out of range.
-    #[cfg(feature = "modern_sqlite")] // 3.39.0
-    #[cfg_attr(docsrs, doc(cfg(feature = "modern_sqlite")))]
-    InvalidDatabaseIndex(usize),
 }
 
 impl PartialEq for Error {
@@ -183,6 +176,7 @@ impl PartialEq for Error {
             (Error::InvalidQuery, Error::InvalidQuery) => true,
             #[cfg(feature = "vtab")]
             (Error::ModuleError(s1), Error::ModuleError(s2)) => s1 == s2,
+            #[cfg(feature = "functions")]
             (Error::UnwindingPanic, Error::UnwindingPanic) => true,
             #[cfg(feature = "functions")]
             (Error::GetAuxWrongType, Error::GetAuxWrongType) => true,
@@ -206,10 +200,6 @@ impl PartialEq for Error {
                     offset: o2,
                 },
             ) => e1 == e2 && m1 == m2 && s1 == s2 && o1 == o2,
-            #[cfg(feature = "loadable_extension")]
-            (Error::InitError(e1), Error::InitError(e2)) => e1 == e2,
-            #[cfg(feature = "modern_sqlite")]
-            (Error::InvalidDatabaseIndex(i1), Error::InvalidDatabaseIndex(i2)) => i1 == i2,
             (..) => false,
         }
     }
@@ -251,14 +241,6 @@ impl From<FromSqlError> for Error {
     }
 }
 
-#[cfg(feature = "loadable_extension")]
-impl From<ffi::InitError> for Error {
-    #[cold]
-    fn from(err: ffi::InitError) -> Error {
-        Error::InitError(err)
-    }
-}
-
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
@@ -270,7 +252,11 @@ impl fmt::Display for Error {
             ),
             Error::FromSqlConversionFailure(i, ref t, ref err) => {
                 if i != UNKNOWN_COLUMN {
-                    write!(f, "Conversion error from type {t} at index: {i}, {err}")
+                    write!(
+                        f,
+                        "Conversion error from type {} at index: {}, {}",
+                        t, i, err
+                    )
                 } else {
                     err.fmt(f)
                 }
@@ -292,12 +278,15 @@ impl fmt::Display for Error {
             Error::QueryReturnedNoRows => write!(f, "Query returned no rows"),
             Error::InvalidColumnIndex(i) => write!(f, "Invalid column index: {i}"),
             Error::InvalidColumnName(ref name) => write!(f, "Invalid column name: {name}"),
-            Error::InvalidColumnType(i, ref name, ref t) => {
-                write!(f, "Invalid column type {t} at index: {i}, name: {name}")
-            }
+            Error::InvalidColumnType(i, ref name, ref t) => write!(
+                f,
+                "Invalid column type {} at index: {}, name: {}",
+                t, i, name
+            ),
             Error::InvalidParameterCount(i1, n1) => write!(
                 f,
-                "Wrong number of parameters passed to query. Got {i1}, needed {n1}"
+                "Wrong number of parameters passed to query. Got {}, needed {}",
+                i1, n1
             ),
             Error::StatementChangedRows(i) => write!(f, "Query changed {i} rows"),
 
@@ -315,6 +304,7 @@ impl fmt::Display for Error {
             Error::InvalidQuery => write!(f, "Query is not read-only"),
             #[cfg(feature = "vtab")]
             Error::ModuleError(ref desc) => write!(f, "{desc}"),
+            #[cfg(feature = "functions")]
             Error::UnwindingPanic => write!(f, "unwinding panic"),
             #[cfg(feature = "functions")]
             Error::GetAuxWrongType => write!(f, "get_aux called with wrong type"),
@@ -328,10 +318,6 @@ impl fmt::Display for Error {
                 ref sql,
                 ..
             } => write!(f, "{msg} in {sql} at offset {offset}"),
-            #[cfg(feature = "loadable_extension")]
-            Error::InitError(ref err) => err.fmt(f),
-            #[cfg(feature = "modern_sqlite")]
-            Error::InvalidDatabaseIndex(i) => write!(f, "Invalid database index: {i}"),
         }
     }
 }
@@ -371,6 +357,7 @@ impl error::Error for Error {
             #[cfg(feature = "vtab")]
             Error::ModuleError(_) => None,
 
+            #[cfg(feature = "functions")]
             Error::UnwindingPanic => None,
 
             #[cfg(feature = "functions")]
@@ -380,10 +367,6 @@ impl error::Error for Error {
             Error::BlobSizeError => None,
             #[cfg(feature = "modern_sqlite")]
             Error::SqlInputError { ref error, .. } => Some(error),
-            #[cfg(feature = "loadable_extension")]
-            Error::InitError(ref err) => Some(err),
-            #[cfg(feature = "modern_sqlite")]
-            Error::InvalidDatabaseIndex(_) => None,
         }
     }
 }
@@ -391,7 +374,6 @@ impl error::Error for Error {
 impl Error {
     /// Returns the underlying SQLite error if this is [`Error::SqliteFailure`].
     #[inline]
-    #[must_use]
     pub fn sqlite_error(&self) -> Option<&ffi::Error> {
         match self {
             Self::SqliteFailure(error, _) => Some(error),
@@ -402,7 +384,6 @@ impl Error {
     /// Returns the underlying SQLite error code if this is
     /// [`Error::SqliteFailure`].
     #[inline]
-    #[must_use]
     pub fn sqlite_error_code(&self) -> Option<ffi::ErrorCode> {
         self.sqlite_error().map(|error| error.code)
     }
@@ -412,6 +393,7 @@ impl Error {
 
 #[cold]
 pub fn error_from_sqlite_code(code: c_int, message: Option<String>) -> Error {
+    // TODO sqlite3_error_offset // 3.38.0, #1130
     Error::SqliteFailure(ffi::Error::new(code), message)
 }
 
@@ -459,24 +441,5 @@ pub fn check(code: c_int) -> Result<()> {
         Err(error_from_sqlite_code(code, None))
     } else {
         Ok(())
-    }
-}
-
-/// Transform Rust error to SQLite error (message and code).
-/// # Safety
-/// This function is unsafe because it uses raw pointer
-pub unsafe fn to_sqlite_error(e: &Error, err_msg: *mut *mut std::os::raw::c_char) -> c_int {
-    use crate::util::alloc;
-    match e {
-        Error::SqliteFailure(err, s) => {
-            if let Some(s) = s {
-                *err_msg = alloc(s);
-            }
-            err.extended_code
-        }
-        err => {
-            *err_msg = alloc(&err.to_string());
-            ffi::SQLITE_ERROR
-        }
     }
 }

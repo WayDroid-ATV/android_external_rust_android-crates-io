@@ -3,16 +3,12 @@ use std::str;
 use crate::{Error, Result, Statement};
 
 /// Information about a column of a SQLite query.
-#[cfg(feature = "column_decltype")]
-#[cfg_attr(docsrs, doc(cfg(feature = "column_decltype")))]
 #[derive(Debug)]
 pub struct Column<'stmt> {
     name: &'stmt str,
     decl_type: Option<&'stmt str>,
 }
 
-#[cfg(feature = "column_decltype")]
-#[cfg_attr(docsrs, doc(cfg(feature = "column_decltype")))]
 impl Column<'_> {
     /// Returns the name of the column.
     #[inline]
@@ -94,8 +90,6 @@ impl Statement<'_> {
     /// Returns an `Error::InvalidColumnIndex` if `idx` is outside the valid
     /// column range for this row.
     ///
-    /// # Panics
-    ///
     /// Panics when column name is not valid UTF-8.
     #[inline]
     pub fn column_name(&self, col: usize) -> Result<&str> {
@@ -104,9 +98,7 @@ impl Statement<'_> {
             // clippy::or_fun_call (nightly) vs clippy::unnecessary-lazy-evaluations (stable)
             .ok_or(Error::InvalidColumnIndex(col))
             .map(|slice| {
-                slice
-                    .to_str()
-                    .expect("Invalid UTF-8 sequence in column name")
+                str::from_utf8(slice.to_bytes()).expect("Invalid UTF-8 sequence in column name")
             })
     }
 
@@ -151,8 +143,7 @@ impl Statement<'_> {
             let name = self.column_name_unwrap(i);
             let slice = self.stmt.column_decltype(i);
             let decl_type = slice.map(|s| {
-                s.to_str()
-                    .expect("Invalid UTF-8 sequence in column declaration")
+                str::from_utf8(s.to_bytes()).expect("Invalid UTF-8 sequence in column declaration")
             });
             cols.push(Column { name, decl_type });
         }
@@ -212,7 +203,7 @@ mod test {
                 assert_eq!(ty, Type::Integer);
             }
             e => {
-                panic!("Unexpected error type: {e:?}");
+                panic!("Unexpected error type: {:?}", e);
             }
         }
         match row.get::<_, String>("y").unwrap_err() {
@@ -222,7 +213,7 @@ mod test {
                 assert_eq!(ty, Type::Null);
             }
             e => {
-                panic!("Unexpected error type: {e:?}");
+                panic!("Unexpected error type: {:?}", e);
             }
         }
         Ok(())

@@ -11,16 +11,16 @@
 //! (See [SQLite doc](http://sqlite.org/vtab.html))
 use std::borrow::Cow::{self, Borrowed, Owned};
 use std::marker::PhantomData;
+use std::marker::Sync;
 use std::os::raw::{c_char, c_int, c_void};
 use std::ptr;
 use std::slice;
 
 use crate::context::set_result;
-use crate::error::{error_from_sqlite_code, to_sqlite_error};
+use crate::error::error_from_sqlite_code;
 use crate::ffi;
 pub use crate::ffi::{sqlite3_vtab, sqlite3_vtab_cursor};
 use crate::types::{FromSql, FromSqlError, ToSql, ValueRef};
-use crate::util::alloc;
 use crate::{str_to_cstring, Connection, Error, InnerConnection, Result};
 
 // let conn: Connection = ...;
@@ -137,7 +137,7 @@ macro_rules! module {
     };
 }
 
-/// Create a modifiable virtual table implementation.
+/// Create an modifiable virtual table implementation.
 ///
 /// Step 2 of [Creating New Virtual Table Implementations](https://sqlite.org/vtab.html#creating_new_virtual_table_implementations).
 #[must_use]
@@ -195,8 +195,6 @@ pub enum VTabConfig {
     Innocuous = 2,
     /// Equivalent to SQLITE_VTAB_DIRECTONLY
     DirectOnly = 3,
-    /// Equivalent to SQLITE_VTAB_USES_ALL_SCHEMAS
-    UsesAllSchemas = 4,
 }
 
 /// `feature = "vtab"`
@@ -372,7 +370,6 @@ bitflags::bitflags! {
     /// Virtual table scan flags
     /// See [Function Flags](https://sqlite.org/c3ref/c_index_scan_unique.html) for details.
     #[repr(C)]
-    #[derive(Copy, Clone, Debug)]
     pub struct IndexFlags: ::std::os::raw::c_int {
         /// Default
         const NONE     = 0;
@@ -703,7 +700,7 @@ impl Context {
     #[inline]
     pub fn set_result<T: ToSql>(&mut self, value: &T) -> Result<()> {
         let t = value.to_sql()?;
-        unsafe { set_result(self.0, &[], &t) };
+        unsafe { set_result(self.0, &t) };
         Ok(())
     }
 
@@ -759,9 +756,10 @@ impl Values<'_> {
             None
         } else {
             Some(unsafe {
-                let ptr = ptr as *const Vec<Value>;
-                array::Array::increment_strong_count(ptr); // don't consume it
-                array::Array::from_raw(ptr)
+                let rc = array::Array::from_raw(ptr as *const Vec<Value>);
+                let array = rc.clone();
+                array::Array::into_raw(rc); // don't consume it
+                array
             })
         }
     }
@@ -884,7 +882,7 @@ pub fn dequote(s: &str) -> &str {
         return s;
     }
     match s.bytes().next() {
-        Some(b) if b == b'"' || b == b'\'' => match s.bytes().next_back() {
+        Some(b) if b == b'"' || b == b'\'' => match s.bytes().rev().next() {
             Some(e) if e == b => &s[1..s.len() - 1], // FIXME handle inner escaped quote(s)
             _ => s,
         },
@@ -922,7 +920,7 @@ pub fn parameter(c_slice: &[u8]) -> Result<(&str, &str)> {
     if let Some(key) = split.next() {
         if let Some(value) = split.next() {
             let param = key.trim();
-            let value = dequote(value.trim());
+            let value = dequote(value);
             return Ok((param, value));
         }
     }
@@ -964,7 +962,8 @@ where
                     ffi::SQLITE_OK
                 } else {
                     let err = error_from_sqlite_code(rc, None);
-                    to_sqlite_error(&err, err_msg)
+                    *err_msg = alloc(&err.to_string());
+                    rc
                 }
             }
             Err(err) => {
@@ -972,7 +971,16 @@ where
                 ffi::SQLITE_ERROR
             }
         },
-        Err(err) => to_sqlite_error(&err, err_msg),
+        Err(Error::SqliteFailure(err, s)) => {
+            if let Some(s) = s {
+                *err_msg = alloc(&s);
+            }
+            err.extended_code
+        }
+        Err(err) => {
+            *err_msg = alloc(&err.to_string());
+            ffi::SQLITE_ERROR
+        }
     }
 }
 
@@ -1006,7 +1014,8 @@ where
                     ffi::SQLITE_OK
                 } else {
                     let err = error_from_sqlite_code(rc, None);
-                    to_sqlite_error(&err, err_msg)
+                    *err_msg = alloc(&err.to_string());
+                    rc
                 }
             }
             Err(err) => {
@@ -1014,7 +1023,16 @@ where
                 ffi::SQLITE_ERROR
             }
         },
-        Err(err) => to_sqlite_error(&err, err_msg),
+        Err(Error::SqliteFailure(err, s)) => {
+            if let Some(s) = s {
+                *err_msg = alloc(&s);
+            }
+            err.extended_code
+        }
+        Err(err) => {
+            *err_msg = alloc(&err.to_string());
+            ffi::SQLITE_ERROR
+        }
     }
 }
 
@@ -1080,12 +1098,12 @@ where
     }
 }
 
-unsafe extern "C" fn rust_open<'vtab, T>(
+unsafe extern "C" fn rust_open<'vtab, T: 'vtab>(
     vtab: *mut ffi::sqlite3_vtab,
     pp_cursor: *mut *mut ffi::sqlite3_vtab_cursor,
 ) -> c_int
 where
-    T: VTab<'vtab> + 'vtab,
+    T: VTab<'vtab>,
 {
     let vt = vtab.cast::<T>();
     match (*vt).open() {
@@ -1186,14 +1204,14 @@ where
     }
 }
 
-unsafe extern "C" fn rust_update<'vtab, T>(
+unsafe extern "C" fn rust_update<'vtab, T: 'vtab>(
     vtab: *mut ffi::sqlite3_vtab,
     argc: c_int,
     argv: *mut *mut ffi::sqlite3_value,
     p_rowid: *mut ffi::sqlite3_int64,
 ) -> c_int
 where
-    T: UpdateVTab<'vtab> + 'vtab,
+    T: UpdateVTab<'vtab>,
 {
     assert!(argc >= 1);
     let args = slice::from_raw_parts_mut(argv, argc as usize);
@@ -1289,6 +1307,12 @@ unsafe fn result_error<T>(ctx: *mut ffi::sqlite3_context, result: Result<T>) -> 
             ffi::SQLITE_ERROR
         }
     }
+}
+
+// Space to hold this string must be obtained
+// from an SQLite memory allocation function
+fn alloc(s: &str) -> *mut c_char {
+    crate::util::SqliteMallocString::from_str(s).into_raw()
 }
 
 #[cfg(feature = "array")]
