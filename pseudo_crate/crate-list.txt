@@ -38,6 +38,7 @@ buddy_system_allocator
 bytemuck
 bytemuck_derive
 byteorder
+byteorder-lite
 bytes
 camino
 cargo-platform
