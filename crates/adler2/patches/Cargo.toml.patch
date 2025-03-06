@@ -1,0 +1,13 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index d8610a85..5b082d7b 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -33,7 +33,7 @@ keywords = [
+     "zlib",
+ ]
+ categories = ["algorithms"]
+-license = "0BSD OR MIT OR Apache-2.0"
++license = "MIT OR Apache-2.0"
+ repository = "https://github.com/oyvindln/adler2"
+ 
+ [package.metadata.docs.rs]
