@@ -223,6 +223,7 @@ miette
 miette-derive
 mime
 minimal-lexical
+miniz_oxide
 mio
 mls-rs
 mls-rs-codec
