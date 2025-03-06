@@ -1,0 +1,5 @@
+{
+    "module_name_overrides": {
+        "libpng": "libpng_rust"
+    }
+}
