@@ -379,6 +379,7 @@ dependencies = [
  "plotters",
  "plotters-backend",
  "plotters-svg",
+ "png",
  "poll_token_derive",
  "portable-atomic",
  "potential_utf",
