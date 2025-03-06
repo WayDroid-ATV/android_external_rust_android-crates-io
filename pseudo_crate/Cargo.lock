@@ -99,6 +99,7 @@ version = "0.1.0"
 dependencies = [
  "aarch64-paging",
  "acpi",
+ "adler2",
  "ahash 0.8.11",
  "aho-corasick",
  "android_bp",
