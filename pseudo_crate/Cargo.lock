@@ -526,7 +526,7 @@ dependencies = [
  "xml-rs",
  "yaml-rust",
  "yoke 0.7.5",
- "yoke-derive 0.7.5",
+ "yoke-derive 0.8.0",
  "zerocopy 0.8.20",
  "zerocopy-derive 0.8.20",
  "zerofrom",
