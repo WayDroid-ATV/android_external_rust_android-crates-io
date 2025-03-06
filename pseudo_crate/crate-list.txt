@@ -1,5 +1,6 @@
 aarch64-paging
 acpi
+adler2
 ahash
 aho-corasick
 android_bp
