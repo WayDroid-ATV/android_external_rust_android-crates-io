@@ -94,6 +94,7 @@ drm
 drm-ffi
 drm-fourcc
 either
+enum-as-inner
 enumn
 env_filter
 env_logger
@@ -173,6 +174,7 @@ inotify
 inotify-sys
 instant
 intrusive-collections
+ipnet
 is-terminal
 itertools
 itoa
@@ -272,6 +274,7 @@ plotters
 plotters-backend
 plotters-svg
 poll_token_derive
+portable-atomic
 potential_utf
 ppv-lite86
 predicates
