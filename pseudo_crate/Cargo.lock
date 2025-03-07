@@ -216,6 +216,7 @@ dependencies = [
  "fallible-streaming-iterator",
  "fastrand",
  "fdeflate",
+ "filetime",
  "fixedbitset 0.5.7",
  "flagset",
  "flate2",
@@ -2278,6 +2279,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "filetime"
+version = "0.2.25"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35c0522e981e68cbfa8c3f978441a5f34b30b96e146b33cd3359176b50fe8586"
+dependencies = [
+ "cfg-if",
+ "libc 0.2.161",
+ "libredox",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
 name = "fixed_decimal"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4068,6 +4081,7 @@ checksum = "c0ff37bd590ca25063e35af745c343cb7a0271906fb7b37e4813e8f79f00268d"
 dependencies = [
  "bitflags 2.9.0",
  "libc 0.2.161",
+ "redox_syscall",
 ]
 
 [[package]]

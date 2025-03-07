@@ -111,6 +111,7 @@ fallible-iterator
 fallible-streaming-iterator
 fastrand
 fdeflate
+filetime
 fixedbitset
 flagset
 flate2
