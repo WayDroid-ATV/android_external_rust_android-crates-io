@@ -360,6 +360,7 @@ syn-mid
 sync_wrapper
 synstructure
 taffy
+tar
 tempfile
 termcolor
 termtree
