@@ -16,6 +16,24 @@
       "message": "```\nAllLicensesRecorded\nThe license \"BSD-0-Clause\" was found in 1 source files and is missing from the package\u0027s LICENSE file.\n\nThis license was found in \"crates/adler2/LICENSE-0BSD\" on line 3.\n\nThe LICENSE file \"crates/adler2/LICENSE\" contains the licenses \"Apache-2.0\".\n```\n\nPlease Fix.",
       "revId": "e65d83b544cd0b5b3643a3f15af2ef1a7570bbaa",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e0b9708f_de3f47c9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1229163
+      },
+      "writtenOn": "2025-03-07T00:33:24Z",
+      "side": 1,
+      "message": "Hi, I\u0027m fixing the LICENSE mapping in https://r.android.com/3529561.\nI used that code to re-generate this import. I will wait merging this, until the other CL is in.",
+      "parentUuid": "0bd053de_110469bc",
+      "revId": "e65d83b544cd0b5b3643a3f15af2ef1a7570bbaa",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
