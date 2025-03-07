@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1029563c_0d2438f6",
+        "filename": "crates/miniz_oxide/LICENSE-ZLIB.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 3842965
+      },
+      "writtenOn": "2025-03-07T09:24:03Z",
+      "side": 1,
+      "message": "Please fix this WARNING reported by ComplianceLint: AllLicensesRecorded\n\nAnalyzer Description: Reports third party compliance warnings. go/compliancelint\nOwner: opensource-compliance-team@google.com\n\nAllLicensesRecorded\nThe license \"Zlib\" was found in 1 source files and is missing from the package\u0027s LICENSE file.\n\nThis license was found in \"crates/miniz_oxide/LICENSE-ZLIB.md\" on line 6.\n\nThe LICENSE file \"crates/miniz_oxide/LICENSE\" contains the licenses \"Apache-2.0, MIT\".\n\n📖 See go/compliancelint-checks#AllLicensesRecorded",
+      "range": {
+        "startLine": 6,
+        "startChar": 0,
+        "endLine": 14,
+        "endChar": 0
+      },
+      "revId": "1d3a42d17dcd2fb9880fd554a93cc1ec86bea2ed",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
