@@ -4,7 +4,8 @@
 
 use displaydoc::Display;
 
-impl core::error::Error for ParseError {}
+#[cfg(feature = "std")]
+impl std::error::Error for ParseError {}
 
 #[derive(Display, Debug, PartialEq, Eq)]
 #[non_exhaustive]

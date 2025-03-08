@@ -3,10 +3,8 @@
 // (online at: https://github.com/unicode-org/icu4x/blob/main/LICENSE ).
 
 use crate::{TinyAsciiStr, UnvalidatedTinyAsciiStr};
-#[cfg(feature = "alloc")]
 use zerovec::maps::ZeroMapKV;
 use zerovec::ule::*;
-#[cfg(feature = "alloc")]
 use zerovec::{ZeroSlice, ZeroVec};
 
 // Safety (based on the safety checklist on the ULE trait):
@@ -52,7 +50,6 @@ impl<const N: usize> AsULE for TinyAsciiStr<N> {
     }
 }
 
-#[cfg(feature = "alloc")]
 impl<'a, const N: usize> ZeroMapKV<'a> for TinyAsciiStr<N> {
     type Container = ZeroVec<'a, TinyAsciiStr<N>>;
     type Slice = ZeroSlice<TinyAsciiStr<N>>;
@@ -93,7 +90,6 @@ impl<const N: usize> AsULE for UnvalidatedTinyAsciiStr<N> {
     }
 }
 
-#[cfg(feature = "alloc")]
 impl<'a, const N: usize> ZeroMapKV<'a> for UnvalidatedTinyAsciiStr<N> {
     type Container = ZeroVec<'a, UnvalidatedTinyAsciiStr<N>>;
     type Slice = ZeroSlice<UnvalidatedTinyAsciiStr<N>>;
