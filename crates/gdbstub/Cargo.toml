@@ -12,13 +12,14 @@
 [package]
 edition = "2018"
 name = "gdbstub"
-version = "0.7.3"
+version = "0.7.5"
 authors = ["Daniel Prilik <danielprilik@gmail.com>"]
 build = false
 exclude = [
     "examples/**/*.elf",
     "examples/**/*.o",
 ]
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -42,6 +43,18 @@ categories = [
 ]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/daniel5151/gdbstub"
+
+[features]
+__dead_code_marker = []
+alloc = ["managed/alloc"]
+core_error = []
+default = [
+    "std",
+    "trace-pkt",
+]
+paranoid_unsafe = []
+std = ["alloc"]
+trace-pkt = ["alloc"]
 
 [lib]
 name = "gdbstub"
@@ -85,15 +98,3 @@ version = "0.4"
 
 [dev-dependencies.pretty_env_logger]
 version = "0.4"
-
-[features]
-__dead_code_marker = []
-alloc = ["managed/alloc"]
-core_error = []
-default = [
-    "std",
-    "trace-pkt",
-]
-paranoid_unsafe = []
-std = ["alloc"]
-trace-pkt = ["alloc"]

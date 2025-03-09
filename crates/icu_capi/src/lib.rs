@@ -92,18 +92,24 @@ pub mod exemplar_chars;
 pub mod fallbacker;
 #[cfg(feature = "decimal")]
 pub mod fixed_decimal;
+#[cfg(any(feature = "datetime", feature = "timezone"))]
+pub mod iana_parser;
 #[cfg(feature = "list")]
 pub mod list;
 #[cfg(feature = "locale")]
 pub mod locale;
 #[cfg(feature = "locale")]
 pub mod locale_directionality;
+#[cfg(feature = "datetime")]
+pub mod neo_datetime;
 #[cfg(feature = "normalizer")]
 pub mod normalizer;
 #[cfg(feature = "normalizer")]
 pub mod normalizer_properties;
 #[cfg(feature = "plurals")]
 pub mod pluralrules;
+#[cfg(feature = "properties")]
+pub mod properties_bidi;
 #[cfg(feature = "properties")]
 pub mod properties_enums;
 #[cfg(feature = "properties")]
@@ -130,11 +136,15 @@ pub mod segmenter_word;
 pub mod time;
 #[cfg(any(feature = "datetime", feature = "timezone"))]
 pub mod timezone;
-#[cfg(any(feature = "datetime", feature = "timezone"))]
-pub mod timezone_mapper;
 #[cfg(feature = "experimental")]
 pub mod units_converter;
+#[cfg(any(feature = "datetime", feature = "timezone"))]
+pub mod utc_offset;
 #[cfg(feature = "calendar")]
 pub mod week;
+#[cfg(any(feature = "datetime", feature = "timezone"))]
+pub mod windows_parser;
+#[cfg(feature = "datetime")]
+pub mod zoned_datetime;
 #[cfg(feature = "datetime")]
 pub mod zoned_formatter;

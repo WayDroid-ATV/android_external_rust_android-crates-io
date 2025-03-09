@@ -9,7 +9,10 @@ package {
 license {
     name: "external_rust_crates_tinystr_license",
     visibility: [":__subpackages__"],
-    license_kinds: ["SPDX-license-identifier-Unicode-3.0"],
+    license_kinds: [
+        "SPDX-license-identifier-Unicode-3.0",
+        "legacy_notice",
+    ],
     license_text: ["LICENSE"],
 }
 
@@ -18,7 +21,7 @@ rust_library {
     host_supported: true,
     crate_name: "tinystr",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.0",
+    cargo_pkg_version: "0.8.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
