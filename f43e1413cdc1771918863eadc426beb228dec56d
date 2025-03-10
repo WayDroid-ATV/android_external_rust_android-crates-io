@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d85d2ae6_6df03241",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-03-10T18:25:39Z",
+      "side": 1,
+      "message": "Can you please add the upstream pull request to the CL description or patch file?\n\nI would like the upstream change to merged before approving this.",
+      "revId": "f43e1413cdc1771918863eadc426beb228dec56d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
