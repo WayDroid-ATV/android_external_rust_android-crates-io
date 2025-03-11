@@ -13,9 +13,10 @@
 edition = "2018"
 rust-version = "1.53"
 name = "serde_bytes"
-version = "0.11.15"
+version = "0.11.16"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -38,13 +39,22 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/serde-rs/bytes"
 
 [package.metadata.docs.rs]
-rustdoc-args = ["--generate-link-to-definition"]
+rustdoc-args = [
+    "--generate-link-to-definition",
+    "--extern-html-root-url=core=https://doc.rust-lang.org",
+    "--extern-html-root-url=alloc=https://doc.rust-lang.org",
+    "--extern-html-root-url=std=https://doc.rust-lang.org",
+]
 targets = ["x86_64-unknown-linux-gnu"]
+
+[features]
+alloc = ["serde/alloc"]
+default = ["std"]
+std = ["serde/std"]
 
 [lib]
 name = "serde_bytes"
 path = "src/lib.rs"
-doc-scrape-examples = false
 
 [[test]]
 name = "test_derive"
@@ -70,8 +80,3 @@ version = "1.0.166"
 
 [dev-dependencies.serde_test]
 version = "1.0.166"
-
-[features]
-alloc = ["serde/alloc"]
-default = ["std"]
-std = ["serde/std"]

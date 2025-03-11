@@ -651,8 +651,7 @@ fn derive_try_from_bytes_struct(
                 mut candidate: ::zerocopy::Maybe<Self, ___ZerocopyAliasing>,
             ) -> ::zerocopy::util::macro_util::core_reexport::primitive::bool
             where
-                ___ZerocopyAliasing: ::zerocopy::pointer::invariant::Aliasing
-                    + ::zerocopy::pointer::invariant::AtLeast<::zerocopy::pointer::invariant::Shared>,
+                ___ZerocopyAliasing: ::zerocopy::pointer::invariant::Reference,
             {
                 true #(&& {
                     // SAFETY:
@@ -707,11 +706,10 @@ fn derive_try_from_bytes_union(
             // is guaranteed to be no more strict than this definition. See #696
             // for a more in-depth discussion.
             fn is_bit_valid<___ZerocopyAliasing>(
-                mut candidate: ::zerocopy::Maybe<'_, Self, ___ZerocopyAliasing>
+                mut candidate: ::zerocopy::Maybe<'_, Self,___ZerocopyAliasing>
             ) -> ::zerocopy::util::macro_util::core_reexport::primitive::bool
             where
-                ___ZerocopyAliasing: ::zerocopy::pointer::invariant::Aliasing
-                    + ::zerocopy::pointer::invariant::AtLeast<::zerocopy::pointer::invariant::Shared>,
+                ___ZerocopyAliasing: ::zerocopy::pointer::invariant::Reference,
             {
                 false #(|| {
                     // SAFETY:
@@ -785,6 +783,22 @@ fn derive_try_from_bytes_enum(
 /// Attempts to generate a `TryFromBytes::is_bit_valid` instance that
 /// unconditionally returns true.
 ///
+/// This is possible when the `top_level` trait is `FromBytes` and there are no
+/// generic type parameters. In this case, we know that compilation will succeed
+/// only if the type is unconditionally `FromBytes`. Type parameters are not
+/// supported because a type with type parameters could be `TryFromBytes` but
+/// not `FromBytes` depending on its type parameters, and so deriving a trivial
+/// `is_bit_valid` would be either unsound or, assuming we add a defensive
+/// `Self: FromBytes` bound (as we currently do), overly restrictive. Consider,
+/// for example, that `Foo<bool>` ought to be `TryFromBytes` but not `FromBytes`
+/// in this example:
+///
+/// ```rust,ignore
+/// #[derive(FromBytes)]
+/// #[repr(transparent)]
+/// struct Foo<T>(T);
+/// ```
+///
 /// This should be used where possible. Using this impl is faster to codegen,
 /// faster to compile, and is friendlier on the optimizer.
 fn try_gen_trivial_is_bit_valid(
@@ -806,8 +820,7 @@ fn try_gen_trivial_is_bit_valid(
                 _candidate: ::zerocopy::Maybe<Self, ___ZerocopyAliasing>,
             ) -> ::zerocopy::util::macro_util::core_reexport::primitive::bool
             where
-                ___ZerocopyAliasing: ::zerocopy::pointer::invariant::Aliasing
-                    + ::zerocopy::pointer::invariant::AtLeast<::zerocopy::pointer::invariant::Shared>,
+                ___ZerocopyAliasing: ::zerocopy::pointer::invariant::Reference,
             {
                 if false {
                     fn assert_is_from_bytes<T>()
@@ -850,8 +863,7 @@ unsafe fn gen_trivial_is_bit_valid_unchecked() -> proc_macro2::TokenStream {
             _candidate: ::zerocopy::Maybe<Self, ___ZerocopyAliasing>,
         ) -> ::zerocopy::util::macro_util::core_reexport::primitive::bool
         where
-            ___ZerocopyAliasing: ::zerocopy::pointer::invariant::Aliasing
-                + ::zerocopy::pointer::invariant::AtLeast<::zerocopy::pointer::invariant::Shared>,
+            ___ZerocopyAliasing: ::zerocopy::pointer::invariant::Reference,
         {
             true
         }
