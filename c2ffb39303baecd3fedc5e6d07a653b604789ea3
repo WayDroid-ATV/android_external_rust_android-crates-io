@@ -16,6 +16,24 @@
       "message": "Hmm, was there a bug for importing/approving this batch of crates?",
       "revId": "c2ffb39303baecd3fedc5e6d07a653b604789ea3",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "620b48c4_cc73cfc8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1229163
+      },
+      "writtenOn": "2025-03-11T22:35:17Z",
+      "side": 1,
+      "message": "Yes: http://b/401308466\nThis is about importing the image crate. The request is not approved yet.",
+      "parentUuid": "bd406878_6a0d322d",
+      "revId": "c2ffb39303baecd3fedc5e6d07a653b604789ea3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
