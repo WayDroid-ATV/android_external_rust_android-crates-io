@@ -150,7 +150,7 @@ pub enum VContKind<'a> {
     Stop,
 }
 
-impl VContKind<'_> {
+impl<'a> VContKind<'a> {
     #[inline(always)]
     fn from_bytes(s: &[u8]) -> Option<VContKind<'_>> {
         use self::VContKind::*;

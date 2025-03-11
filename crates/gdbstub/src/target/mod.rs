@@ -626,12 +626,6 @@ pub trait Target {
         None
     }
 
-    /// Support for setting / removing tracepoints.
-    #[inline(always)]
-    fn support_tracepoints(&mut self) -> Option<ext::tracepoints::TracepointsOps<'_, Self>> {
-        None
-    }
-
     /// Support for overriding the target description XML specified by
     /// `Target::Arch`.
     #[inline(always)]
@@ -744,7 +738,6 @@ macro_rules! impl_dyn_target {
             __delegate_support!(host_io);
             __delegate_support!(exec_file);
             __delegate_support!(auxv);
-            __delegate_support!(tracepoints);
         }
     };
 }
