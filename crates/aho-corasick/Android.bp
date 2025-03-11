@@ -48,9 +48,7 @@ rust_library {
     rustlibs: ["libmemchr"],
     apex_available: [
         "//apex_available:platform",
-        "com.android.compos",
-        "com.android.configinfrastructure",
-        "com.android.virt",
+        "//apex_available:anyapex",
     ],
     product_available: true,
     vendor_available: true,

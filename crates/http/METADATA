@@ -1,5 +1,5 @@
 name: "http"
-description: "()"
+description: "A set of types for representing HTTP requests and responses."
 third_party {
   version: "0.2.12"
   license_type: NOTICE

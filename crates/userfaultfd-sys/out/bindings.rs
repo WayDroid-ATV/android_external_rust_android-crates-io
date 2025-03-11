@@ -69,7 +69,12 @@ fn bindgen_test_layout___kernel_fd_set() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).fds_bits) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(__kernel_fd_set), "::", stringify!(fds_bits))
+        concat!(
+            "Offset of field: ",
+            stringify!(__kernel_fd_set),
+            "::",
+            stringify!(fds_bits)
+        )
     );
 }
 pub type __kernel_sighandler_t =
@@ -116,7 +121,12 @@ fn bindgen_test_layout___kernel_fsid_t() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).val) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(__kernel_fsid_t), "::", stringify!(val))
+        concat!(
+            "Offset of field: ",
+            stringify!(__kernel_fsid_t),
+            "::",
+            stringify!(val)
+        )
     );
 }
 pub type __kernel_off_t = __kernel_long_t;
@@ -171,12 +181,18 @@ fn bindgen_test_layout_uffd_msg__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1() {
     assert_eq!(
         ::std::mem::size_of::<uffd_msg__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1>(),
         4usize,
-        concat!("Size of: ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1))
+        concat!(
+            "Size of: ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1)
+        )
     );
     assert_eq!(
         ::std::mem::align_of::<uffd_msg__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1>(),
         4usize,
-        concat!("Alignment of ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1))
+        concat!(
+            "Alignment of ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_1__bindgen_ty_1)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).ptid) as usize - ptr as usize },
@@ -197,12 +213,18 @@ fn bindgen_test_layout_uffd_msg__bindgen_ty_1__bindgen_ty_1() {
     assert_eq!(
         ::std::mem::size_of::<uffd_msg__bindgen_ty_1__bindgen_ty_1>(),
         24usize,
-        concat!("Size of: ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_1))
+        concat!(
+            "Size of: ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_1)
+        )
     );
     assert_eq!(
         ::std::mem::align_of::<uffd_msg__bindgen_ty_1__bindgen_ty_1>(),
         8usize,
-        concat!("Alignment of ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_1))
+        concat!(
+            "Alignment of ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_1)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).flags) as usize - ptr as usize },
@@ -248,12 +270,18 @@ fn bindgen_test_layout_uffd_msg__bindgen_ty_1__bindgen_ty_2() {
     assert_eq!(
         ::std::mem::size_of::<uffd_msg__bindgen_ty_1__bindgen_ty_2>(),
         4usize,
-        concat!("Size of: ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_2))
+        concat!(
+            "Size of: ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_2)
+        )
     );
     assert_eq!(
         ::std::mem::align_of::<uffd_msg__bindgen_ty_1__bindgen_ty_2>(),
         4usize,
-        concat!("Alignment of ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_2))
+        concat!(
+            "Alignment of ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_2)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).ufd) as usize - ptr as usize },
@@ -281,12 +309,18 @@ fn bindgen_test_layout_uffd_msg__bindgen_ty_1__bindgen_ty_3() {
     assert_eq!(
         ::std::mem::size_of::<uffd_msg__bindgen_ty_1__bindgen_ty_3>(),
         24usize,
-        concat!("Size of: ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_3))
+        concat!(
+            "Size of: ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_3)
+        )
     );
     assert_eq!(
         ::std::mem::align_of::<uffd_msg__bindgen_ty_1__bindgen_ty_3>(),
         8usize,
-        concat!("Alignment of ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_3))
+        concat!(
+            "Alignment of ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_3)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).from) as usize - ptr as usize },
@@ -333,12 +367,18 @@ fn bindgen_test_layout_uffd_msg__bindgen_ty_1__bindgen_ty_4() {
     assert_eq!(
         ::std::mem::size_of::<uffd_msg__bindgen_ty_1__bindgen_ty_4>(),
         16usize,
-        concat!("Size of: ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_4))
+        concat!(
+            "Size of: ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_4)
+        )
     );
     assert_eq!(
         ::std::mem::align_of::<uffd_msg__bindgen_ty_1__bindgen_ty_4>(),
         8usize,
-        concat!("Alignment of ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_4))
+        concat!(
+            "Alignment of ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_4)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).start) as usize - ptr as usize },
@@ -376,12 +416,18 @@ fn bindgen_test_layout_uffd_msg__bindgen_ty_1__bindgen_ty_5() {
     assert_eq!(
         ::std::mem::size_of::<uffd_msg__bindgen_ty_1__bindgen_ty_5>(),
         24usize,
-        concat!("Size of: ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_5))
+        concat!(
+            "Size of: ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_5)
+        )
     );
     assert_eq!(
         ::std::mem::align_of::<uffd_msg__bindgen_ty_1__bindgen_ty_5>(),
         8usize,
-        concat!("Alignment of ", stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_5))
+        concat!(
+            "Alignment of ",
+            stringify!(uffd_msg__bindgen_ty_1__bindgen_ty_5)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).reserved1) as usize - ptr as usize },
@@ -442,17 +488,32 @@ fn bindgen_test_layout_uffd_msg__bindgen_ty_1() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).fork) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffd_msg__bindgen_ty_1), "::", stringify!(fork))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffd_msg__bindgen_ty_1),
+            "::",
+            stringify!(fork)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).remap) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffd_msg__bindgen_ty_1), "::", stringify!(remap))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffd_msg__bindgen_ty_1),
+            "::",
+            stringify!(remap)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).remove) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffd_msg__bindgen_ty_1), "::", stringify!(remove))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffd_msg__bindgen_ty_1),
+            "::",
+            stringify!(remove)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).reserved) as usize - ptr as usize },
@@ -482,27 +543,52 @@ fn bindgen_test_layout_uffd_msg() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).event) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffd_msg), "::", stringify!(event))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffd_msg),
+            "::",
+            stringify!(event)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).reserved1) as usize - ptr as usize },
         1usize,
-        concat!("Offset of field: ", stringify!(uffd_msg), "::", stringify!(reserved1))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffd_msg),
+            "::",
+            stringify!(reserved1)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).reserved2) as usize - ptr as usize },
         2usize,
-        concat!("Offset of field: ", stringify!(uffd_msg), "::", stringify!(reserved2))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffd_msg),
+            "::",
+            stringify!(reserved2)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).reserved3) as usize - ptr as usize },
         4usize,
-        concat!("Offset of field: ", stringify!(uffd_msg), "::", stringify!(reserved3))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffd_msg),
+            "::",
+            stringify!(reserved3)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).arg) as usize - ptr as usize },
         8usize,
-        concat!("Offset of field: ", stringify!(uffd_msg), "::", stringify!(arg))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffd_msg),
+            "::",
+            stringify!(arg)
+        )
     );
 }
 #[repr(C)]
@@ -529,17 +615,32 @@ fn bindgen_test_layout_uffdio_api() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).api) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffdio_api), "::", stringify!(api))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_api),
+            "::",
+            stringify!(api)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).features) as usize - ptr as usize },
         8usize,
-        concat!("Offset of field: ", stringify!(uffdio_api), "::", stringify!(features))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_api),
+            "::",
+            stringify!(features)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).ioctls) as usize - ptr as usize },
         16usize,
-        concat!("Offset of field: ", stringify!(uffdio_api), "::", stringify!(ioctls))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_api),
+            "::",
+            stringify!(ioctls)
+        )
     );
 }
 #[repr(C)]
@@ -565,12 +666,22 @@ fn bindgen_test_layout_uffdio_range() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).start) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffdio_range), "::", stringify!(start))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_range),
+            "::",
+            stringify!(start)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).len) as usize - ptr as usize },
         8usize,
-        concat!("Offset of field: ", stringify!(uffdio_range), "::", stringify!(len))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_range),
+            "::",
+            stringify!(len)
+        )
     );
 }
 #[repr(C)]
@@ -597,17 +708,32 @@ fn bindgen_test_layout_uffdio_register() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).range) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffdio_register), "::", stringify!(range))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_register),
+            "::",
+            stringify!(range)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).mode) as usize - ptr as usize },
         16usize,
-        concat!("Offset of field: ", stringify!(uffdio_register), "::", stringify!(mode))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_register),
+            "::",
+            stringify!(mode)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).ioctls) as usize - ptr as usize },
         24usize,
-        concat!("Offset of field: ", stringify!(uffdio_register), "::", stringify!(ioctls))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_register),
+            "::",
+            stringify!(ioctls)
+        )
     );
 }
 #[repr(C)]
@@ -636,27 +762,52 @@ fn bindgen_test_layout_uffdio_copy() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).dst) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffdio_copy), "::", stringify!(dst))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_copy),
+            "::",
+            stringify!(dst)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).src) as usize - ptr as usize },
         8usize,
-        concat!("Offset of field: ", stringify!(uffdio_copy), "::", stringify!(src))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_copy),
+            "::",
+            stringify!(src)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).len) as usize - ptr as usize },
         16usize,
-        concat!("Offset of field: ", stringify!(uffdio_copy), "::", stringify!(len))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_copy),
+            "::",
+            stringify!(len)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).mode) as usize - ptr as usize },
         24usize,
-        concat!("Offset of field: ", stringify!(uffdio_copy), "::", stringify!(mode))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_copy),
+            "::",
+            stringify!(mode)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).copy) as usize - ptr as usize },
         32usize,
-        concat!("Offset of field: ", stringify!(uffdio_copy), "::", stringify!(copy))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_copy),
+            "::",
+            stringify!(copy)
+        )
     );
 }
 #[repr(C)]
@@ -683,17 +834,32 @@ fn bindgen_test_layout_uffdio_zeropage() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).range) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffdio_zeropage), "::", stringify!(range))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_zeropage),
+            "::",
+            stringify!(range)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).mode) as usize - ptr as usize },
         16usize,
-        concat!("Offset of field: ", stringify!(uffdio_zeropage), "::", stringify!(mode))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_zeropage),
+            "::",
+            stringify!(mode)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).zeropage) as usize - ptr as usize },
         24usize,
-        concat!("Offset of field: ", stringify!(uffdio_zeropage), "::", stringify!(zeropage))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_zeropage),
+            "::",
+            stringify!(zeropage)
+        )
     );
 }
 #[repr(C)]
@@ -719,12 +885,22 @@ fn bindgen_test_layout_uffdio_writeprotect() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).range) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffdio_writeprotect), "::", stringify!(range))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_writeprotect),
+            "::",
+            stringify!(range)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).mode) as usize - ptr as usize },
         16usize,
-        concat!("Offset of field: ", stringify!(uffdio_writeprotect), "::", stringify!(mode))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_writeprotect),
+            "::",
+            stringify!(mode)
+        )
     );
 }
 #[repr(C)]
@@ -751,17 +927,32 @@ fn bindgen_test_layout_uffdio_continue() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).range) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffdio_continue), "::", stringify!(range))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_continue),
+            "::",
+            stringify!(range)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).mode) as usize - ptr as usize },
         16usize,
-        concat!("Offset of field: ", stringify!(uffdio_continue), "::", stringify!(mode))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_continue),
+            "::",
+            stringify!(mode)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).mapped) as usize - ptr as usize },
         24usize,
-        concat!("Offset of field: ", stringify!(uffdio_continue), "::", stringify!(mapped))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_continue),
+            "::",
+            stringify!(mapped)
+        )
     );
 }
 #[repr(C)]
@@ -788,17 +979,32 @@ fn bindgen_test_layout_uffdio_poison() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).range) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffdio_poison), "::", stringify!(range))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_poison),
+            "::",
+            stringify!(range)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).mode) as usize - ptr as usize },
         16usize,
-        concat!("Offset of field: ", stringify!(uffdio_poison), "::", stringify!(mode))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_poison),
+            "::",
+            stringify!(mode)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).updated) as usize - ptr as usize },
         24usize,
-        concat!("Offset of field: ", stringify!(uffdio_poison), "::", stringify!(updated))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_poison),
+            "::",
+            stringify!(updated)
+        )
     );
 }
 #[repr(C)]
@@ -827,26 +1033,51 @@ fn bindgen_test_layout_uffdio_move() {
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).dst) as usize - ptr as usize },
         0usize,
-        concat!("Offset of field: ", stringify!(uffdio_move), "::", stringify!(dst))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_move),
+            "::",
+            stringify!(dst)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).src) as usize - ptr as usize },
         8usize,
-        concat!("Offset of field: ", stringify!(uffdio_move), "::", stringify!(src))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_move),
+            "::",
+            stringify!(src)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).len) as usize - ptr as usize },
         16usize,
-        concat!("Offset of field: ", stringify!(uffdio_move), "::", stringify!(len))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_move),
+            "::",
+            stringify!(len)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).mode) as usize - ptr as usize },
         24usize,
-        concat!("Offset of field: ", stringify!(uffdio_move), "::", stringify!(mode))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_move),
+            "::",
+            stringify!(mode)
+        )
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).move_) as usize - ptr as usize },
         32usize,
-        concat!("Offset of field: ", stringify!(uffdio_move), "::", stringify!(move_))
+        concat!(
+            "Offset of field: ",
+            stringify!(uffdio_move),
+            "::",
+            stringify!(move_)
+        )
     );
 }

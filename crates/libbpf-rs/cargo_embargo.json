@@ -6,6 +6,11 @@
       "patch": "patches/Android.bp.patch"
     }
   },
+  "module_visibility": {
+    "liblibbpf_rs": [
+      "//system/bpf/loader"
+    ]
+  },
   "product_available": false,
   "vendor_available": false
 }

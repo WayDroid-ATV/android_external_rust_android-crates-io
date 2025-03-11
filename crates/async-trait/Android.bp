@@ -17,13 +17,17 @@ rust_proc_macro {
     name: "libasync_trait",
     crate_name: "async_trait",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.86",
+    cargo_pkg_version: "0.1.87",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
         "libproc_macro2",
         "libquote",
         "libsyn",
+    ],
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
     ],
     product_available: true,
     vendor_available: true,

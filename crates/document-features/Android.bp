@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libdocument_features",
     crate_name: "document_features",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.10",
+    cargo_pkg_version: "0.2.11",
     crate_root: "lib.rs",
     edition: "2018",
     features: ["default"],

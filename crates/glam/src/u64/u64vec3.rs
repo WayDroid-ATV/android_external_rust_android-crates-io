@@ -354,6 +354,50 @@ impl U64Vec3 {
         self.dot(self)
     }
 
+    /// Computes the [manhattan distance] between two points.
+    ///
+    /// # Overflow
+    /// This method may overflow if the result is greater than [`u64::MAX`].
+    ///
+    /// See also [`checked_manhattan_distance`][U64Vec3::checked_manhattan_distance].
+    ///
+    /// [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry
+    #[inline]
+    #[must_use]
+    pub fn manhattan_distance(self, other: Self) -> u64 {
+        self.x.abs_diff(other.x) + self.y.abs_diff(other.y) + self.z.abs_diff(other.z)
+    }
+
+    /// Computes the [manhattan distance] between two points.
+    ///
+    /// This will returns [`None`] if the result is greater than [`u64::MAX`].
+    ///
+    /// [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry
+    #[inline]
+    #[must_use]
+    pub fn checked_manhattan_distance(self, other: Self) -> Option<u64> {
+        let d = self.x.abs_diff(other.x);
+        let d = d.checked_add(self.y.abs_diff(other.y))?;
+        d.checked_add(self.z.abs_diff(other.z))
+    }
+
+    /// Computes the [chebyshev distance] between two points.
+    ///
+    /// [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance
+    #[inline]
+    #[must_use]
+    pub fn chebyshev_distance(self, other: Self) -> u64 {
+        // Note: the compiler will eventually optimize out the loop
+        [
+            self.x.abs_diff(other.x),
+            self.y.abs_diff(other.y),
+            self.z.abs_diff(other.z),
+        ]
+        .into_iter()
+        .max()
+        .unwrap()
+    }
+
     /// Casts all elements of `self` to `f32`.
     #[inline]
     #[must_use]
@@ -422,6 +466,94 @@ impl U64Vec3 {
     #[must_use]
     pub fn as_i64vec3(&self) -> crate::I64Vec3 {
         crate::I64Vec3::new(self.x as i64, self.y as i64, self.z as i64)
+    }
+
+    /// Returns a vector containing the wrapping addition of `self` and `rhs`.
+    ///
+    /// In other words this computes `Some([self.x + rhs.x, self.y + rhs.y, ..])` but returns `None` on any overflow.
+    #[inline]
+    #[must_use]
+    pub const fn checked_add(self, rhs: Self) -> Option<Self> {
+        let x = match self.x.checked_add(rhs.x) {
+            Some(v) => v,
+            None => return None,
+        };
+        let y = match self.y.checked_add(rhs.y) {
+            Some(v) => v,
+            None => return None,
+        };
+        let z = match self.z.checked_add(rhs.z) {
+            Some(v) => v,
+            None => return None,
+        };
+
+        Some(Self { x, y, z })
+    }
+
+    /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+    ///
+    /// In other words this computes `Some([self.x - rhs.x, self.y - rhs.y, ..])` but returns `None` on any overflow.
+    #[inline]
+    #[must_use]
+    pub const fn checked_sub(self, rhs: Self) -> Option<Self> {
+        let x = match self.x.checked_sub(rhs.x) {
+            Some(v) => v,
+            None => return None,
+        };
+        let y = match self.y.checked_sub(rhs.y) {
+            Some(v) => v,
+            None => return None,
+        };
+        let z = match self.z.checked_sub(rhs.z) {
+            Some(v) => v,
+            None => return None,
+        };
+
+        Some(Self { x, y, z })
+    }
+
+    /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+    ///
+    /// In other words this computes `Some([self.x * rhs.x, self.y * rhs.y, ..])` but returns `None` on any overflow.
+    #[inline]
+    #[must_use]
+    pub const fn checked_mul(self, rhs: Self) -> Option<Self> {
+        let x = match self.x.checked_mul(rhs.x) {
+            Some(v) => v,
+            None => return None,
+        };
+        let y = match self.y.checked_mul(rhs.y) {
+            Some(v) => v,
+            None => return None,
+        };
+        let z = match self.z.checked_mul(rhs.z) {
+            Some(v) => v,
+            None => return None,
+        };
+
+        Some(Self { x, y, z })
+    }
+
+    /// Returns a vector containing the wrapping division of `self` and `rhs`.
+    ///
+    /// In other words this computes `Some([self.x / rhs.x, self.y / rhs.y, ..])` but returns `None` on any division by zero.
+    #[inline]
+    #[must_use]
+    pub const fn checked_div(self, rhs: Self) -> Option<Self> {
+        let x = match self.x.checked_div(rhs.x) {
+            Some(v) => v,
+            None => return None,
+        };
+        let y = match self.y.checked_div(rhs.y) {
+            Some(v) => v,
+            None => return None,
+        };
+        let z = match self.z.checked_div(rhs.z) {
+            Some(v) => v,
+            None => return None,
+        };
+
+        Some(Self { x, y, z })
     }
 
     /// Returns a vector containing the wrapping addition of `self` and `rhs`.
@@ -530,6 +662,28 @@ impl U64Vec3 {
 
     /// Returns a vector containing the wrapping addition of `self` and signed vector `rhs`.
     ///
+    /// In other words this computes `Some([self.x + rhs.x, self.y + rhs.y, ..])` but returns `None` on any overflow.
+    #[inline]
+    #[must_use]
+    pub const fn checked_add_signed(self, rhs: I64Vec3) -> Option<Self> {
+        let x = match self.x.checked_add_signed(rhs.x) {
+            Some(v) => v,
+            None => return None,
+        };
+        let y = match self.y.checked_add_signed(rhs.y) {
+            Some(v) => v,
+            None => return None,
+        };
+        let z = match self.z.checked_add_signed(rhs.z) {
+            Some(v) => v,
+            None => return None,
+        };
+
+        Some(Self { x, y, z })
+    }
+
+    /// Returns a vector containing the wrapping addition of `self` and signed vector `rhs`.
+    ///
     /// In other words this computes `[self.x.wrapping_add_signed(rhs.x), self.y.wrapping_add_signed(rhs.y), ..]`.
     #[inline]
     #[must_use]
@@ -607,9 +761,9 @@ impl DivAssign<U64Vec3> for U64Vec3 {
     }
 }
 
-impl DivAssign<&Self> for U64Vec3 {
+impl DivAssign<&U64Vec3> for U64Vec3 {
     #[inline]
-    fn div_assign(&mut self, rhs: &Self) {
+    fn div_assign(&mut self, rhs: &U64Vec3) {
         self.div_assign(*rhs)
     }
 }
@@ -747,9 +901,9 @@ impl MulAssign<U64Vec3> for U64Vec3 {
     }
 }
 
-impl MulAssign<&Self> for U64Vec3 {
+impl MulAssign<&U64Vec3> for U64Vec3 {
     #[inline]
-    fn mul_assign(&mut self, rhs: &Self) {
+    fn mul_assign(&mut self, rhs: &U64Vec3) {
         self.mul_assign(*rhs)
     }
 }
@@ -887,9 +1041,9 @@ impl AddAssign<U64Vec3> for U64Vec3 {
     }
 }
 
-impl AddAssign<&Self> for U64Vec3 {
+impl AddAssign<&U64Vec3> for U64Vec3 {
     #[inline]
-    fn add_assign(&mut self, rhs: &Self) {
+    fn add_assign(&mut self, rhs: &U64Vec3) {
         self.add_assign(*rhs)
     }
 }
@@ -1027,9 +1181,9 @@ impl SubAssign<U64Vec3> for U64Vec3 {
     }
 }
 
-impl SubAssign<&Self> for U64Vec3 {
+impl SubAssign<&U64Vec3> for U64Vec3 {
     #[inline]
-    fn sub_assign(&mut self, rhs: &Self) {
+    fn sub_assign(&mut self, rhs: &U64Vec3) {
         self.sub_assign(*rhs)
     }
 }
@@ -1167,9 +1321,9 @@ impl RemAssign<U64Vec3> for U64Vec3 {
     }
 }
 
-impl RemAssign<&Self> for U64Vec3 {
+impl RemAssign<&U64Vec3> for U64Vec3 {
     #[inline]
-    fn rem_assign(&mut self, rhs: &Self) {
+    fn rem_assign(&mut self, rhs: &U64Vec3) {
         self.rem_assign(*rhs)
     }
 }

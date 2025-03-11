@@ -667,9 +667,7 @@ unsafe impl<T: TryFromBytes + ?Sized> TryFromBytes for UnsafeCell<T> {
     }
 
     #[inline]
-    fn is_bit_valid<A: invariant::Aliasing + invariant::AtLeast<invariant::Shared>>(
-        candidate: Maybe<'_, Self, A>,
-    ) -> bool {
+    fn is_bit_valid<A: invariant::Reference>(candidate: Maybe<'_, Self, A>) -> bool {
         // The only way to implement this function is using an exclusive-aliased
         // pointer. `UnsafeCell`s cannot be read via shared-aliased pointers
         // (other than by using `unsafe` code, which we can't use since we can't
@@ -964,6 +962,7 @@ mod simd {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pointer::invariant;
 
     #[test]
     fn test_impls() {
@@ -1146,10 +1145,7 @@ mod tests {
 
             pub(super) trait TestIsBitValidShared<T: ?Sized> {
                 #[allow(clippy::needless_lifetimes)]
-                fn test_is_bit_valid_shared<
-                    'ptr,
-                    A: invariant::Aliasing + invariant::AtLeast<invariant::Shared>,
-                >(
+                fn test_is_bit_valid_shared<'ptr, A: invariant::Reference>(
                     &self,
                     candidate: Maybe<'ptr, T, A>,
                 ) -> Option<bool>;
@@ -1157,10 +1153,7 @@ mod tests {
 
             impl<T: TryFromBytes + Immutable + ?Sized> TestIsBitValidShared<T> for AutorefWrapper<T> {
                 #[allow(clippy::needless_lifetimes)]
-                fn test_is_bit_valid_shared<
-                    'ptr,
-                    A: invariant::Aliasing + invariant::AtLeast<invariant::Shared>,
-                >(
+                fn test_is_bit_valid_shared<'ptr, A: invariant::Reference>(
                     &self,
                     candidate: Maybe<'ptr, T, A>,
                 ) -> Option<bool> {
@@ -1183,6 +1176,24 @@ mod tests {
                     bytes: &'bytes [u8],
                 ) -> Option<Option<&'bytes T>> {
                     Some(T::try_ref_from_bytes(bytes).ok())
+                }
+            }
+
+            pub(super) trait TestTryFromMut<T: ?Sized> {
+                #[allow(clippy::needless_lifetimes)]
+                fn test_try_from_mut<'bytes>(
+                    &self,
+                    bytes: &'bytes mut [u8],
+                ) -> Option<Option<&'bytes mut T>>;
+            }
+
+            impl<T: TryFromBytes + IntoBytes + KnownLayout + ?Sized> TestTryFromMut<T> for AutorefWrapper<T> {
+                #[allow(clippy::needless_lifetimes)]
+                fn test_try_from_mut<'bytes>(
+                    &self,
+                    bytes: &'bytes mut [u8],
+                ) -> Option<Option<&'bytes mut T>> {
+                    Some(T::try_mut_from_bytes(bytes).ok())
                 }
             }
 
@@ -1250,7 +1261,7 @@ mod tests {
                 #[allow(unused, non_local_definitions)]
                 impl AutorefWrapper<$ty> {
                     #[allow(clippy::needless_lifetimes)]
-                    fn test_is_bit_valid_shared<'ptr, A: invariant::Aliasing + invariant::AtLeast<invariant::Shared>>(
+                    fn test_is_bit_valid_shared<'ptr, A: invariant::Reference>(
                         &mut self,
                         candidate: Maybe<'ptr, $ty, A>,
                     ) -> Option<bool> {
@@ -1272,6 +1283,25 @@ mod tests {
                         assert_on_allowlist!(
                             test_try_from_ref($ty):
                             ManuallyDrop<[UnsafeCell<bool>]>
+                        );
+
+                        None
+                    }
+
+                    #[allow(clippy::needless_lifetimes)]
+                    fn test_try_from_mut<'bytes>(&mut self, _bytes: &'bytes mut [u8]) -> Option<Option<&'bytes mut $ty>> {
+                        assert_on_allowlist!(
+                            test_try_from_mut($ty):
+                            Option<Box<UnsafeCell<NotZerocopy>>>,
+                            Option<&'static UnsafeCell<NotZerocopy>>,
+                            Option<&'static mut UnsafeCell<NotZerocopy>>,
+                            Option<NonNull<UnsafeCell<NotZerocopy>>>,
+                            Option<fn()>,
+                            Option<FnManyArgs>,
+                            Option<extern "C" fn()>,
+                            Option<ECFnManyArgs>,
+                            *const NotZerocopy,
+                            *mut NotZerocopy
                         );
 
                         None
@@ -1385,8 +1415,10 @@ mod tests {
                         let bytes_mut = &mut vec.as_mut_slice()[offset..offset+size];
                         bytes_mut.copy_from_slice(bytes);
 
-                        let res = <$ty as TryFromBytes>::try_mut_from_bytes(bytes_mut);
-                        assert!(res.is_ok(), "{}::try_mut_from_bytes({:?}): got `Err`, expected `Ok`", stringify!($ty), val);
+                        let res = ww.test_try_from_mut(bytes_mut);
+                        if let Some(res) = res {
+                            assert!(res.is_some(), "{}::try_mut_from_bytes({:?}): got `None`, expected `Some`", stringify!($ty), val);
+                        }
                     }
 
                     let res = bytes.and_then(|bytes| ww.test_try_read_from(bytes));
@@ -1406,8 +1438,11 @@ mod tests {
                         assert!(res.is_none(), "{}::try_ref_from_bytes({:?}): got Some, expected None", stringify!($ty), c);
                     }
 
-                    let res = <$ty as TryFromBytes>::try_mut_from_bytes(c);
-                    assert!(res.is_err(), "{}::try_mut_from_bytes({:?}): got Ok, expected Err", stringify!($ty), c);
+                    let res = w.test_try_from_mut(c);
+                    if let Some(res) = res {
+                        assert!(res.is_none(), "{}::try_mut_from_bytes({:?}): got Some, expected None", stringify!($ty), c);
+                    }
+
 
                     let res = w.test_try_read_from(c);
                     if let Some(res) = res {

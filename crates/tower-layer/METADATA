@@ -1,5 +1,5 @@
 name: "tower-layer"
-description: "()"
+description: "Decorates a `Service` to allow easy composition between `Service`s."
 third_party {
   version: "0.3.3"
   license_type: NOTICE

@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.71.1"
+rust-version = "1.81"
 name = "icu_casemap"
-version = "2.0.0-beta1"
+version = "2.0.0-beta2"
 authors = ["The ICU4X Project Developers"]
 build = false
 include = [
@@ -26,6 +26,7 @@ include = [
     "LICENSE",
     "README.md",
 ]
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -38,11 +39,31 @@ license = "Unicode-3.0"
 repository = "https://github.com/unicode-org/icu4x"
 
 [package.metadata.cargo-all-features]
-denylist = ["bench"]
 skip_optional_dependencies = true
 
 [package.metadata.docs.rs]
 all-features = true
+
+[features]
+compiled_data = [
+    "dep:icu_casemap_data",
+    "icu_properties/compiled_data",
+]
+datagen = [
+    "serde",
+    "dep:databake",
+    "zerovec/databake",
+    "icu_collections/databake",
+]
+default = ["compiled_data"]
+serde = [
+    "dep:serde",
+    "zerovec/serde",
+    "icu_collections/serde",
+    "icu_provider/serde",
+    "icu_properties/serde",
+    "potential_utf/serde",
+]
 
 [lib]
 name = "icu_casemap"
@@ -83,30 +104,34 @@ version = "0.2.3"
 default-features = false
 
 [dependencies.icu_casemap_data]
-version = "~2.0.0-beta1"
+version = "~2.0.0-beta2"
 optional = true
 default-features = false
 
 [dependencies.icu_collections]
-version = "~2.0.0-beta1"
+version = "~2.0.0-beta2"
+features = ["alloc"]
 default-features = false
 
 [dependencies.icu_locale_core]
-version = "2.0.0-beta1"
+version = "2.0.0-beta2"
+features = ["alloc"]
 default-features = false
 
 [dependencies.icu_properties]
-version = "~2.0.0-beta1"
+version = "~2.0.0-beta2"
 default-features = false
 
 [dependencies.icu_provider]
-version = "2.0.0-beta1"
-features = ["macros"]
+version = "2.0.0-beta2"
 default-features = false
 
 [dependencies.potential_utf]
-version = "0.1.0"
-features = ["zerovec"]
+version = "0.1.1"
+features = [
+    "alloc",
+    "zerovec",
+]
 default-features = false
 
 [dependencies.serde]
@@ -123,37 +148,14 @@ version = "0.6.0"
 default-features = false
 
 [dependencies.zerovec]
-version = "0.11.0"
-features = ["yoke"]
+version = "0.11.1"
+features = [
+    "alloc",
+    "yoke",
+]
 default-features = false
 
 [dev-dependencies]
-
-[features]
-bench = []
-compiled_data = [
-    "dep:icu_casemap_data",
-    "icu_properties/compiled_data",
-]
-datagen = [
-    "serde",
-    "dep:databake",
-    "zerovec/databake",
-    "icu_collections/databake",
-]
-default = ["compiled_data"]
-serde = [
-    "dep:serde",
-    "zerovec/serde",
-    "icu_collections/serde",
-    "icu_provider/serde",
-    "icu_properties/serde",
-    "potential_utf/serde",
-]
-std = [
-    "icu_collections/std",
-    "icu_provider/std",
-]
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.criterion]
 version = "0.5.0"

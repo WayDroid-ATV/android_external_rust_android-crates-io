@@ -18,7 +18,7 @@ rust_test {
     host_supported: true,
     crate_name: "test",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.14",
+    cargo_pkg_version: "1.0.15",
     crate_root: "tests/test.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -34,7 +34,7 @@ rust_library {
     host_supported: true,
     crate_name: "itoa",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.14",
+    cargo_pkg_version: "1.0.15",
     crate_root: "src/lib.rs",
     edition: "2018",
     apex_available: [

@@ -13,10 +13,14 @@
 edition = "2021"
 rust-version = "1.56.0"
 name = "zerocopy"
-version = "0.8.17"
-authors = ["Joshua Liebow-Feeser <joshlf@google.com>"]
+version = "0.8.21"
+authors = [
+    "Joshua Liebow-Feeser <joshlf@google.com>",
+    "Jack Wrenn <jswrenn@amazon.com>",
+]
 build = "build.rs"
 exclude = [".*"]
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -50,7 +54,7 @@ zerocopy-target-has-atomics-1-60-0 = "1.60.0"
 
 [package.metadata.ci]
 pinned-nightly = "nightly-2024-11-06"
-pinned-stable = "1.84.1"
+pinned-stable = "1.85.0"
 
 [package.metadata.docs.rs]
 all-features = true
@@ -63,6 +67,20 @@ rustdoc-args = [
 [package.metadata.playground]
 features = ["__internal_use_only_features_that_work_on_stable"]
 
+[features]
+__internal_use_only_features_that_work_on_stable = [
+    "alloc",
+    "derive",
+    "simd",
+    "std",
+]
+alloc = []
+derive = ["zerocopy-derive"]
+float-nightly = []
+simd = []
+simd-nightly = ["simd"]
+std = ["alloc"]
+
 [lib]
 name = "zerocopy"
 path = "src/lib.rs"
@@ -72,8 +90,11 @@ name = "trybuild"
 path = "tests/trybuild.rs"
 
 [dependencies.zerocopy-derive]
-version = "=0.8.17"
+version = "=0.8.21"
 optional = true
+
+[dev-dependencies.either]
+version = "=1.13.0"
 
 [dev-dependencies.elain]
 version = "0.3.0"
@@ -97,21 +118,7 @@ version = "=1.0.89"
 features = ["diff"]
 
 [dev-dependencies.zerocopy-derive]
-version = "=0.8.17"
-
-[features]
-__internal_use_only_features_that_work_on_stable = [
-    "alloc",
-    "derive",
-    "simd",
-    "std",
-]
-alloc = []
-derive = ["zerocopy-derive"]
-float-nightly = []
-simd = []
-simd-nightly = ["simd"]
-std = ["alloc"]
+version = "=0.8.21"
 
 [target."cfg(any())".dependencies.zerocopy-derive]
-version = "=0.8.17"
+version = "=0.8.21"

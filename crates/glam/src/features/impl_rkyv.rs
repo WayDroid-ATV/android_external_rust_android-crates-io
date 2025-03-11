@@ -1,15 +1,15 @@
 #[cfg(feature = "bytecheck")]
 macro_rules! impl_rkyv {
     (@bytecheck $type:ty) => {
-        impl<C: ?Sized> bytecheck::CheckBytes<C> for $type {
-            type Error = core::convert::Infallible;
-
+        // SAFETY: All bit patterns are valid for these primitive types.
+        // https://docs.rs/bytecheck/0.8.1/src/bytecheck/lib.rs.html#352
+        unsafe impl<C: Fallible +?Sized> rkyv::bytecheck::CheckBytes<C> for $type {
             #[inline]
-            unsafe fn check_bytes<'a>(
-                value: *const Self,
+            unsafe fn check_bytes(
+                _value: *const Self,
                 _: &mut C,
-            ) -> Result<&'a Self, Self::Error> {
-                Ok(&*value)
+            ) -> Result<(), C::Error> {
+                Ok(())
             }
         }
     };
@@ -40,20 +40,25 @@ macro_rules! impl_rkyv_derive {
     };
 
     (@archive_deserialize $type:ty) => {
+        // SAFETY: All glam types have a fully defined data layout.
+        unsafe impl rkyv::traits::NoUndef for $type {}
+        // SAFETY: All glam types have a stable, well-defined layout that is identical on all
+        // targets.
+        unsafe impl rkyv::Portable for $type {}
         impl Archive for $type {
             type Archived = $type;
             type Resolver = ();
 
             #[inline]
-            unsafe fn resolve(&self, _: usize, _: Self::Resolver, out: *mut Self::Archived) {
-                out.write(to_archived!(*self as Self));
+            fn resolve(&self, _: Self::Resolver, out: Place<Self::Archived>) {
+                out.write(*self)
             }
         }
 
         impl<D: Fallible + ?Sized> Deserialize<$type, D> for $type {
             #[inline]
             fn deserialize(&self, _: &mut D) -> Result<$type, D::Error> {
-                Ok(from_archived!(*self))
+                Ok(*self)
             }
         }
     };
@@ -61,7 +66,7 @@ macro_rules! impl_rkyv_derive {
 
 mod f32 {
     use crate::{Affine2, Affine3A, Mat2, Mat3, Mat3A, Mat4, Quat, Vec2, Vec3, Vec3A, Vec4};
-    use rkyv::{from_archived, to_archived, Archive, Deserialize, Fallible, Serialize};
+    use rkyv::{rancor::Fallible, Archive, Deserialize, Place, Serialize};
     impl_rkyv!(Affine2);
     impl_rkyv!(Affine3A);
     impl_rkyv!(Mat2);
@@ -77,7 +82,7 @@ mod f32 {
 
 mod f64 {
     use crate::{DAffine2, DAffine3, DMat2, DMat3, DMat4, DQuat, DVec2, DVec3, DVec4};
-    use rkyv::{from_archived, to_archived, Archive, Deserialize, Fallible, Serialize};
+    use rkyv::{rancor::Fallible, Archive, Deserialize, Place, Serialize};
 
     impl_rkyv!(DAffine2);
     impl_rkyv!(DAffine3);
@@ -92,7 +97,7 @@ mod f64 {
 
 mod i8 {
     use crate::{I8Vec2, I8Vec3, I8Vec4};
-    use rkyv::{from_archived, to_archived, Archive, Deserialize, Fallible, Serialize};
+    use rkyv::{rancor::Fallible, Archive, Deserialize, Place, Serialize};
 
     impl_rkyv!(I8Vec2);
     impl_rkyv!(I8Vec3);
@@ -101,7 +106,7 @@ mod i8 {
 
 mod i16 {
     use crate::{I16Vec2, I16Vec3, I16Vec4};
-    use rkyv::{from_archived, to_archived, Archive, Deserialize, Fallible, Serialize};
+    use rkyv::{rancor::Fallible, Archive, Deserialize, Place, Serialize};
 
     impl_rkyv!(I16Vec2);
     impl_rkyv!(I16Vec3);
@@ -110,7 +115,7 @@ mod i16 {
 
 mod i32 {
     use crate::{IVec2, IVec3, IVec4};
-    use rkyv::{from_archived, to_archived, Archive, Deserialize, Fallible, Serialize};
+    use rkyv::{rancor::Fallible, Archive, Deserialize, Place, Serialize};
 
     impl_rkyv!(IVec2);
     impl_rkyv!(IVec3);
@@ -119,7 +124,7 @@ mod i32 {
 
 mod i64 {
     use crate::{I64Vec2, I64Vec3, I64Vec4};
-    use rkyv::{from_archived, to_archived, Archive, Deserialize, Fallible, Serialize};
+    use rkyv::{rancor::Fallible, Archive, Deserialize, Place, Serialize};
 
     impl_rkyv!(I64Vec2);
     impl_rkyv!(I64Vec3);
@@ -128,7 +133,7 @@ mod i64 {
 
 mod u8 {
     use crate::{U8Vec2, U8Vec3, U8Vec4};
-    use rkyv::{from_archived, to_archived, Archive, Deserialize, Fallible, Serialize};
+    use rkyv::{rancor::Fallible, Archive, Deserialize, Place, Serialize};
 
     impl_rkyv!(U8Vec2);
     impl_rkyv!(U8Vec3);
@@ -137,7 +142,7 @@ mod u8 {
 
 mod u16 {
     use crate::{U16Vec2, U16Vec3, U16Vec4};
-    use rkyv::{from_archived, to_archived, Archive, Deserialize, Fallible, Serialize};
+    use rkyv::{rancor::Fallible, Archive, Deserialize, Place, Serialize};
 
     impl_rkyv!(U16Vec2);
     impl_rkyv!(U16Vec3);
@@ -146,7 +151,7 @@ mod u16 {
 
 mod u32 {
     use crate::{UVec2, UVec3, UVec4};
-    use rkyv::{from_archived, to_archived, Archive, Deserialize, Fallible, Serialize};
+    use rkyv::{rancor::Fallible, Archive, Deserialize, Place, Serialize};
 
     impl_rkyv!(UVec2);
     impl_rkyv!(UVec3);
@@ -155,7 +160,7 @@ mod u32 {
 
 mod u64 {
     use crate::{U64Vec2, U64Vec3, U64Vec4};
-    use rkyv::{from_archived, to_archived, Archive, Deserialize, Fallible, Serialize};
+    use rkyv::{rancor::Fallible, Archive, Deserialize, Place, Serialize};
 
     impl_rkyv!(U64Vec2);
     impl_rkyv!(U64Vec3);
@@ -164,27 +169,31 @@ mod u64 {
 
 #[cfg(test)]
 mod test {
-    pub type DefaultSerializer = rkyv::ser::serializers::CoreSerializer<256, 256>;
-    pub type DefaultDeserializer = rkyv::Infallible;
-    use rkyv::ser::Serializer;
-    use rkyv::*;
+    /// The serializer type expected by [`rkyv::to_bytes()`].
+    pub type TestSerializer<'a> = rkyv::api::high::HighSerializer<
+        rkyv::util::AlignedVec,
+        rkyv::ser::allocator::ArenaHandle<'a>,
+        rkyv::rancor::Panic,
+    >;
+    /// The deserializer type expected by [`rkyv::deserialize()`].
+    pub type TestDeserializer = rkyv::api::high::HighDeserializer<rkyv::rancor::Panic>;
     pub fn test_archive<T>(value: &T)
     where
-        T: core::fmt::Debug + PartialEq + rkyv::Serialize<DefaultSerializer>,
-        T::Archived: core::fmt::Debug + PartialEq<T> + rkyv::Deserialize<T, DefaultDeserializer>,
+        T: core::fmt::Debug
+            + PartialEq
+            + rkyv::Portable
+            + for<'a> rkyv::Serialize<TestSerializer<'a>>,
+        T::Archived: core::fmt::Debug + PartialEq<T> + rkyv::Deserialize<T, TestDeserializer>,
     {
-        let mut serializer = DefaultSerializer::default();
-        serializer
-            .serialize_value(value)
-            .expect("failed to archive value");
-        let len = serializer.pos();
-        let buffer = serializer.into_serializer().into_inner();
+        let buffer = rkyv::to_bytes(value).unwrap();
 
-        let archived_value = unsafe { rkyv::archived_root::<T>(&buffer[0..len]) };
+        // SAFETY: all bit patterns are valid for the primitive types used by glam.  There is
+        // no need to write special-cased conditional tests that rely on bytecheck for the safe
+        // rkyv::access() wrapper.
+        let archived_value = unsafe { rkyv::access_unchecked::<T::Archived>(&buffer) };
         assert_eq!(archived_value, value);
-        let mut deserializer = DefaultDeserializer::default();
         assert_eq!(
-            &archived_value.deserialize(&mut deserializer).unwrap(),
+            &rkyv::deserialize::<T, rkyv::rancor::Panic>(archived_value).unwrap(),
             value
         );
     }

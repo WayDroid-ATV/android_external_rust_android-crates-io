@@ -1,5 +1,5 @@
 name: "strsim"
-description: "()"
+description: "Implementations of string similarity metrics. Includes Hamming, Levenshtein, OSA, Damerau-Levenshtein, Jaro, Jaro-Winkler, and S\303\270rensen-Dice."
 third_party {
   version: "0.11.1"
   license_type: NOTICE

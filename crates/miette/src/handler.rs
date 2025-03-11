@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::highlighters::Highlighter;
+use crate::highlighters::MietteHighlighter;
 use crate::protocol::Diagnostic;
 use crate::GraphicalReportHandler;
 use crate::GraphicalTheme;
@@ -55,6 +57,11 @@ pub struct MietteHandlerOpts {
     pub(crate) context_lines: Option<usize>,
     pub(crate) tab_width: Option<usize>,
     pub(crate) with_cause_chain: Option<bool>,
+    pub(crate) break_words: Option<bool>,
+    pub(crate) wrap_lines: Option<bool>,
+    pub(crate) word_separator: Option<textwrap::WordSeparator>,
+    pub(crate) word_splitter: Option<textwrap::WordSplitter>,
+    pub(crate) highlighter: Option<MietteHighlighter>,
 }
 
 impl MietteHandlerOpts {
@@ -80,12 +87,79 @@ impl MietteHandlerOpts {
         self
     }
 
+    /// Set a syntax highlighter when rendering in graphical mode.
+    /// Use [`force_graphical()`](MietteHandlerOpts::force_graphical()) to
+    /// force graphical mode.
+    ///
+    /// Syntax highlighting is disabled by default unless the
+    /// `syntect-highlighter` feature is enabled. Call this method
+    /// to override the default and use a custom highlighter
+    /// implmentation instead.
+    ///
+    /// Use
+    /// [`without_syntax_highlighting()`](MietteHandlerOpts::without_syntax_highlighting())
+    /// To disable highlighting completely.
+    ///
+    /// Setting this option will not force color output. In all cases, the
+    /// current color configuration via
+    /// [`color()`](MietteHandlerOpts::color()) takes precedence over
+    /// highlighter configuration.
+    pub fn with_syntax_highlighting(
+        mut self,
+        highlighter: impl Highlighter + Send + Sync + 'static,
+    ) -> Self {
+        self.highlighter = Some(MietteHighlighter::from(highlighter));
+        self
+    }
+
+    /// Disables syntax highlighting when rendering in graphical mode.
+    /// Use [`force_graphical()`](MietteHandlerOpts::force_graphical()) to
+    /// force graphical mode.
+    ///
+    /// Syntax highlighting is disabled by default unless the
+    /// `syntect-highlighter` feature is enabled. Call this method if you want
+    /// to disable highlighting when building with this feature.
+    pub fn without_syntax_highlighting(mut self) -> Self {
+        self.highlighter = Some(MietteHighlighter::nocolor());
+        self
+    }
+
     /// Sets the width to wrap the report at. Defaults to 80.
     pub fn width(mut self, width: usize) -> Self {
         self.width = Some(width);
         self
     }
 
+    /// If true, long lines can be wrapped.
+    ///
+    /// If false, long lines will not be broken when they exceed the width.
+    ///
+    /// Defaults to true.
+    pub fn wrap_lines(mut self, wrap_lines: bool) -> Self {
+        self.wrap_lines = Some(wrap_lines);
+        self
+    }
+
+    /// If true, long words can be broken when wrapping.
+    ///
+    /// If false, long words will not be broken when they exceed the width.
+    ///
+    /// Defaults to true.
+    pub fn break_words(mut self, break_words: bool) -> Self {
+        self.break_words = Some(break_words);
+        self
+    }
+    /// Sets the `textwrap::WordSeparator` to use when determining wrap points.
+    pub fn word_separator(mut self, word_separator: textwrap::WordSeparator) -> Self {
+        self.word_separator = Some(word_separator);
+        self
+    }
+
+    /// Sets the `textwrap::WordSplitter` to use when determining wrap points.
+    pub fn word_splitter(mut self, word_splitter: textwrap::WordSplitter) -> Self {
+        self.word_splitter = Some(word_splitter);
+        self
+    }
     /// Include the cause chain of the top-level error in the report.
     pub fn with_cause_chain(mut self) -> Self {
         self.with_cause_chain = Some(true);
@@ -212,11 +286,33 @@ impl MietteHandlerOpts {
             } else {
                 ThemeStyles::none()
             };
+            #[cfg(not(feature = "syntect-highlighter"))]
+            let highlighter = self.highlighter.unwrap_or_else(MietteHighlighter::nocolor);
+            #[cfg(feature = "syntect-highlighter")]
+            let highlighter = if self.color == Some(false) {
+                MietteHighlighter::nocolor()
+            } else if self.color == Some(true)
+                || supports_color::on(supports_color::Stream::Stderr).is_some()
+            {
+                match self.highlighter {
+                    Some(highlighter) => highlighter,
+                    None => match self.rgb_colors {
+                        // Because the syntect highlighter currently only supports 24-bit truecolor,
+                        // respect RgbColor::Never by disabling the highlighter.
+                        // TODO: In the future, find a way to convert the RGB syntect theme
+                        // into an ANSI color theme.
+                        RgbColors::Never => MietteHighlighter::nocolor(),
+                        _ => MietteHighlighter::syntect_truecolor(),
+                    },
+                }
+            } else {
+                MietteHighlighter::nocolor()
+            };
             let theme = self.theme.unwrap_or(GraphicalTheme { characters, styles });
-            let mut handler = GraphicalReportHandler::new()
+            let mut handler = GraphicalReportHandler::new_themed(theme)
                 .with_width(width)
-                .with_links(linkify)
-                .with_theme(theme);
+                .with_links(linkify);
+            handler.highlighter = highlighter;
             if let Some(with_cause_chain) = self.with_cause_chain {
                 if with_cause_chain {
                     handler = handler.with_cause_chain();
@@ -233,6 +329,19 @@ impl MietteHandlerOpts {
             if let Some(w) = self.tab_width {
                 handler = handler.tab_width(w);
             }
+            if let Some(b) = self.break_words {
+                handler = handler.with_break_words(b)
+            }
+            if let Some(b) = self.wrap_lines {
+                handler = handler.with_wrap_lines(b)
+            }
+            if let Some(s) = self.word_separator {
+                handler = handler.with_word_separator(s)
+            }
+            if let Some(s) = self.word_splitter {
+                handler = handler.with_word_splitter(s)
+            }
+
             MietteHandler {
                 inner: Box::new(handler),
             }

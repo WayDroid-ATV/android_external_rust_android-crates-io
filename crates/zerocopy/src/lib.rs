@@ -202,6 +202,14 @@
 //! Zerocopy uses [GitHub Releases].
 //!
 //! [GitHub Releases]: https://github.com/google/zerocopy/releases
+//!
+//! # Thanks
+//!
+//! Zerocopy is maintained by engineers at Google and Amazon with help from
+//! [many wonderful contributors][contributors]. Thank you to everyone who has
+//! lent a hand in making Rust a little more secure!
+//!
+//! [contributors]: https://github.com/google/zerocopy/graphs/contributors
 
 // Sometimes we want to use lints which were added after our MSRV.
 // `unknown_lints` is `warn` by default and we deny warnings in CI, so without
@@ -367,7 +375,7 @@ use core::{
 #[cfg(feature = "std")]
 use std::io;
 
-use crate::pointer::{invariant, BecauseExclusive};
+use crate::pointer::invariant::{self, BecauseExclusive};
 
 #[cfg(any(feature = "alloc", test))]
 extern crate alloc;
@@ -379,7 +387,7 @@ use core::alloc::Layout;
 
 // Used by `TryFromBytes::is_bit_valid`.
 #[doc(hidden)]
-pub use crate::pointer::{BecauseImmutable, Maybe, MaybeAligned, Ptr};
+pub use crate::pointer::{invariant::BecauseImmutable, Maybe, MaybeAligned, Ptr};
 // Used by `KnownLayout`.
 #[doc(hidden)]
 pub use crate::layout::*;
@@ -1277,6 +1285,26 @@ pub unsafe trait Immutable {
 /// }
 /// ```
 ///
+/// # Portability
+///
+/// To ensure consistent endianness for enums with multi-byte representations,
+/// explicitly specify and convert each discriminant using `.to_le()` or
+/// `.to_be()`; e.g.:
+///
+/// ```
+/// # use zerocopy_derive::TryFromBytes;
+/// // `DataStoreVersion` is encoded in little-endian.
+/// #[derive(TryFromBytes)]
+/// #[repr(u32)]
+/// pub enum DataStoreVersion {
+///     /// Version 1 of the data store.
+///     V1 = 9u32.to_le(),
+///
+///     /// Version 2 of the data store.
+///     V2 = 10u32.to_le(),
+/// }
+/// ```
+///
 /// [safety conditions]: trait@TryFromBytes#safety
 #[cfg(any(feature = "derive", test))]
 #[cfg_attr(doc_cfg, doc(cfg(feature = "derive")))]
@@ -1415,9 +1443,7 @@ pub unsafe trait TryFromBytes {
     /// [`UnsafeCell`]: core::cell::UnsafeCell
     /// [`Shared`]: invariant::Shared
     #[doc(hidden)]
-    fn is_bit_valid<A: invariant::Aliasing + invariant::AtLeast<invariant::Shared>>(
-        candidate: Maybe<'_, Self, A>,
-    ) -> bool;
+    fn is_bit_valid<A: invariant::Reference>(candidate: Maybe<'_, Self, A>) -> bool;
 
     /// Attempts to interpret the given `source` as a `&Self`.
     ///
@@ -1719,8 +1745,8 @@ pub unsafe trait TryFromBytes {
     /// use zerocopy::*;
     /// # use zerocopy_derive::*;
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct ZSTy {
     ///     leading_sized: [u8; 2],
     ///     trailing_dst: [()],
@@ -1737,17 +1763,17 @@ pub unsafe trait TryFromBytes {
     /// # use zerocopy_derive::*;
     ///
     /// // The only valid value of this type is the byte `0xC0`
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(u8)]
     /// enum C0 { xC0 = 0xC0 }
     ///
     /// // The only valid value of this type is the bytes `0xC0C0`.
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(C)]
     /// struct C0C0(C0, C0);
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct Packet {
     ///     magic_number: C0C0,
     ///     mug_size: u8,
@@ -1775,7 +1801,7 @@ pub unsafe trait TryFromBytes {
     #[inline]
     fn try_mut_from_bytes(bytes: &mut [u8]) -> Result<&mut Self, TryCastError<&mut [u8], Self>>
     where
-        Self: KnownLayout,
+        Self: KnownLayout + IntoBytes,
     {
         static_assert_dst_is_not_zst!(Self);
         match Ptr::from_mut(bytes).try_cast_into_no_leftover::<Self, BecauseExclusive>(None) {
@@ -1827,8 +1853,8 @@ pub unsafe trait TryFromBytes {
     /// use zerocopy::*;
     /// # use zerocopy_derive::*;
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct ZSTy {
     ///     leading_sized: [u8; 2],
     ///     trailing_dst: [()],
@@ -1845,17 +1871,17 @@ pub unsafe trait TryFromBytes {
     /// # use zerocopy_derive::*;
     ///
     /// // The only valid value of this type is the byte `0xC0`
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(u8)]
     /// enum C0 { xC0 = 0xC0 }
     ///
     /// // The only valid value of this type is the bytes `0xC0C0`.
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(C)]
     /// struct C0C0(C0, C0);
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct Packet {
     ///     magic_number: C0C0,
     ///     mug_size: u8,
@@ -1888,7 +1914,7 @@ pub unsafe trait TryFromBytes {
         source: &mut [u8],
     ) -> Result<(&mut Self, &mut [u8]), TryCastError<&mut [u8], Self>>
     where
-        Self: KnownLayout,
+        Self: KnownLayout + IntoBytes,
     {
         static_assert_dst_is_not_zst!(Self);
         try_mut_from_prefix_suffix(source, CastType::Prefix, None)
@@ -1922,8 +1948,8 @@ pub unsafe trait TryFromBytes {
     /// use zerocopy::*;
     /// # use zerocopy_derive::*;
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct ZSTy {
     ///     leading_sized: u16,
     ///     trailing_dst: [()],
@@ -1940,17 +1966,17 @@ pub unsafe trait TryFromBytes {
     /// # use zerocopy_derive::*;
     ///
     /// // The only valid value of this type is the byte `0xC0`
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(u8)]
     /// enum C0 { xC0 = 0xC0 }
     ///
     /// // The only valid value of this type is the bytes `0xC0C0`.
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(C)]
     /// struct C0C0(C0, C0);
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct Packet {
     ///     magic_number: C0C0,
     ///     mug_size: u8,
@@ -1983,7 +2009,7 @@ pub unsafe trait TryFromBytes {
         source: &mut [u8],
     ) -> Result<(&mut [u8], &mut Self), TryCastError<&mut [u8], Self>>
     where
-        Self: KnownLayout,
+        Self: KnownLayout + IntoBytes,
     {
         static_assert_dst_is_not_zst!(Self);
         try_mut_from_prefix_suffix(source, CastType::Suffix, None).map(swap)
@@ -2292,17 +2318,17 @@ pub unsafe trait TryFromBytes {
     /// # use zerocopy_derive::*;
     ///
     /// // The only valid value of this type is the byte `0xC0`
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(u8)]
     /// enum C0 { xC0 = 0xC0 }
     ///
     /// // The only valid value of this type is the bytes `0xC0C0`.
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(C)]
     /// struct C0C0(C0, C0);
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct Packet {
     ///     magic_number: C0C0,
     ///     mug_size: u8,
@@ -2336,8 +2362,8 @@ pub unsafe trait TryFromBytes {
     /// use zerocopy::*;
     /// # use zerocopy_derive::*;
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct ZSTy {
     ///     leading_sized: NonZeroU16,
     ///     trailing_dst: [()],
@@ -2357,7 +2383,7 @@ pub unsafe trait TryFromBytes {
         count: usize,
     ) -> Result<&mut Self, TryCastError<&mut [u8], Self>>
     where
-        Self: KnownLayout<PointerMetadata = usize>,
+        Self: KnownLayout<PointerMetadata = usize> + IntoBytes,
     {
         match Ptr::from_mut(source).try_cast_into_no_leftover::<Self, BecauseExclusive>(Some(count))
         {
@@ -2403,17 +2429,17 @@ pub unsafe trait TryFromBytes {
     /// # use zerocopy_derive::*;
     ///
     /// // The only valid value of this type is the byte `0xC0`
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(u8)]
     /// enum C0 { xC0 = 0xC0 }
     ///
     /// // The only valid value of this type is the bytes `0xC0C0`.
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(C)]
     /// struct C0C0(C0, C0);
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct Packet {
     ///     magic_number: C0C0,
     ///     mug_size: u8,
@@ -2449,8 +2475,8 @@ pub unsafe trait TryFromBytes {
     /// use zerocopy::*;
     /// # use zerocopy_derive::*;
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct ZSTy {
     ///     leading_sized: NonZeroU16,
     ///     trailing_dst: [()],
@@ -2470,7 +2496,7 @@ pub unsafe trait TryFromBytes {
         count: usize,
     ) -> Result<(&mut Self, &mut [u8]), TryCastError<&mut [u8], Self>>
     where
-        Self: KnownLayout<PointerMetadata = usize>,
+        Self: KnownLayout<PointerMetadata = usize> + IntoBytes,
     {
         try_mut_from_prefix_suffix(source, CastType::Prefix, Some(count))
     }
@@ -2498,17 +2524,17 @@ pub unsafe trait TryFromBytes {
     /// # use zerocopy_derive::*;
     ///
     /// // The only valid value of this type is the byte `0xC0`
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(u8)]
     /// enum C0 { xC0 = 0xC0 }
     ///
     /// // The only valid value of this type is the bytes `0xC0C0`.
-    /// #[derive(TryFromBytes, KnownLayout)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
     /// #[repr(C)]
     /// struct C0C0(C0, C0);
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct Packet {
     ///     magic_number: C0C0,
     ///     mug_size: u8,
@@ -2544,8 +2570,8 @@ pub unsafe trait TryFromBytes {
     /// use zerocopy::*;
     /// # use zerocopy_derive::*;
     ///
-    /// #[derive(TryFromBytes, KnownLayout)]
-    /// #[repr(C)]
+    /// #[derive(TryFromBytes, IntoBytes, KnownLayout)]
+    /// #[repr(C, packed)]
     /// struct ZSTy {
     ///     leading_sized: NonZeroU16,
     ///     trailing_dst: [()],
@@ -2565,7 +2591,7 @@ pub unsafe trait TryFromBytes {
         count: usize,
     ) -> Result<(&mut [u8], &mut Self), TryCastError<&mut [u8], Self>>
     where
-        Self: KnownLayout<PointerMetadata = usize>,
+        Self: KnownLayout<PointerMetadata = usize> + IntoBytes,
     {
         try_mut_from_prefix_suffix(source, CastType::Suffix, Some(count)).map(swap)
     }
@@ -2777,7 +2803,7 @@ fn try_ref_from_prefix_suffix<T: TryFromBytes + KnownLayout + Immutable + ?Sized
 }
 
 #[inline(always)]
-fn try_mut_from_prefix_suffix<T: TryFromBytes + KnownLayout + ?Sized>(
+fn try_mut_from_prefix_suffix<T: IntoBytes + TryFromBytes + KnownLayout + ?Sized>(
     candidate: &mut [u8],
     cast_type: CastType,
     meta: Option<T::PointerMetadata>,
@@ -4567,9 +4593,17 @@ pub unsafe trait FromBytes: FromZeros {
         Self: Sized,
         R: io::Read,
     {
-        let mut buf = CoreMaybeUninit::<Self>::zeroed();
+        // NOTE(#2319, #2320): We do `buf.zero()` separately rather than
+        // constructing `let buf = CoreMaybeUninit::zeroed()` because, if `Self`
+        // contains padding bytes, then a typed copy of `CoreMaybeUninit<Self>`
+        // will not necessarily preserve zeros written to those padding byte
+        // locations, and so `buf` could contain uninitialized bytes.
+        let mut buf = CoreMaybeUninit::<Self>::uninit();
+        buf.zero();
+
         let ptr = Ptr::from_mut(&mut buf);
-        // SAFETY: `buf` consists entirely of initialized, zeroed bytes.
+        // SAFETY: After `buf.zero()`, `buf` consists entirely of initialized,
+        // zeroed bytes.
         let ptr = unsafe { ptr.assume_validity::<invariant::Initialized>() };
         let ptr = ptr.as_bytes::<BecauseExclusive>();
         src.read_exact(ptr.as_mut())?;
@@ -6077,6 +6111,36 @@ mod tests {
         assert_eq!(VAL.write_to_suffix(&mut bytes[..]), Ok(()));
         let want: [u8; 16] = transmute!([[0; 8], VAL_BYTES]);
         assert_eq!(bytes, want);
+    }
+
+    #[test]
+    #[cfg(feature = "std")]
+    fn test_read_io_with_padding_soundness() {
+        // This test is designed to exhibit potential UB in
+        // `FromBytes::read_from_io`. (see #2319, #2320).
+
+        // On most platforms (where `align_of::<u16>() == 2`), `WithPadding`
+        // will have inter-field padding between `x` and `y`.
+        #[derive(FromBytes)]
+        #[repr(C)]
+        struct WithPadding {
+            x: u8,
+            y: u16,
+        }
+        struct ReadsInRead;
+        impl std::io::Read for ReadsInRead {
+            fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+                // This body branches on every byte of `buf`, ensuring that it
+                // exhibits UB if any byte of `buf` is uninitialized.
+                if buf.iter().all(|&x| x == 0) {
+                    Ok(buf.len())
+                } else {
+                    buf.iter_mut().for_each(|x| *x = 0);
+                    Ok(buf.len())
+                }
+            }
+        }
+        assert!(matches!(WithPadding::read_from_io(ReadsInRead), Ok(WithPadding { x: 0, y: 0 })));
     }
 
     #[test]

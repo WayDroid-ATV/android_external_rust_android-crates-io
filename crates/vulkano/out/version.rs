@@ -12,5 +12,9 @@ impl Version {
     #[doc = r" `HEADER_VERSION` by default, which locks out features from newer versions. In order"]
     #[doc = r" to enable the use of higher versions, the `max_api_version` must be overridden when"]
     #[doc = r" creating an instance."]
-    pub const HEADER_VERSION: Version = Version { major: 1, minor: 3, patch: 238 };
+    pub const HEADER_VERSION: Version = Version {
+        major: 1,
+        minor: 3,
+        patch: 238,
+    };
 }

@@ -66,6 +66,7 @@ crc-catalog
 crc32fast
 criterion
 criterion-plot
+critical-section
 crossbeam-channel
 crossbeam-deque
 crossbeam-epoch
@@ -93,7 +94,9 @@ drm
 drm-ffi
 drm-fourcc
 either
+enum-as-inner
 enumn
+env_filter
 env_logger
 epoll
 equivalent
@@ -127,11 +130,14 @@ gbm
 gdbstub
 gdbstub_arch
 getrandom
+gl
+gl_common
 glam
 glob
 googletest
 googletest_macro
 gpio-cdev
+grid
 grpcio
 grpcio-compiler
 grpcio-sys
@@ -168,6 +174,7 @@ inotify
 inotify-sys
 instant
 intrusive-collections
+ipnet
 is-terminal
 itertools
 itoa
@@ -175,6 +182,8 @@ jni
 jni-sys
 json-strip-comments
 kernlog
+khronos
+khronos-egl
 lazy_static
 lazycell
 libbpf-rs
@@ -265,6 +274,7 @@ plotters
 plotters-backend
 plotters-svg
 poll_token_derive
+portable-atomic
 potential_utf
 ppv-lite86
 predicates
@@ -307,12 +317,14 @@ sec1
 semver
 serde
 serde-xml-rs
+serde_bytes
 serde_cbor
 serde_derive
 serde_json
 serde_spanned
 serde_test
 serde_yaml
+serialport
 sharded-slab
 shared_child
 shared_library
@@ -321,6 +333,7 @@ signal-hook
 signal-hook-registry
 siphasher
 slab
+slotmap
 smallvec
 smccc
 socket2
@@ -338,6 +351,7 @@ syn
 syn-mid
 sync_wrapper
 synstructure
+taffy
 tempfile
 termcolor
 termtree
@@ -403,6 +417,7 @@ vhost
 vhost-user-backend
 virtio-bindings
 virtio-drivers
+virtio-drivers-and-devices
 virtio-queue
 virtio-vsock
 vm-memory

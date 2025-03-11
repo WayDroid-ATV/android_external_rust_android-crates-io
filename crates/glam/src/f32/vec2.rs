@@ -921,7 +921,7 @@ impl Vec2 {
     /// Rotates towards `rhs` up to `max_angle` (in radians).
     ///
     /// When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to
-    /// `self.angle_between(rhs)`, the result will be equal to `rhs`. If `max_angle` is negative,
+    /// `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,
     /// rotates towards the exact opposite of `rhs`. Will not go past the target.
     #[inline]
     #[must_use]
@@ -1050,9 +1050,9 @@ impl DivAssign<Vec2> for Vec2 {
     }
 }
 
-impl DivAssign<&Self> for Vec2 {
+impl DivAssign<&Vec2> for Vec2 {
     #[inline]
-    fn div_assign(&mut self, rhs: &Self) {
+    fn div_assign(&mut self, rhs: &Vec2) {
         self.div_assign(*rhs)
     }
 }
@@ -1185,9 +1185,9 @@ impl MulAssign<Vec2> for Vec2 {
     }
 }
 
-impl MulAssign<&Self> for Vec2 {
+impl MulAssign<&Vec2> for Vec2 {
     #[inline]
-    fn mul_assign(&mut self, rhs: &Self) {
+    fn mul_assign(&mut self, rhs: &Vec2) {
         self.mul_assign(*rhs)
     }
 }
@@ -1320,9 +1320,9 @@ impl AddAssign<Vec2> for Vec2 {
     }
 }
 
-impl AddAssign<&Self> for Vec2 {
+impl AddAssign<&Vec2> for Vec2 {
     #[inline]
-    fn add_assign(&mut self, rhs: &Self) {
+    fn add_assign(&mut self, rhs: &Vec2) {
         self.add_assign(*rhs)
     }
 }
@@ -1455,9 +1455,9 @@ impl SubAssign<Vec2> for Vec2 {
     }
 }
 
-impl SubAssign<&Self> for Vec2 {
+impl SubAssign<&Vec2> for Vec2 {
     #[inline]
-    fn sub_assign(&mut self, rhs: &Self) {
+    fn sub_assign(&mut self, rhs: &Vec2) {
         self.sub_assign(*rhs)
     }
 }
@@ -1590,9 +1590,9 @@ impl RemAssign<Vec2> for Vec2 {
     }
 }
 
-impl RemAssign<&Self> for Vec2 {
+impl RemAssign<&Vec2> for Vec2 {
     #[inline]
-    fn rem_assign(&mut self, rhs: &Self) {
+    fn rem_assign(&mut self, rhs: &Vec2) {
         self.rem_assign(*rhs)
     }
 }

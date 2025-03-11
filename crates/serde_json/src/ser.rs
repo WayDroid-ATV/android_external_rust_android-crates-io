@@ -2,7 +2,9 @@
 
 use crate::error::{Error, ErrorCode, Result};
 use crate::io;
-use alloc::string::{String, ToString};
+use alloc::string::String;
+#[cfg(feature = "raw_value")]
+use alloc::string::ToString;
 use alloc::vec::Vec;
 use core::fmt::{self, Display};
 use core::num::FpCategory;
@@ -189,12 +191,9 @@ where
 
     #[inline]
     fn serialize_bytes(self, value: &[u8]) -> Result<()> {
-        use serde::ser::SerializeSeq;
-        let mut seq = tri!(self.serialize_seq(Some(value.len())));
-        for byte in value {
-            tri!(seq.serialize_element(byte));
-        }
-        seq.end()
+        self.formatter
+            .write_byte_array(&mut self.writer, value)
+            .map_err(Error::io)
     }
 
     #[inline]
@@ -439,17 +438,15 @@ where
             .formatter
             .begin_string(&mut self.writer)
             .map_err(Error::io));
-        {
-            let mut adapter = Adapter {
-                writer: &mut self.writer,
-                formatter: &mut self.formatter,
-                error: None,
-            };
-            match write!(adapter, "{}", value) {
-                Ok(()) => debug_assert!(adapter.error.is_none()),
-                Err(fmt::Error) => {
-                    return Err(Error::io(adapter.error.expect("there should be an error")));
-                }
+        let mut adapter = Adapter {
+            writer: &mut self.writer,
+            formatter: &mut self.formatter,
+            error: None,
+        };
+        match write!(adapter, "{}", value) {
+            Ok(()) => debug_assert!(adapter.error.is_none()),
+            Err(fmt::Error) => {
+                return Err(Error::io(adapter.error.expect("there should be an error")));
             }
         }
         self.formatter
@@ -789,6 +786,10 @@ fn key_must_be_a_string() -> Error {
     Error::syntax(ErrorCode::KeyMustBeAString, 0, 0)
 }
 
+fn float_key_must_be_finite() -> Error {
+    Error::syntax(ErrorCode::FloatKeyMustBeFinite, 0, 0)
+}
+
 impl<'a, W, F> ser::Serializer for MapKeySerializer<'a, W, F>
 where
     W: io::Write,
@@ -828,8 +829,21 @@ where
     type SerializeStruct = Impossible<(), Error>;
     type SerializeStructVariant = Impossible<(), Error>;
 
-    fn serialize_bool(self, _value: bool) -> Result<()> {
-        Err(key_must_be_a_string())
+    fn serialize_bool(self, value: bool) -> Result<()> {
+        tri!(self
+            .ser
+            .formatter
+            .begin_string(&mut self.ser.writer)
+            .map_err(Error::io));
+        tri!(self
+            .ser
+            .formatter
+            .write_bool(&mut self.ser.writer, value)
+            .map_err(Error::io));
+        self.ser
+            .formatter
+            .end_string(&mut self.ser.writer)
+            .map_err(Error::io)
     }
 
     fn serialize_i8(self, value: i8) -> Result<()> {
@@ -1002,16 +1016,50 @@ where
             .map_err(Error::io)
     }
 
-    fn serialize_f32(self, _value: f32) -> Result<()> {
-        Err(key_must_be_a_string())
+    fn serialize_f32(self, value: f32) -> Result<()> {
+        if !value.is_finite() {
+            return Err(float_key_must_be_finite());
+        }
+
+        tri!(self
+            .ser
+            .formatter
+            .begin_string(&mut self.ser.writer)
+            .map_err(Error::io));
+        tri!(self
+            .ser
+            .formatter
+            .write_f32(&mut self.ser.writer, value)
+            .map_err(Error::io));
+        self.ser
+            .formatter
+            .end_string(&mut self.ser.writer)
+            .map_err(Error::io)
     }
 
-    fn serialize_f64(self, _value: f64) -> Result<()> {
-        Err(key_must_be_a_string())
+    fn serialize_f64(self, value: f64) -> Result<()> {
+        if !value.is_finite() {
+            return Err(float_key_must_be_finite());
+        }
+
+        tri!(self
+            .ser
+            .formatter
+            .begin_string(&mut self.ser.writer)
+            .map_err(Error::io));
+        tri!(self
+            .ser
+            .formatter
+            .write_f64(&mut self.ser.writer, value)
+            .map_err(Error::io));
+        self.ser
+            .formatter
+            .end_string(&mut self.ser.writer)
+            .map_err(Error::io)
     }
 
     fn serialize_char(self, value: char) -> Result<()> {
-        self.ser.serialize_str(&value.to_string())
+        self.ser.serialize_str(value.encode_utf8(&mut [0u8; 4]))
     }
 
     fn serialize_bytes(self, _value: &[u8]) -> Result<()> {
@@ -1043,11 +1091,11 @@ where
         Err(key_must_be_a_string())
     }
 
-    fn serialize_some<T>(self, _value: &T) -> Result<()>
+    fn serialize_some<T>(self, value: &T) -> Result<()>
     where
         T: ?Sized + Serialize,
     {
-        Err(key_must_be_a_string())
+        value.serialize(self)
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq> {
@@ -1640,6 +1688,20 @@ pub trait Formatter {
     }
 
     /// Writes a floating point value like `-31.26e+12` to the specified writer.
+    ///
+    /// # Special cases
+    ///
+    /// This function **does not** check for NaN or infinity. If the input
+    /// number is not a finite float, the printed representation will be some
+    /// correctly formatted but unspecified numerical value.
+    ///
+    /// Please check [`is_finite`] yourself before calling this function, or
+    /// check [`is_nan`] and [`is_infinite`] and handle those cases yourself
+    /// with a different `Formatter` method.
+    ///
+    /// [`is_finite`]: f32::is_finite
+    /// [`is_nan`]: f32::is_nan
+    /// [`is_infinite`]: f32::is_infinite
     #[inline]
     fn write_f32<W>(&mut self, writer: &mut W, value: f32) -> io::Result<()>
     where
@@ -1651,6 +1713,20 @@ pub trait Formatter {
     }
 
     /// Writes a floating point value like `-31.26e+12` to the specified writer.
+    ///
+    /// # Special cases
+    ///
+    /// This function **does not** check for NaN or infinity. If the input
+    /// number is not a finite float, the printed representation will be some
+    /// correctly formatted but unspecified numerical value.
+    ///
+    /// Please check [`is_finite`] yourself before calling this function, or
+    /// check [`is_nan`] and [`is_infinite`] and handle those cases yourself
+    /// with a different `Formatter` method.
+    ///
+    /// [`is_finite`]: f64::is_finite
+    /// [`is_nan`]: f64::is_nan
+    /// [`is_infinite`]: f64::is_infinite
     #[inline]
     fn write_f64<W>(&mut self, writer: &mut W, value: f64) -> io::Result<()>
     where
@@ -1732,6 +1808,24 @@ pub trait Formatter {
         };
 
         writer.write_all(s)
+    }
+
+    /// Writes the representation of a byte array. Formatters can choose whether
+    /// to represent bytes as a JSON array of integers (the default), or some
+    /// JSON string encoding like hex or base64.
+    fn write_byte_array<W>(&mut self, writer: &mut W, value: &[u8]) -> io::Result<()>
+    where
+        W: ?Sized + io::Write,
+    {
+        tri!(self.begin_array(writer));
+        let mut first = true;
+        for byte in value {
+            tri!(self.begin_array_value(writer, first));
+            tri!(self.write_u8(writer, *byte));
+            tri!(self.end_array_value(writer));
+            first = false;
+        }
+        self.end_array(writer)
     }
 
     /// Called before every array.  Writes a `[` to the specified
@@ -2062,7 +2156,9 @@ static ESCAPE: [u8; 256] = [
     __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, // F
 ];
 
-/// Serialize the given data structure as JSON into the IO stream.
+/// Serialize the given data structure as JSON into the I/O stream.
+///
+/// Serialization guarantees it only feeds valid UTF-8 sequences to the writer.
 ///
 /// # Errors
 ///
@@ -2079,8 +2175,10 @@ where
     value.serialize(&mut ser)
 }
 
-/// Serialize the given data structure as pretty-printed JSON into the IO
+/// Serialize the given data structure as pretty-printed JSON into the I/O
 /// stream.
+///
+/// Serialization guarantees it only feeds valid UTF-8 sequences to the writer.
 ///
 /// # Errors
 ///

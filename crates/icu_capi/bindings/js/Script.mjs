@@ -2,10 +2,13 @@
 import wasm from "./diplomat-wasm.mjs";
 import * as diplomatRuntime from "./diplomat-runtime.mjs";
 
-// Base enumerator definition
+
 /** See the [Rust documentation for `Script`](https://docs.rs/icu/latest/icu/properties/props/struct.Script.html) for more information.
 */
+
+
 export class Script {
+    
     #value = undefined;
 
     static #values = new Map([
@@ -179,14 +182,14 @@ export class Script {
     static getAllEntries() {
         return Script.#values.entries();
     }
-
-    constructor(value) {
+    
+    #internalConstructor(value) {
         if (arguments.length > 1 && arguments[0] === diplomatRuntime.internalConstructor) {
             // We pass in two internalConstructor arguments to create *new*
             // instances of this type, otherwise the enums are treated as singletons.
             if (arguments[1] === diplomatRuntime.internalConstructor ) {
                 this.#value = arguments[2];
-                return;
+                return this;
             }
             return Script.#objectValues[arguments[1]];
         }
@@ -198,11 +201,15 @@ export class Script {
         let intVal = Script.#values.get(value);
 
         // Nullish check, checks for null or undefined
-        if (intVal == null) {
+        if (intVal != null) {
             return Script.#objectValues[intVal];
         }
 
         throw TypeError(value + " is not a Script and does not correspond to any of its enumerator values.");
+    }
+
+    static fromValue(value) {
+        return new Script(value);
     }
 
     get value() {
@@ -550,8 +557,52 @@ export class Script {
     static Yi = Script.#objectValues[41];
     static ZanabazarSquare = Script.#objectValues[177];
 
-    toInteger() {
-        const result = wasm.icu4x_Script_to_integer_mv1(this.ffiValue);
+    static forChar(ch) {
+        const result = wasm.icu4x_Script_for_char_mv1(ch);
+    
+        try {
+            return new Script(diplomatRuntime.internalConstructor, result);
+        }
+        
+        finally {}
+    }
+
+    longName() {
+        const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 9, 4, true);
+        
+        const result = wasm.icu4x_Script_long_name_mv1(diplomatReceive.buffer, this.ffiValue);
+    
+        try {
+            if (!diplomatReceive.resultFlag) {
+                return null;
+            }
+            return new diplomatRuntime.DiplomatSliceStr(wasm, diplomatReceive.buffer,  "string8", []).getValue();
+        }
+        
+        finally {
+            diplomatReceive.free();
+        }
+    }
+
+    shortName() {
+        const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 9, 4, true);
+        
+        const result = wasm.icu4x_Script_short_name_mv1(diplomatReceive.buffer, this.ffiValue);
+    
+        try {
+            if (!diplomatReceive.resultFlag) {
+                return null;
+            }
+            return new diplomatRuntime.DiplomatSliceStr(wasm, diplomatReceive.buffer,  "string8", []).getValue();
+        }
+        
+        finally {
+            diplomatReceive.free();
+        }
+    }
+
+    toIntegerValue() {
+        const result = wasm.icu4x_Script_to_integer_value_mv1(this.ffiValue);
     
         try {
             return result;
@@ -560,10 +611,10 @@ export class Script {
         finally {}
     }
 
-    static fromInteger(other) {
+    static fromIntegerValue(other) {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 5, 4, true);
         
-        const result = wasm.icu4x_Script_from_integer_mv1(diplomatReceive.buffer, other);
+        const result = wasm.icu4x_Script_from_integer_value_mv1(diplomatReceive.buffer, other);
     
         try {
             if (!diplomatReceive.resultFlag) {
@@ -575,5 +626,9 @@ export class Script {
         finally {
             diplomatReceive.free();
         }
+    }
+
+    constructor(value) {
+        return this.#internalConstructor(...arguments)
     }
 }

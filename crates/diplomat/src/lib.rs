@@ -1,4 +1,4 @@
-use proc_macro2::Span;
+use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::*;
 
@@ -56,8 +56,22 @@ fn param_conversion(
         }),
         // Convert Option<struct/enum/primitive> and DiplomatOption<opaque>
         // simplify the check by just checking is_ffi_safe()
-        ast::TypeName::Option(..) if !param_type.is_ffi_safe() => {
-            Some(quote!(let #name = #name.into();))
+        ast::TypeName::Option(inner, _stdlib) => {
+            let mut tokens = TokenStream::new();
+
+            if !param_type.is_ffi_safe() {
+                let inner_ty = inner.ffi_safe_version().to_syn();
+                tokens.extend(quote!(let #name : Option<#inner_ty> = #name.into();));
+            }
+            if !inner.is_ffi_safe() {
+                tokens.extend(quote!(let #name = #name.map(|v| v.into());));
+            }
+
+            if !tokens.is_empty() {
+                Some(tokens)
+            } else {
+                None
+            }
         }
         ast::TypeName::Function(in_types, out_type) => {
             let cb_wrap_ident = &name;
@@ -456,20 +470,23 @@ fn gen_bridge(mut input: ItemMod) -> ItemMod {
 
         Item::Enum(e) => {
             let info = AttributeInfo::extract(&mut e.attrs);
-            if info.opaque {
-                panic!("#[diplomat::opaque] not allowed on enums")
-            }
+
             for v in &mut e.variants {
                 let info = AttributeInfo::extract(&mut v.attrs);
                 if info.opaque {
                     panic!("#[diplomat::opaque] not allowed on enum variants");
                 }
             }
-            *e = syn::parse_quote! {
-                #[repr(C)]
-                #[derive(Clone, Copy)]
-                #e
-            };
+
+            // Normal opaque types don't need repr(transparent) because the inner type is
+            // never referenced.
+            if !info.opaque {
+                *e = syn::parse_quote! {
+                    #[repr(C)]
+                    #[derive(Clone, Copy)]
+                    #e
+                };
+            }
         }
 
         Item::Impl(i) => {
@@ -542,6 +559,16 @@ fn gen_bridge(mut input: ItemMod) -> ItemMod {
                 pub vtable: #custom_trait_vtable_type,
             }
         });
+        if custom_trait.is_send {
+            new_contents.push(syn::parse_quote! {
+                unsafe impl std::marker::Send for #custom_trait_name {}
+            });
+        }
+        if custom_trait.is_sync {
+            new_contents.push(syn::parse_quote! {
+                unsafe impl std::marker::Sync for #custom_trait_name {}
+            });
+        }
 
         // trait struct wrapper for all methods
         new_contents.push(gen_custom_trait_impl(custom_trait, &custom_trait_name));
@@ -1061,7 +1088,7 @@ mod tests {
                         y: i32,
                     }
 
-                    pub trait TesterTrait {
+                    pub trait TesterTrait: std::marker::Send {
                         fn test_trait_fn(&self, x: i32) -> i32;
                         fn test_void_trait_fn(&self);
                         fn test_struct_trait_fn(&self, s: TestingStruct) -> i32;

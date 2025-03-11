@@ -305,6 +305,21 @@ impl Mat4 {
         )
     }
 
+    /// Creates an affine transformation matrics from a 3x3 matrix (expressing scale, shear and
+    /// rotation) and a translation vector.
+    ///
+    /// Equivalent to `Mat4::from_translation(translation) * Mat4::from_mat3(mat3)`
+    #[inline]
+    #[must_use]
+    pub fn from_mat3_translation(mat3: Mat3, translation: Vec3) -> Self {
+        Self::from_cols(
+            Vec4::from((mat3.x_axis, 0.0)),
+            Vec4::from((mat3.y_axis, 0.0)),
+            Vec4::from((mat3.z_axis, 0.0)),
+            Vec4::from((translation, 1.0)),
+        )
+    }
+
     /// Creates an affine transformation matrix from the given 3x3 linear transformation
     /// matrix.
     ///
@@ -801,24 +816,34 @@ impl Mat4 {
         }
     }
 
-    /// Creates a left-handed view matrix using a camera position, an up direction, and a facing
-    /// direction.
+    /// Creates a left-handed view matrix using a camera position, a facing direction and an up
+    /// direction
     ///
     /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
     pub fn look_to_lh(eye: Vec3, dir: Vec3, up: Vec3) -> Self {
         Self::look_to_rh(eye, -dir, up)
     }
 
-    /// Creates a right-handed view matrix using a camera position, an up direction, and a facing
+    /// Creates a right-handed view matrix using a camera position, a facing direction, and an up
     /// direction.
     ///
     /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `dir` or `up` are not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
     pub fn look_to_rh(eye: Vec3, dir: Vec3, up: Vec3) -> Self {
-        let f = dir.normalize();
+        glam_assert!(dir.is_normalized());
+        glam_assert!(up.is_normalized());
+        let f = dir;
         let s = f.cross(up).normalize();
         let u = s.cross(f);
 
@@ -830,8 +855,9 @@ impl Mat4 {
         )
     }
 
-    /// Creates a left-handed view matrix using a camera position, an up direction, and a focal
-    /// point.
+    /// Creates a left-handed view matrix using a camera position, a focal points and an up
+    /// direction.
+    ///
     /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
     ///
     /// # Panics
@@ -840,12 +866,12 @@ impl Mat4 {
     #[inline]
     #[must_use]
     pub fn look_at_lh(eye: Vec3, center: Vec3, up: Vec3) -> Self {
-        glam_assert!(up.is_normalized());
-        Self::look_to_lh(eye, center.sub(eye), up)
+        Self::look_to_lh(eye, center.sub(eye).normalize(), up)
     }
 
-    /// Creates a right-handed view matrix using a camera position, an up direction, and a focal
-    /// point.
+    /// Creates a right-handed view matrix using a camera position, a focal point, and an up
+    /// direction.
+    ///
     /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
     ///
     /// # Panics
@@ -853,8 +879,7 @@ impl Mat4 {
     /// Will panic if `up` is not normalized when `glam_assert` is enabled.
     #[inline]
     pub fn look_at_rh(eye: Vec3, center: Vec3, up: Vec3) -> Self {
-        glam_assert!(up.is_normalized());
-        Self::look_to_rh(eye, center.sub(eye), up)
+        Self::look_to_rh(eye, center.sub(eye).normalize(), up)
     }
 
     /// Creates a right-handed perspective projection matrix with `[-1,1]` depth range.

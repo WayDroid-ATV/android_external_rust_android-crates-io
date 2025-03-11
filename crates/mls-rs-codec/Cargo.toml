@@ -12,9 +12,16 @@
 [package]
 edition = "2021"
 name = "mls-rs-codec"
-version = "0.5.3"
+version = "0.6.0"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "TLS codec and MLS specific encoding used by mls-rs"
 homepage = "https://github.com/awslabs/mls-rs"
+readme = false
 keywords = [
     "mls",
     "mls-rs",
@@ -22,8 +29,16 @@ keywords = [
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/awslabs/mls-rs"
 
+[lib]
+name = "mls_rs_codec"
+path = "src/lib.rs"
+
+[[test]]
+name = "macro_usage"
+path = "tests/macro_usage.rs"
+
 [dependencies.mls-rs-codec-derive]
-version = "0.1.1"
+version = "0.2.0"
 
 [dependencies.thiserror]
 version = "1.0.40"
@@ -40,9 +55,13 @@ default = [
 preallocate = []
 std = ["dep:thiserror"]
 
-[target."cfg(target_arch = \"wasm32\")".dependencies.wasm-bindgen]
-version = "0.2.79"
+[target.'cfg(target_arch = "wasm32")'.dependencies.wasm-bindgen]
+version = "0.2"
 
-[target."cfg(target_arch = \"wasm32\")".dev-dependencies.wasm-bindgen-test]
-version = "0.3.26"
-default-features = false
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies.wasm-bindgen-test]
+version = "0.3"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = ["cfg(mls_build_async)"]

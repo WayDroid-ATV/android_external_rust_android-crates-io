@@ -1,5 +1,5 @@
 name: "libtest-mimic"
-description: "()"
+description: "Write your own test harness that looks and behaves like the built-in test harness used by `rustc --test`"
 third_party {
   version: "0.6.1"
   license_type: NOTICE

@@ -150,6 +150,7 @@ prop_compose! {
 }
 
 pub static ETHERNET_KNOWN_ETHER_TYPES: &'static [EtherType] = &[
+    ether_type::ARP,
     ether_type::IPV4,
     ether_type::IPV6,
     ether_type::VLAN_TAGGED_FRAME,
@@ -221,6 +222,54 @@ prop_compose! {
         DoubleVlanHeader {
             outer,
             inner
+        }
+    }
+}
+
+prop_compose! {
+    pub fn arp_packet_any()
+    (
+        hw_addr_size in any::<u8>(),
+        proto_addr_size in any::<u8>()
+    )
+    (
+        hw_addr_type in any::<u16>(),
+        proto_addr_type in any::<u16>(),
+        operation in any::<u16>(),
+        sender_hw_addr in prop::collection::vec(any::<u8>(), hw_addr_size as usize),
+        sender_protocol_addr in prop::collection::vec(any::<u8>(), proto_addr_size as usize),
+        target_hw_addr in prop::collection::vec(any::<u8>(), hw_addr_size as usize),
+        target_protocol_addr in prop::collection::vec(any::<u8>(), proto_addr_size as usize)
+    ) -> ArpPacket
+    {
+        ArpPacket::new(
+            ArpHardwareId(hw_addr_type),
+            EtherType(proto_addr_type),
+            ArpOperation(operation),
+            &sender_hw_addr[..],
+            &sender_protocol_addr[..],
+            &target_hw_addr[..],
+            &target_protocol_addr[..]
+        ).unwrap()
+    }
+}
+
+prop_compose! {
+    pub fn arp_eth_ipv4_packet_any()
+    (
+        operation in any::<u16>(),
+        sender_mac in prop::array::uniform6(any::<u8>()),
+        sender_ipv4 in prop::array::uniform4(any::<u8>()),
+        target_mac in prop::array::uniform6(any::<u8>()),
+        target_ipv4 in prop::array::uniform4(any::<u8>())
+    ) -> ArpEthIpv4Packet
+    {
+        ArpEthIpv4Packet {
+            operation: ArpOperation(operation),
+            sender_mac,
+            sender_ipv4,
+            target_mac,
+            target_ipv4,
         }
     }
 }

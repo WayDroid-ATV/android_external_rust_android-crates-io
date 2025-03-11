@@ -168,7 +168,7 @@ macro_rules! unsafe_impl {
         fn only_derive_is_allowed_to_implement_this_trait() {}
 
         #[inline]
-        fn is_bit_valid<AA: invariant::Aliasing + invariant::AtLeast<invariant::Shared>>(candidate: Maybe<'_, Self, AA>) -> bool {
+        fn is_bit_valid<AA: crate::pointer::invariant::Reference>(candidate: Maybe<'_, Self, AA>) -> bool {
             // SAFETY:
             // - The cast preserves address. The caller has promised that the
             //   cast results in an object of equal or lesser size, and so the
@@ -178,7 +178,7 @@ macro_rules! unsafe_impl {
             // - The caller has promised that the destination type has
             //   `UnsafeCell`s at the same byte ranges as the source type.
             #[allow(clippy::as_conversions)]
-            let candidate = unsafe { candidate.cast_unsized::<$repr, _>(|p| p as *mut _) };
+            let candidate = unsafe { candidate.cast_unsized_unchecked::<$repr, _>(|p| p as *mut _) };
 
             // SAFETY: The caller has promised that the referenced memory region
             // will contain a valid `$repr`.
@@ -192,7 +192,7 @@ macro_rules! unsafe_impl {
         fn only_derive_is_allowed_to_implement_this_trait() {}
 
         #[inline]
-        fn is_bit_valid<AA: invariant::Aliasing + invariant::AtLeast<invariant::Shared>>(candidate: Maybe<'_, Self, AA>) -> bool {
+        fn is_bit_valid<AA: crate::pointer::invariant::Reference>(candidate: Maybe<'_, Self, AA>) -> bool {
             // SAFETY:
             // - The cast preserves address. The caller has promised that the
             //   cast results in an object of equal or lesser size, and so the
@@ -202,7 +202,7 @@ macro_rules! unsafe_impl {
             // - The caller has promised that the destination type has
             //   `UnsafeCell`s at the same byte ranges as the source type.
             #[allow(clippy::as_conversions)]
-            let $candidate = unsafe { candidate.cast_unsized::<$repr, _>(|p| p as *mut _) };
+            let $candidate = unsafe { candidate.cast_unsized_unchecked::<$repr, _>(|p| p as *mut _) };
 
             // Restore the invariant that the referent bytes are initialized.
             // SAFETY: The above cast does not uninitialize any referent bytes;
@@ -216,7 +216,7 @@ macro_rules! unsafe_impl {
         #[allow(clippy::missing_inline_in_public_items)]
         #[cfg_attr(all(coverage_nightly, __ZEROCOPY_INTERNAL_USE_ONLY_NIGHTLY_FEATURES_IN_TESTS), coverage(off))]
         fn only_derive_is_allowed_to_implement_this_trait() {}
-        #[inline(always)] fn is_bit_valid<A: invariant::Aliasing + invariant::AtLeast<invariant::Shared>>(_: Maybe<'_, Self, A>) -> bool { true }
+        #[inline(always)] fn is_bit_valid<AA: crate::pointer::invariant::Reference>(_: Maybe<'_, Self, AA>) -> bool { true }
     };
     (@method $trait:ident) => {
         #[allow(clippy::missing_inline_in_public_items)]
@@ -368,7 +368,7 @@ macro_rules! impl_for_transparent_wrapper {
         // TryFromBytes)` macro arm for an explanation of why this is a sound
         // implementation of `is_bit_valid`.
         #[inline]
-        fn is_bit_valid<A: crate::pointer::invariant::Aliasing + crate::pointer::invariant::AtLeast<invariant::Shared>>(candidate: Maybe<'_, Self, A>) -> bool {
+        fn is_bit_valid<A: crate::pointer::invariant::Reference>(candidate: Maybe<'_, Self, A>) -> bool {
             TryFromBytes::is_bit_valid(candidate.transparent_wrapper_into_inner())
         }
     };

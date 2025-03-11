@@ -5,54 +5,10 @@
     "libzerocopy": "libzerocopy-0.7.35",
     "libzerocopy_derive": "libzerocopy_derive-0.7.35"
   },
-  "variants": [
-    {
-      "features": [
-        "derive",
-        "byteorder",
-        "simd"
-      ]
-    },
-    {
-      "features": [
-        "alloc",
-        "derive",
-        "byteorder",
-        "simd"
-      ],
-      "module_name_overrides": {
-        "libbyteorder": "libbyteorder_nostd",
-        "libzerocopy": "libzerocopy-0.7.35_nostd",
-        "libzerocopy_derive": "libzerocopy_derive-0.7.35"
-      },
-      "package": {
-        "zerocopy": {
-          "alloc": true,
-          "force_rlib": true,
-          "host_supported": false,
-          "no_std": true
-        }
-      }
-    },
-    {
-      "features": [
-        "derive",
-        "byteorder",
-        "simd"
-      ],
-      "module_name_overrides": {
-        "libbyteorder": "libbyteorder_nostd",
-        "libzerocopy": "libzerocopy-0.7.35_nostd_noalloc",
-        "libzerocopy_derive": "libzerocopy_derive-0.7.35"
-      },
-      "package": {
-        "zerocopy": {
-          "force_rlib": true,
-          "host_supported": false,
-          "no_std": true
-        }
-      }
-    }
+  "features": [
+    "derive",
+    "byteorder",
+    "simd"
   ],
   "min_sdk_version": "29"
 }

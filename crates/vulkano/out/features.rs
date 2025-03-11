@@ -11597,14 +11597,19 @@ impl FeaturesFfi {
         {
             *f = features.advanced_blend_coherent_operations as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.alpha_to_one].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.alpha_to_one]
+            .into_iter()
+            .next()
+        {
             *f = features.alpha_to_one as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_amigo_profiling_sec.as_mut().map(|s| &mut s.amigo_profiling)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_amigo_profiling_sec
+            .as_mut()
+            .map(|s| &mut s.amigo_profiling)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.amigo_profiling as ash::vk::Bool32;
         }
@@ -11628,11 +11633,13 @@ impl FeaturesFfi {
         {
             *f = features.attachment_fragment_shading_rate as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_border_color_swizzle_ext.as_mut().map(|s| &mut s.border_color_swizzle)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_border_color_swizzle_ext
+            .as_mut()
+            .map(|s| &mut s.border_color_swizzle)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.border_color_swizzle as ash::vk::Bool32;
         }
@@ -11646,18 +11653,26 @@ impl FeaturesFfi {
         {
             *f = features.border_color_swizzle_from_image as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_line_rasterization_ext.as_mut().map(|s| &mut s.bresenham_lines)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_line_rasterization_ext
+            .as_mut()
+            .map(|s| &mut s.bresenham_lines)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.bresenham_lines as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.buffer_device_address),
-            self.features_buffer_device_address.as_mut().map(|s| &mut s.buffer_device_address),
-            self.features_buffer_device_address_ext.as_mut().map(|s| &mut s.buffer_device_address),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.buffer_device_address),
+            self.features_buffer_device_address
+                .as_mut()
+                .map(|s| &mut s.buffer_device_address),
+            self.features_buffer_device_address_ext
+                .as_mut()
+                .map(|s| &mut s.buffer_device_address),
         ]
         .into_iter()
         .flatten()
@@ -11666,7 +11681,9 @@ impl FeaturesFfi {
             *f = features.buffer_device_address as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.buffer_device_address_capture_replay),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.buffer_device_address_capture_replay),
             self.features_buffer_device_address
                 .as_mut()
                 .map(|s| &mut s.buffer_device_address_capture_replay),
@@ -11681,7 +11698,9 @@ impl FeaturesFfi {
             *f = features.buffer_device_address_capture_replay as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.buffer_device_address_multi_device),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.buffer_device_address_multi_device),
             self.features_buffer_device_address
                 .as_mut()
                 .map(|s| &mut s.buffer_device_address_multi_device),
@@ -11695,11 +11714,13 @@ impl FeaturesFfi {
         {
             *f = features.buffer_device_address_multi_device as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_color_write_enable_ext.as_mut().map(|s| &mut s.color_write_enable)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_color_write_enable_ext
+            .as_mut()
+            .map(|s| &mut s.color_write_enable)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.color_write_enable as ash::vk::Bool32;
         }
@@ -11724,8 +11745,12 @@ impl FeaturesFfi {
             *f = features.compute_derivative_group_quads as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.compute_full_subgroups),
-            self.features_subgroup_size_control.as_mut().map(|s| &mut s.compute_full_subgroups),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.compute_full_subgroups),
+            self.features_subgroup_size_control
+                .as_mut()
+                .map(|s| &mut s.compute_full_subgroups),
         ]
         .into_iter()
         .flatten()
@@ -11733,11 +11758,13 @@ impl FeaturesFfi {
         {
             *f = features.compute_full_subgroups as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_conditional_rendering_ext.as_mut().map(|s| &mut s.conditional_rendering)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_conditional_rendering_ext
+            .as_mut()
+            .map(|s| &mut s.conditional_rendering)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.conditional_rendering as ash::vk::Bool32;
         }
@@ -11751,11 +11778,13 @@ impl FeaturesFfi {
         {
             *f = features.constant_alpha_color_blend_factors as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_cooperative_matrix_nv.as_mut().map(|s| &mut s.cooperative_matrix)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_cooperative_matrix_nv
+            .as_mut()
+            .map(|s| &mut s.cooperative_matrix)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.cooperative_matrix as ash::vk::Bool32;
         }
@@ -11769,11 +11798,13 @@ impl FeaturesFfi {
         {
             *f = features.cooperative_matrix_robust_buffer_access as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_corner_sampled_image_nv.as_mut().map(|s| &mut s.corner_sampled_image)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_corner_sampled_image_nv
+            .as_mut()
+            .map(|s| &mut s.corner_sampled_image)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.corner_sampled_image as ash::vk::Bool32;
         }
@@ -11797,19 +11828,23 @@ impl FeaturesFfi {
         {
             *f = features.custom_border_color_without_format as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_custom_border_color_ext.as_mut().map(|s| &mut s.custom_border_colors)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_custom_border_color_ext
+            .as_mut()
+            .map(|s| &mut s.custom_border_colors)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.custom_border_colors as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_astc_decode_ext.as_mut().map(|s| &mut s.decode_mode_shared_exponent)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_astc_decode_ext
+            .as_mut()
+            .map(|s| &mut s.decode_mode_shared_exponent)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.decode_mode_shared_exponent as ash::vk::Bool32;
         }
@@ -11823,37 +11858,51 @@ impl FeaturesFfi {
         {
             *f = features.dedicated_allocation_image_aliasing as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.depth_bias_clamp].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.depth_bias_clamp]
+            .into_iter()
+            .next()
         {
             *f = features.depth_bias_clamp as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.depth_bounds].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.depth_bounds]
+            .into_iter()
+            .next()
+        {
             *f = features.depth_bounds as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.depth_clamp].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.depth_clamp]
+            .into_iter()
+            .next()
+        {
             *f = features.depth_clamp as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_depth_clamp_zero_one_ext.as_mut().map(|s| &mut s.depth_clamp_zero_one)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_depth_clamp_zero_one_ext
+            .as_mut()
+            .map(|s| &mut s.depth_clamp_zero_one)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.depth_clamp_zero_one as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_depth_clip_control_ext.as_mut().map(|s| &mut s.depth_clip_control)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_depth_clip_control_ext
+            .as_mut()
+            .map(|s| &mut s.depth_clip_control)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.depth_clip_control as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_depth_clip_enable_ext.as_mut().map(|s| &mut s.depth_clip_enable)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_depth_clip_enable_ext
+            .as_mut()
+            .map(|s| &mut s.depth_clip_enable)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.depth_clip_enable as ash::vk::Bool32;
         }
@@ -11884,7 +11933,9 @@ impl FeaturesFfi {
                 as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.descriptor_binding_partially_bound),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.descriptor_binding_partially_bound),
             self.features_descriptor_indexing
                 .as_mut()
                 .map(|s| &mut s.descriptor_binding_partially_bound),
@@ -12009,11 +12060,13 @@ impl FeaturesFfi {
         {
             *f = features.descriptor_binding_variable_descriptor_count as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_descriptor_buffer_ext.as_mut().map(|s| &mut s.descriptor_buffer)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_descriptor_buffer_ext
+            .as_mut()
+            .map(|s| &mut s.descriptor_buffer)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.descriptor_buffer as ash::vk::Bool32;
         }
@@ -12047,10 +12100,13 @@ impl FeaturesFfi {
         {
             *f = features.descriptor_buffer_push_descriptors as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_vulkan12.as_mut().map(|s| &mut s.descriptor_indexing)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_vulkan12
+            .as_mut()
+            .map(|s| &mut s.descriptor_indexing)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.descriptor_indexing as ash::vk::Bool32;
         }
@@ -12064,26 +12120,33 @@ impl FeaturesFfi {
         {
             *f = features.descriptor_set_host_mapping as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_coherent_memory_amd.as_mut().map(|s| &mut s.device_coherent_memory)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_coherent_memory_amd
+            .as_mut()
+            .map(|s| &mut s.device_coherent_memory)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.device_coherent_memory as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_fault_ext.as_mut().map(|s| &mut s.device_fault)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_fault_ext
+            .as_mut()
+            .map(|s| &mut s.device_fault)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.device_fault as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_fault_ext.as_mut().map(|s| &mut s.device_fault_vendor_binary)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_fault_ext
+            .as_mut()
+            .map(|s| &mut s.device_fault_vendor_binary)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.device_fault_vendor_binary as ash::vk::Bool32;
         }
@@ -12097,40 +12160,55 @@ impl FeaturesFfi {
         {
             *f = features.device_generated_commands as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_device_memory_report_ext.as_mut().map(|s| &mut s.device_memory_report)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_device_memory_report_ext
+            .as_mut()
+            .map(|s| &mut s.device_memory_report)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.device_memory_report as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_diagnostics_config_nv.as_mut().map(|s| &mut s.diagnostics_config)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_diagnostics_config_nv
+            .as_mut()
+            .map(|s| &mut s.diagnostics_config)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.diagnostics_config as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_vulkan12.as_mut().map(|s| &mut s.draw_indirect_count)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_vulkan12
+            .as_mut()
+            .map(|s| &mut s.draw_indirect_count)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.draw_indirect_count as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.draw_indirect_first_instance].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.draw_indirect_first_instance]
+            .into_iter()
+            .next()
         {
             *f = features.draw_indirect_first_instance as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.dual_src_blend].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.dual_src_blend]
+            .into_iter()
+            .next()
+        {
             *f = features.dual_src_blend as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.dynamic_rendering),
-            self.features_dynamic_rendering.as_mut().map(|s| &mut s.dynamic_rendering),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.dynamic_rendering),
+            self.features_dynamic_rendering
+                .as_mut()
+                .map(|s| &mut s.dynamic_rendering),
         ]
         .into_iter()
         .flatten()
@@ -12138,18 +12216,23 @@ impl FeaturesFfi {
         {
             *f = features.dynamic_rendering as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_portability_subset_khr.as_mut().map(|s| &mut s.events)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_portability_subset_khr
+            .as_mut()
+            .map(|s| &mut s.events)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.events as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_exclusive_scissor_nv.as_mut().map(|s| &mut s.exclusive_scissor)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_exclusive_scissor_nv
+            .as_mut()
+            .map(|s| &mut s.exclusive_scissor)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.exclusive_scissor as ash::vk::Bool32;
         }
@@ -12507,30 +12590,39 @@ impl FeaturesFfi {
         {
             *f = features.extended_dynamic_state3_viewport_w_scaling_enable as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_external_memory_rdma_nv.as_mut().map(|s| &mut s.external_memory_rdma)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_external_memory_rdma_nv
+            .as_mut()
+            .map(|s| &mut s.external_memory_rdma)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.external_memory_rdma as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.fill_mode_non_solid].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.fill_mode_non_solid]
+            .into_iter()
+            .next()
         {
             *f = features.fill_mode_non_solid as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_4444formats_ext.as_mut().map(|s| &mut s.format_a4b4g4r4)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_4444formats_ext
+            .as_mut()
+            .map(|s| &mut s.format_a4b4g4r4)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.format_a4b4g4r4 as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_4444formats_ext.as_mut().map(|s| &mut s.format_a4r4g4b4)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_4444formats_ext
+            .as_mut()
+            .map(|s| &mut s.format_a4r4g4b4)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.format_a4r4g4b4 as ash::vk::Bool32;
         }
@@ -12544,11 +12636,13 @@ impl FeaturesFfi {
         {
             *f = features.format_rgba10x6_without_y_cb_cr_sampler as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_fragment_density_map_ext.as_mut().map(|s| &mut s.fragment_density_map)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_fragment_density_map_ext
+            .as_mut()
+            .map(|s| &mut s.fragment_density_map)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.fragment_density_map as ash::vk::Bool32;
         }
@@ -12642,32 +12736,41 @@ impl FeaturesFfi {
         {
             *f = features.fragment_shading_rate_enums as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.fragment_stores_and_atomics].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.fragment_stores_and_atomics]
+            .into_iter()
+            .next()
         {
             *f = features.fragment_stores_and_atomics as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.full_draw_index_uint32].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.full_draw_index_uint32]
+            .into_iter()
+            .next()
         {
             *f = features.full_draw_index_uint32 as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.geometry_shader].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.geometry_shader]
+            .into_iter()
+            .next()
+        {
             *f = features.geometry_shader as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_transform_feedback_ext.as_mut().map(|s| &mut s.geometry_streams)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_transform_feedback_ext
+            .as_mut()
+            .map(|s| &mut s.geometry_streams)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.geometry_streams as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_global_priority_query_khr.as_mut().map(|s| &mut s.global_priority_query)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_global_priority_query_khr
+            .as_mut()
+            .map(|s| &mut s.global_priority_query)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.global_priority_query as ash::vk::Bool32;
         }
@@ -12682,8 +12785,12 @@ impl FeaturesFfi {
             *f = features.graphics_pipeline_library as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.host_query_reset),
-            self.features_host_query_reset.as_mut().map(|s| &mut s.host_query_reset),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.host_query_reset),
+            self.features_host_query_reset
+                .as_mut()
+                .map(|s| &mut s.host_query_reset),
         ]
         .into_iter()
         .flatten()
@@ -12691,11 +12798,13 @@ impl FeaturesFfi {
         {
             *f = features.host_query_reset as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_image2_d_view_of3_d_ext.as_mut().map(|s| &mut s.image2_d_view_of3_d)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_image2_d_view_of3_d_ext
+            .as_mut()
+            .map(|s| &mut s.image2_d_view_of3_d)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.image2_d_view_of3_d as ash::vk::Bool32;
         }
@@ -12719,15 +12828,19 @@ impl FeaturesFfi {
         {
             *f = features.image_compression_control_swapchain as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.image_cube_array].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.image_cube_array]
+            .into_iter()
+            .next()
         {
             *f = features.image_cube_array as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_shader_image_footprint_nv.as_mut().map(|s| &mut s.image_footprint)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_shader_image_footprint_nv
+            .as_mut()
+            .map(|s| &mut s.image_footprint)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.image_footprint as ash::vk::Bool32;
         }
@@ -12762,8 +12875,12 @@ impl FeaturesFfi {
             *f = features.image_view_format_swizzle as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.imageless_framebuffer),
-            self.features_imageless_framebuffer.as_mut().map(|s| &mut s.imageless_framebuffer),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.imageless_framebuffer),
+            self.features_imageless_framebuffer
+                .as_mut()
+                .map(|s| &mut s.imageless_framebuffer),
         ]
         .into_iter()
         .flatten()
@@ -12771,23 +12888,29 @@ impl FeaturesFfi {
         {
             *f = features.imageless_framebuffer as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.independent_blend].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.independent_blend]
+            .into_iter()
+            .next()
         {
             *f = features.independent_blend as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_index_type_uint8_ext.as_mut().map(|s| &mut s.index_type_uint8)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_index_type_uint8_ext
+            .as_mut()
+            .map(|s| &mut s.index_type_uint8)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.index_type_uint8 as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_copy_memory_indirect_nv.as_mut().map(|s| &mut s.indirect_copy)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_copy_memory_indirect_nv
+            .as_mut()
+            .map(|s| &mut s.indirect_copy)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.indirect_copy as ash::vk::Bool32;
         }
@@ -12801,7 +12924,9 @@ impl FeaturesFfi {
         {
             *f = features.inherited_conditional_rendering as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.inherited_queries].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.inherited_queries]
+            .into_iter()
+            .next()
         {
             *f = features.inherited_queries as ash::vk::Bool32;
         }
@@ -12816,8 +12941,12 @@ impl FeaturesFfi {
             *f = features.inherited_viewport_scissor2_d as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.inline_uniform_block),
-            self.features_inline_uniform_block.as_mut().map(|s| &mut s.inline_uniform_block),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.inline_uniform_block),
+            self.features_inline_uniform_block
+                .as_mut()
+                .map(|s| &mut s.inline_uniform_block),
         ]
         .into_iter()
         .flatten()
@@ -12825,22 +12954,29 @@ impl FeaturesFfi {
         {
             *f = features.inline_uniform_block as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_invocation_mask_huawei.as_mut().map(|s| &mut s.invocation_mask)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_invocation_mask_huawei
+            .as_mut()
+            .map(|s| &mut s.invocation_mask)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.invocation_mask as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.large_points].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.large_points]
+            .into_iter()
+            .next()
+        {
             *f = features.large_points as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_legacy_dithering_ext.as_mut().map(|s| &mut s.legacy_dithering)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_legacy_dithering_ext
+            .as_mut()
+            .map(|s| &mut s.legacy_dithering)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.legacy_dithering as ash::vk::Bool32;
         }
@@ -12854,12 +12990,17 @@ impl FeaturesFfi {
         {
             *f = features.linear_color_attachment as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.logic_op].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.logic_op]
+            .into_iter()
+            .next()
+        {
             *f = features.logic_op as ash::vk::Bool32;
         }
         if let Some(f) = [
             self.features_vulkan13.as_mut().map(|s| &mut s.maintenance4),
-            self.features_maintenance4.as_mut().map(|s| &mut s.maintenance4),
+            self.features_maintenance4
+                .as_mut()
+                .map(|s| &mut s.maintenance4),
         ]
         .into_iter()
         .flatten()
@@ -12867,25 +13008,33 @@ impl FeaturesFfi {
         {
             *f = features.maintenance4 as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_memory_decompression_nv.as_mut().map(|s| &mut s.memory_decompression)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_memory_decompression_nv
+            .as_mut()
+            .map(|s| &mut s.memory_decompression)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.memory_decompression as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_memory_priority_ext.as_mut().map(|s| &mut s.memory_priority)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_memory_priority_ext
+            .as_mut()
+            .map(|s| &mut s.memory_priority)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.memory_priority as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_mesh_shader_ext.as_mut().map(|s| &mut s.mesh_shader),
-            self.features_mesh_shader_nv.as_mut().map(|s| &mut s.mesh_shader),
+            self.features_mesh_shader_ext
+                .as_mut()
+                .map(|s| &mut s.mesh_shader),
+            self.features_mesh_shader_nv
+                .as_mut()
+                .map(|s| &mut s.mesh_shader),
         ]
         .into_iter()
         .flatten()
@@ -12893,64 +13042,85 @@ impl FeaturesFfi {
         {
             *f = features.mesh_shader as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_mesh_shader_ext.as_mut().map(|s| &mut s.mesh_shader_queries)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_mesh_shader_ext
+            .as_mut()
+            .map(|s| &mut s.mesh_shader_queries)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.mesh_shader_queries as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_opacity_micromap_ext.as_mut().map(|s| &mut s.micromap)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_opacity_micromap_ext
+            .as_mut()
+            .map(|s| &mut s.micromap)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.micromap as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_opacity_micromap_ext.as_mut().map(|s| &mut s.micromap_capture_replay)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_opacity_micromap_ext
+            .as_mut()
+            .map(|s| &mut s.micromap_capture_replay)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.micromap_capture_replay as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_opacity_micromap_ext.as_mut().map(|s| &mut s.micromap_host_commands)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_opacity_micromap_ext
+            .as_mut()
+            .map(|s| &mut s.micromap_host_commands)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.micromap_host_commands as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_image_view_min_lod_ext.as_mut().map(|s| &mut s.min_lod)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_image_view_min_lod_ext
+            .as_mut()
+            .map(|s| &mut s.min_lod)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.min_lod as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_multi_draw_ext.as_mut().map(|s| &mut s.multi_draw)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_multi_draw_ext
+            .as_mut()
+            .map(|s| &mut s.multi_draw)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.multi_draw as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.multi_draw_indirect].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.multi_draw_indirect]
+            .into_iter()
+            .next()
         {
             *f = features.multi_draw_indirect as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.multi_viewport].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.multi_viewport]
+            .into_iter()
+            .next()
+        {
             *f = features.multi_viewport as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_portability_subset_khr.as_mut().map(|s| &mut s.multisample_array_image)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_portability_subset_khr
+            .as_mut()
+            .map(|s| &mut s.multisample_array_image)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.multisample_array_image as ash::vk::Bool32;
         }
@@ -12975,8 +13145,12 @@ impl FeaturesFfi {
             *f = features.multiview as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.multiview_geometry_shader),
-            self.features_multiview.as_mut().map(|s| &mut s.multiview_geometry_shader),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.multiview_geometry_shader),
+            self.features_multiview
+                .as_mut()
+                .map(|s| &mut s.multiview_geometry_shader),
         ]
         .into_iter()
         .flatten()
@@ -12984,11 +13158,13 @@ impl FeaturesFfi {
         {
             *f = features.multiview_geometry_shader as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_mesh_shader_ext.as_mut().map(|s| &mut s.multiview_mesh_shader)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_mesh_shader_ext
+            .as_mut()
+            .map(|s| &mut s.multiview_mesh_shader)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.multiview_mesh_shader as ash::vk::Bool32;
         }
@@ -13003,8 +13179,12 @@ impl FeaturesFfi {
             *f = features.multiview_per_view_viewports as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.multiview_tessellation_shader),
-            self.features_multiview.as_mut().map(|s| &mut s.multiview_tessellation_shader),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.multiview_tessellation_shader),
+            self.features_multiview
+                .as_mut()
+                .map(|s| &mut s.multiview_tessellation_shader),
         ]
         .into_iter()
         .flatten()
@@ -13042,30 +13222,39 @@ impl FeaturesFfi {
         {
             *f = features.no_invocation_fragment_shading_rates as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_non_seamless_cube_map_ext.as_mut().map(|s| &mut s.non_seamless_cube_map)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_non_seamless_cube_map_ext
+            .as_mut()
+            .map(|s| &mut s.non_seamless_cube_map)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.non_seamless_cube_map as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_robustness2_ext.as_mut().map(|s| &mut s.null_descriptor)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_robustness2_ext
+            .as_mut()
+            .map(|s| &mut s.null_descriptor)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.null_descriptor as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.occlusion_query_precise].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.occlusion_query_precise]
+            .into_iter()
+            .next()
         {
             *f = features.occlusion_query_precise as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_optical_flow_nv.as_mut().map(|s| &mut s.optical_flow)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_optical_flow_nv
+            .as_mut()
+            .map(|s| &mut s.optical_flow)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.optical_flow as ash::vk::Bool32;
         }
@@ -13100,7 +13289,9 @@ impl FeaturesFfi {
             *f = features.performance_counter_query_pools as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.pipeline_creation_cache_control),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.pipeline_creation_cache_control),
             self.features_pipeline_creation_cache_control
                 .as_mut()
                 .map(|s| &mut s.pipeline_creation_cache_control),
@@ -13151,45 +13342,59 @@ impl FeaturesFfi {
         {
             *f = features.pipeline_protected_access as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_pipeline_robustness_ext.as_mut().map(|s| &mut s.pipeline_robustness)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_pipeline_robustness_ext
+            .as_mut()
+            .map(|s| &mut s.pipeline_robustness)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.pipeline_robustness as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.pipeline_statistics_query].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.pipeline_statistics_query]
+            .into_iter()
+            .next()
         {
             *f = features.pipeline_statistics_query as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_portability_subset_khr.as_mut().map(|s| &mut s.point_polygons)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_portability_subset_khr
+            .as_mut()
+            .map(|s| &mut s.point_polygons)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.point_polygons as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_present_barrier_nv.as_mut().map(|s| &mut s.present_barrier)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_present_barrier_nv
+            .as_mut()
+            .map(|s| &mut s.present_barrier)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.present_barrier as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_present_id_khr.as_mut().map(|s| &mut s.present_id)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_present_id_khr
+            .as_mut()
+            .map(|s| &mut s.present_id)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.present_id as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_present_wait_khr.as_mut().map(|s| &mut s.present_wait)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_present_wait_khr
+            .as_mut()
+            .map(|s| &mut s.present_wait)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.present_wait as ash::vk::Bool32;
         }
@@ -13265,7 +13470,9 @@ impl FeaturesFfi {
         }
         if let Some(f) = [
             self.features_vulkan13.as_mut().map(|s| &mut s.private_data),
-            self.features_private_data.as_mut().map(|s| &mut s.private_data),
+            self.features_private_data
+                .as_mut()
+                .map(|s| &mut s.private_data),
         ]
         .into_iter()
         .flatten()
@@ -13274,8 +13481,12 @@ impl FeaturesFfi {
             *f = features.private_data as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.protected_memory),
-            self.features_protected_memory.as_mut().map(|s| &mut s.protected_memory),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.protected_memory),
+            self.features_protected_memory
+                .as_mut()
+                .map(|s| &mut s.protected_memory),
         ]
         .into_iter()
         .flatten()
@@ -13283,11 +13494,13 @@ impl FeaturesFfi {
         {
             *f = features.protected_memory as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_provoking_vertex_ext.as_mut().map(|s| &mut s.provoking_vertex_last)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_provoking_vertex_ext
+            .as_mut()
+            .map(|s| &mut s.provoking_vertex_last)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.provoking_vertex_last as ash::vk::Bool32;
         }
@@ -13321,10 +13534,13 @@ impl FeaturesFfi {
         {
             *f = features.rasterization_order_stencil_attachment_access as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_ray_query_khr.as_mut().map(|s| &mut s.ray_query)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_ray_query_khr
+            .as_mut()
+            .map(|s| &mut s.ray_query)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.ray_query as ash::vk::Bool32;
         }
@@ -13368,11 +13584,13 @@ impl FeaturesFfi {
         {
             *f = features.ray_tracing_motion_blur_pipeline_trace_rays_indirect as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_ray_tracing_pipeline_khr.as_mut().map(|s| &mut s.ray_tracing_pipeline)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_ray_tracing_pipeline_khr
+            .as_mut()
+            .map(|s| &mut s.ray_tracing_pipeline)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.ray_tracing_pipeline as ash::vk::Bool32;
         }
@@ -13428,11 +13646,13 @@ impl FeaturesFfi {
         {
             *f = features.ray_traversal_primitive_culling as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_line_rasterization_ext.as_mut().map(|s| &mut s.rectangular_lines)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_line_rasterization_ext
+            .as_mut()
+            .map(|s| &mut s.rectangular_lines)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.rectangular_lines as ash::vk::Bool32;
         }
@@ -13456,22 +13676,29 @@ impl FeaturesFfi {
         {
             *f = features.representative_fragment_test as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.robust_buffer_access].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.robust_buffer_access]
+            .into_iter()
+            .next()
         {
             *f = features.robust_buffer_access as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_robustness2_ext.as_mut().map(|s| &mut s.robust_buffer_access2)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_robustness2_ext
+            .as_mut()
+            .map(|s| &mut s.robust_buffer_access2)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.robust_buffer_access2 as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.robust_image_access),
-            self.features_image_robustness.as_mut().map(|s| &mut s.robust_image_access),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.robust_image_access),
+            self.features_image_robustness
+                .as_mut()
+                .map(|s| &mut s.robust_image_access),
         ]
         .into_iter()
         .flatten()
@@ -13479,17 +13706,23 @@ impl FeaturesFfi {
         {
             *f = features.robust_image_access as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_robustness2_ext.as_mut().map(|s| &mut s.robust_image_access2)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_robustness2_ext
+            .as_mut()
+            .map(|s| &mut s.robust_image_access2)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.robust_image_access2 as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.runtime_descriptor_array),
-            self.features_descriptor_indexing.as_mut().map(|s| &mut s.runtime_descriptor_array),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.runtime_descriptor_array),
+            self.features_descriptor_indexing
+                .as_mut()
+                .map(|s| &mut s.runtime_descriptor_array),
         ]
         .into_iter()
         .flatten()
@@ -13497,49 +13730,62 @@ impl FeaturesFfi {
         {
             *f = features.runtime_descriptor_array as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.sample_rate_shading].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.sample_rate_shading]
+            .into_iter()
+            .next()
         {
             *f = features.sample_rate_shading as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_image2_d_view_of3_d_ext.as_mut().map(|s| &mut s.sampler2_d_view_of3_d)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_image2_d_view_of3_d_ext
+            .as_mut()
+            .map(|s| &mut s.sampler2_d_view_of3_d)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.sampler2_d_view_of3_d as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.sampler_anisotropy].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.sampler_anisotropy]
+            .into_iter()
+            .next()
         {
             *f = features.sampler_anisotropy as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_vulkan12.as_mut().map(|s| &mut s.sampler_filter_minmax)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_vulkan12
+            .as_mut()
+            .map(|s| &mut s.sampler_filter_minmax)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.sampler_filter_minmax as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_portability_subset_khr.as_mut().map(|s| &mut s.sampler_mip_lod_bias)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_portability_subset_khr
+            .as_mut()
+            .map(|s| &mut s.sampler_mip_lod_bias)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.sampler_mip_lod_bias as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_vulkan12.as_mut().map(|s| &mut s.sampler_mirror_clamp_to_edge)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_vulkan12
+            .as_mut()
+            .map(|s| &mut s.sampler_mirror_clamp_to_edge)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.sampler_mirror_clamp_to_edge as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.sampler_ycbcr_conversion),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.sampler_ycbcr_conversion),
             self.features_sampler_ycbcr_conversion
                 .as_mut()
                 .map(|s| &mut s.sampler_ycbcr_conversion),
@@ -13551,8 +13797,12 @@ impl FeaturesFfi {
             *f = features.sampler_ycbcr_conversion as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.scalar_block_layout),
-            self.features_scalar_block_layout.as_mut().map(|s| &mut s.scalar_block_layout),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.scalar_block_layout),
+            self.features_scalar_block_layout
+                .as_mut()
+                .map(|s| &mut s.scalar_block_layout),
         ]
         .into_iter()
         .flatten()
@@ -13561,7 +13811,9 @@ impl FeaturesFfi {
             *f = features.scalar_block_layout as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.separate_depth_stencil_layouts),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.separate_depth_stencil_layouts),
             self.features_separate_depth_stencil_layouts
                 .as_mut()
                 .map(|s| &mut s.separate_depth_stencil_layouts),
@@ -13673,8 +13925,12 @@ impl FeaturesFfi {
             *f = features.shader_buffer_float64_atomics as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.shader_buffer_int64_atomics),
-            self.features_shader_atomic_int64.as_mut().map(|s| &mut s.shader_buffer_int64_atomics),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.shader_buffer_int64_atomics),
+            self.features_shader_atomic_int64
+                .as_mut()
+                .map(|s| &mut s.shader_buffer_int64_atomics),
         ]
         .into_iter()
         .flatten()
@@ -13682,26 +13938,32 @@ impl FeaturesFfi {
         {
             *f = features.shader_buffer_int64_atomics as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_clip_distance].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.shader_clip_distance]
+            .into_iter()
+            .next()
         {
             *f = features.shader_clip_distance as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_shader_core_builtins_arm.as_mut().map(|s| &mut s.shader_core_builtins)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_shader_core_builtins_arm
+            .as_mut()
+            .map(|s| &mut s.shader_core_builtins)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.shader_core_builtins as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_cull_distance].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.shader_cull_distance]
+            .into_iter()
+            .next()
         {
             *f = features.shader_cull_distance as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.shader_demote_to_helper_invocation),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.shader_demote_to_helper_invocation),
             self.features_shader_demote_to_helper_invocation
                 .as_mut()
                 .map(|s| &mut s.shader_demote_to_helper_invocation),
@@ -13712,17 +13974,23 @@ impl FeaturesFfi {
         {
             *f = features.shader_demote_to_helper_invocation as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_shader_clock_khr.as_mut().map(|s| &mut s.shader_device_clock)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_shader_clock_khr
+            .as_mut()
+            .map(|s| &mut s.shader_device_clock)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.shader_device_clock as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.shader_draw_parameters),
-            self.features_shader_draw_parameters.as_mut().map(|s| &mut s.shader_draw_parameters),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.shader_draw_parameters),
+            self.features_shader_draw_parameters
+                .as_mut()
+                .map(|s| &mut s.shader_draw_parameters),
         ]
         .into_iter()
         .flatten()
@@ -13741,8 +14009,12 @@ impl FeaturesFfi {
             *f = features.shader_early_and_late_fragment_tests as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.shader_float16),
-            self.features_shader_float16_int8.as_mut().map(|s| &mut s.shader_float16),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.shader_float16),
+            self.features_shader_float16_int8
+                .as_mut()
+                .map(|s| &mut s.shader_float16),
         ]
         .into_iter()
         .flatten()
@@ -13750,7 +14022,10 @@ impl FeaturesFfi {
         {
             *f = features.shader_float16 as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.shader_float64].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.shader_float64]
+            .into_iter()
+            .next()
+        {
             *f = features.shader_float64 as ash::vk::Bool32;
         }
         if let Some(f) = [self
@@ -13783,8 +14058,9 @@ impl FeaturesFfi {
         {
             *f = features.shader_image_float32_atomics as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_image_gather_extended].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.shader_image_gather_extended]
+            .into_iter()
+            .next()
         {
             *f = features.shader_image_gather_extended as ash::vk::Bool32;
         }
@@ -13826,15 +14102,23 @@ impl FeaturesFfi {
         {
             *f = features.shader_input_attachment_array_non_uniform_indexing as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.shader_int16].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.shader_int16]
+            .into_iter()
+            .next()
+        {
             *f = features.shader_int16 as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.shader_int64].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.shader_int64]
+            .into_iter()
+            .next()
+        {
             *f = features.shader_int64 as ash::vk::Bool32;
         }
         if let Some(f) = [
             self.features_vulkan12.as_mut().map(|s| &mut s.shader_int8),
-            self.features_shader_float16_int8.as_mut().map(|s| &mut s.shader_int8),
+            self.features_shader_float16_int8
+                .as_mut()
+                .map(|s| &mut s.shader_int8),
         ]
         .into_iter()
         .flatten()
@@ -13843,7 +14127,9 @@ impl FeaturesFfi {
             *f = features.shader_int8 as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.shader_integer_dot_product),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.shader_integer_dot_product),
             self.features_shader_integer_dot_product
                 .as_mut()
                 .map(|s| &mut s.shader_integer_dot_product),
@@ -13874,28 +14160,35 @@ impl FeaturesFfi {
         {
             *f = features.shader_module_identifier as ash::vk::Bool32;
         }
-        if let Some(f) = [self.features_vulkan12.as_mut().map(|s| &mut s.shader_output_layer)]
-            .into_iter()
-            .flatten()
-            .next()
+        if let Some(f) = [self
+            .features_vulkan12
+            .as_mut()
+            .map(|s| &mut s.shader_output_layer)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.shader_output_layer as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_vulkan12.as_mut().map(|s| &mut s.shader_output_viewport_index)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_vulkan12
+            .as_mut()
+            .map(|s| &mut s.shader_output_viewport_index)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.shader_output_viewport_index as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_resource_min_lod].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.shader_resource_min_lod]
+            .into_iter()
+            .next()
         {
             *f = features.shader_resource_min_lod as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_resource_residency].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.shader_resource_residency]
+            .into_iter()
+            .next()
         {
             *f = features.shader_resource_residency as ash::vk::Bool32;
         }
@@ -13909,10 +14202,12 @@ impl FeaturesFfi {
         {
             *f = features.shader_sample_rate_interpolation_functions as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_sampled_image_array_dynamic_indexing]
-                .into_iter()
-                .next()
+        if let Some(f) = [&mut self
+            .features_vulkan10
+            .features
+            .shader_sampled_image_array_dynamic_indexing]
+        .into_iter()
+        .next()
         {
             *f = features.shader_sampled_image_array_dynamic_indexing as ash::vk::Bool32;
         }
@@ -14021,8 +14316,12 @@ impl FeaturesFfi {
             *f = features.shader_shared_float64_atomics as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.shader_shared_int64_atomics),
-            self.features_shader_atomic_int64.as_mut().map(|s| &mut s.shader_shared_int64_atomics),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.shader_shared_int64_atomics),
+            self.features_shader_atomic_int64
+                .as_mut()
+                .map(|s| &mut s.shader_shared_int64_atomics),
         ]
         .into_iter()
         .flatten()
@@ -14030,18 +14329,22 @@ impl FeaturesFfi {
         {
             *f = features.shader_shared_int64_atomics as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_shader_sm_builtins_nv.as_mut().map(|s| &mut s.shader_sm_builtins)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_shader_sm_builtins_nv
+            .as_mut()
+            .map(|s| &mut s.shader_sm_builtins)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.shader_sm_builtins as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_storage_buffer_array_dynamic_indexing]
-                .into_iter()
-                .next()
+        if let Some(f) = [&mut self
+            .features_vulkan10
+            .features
+            .shader_storage_buffer_array_dynamic_indexing]
+        .into_iter()
+        .next()
         {
             *f = features.shader_storage_buffer_array_dynamic_indexing as ash::vk::Bool32;
         }
@@ -14059,10 +14362,12 @@ impl FeaturesFfi {
         {
             *f = features.shader_storage_buffer_array_non_uniform_indexing as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_storage_image_array_dynamic_indexing]
-                .into_iter()
-                .next()
+        if let Some(f) = [&mut self
+            .features_vulkan10
+            .features
+            .shader_storage_image_array_dynamic_indexing]
+        .into_iter()
+        .next()
         {
             *f = features.shader_storage_image_array_dynamic_indexing as ash::vk::Bool32;
         }
@@ -14080,30 +14385,39 @@ impl FeaturesFfi {
         {
             *f = features.shader_storage_image_array_non_uniform_indexing as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_storage_image_extended_formats]
-                .into_iter()
-                .next()
+        if let Some(f) = [&mut self
+            .features_vulkan10
+            .features
+            .shader_storage_image_extended_formats]
+        .into_iter()
+        .next()
         {
             *f = features.shader_storage_image_extended_formats as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.shader_storage_image_multisample]
-            .into_iter()
-            .next()
+        if let Some(f) = [&mut self
+            .features_vulkan10
+            .features
+            .shader_storage_image_multisample]
+        .into_iter()
+        .next()
         {
             *f = features.shader_storage_image_multisample as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_storage_image_read_without_format]
-                .into_iter()
-                .next()
+        if let Some(f) = [&mut self
+            .features_vulkan10
+            .features
+            .shader_storage_image_read_without_format]
+        .into_iter()
+        .next()
         {
             *f = features.shader_storage_image_read_without_format as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_storage_image_write_without_format]
-                .into_iter()
-                .next()
+        if let Some(f) = [&mut self
+            .features_vulkan10
+            .features
+            .shader_storage_image_write_without_format]
+        .into_iter()
+        .next()
         {
             *f = features.shader_storage_image_write_without_format as ash::vk::Bool32;
         }
@@ -14135,16 +14449,20 @@ impl FeaturesFfi {
         {
             *f = features.shader_storage_texel_buffer_array_non_uniform_indexing as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_shader_clock_khr.as_mut().map(|s| &mut s.shader_subgroup_clock)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_shader_clock_khr
+            .as_mut()
+            .map(|s| &mut s.shader_subgroup_clock)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.shader_subgroup_clock as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.shader_subgroup_extended_types),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.shader_subgroup_extended_types),
             self.features_shader_subgroup_extended_types
                 .as_mut()
                 .map(|s| &mut s.shader_subgroup_extended_types),
@@ -14166,7 +14484,9 @@ impl FeaturesFfi {
             *f = features.shader_subgroup_uniform_control_flow as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.shader_terminate_invocation),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.shader_terminate_invocation),
             self.features_shader_terminate_invocation
                 .as_mut()
                 .map(|s| &mut s.shader_terminate_invocation),
@@ -14177,17 +14497,21 @@ impl FeaturesFfi {
         {
             *f = features.shader_terminate_invocation as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_tessellation_and_geometry_point_size]
-                .into_iter()
-                .next()
+        if let Some(f) = [&mut self
+            .features_vulkan10
+            .features
+            .shader_tessellation_and_geometry_point_size]
+        .into_iter()
+        .next()
         {
             *f = features.shader_tessellation_and_geometry_point_size as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.shader_uniform_buffer_array_dynamic_indexing]
-                .into_iter()
-                .next()
+        if let Some(f) = [&mut self
+            .features_vulkan10
+            .features
+            .shader_uniform_buffer_array_dynamic_indexing]
+        .into_iter()
+        .next()
         {
             *f = features.shader_uniform_buffer_array_dynamic_indexing as ash::vk::Bool32;
         }
@@ -14234,7 +14558,9 @@ impl FeaturesFfi {
             *f = features.shader_uniform_texel_buffer_array_non_uniform_indexing as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.shader_zero_initialize_workgroup_memory),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.shader_zero_initialize_workgroup_memory),
             self.features_zero_initialize_workgroup_memory
                 .as_mut()
                 .map(|s| &mut s.shader_zero_initialize_workgroup_memory),
@@ -14255,23 +14581,30 @@ impl FeaturesFfi {
         {
             *f = features.shading_rate_coarse_sample_order as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_shading_rate_image_nv.as_mut().map(|s| &mut s.shading_rate_image)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_shading_rate_image_nv
+            .as_mut()
+            .map(|s| &mut s.shading_rate_image)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.shading_rate_image as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_line_rasterization_ext.as_mut().map(|s| &mut s.smooth_lines)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_line_rasterization_ext
+            .as_mut()
+            .map(|s| &mut s.smooth_lines)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.smooth_lines as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.sparse_binding].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.sparse_binding]
+            .into_iter()
+            .next()
+        {
             *f = features.sparse_binding as ash::vk::Bool32;
         }
         if let Some(f) = [self
@@ -14314,51 +14647,61 @@ impl FeaturesFfi {
         {
             *f = features.sparse_image_int64_atomics as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.sparse_residency16_samples].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.sparse_residency16_samples]
+            .into_iter()
+            .next()
         {
             *f = features.sparse_residency16_samples as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.sparse_residency2_samples].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.sparse_residency2_samples]
+            .into_iter()
+            .next()
         {
             *f = features.sparse_residency2_samples as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.sparse_residency4_samples].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.sparse_residency4_samples]
+            .into_iter()
+            .next()
         {
             *f = features.sparse_residency4_samples as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.sparse_residency8_samples].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.sparse_residency8_samples]
+            .into_iter()
+            .next()
         {
             *f = features.sparse_residency8_samples as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.sparse_residency_aliased].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.sparse_residency_aliased]
+            .into_iter()
+            .next()
         {
             *f = features.sparse_residency_aliased as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.sparse_residency_buffer].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.sparse_residency_buffer]
+            .into_iter()
+            .next()
         {
             *f = features.sparse_residency_buffer as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.sparse_residency_image2_d].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.sparse_residency_image2_d]
+            .into_iter()
+            .next()
         {
             *f = features.sparse_residency_image2_d as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.sparse_residency_image3_d].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.sparse_residency_image3_d]
+            .into_iter()
+            .next()
         {
             *f = features.sparse_residency_image3_d as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_line_rasterization_ext.as_mut().map(|s| &mut s.stippled_bresenham_lines)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_line_rasterization_ext
+            .as_mut()
+            .map(|s| &mut s.stippled_bresenham_lines)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.stippled_bresenham_lines as ash::vk::Bool32;
         }
@@ -14372,17 +14715,23 @@ impl FeaturesFfi {
         {
             *f = features.stippled_rectangular_lines as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_line_rasterization_ext.as_mut().map(|s| &mut s.stippled_smooth_lines)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_line_rasterization_ext
+            .as_mut()
+            .map(|s| &mut s.stippled_smooth_lines)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.stippled_smooth_lines as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.storage_buffer16_bit_access),
-            self.features_16bit_storage.as_mut().map(|s| &mut s.storage_buffer16_bit_access),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.storage_buffer16_bit_access),
+            self.features_16bit_storage
+                .as_mut()
+                .map(|s| &mut s.storage_buffer16_bit_access),
         ]
         .into_iter()
         .flatten()
@@ -14391,8 +14740,12 @@ impl FeaturesFfi {
             *f = features.storage_buffer16_bit_access as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.storage_buffer8_bit_access),
-            self.features_8bit_storage.as_mut().map(|s| &mut s.storage_buffer8_bit_access),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.storage_buffer8_bit_access),
+            self.features_8bit_storage
+                .as_mut()
+                .map(|s| &mut s.storage_buffer8_bit_access),
         ]
         .into_iter()
         .flatten()
@@ -14401,8 +14754,12 @@ impl FeaturesFfi {
             *f = features.storage_buffer8_bit_access as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.storage_input_output16),
-            self.features_16bit_storage.as_mut().map(|s| &mut s.storage_input_output16),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.storage_input_output16),
+            self.features_16bit_storage
+                .as_mut()
+                .map(|s| &mut s.storage_input_output16),
         ]
         .into_iter()
         .flatten()
@@ -14411,8 +14768,12 @@ impl FeaturesFfi {
             *f = features.storage_input_output16 as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.storage_push_constant16),
-            self.features_16bit_storage.as_mut().map(|s| &mut s.storage_push_constant16),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.storage_push_constant16),
+            self.features_16bit_storage
+                .as_mut()
+                .map(|s| &mut s.storage_push_constant16),
         ]
         .into_iter()
         .flatten()
@@ -14421,8 +14782,12 @@ impl FeaturesFfi {
             *f = features.storage_push_constant16 as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.storage_push_constant8),
-            self.features_8bit_storage.as_mut().map(|s| &mut s.storage_push_constant8),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.storage_push_constant8),
+            self.features_8bit_storage
+                .as_mut()
+                .map(|s| &mut s.storage_push_constant8),
         ]
         .into_iter()
         .flatten()
@@ -14430,17 +14795,23 @@ impl FeaturesFfi {
         {
             *f = features.storage_push_constant8 as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_vulkan12.as_mut().map(|s| &mut s.subgroup_broadcast_dynamic_id)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_vulkan12
+            .as_mut()
+            .map(|s| &mut s.subgroup_broadcast_dynamic_id)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.subgroup_broadcast_dynamic_id as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.subgroup_size_control),
-            self.features_subgroup_size_control.as_mut().map(|s| &mut s.subgroup_size_control),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.subgroup_size_control),
+            self.features_subgroup_size_control
+                .as_mut()
+                .map(|s| &mut s.subgroup_size_control),
         ]
         .into_iter()
         .flatten()
@@ -14458,11 +14829,13 @@ impl FeaturesFfi {
         {
             *f = features.subpass_merge_feedback as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_subpass_shading_huawei.as_mut().map(|s| &mut s.subpass_shading)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_subpass_shading_huawei
+            .as_mut()
+            .map(|s| &mut s.subpass_shading)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.subpass_shading as ash::vk::Bool32;
         }
@@ -14487,8 +14860,12 @@ impl FeaturesFfi {
             *f = features.swapchain_maintenance1 as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.synchronization2),
-            self.features_synchronization2.as_mut().map(|s| &mut s.synchronization2),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.synchronization2),
+            self.features_synchronization2
+                .as_mut()
+                .map(|s| &mut s.synchronization2),
         ]
         .into_iter()
         .flatten()
@@ -14497,8 +14874,12 @@ impl FeaturesFfi {
             *f = features.synchronization2 as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_mesh_shader_ext.as_mut().map(|s| &mut s.task_shader),
-            self.features_mesh_shader_nv.as_mut().map(|s| &mut s.task_shader),
+            self.features_mesh_shader_ext
+                .as_mut()
+                .map(|s| &mut s.task_shader),
+            self.features_mesh_shader_nv
+                .as_mut()
+                .map(|s| &mut s.task_shader),
         ]
         .into_iter()
         .flatten()
@@ -14506,24 +14887,29 @@ impl FeaturesFfi {
         {
             *f = features.task_shader as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_portability_subset_khr.as_mut().map(|s| &mut s.tessellation_isolines)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_portability_subset_khr
+            .as_mut()
+            .map(|s| &mut s.tessellation_isolines)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.tessellation_isolines as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_portability_subset_khr.as_mut().map(|s| &mut s.tessellation_point_mode)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_portability_subset_khr
+            .as_mut()
+            .map(|s| &mut s.tessellation_point_mode)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.tessellation_point_mode as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.tessellation_shader].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.tessellation_shader]
+            .into_iter()
+            .next()
         {
             *f = features.tessellation_shader as ash::vk::Bool32;
         }
@@ -14537,24 +14923,30 @@ impl FeaturesFfi {
         {
             *f = features.texel_buffer_alignment as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_image_processing_qcom.as_mut().map(|s| &mut s.texture_block_match)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_image_processing_qcom
+            .as_mut()
+            .map(|s| &mut s.texture_block_match)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.texture_block_match as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_image_processing_qcom.as_mut().map(|s| &mut s.texture_box_filter)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_image_processing_qcom
+            .as_mut()
+            .map(|s| &mut s.texture_box_filter)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.texture_box_filter as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan13.as_mut().map(|s| &mut s.texture_compression_astc_hdr),
+            self.features_vulkan13
+                .as_mut()
+                .map(|s| &mut s.texture_compression_astc_hdr),
             self.features_texture_compression_astchdr
                 .as_mut()
                 .map(|s| &mut s.texture_compression_astc_hdr),
@@ -14565,40 +14957,51 @@ impl FeaturesFfi {
         {
             *f = features.texture_compression_astc_hdr as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.texture_compression_astc_ldr].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.texture_compression_astc_ldr]
+            .into_iter()
+            .next()
         {
             *f = features.texture_compression_astc_ldr as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.texture_compression_bc].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.texture_compression_bc]
+            .into_iter()
+            .next()
         {
             *f = features.texture_compression_bc as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.texture_compression_etc2].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.texture_compression_etc2]
+            .into_iter()
+            .next()
         {
             *f = features.texture_compression_etc2 as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_image_processing_qcom.as_mut().map(|s| &mut s.texture_sample_weighted)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_image_processing_qcom
+            .as_mut()
+            .map(|s| &mut s.texture_sample_weighted)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.texture_sample_weighted as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_tile_properties_qcom.as_mut().map(|s| &mut s.tile_properties)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_tile_properties_qcom
+            .as_mut()
+            .map(|s| &mut s.tile_properties)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.tile_properties as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.timeline_semaphore),
-            self.features_timeline_semaphore.as_mut().map(|s| &mut s.timeline_semaphore),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.timeline_semaphore),
+            self.features_timeline_semaphore
+                .as_mut()
+                .map(|s| &mut s.timeline_semaphore),
         ]
         .into_iter()
         .flatten()
@@ -14606,11 +15009,13 @@ impl FeaturesFfi {
         {
             *f = features.timeline_semaphore as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_transform_feedback_ext.as_mut().map(|s| &mut s.transform_feedback)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_transform_feedback_ext
+            .as_mut()
+            .map(|s| &mut s.transform_feedback)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.transform_feedback as ash::vk::Bool32;
         }
@@ -14624,16 +15029,20 @@ impl FeaturesFfi {
         {
             *f = features.transform_feedback_preserves_provoking_vertex as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_portability_subset_khr.as_mut().map(|s| &mut s.triangle_fans)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_portability_subset_khr
+            .as_mut()
+            .map(|s| &mut s.triangle_fans)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.triangle_fans as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.uniform_and_storage_buffer16_bit_access),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.uniform_and_storage_buffer16_bit_access),
             self.features_16bit_storage
                 .as_mut()
                 .map(|s| &mut s.uniform_and_storage_buffer16_bit_access),
@@ -14645,7 +15054,9 @@ impl FeaturesFfi {
             *f = features.uniform_and_storage_buffer16_bit_access as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.uniform_and_storage_buffer8_bit_access),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.uniform_and_storage_buffer8_bit_access),
             self.features_8bit_storage
                 .as_mut()
                 .map(|s| &mut s.uniform_and_storage_buffer8_bit_access),
@@ -14657,7 +15068,9 @@ impl FeaturesFfi {
             *f = features.uniform_and_storage_buffer8_bit_access as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.uniform_buffer_standard_layout),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.uniform_buffer_standard_layout),
             self.features_uniform_buffer_standard_layout
                 .as_mut()
                 .map(|s| &mut s.uniform_buffer_standard_layout),
@@ -14668,14 +15081,19 @@ impl FeaturesFfi {
         {
             *f = features.uniform_buffer_standard_layout as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [&mut self.features_vulkan10.features.variable_multisample_rate].into_iter().next()
+        if let Some(f) = [&mut self.features_vulkan10.features.variable_multisample_rate]
+            .into_iter()
+            .next()
         {
             *f = features.variable_multisample_rate as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.variable_pointers),
-            self.features_variable_pointers.as_mut().map(|s| &mut s.variable_pointers),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.variable_pointers),
+            self.features_variable_pointers
+                .as_mut()
+                .map(|s| &mut s.variable_pointers),
         ]
         .into_iter()
         .flatten()
@@ -14684,7 +15102,9 @@ impl FeaturesFfi {
             *f = features.variable_pointers as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan11.as_mut().map(|s| &mut s.variable_pointers_storage_buffer),
+            self.features_vulkan11
+                .as_mut()
+                .map(|s| &mut s.variable_pointers_storage_buffer),
             self.features_variable_pointers
                 .as_mut()
                 .map(|s| &mut s.variable_pointers_storage_buffer),
@@ -14735,15 +15155,22 @@ impl FeaturesFfi {
         {
             *f = features.vertex_input_dynamic_state as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.vertex_pipeline_stores_and_atomics]
-            .into_iter()
-            .next()
+        if let Some(f) = [&mut self
+            .features_vulkan10
+            .features
+            .vertex_pipeline_stores_and_atomics]
+        .into_iter()
+        .next()
         {
             *f = features.vertex_pipeline_stores_and_atomics as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.vulkan_memory_model),
-            self.features_vulkan_memory_model.as_mut().map(|s| &mut s.vulkan_memory_model),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.vulkan_memory_model),
+            self.features_vulkan_memory_model
+                .as_mut()
+                .map(|s| &mut s.vulkan_memory_model),
         ]
         .into_iter()
         .flatten()
@@ -14766,7 +15193,9 @@ impl FeaturesFfi {
             *f = features.vulkan_memory_model_availability_visibility_chains as ash::vk::Bool32;
         }
         if let Some(f) = [
-            self.features_vulkan12.as_mut().map(|s| &mut s.vulkan_memory_model_device_scope),
+            self.features_vulkan12
+                .as_mut()
+                .map(|s| &mut s.vulkan_memory_model_device_scope),
             self.features_vulkan_memory_model
                 .as_mut()
                 .map(|s| &mut s.vulkan_memory_model_device_scope),
@@ -14777,7 +15206,10 @@ impl FeaturesFfi {
         {
             *f = features.vulkan_memory_model_device_scope as ash::vk::Bool32;
         }
-        if let Some(f) = [&mut self.features_vulkan10.features.wide_lines].into_iter().next() {
+        if let Some(f) = [&mut self.features_vulkan10.features.wide_lines]
+            .into_iter()
+            .next()
+        {
             *f = features.wide_lines as ash::vk::Bool32;
         }
         if let Some(f) = [self
@@ -14830,11 +15262,13 @@ impl FeaturesFfi {
         {
             *f = features.ycbcr2plane444_formats as ash::vk::Bool32;
         }
-        if let Some(f) =
-            [self.features_ycbcr_image_arrays_ext.as_mut().map(|s| &mut s.ycbcr_image_arrays)]
-                .into_iter()
-                .flatten()
-                .next()
+        if let Some(f) = [self
+            .features_ycbcr_image_arrays_ext
+            .as_mut()
+            .map(|s| &mut s.ycbcr_image_arrays)]
+        .into_iter()
+        .flatten()
+        .next()
         {
             *f = features.ycbcr_image_arrays as ash::vk::Bool32;
         }
@@ -14888,11 +15322,13 @@ impl From<&FeaturesFfi> for Features {
                 .next()
                 .unwrap_or(0)
                 != 0,
-            amigo_profiling: [features_ffi.features_amigo_profiling_sec.map(|s| s.amigo_profiling)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            amigo_profiling: [features_ffi
+                .features_amigo_profiling_sec
+                .map(|s| s.amigo_profiling)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             attachment_feedback_loop_layout: [features_ffi
                 .features_attachment_feedback_loop_layout_ext
@@ -14935,9 +15371,15 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             buffer_device_address: [
-                features_ffi.features_vulkan12.map(|s| s.buffer_device_address),
-                features_ffi.features_buffer_device_address.map(|s| s.buffer_device_address),
-                features_ffi.features_buffer_device_address_ext.map(|s| s.buffer_device_address),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.buffer_device_address),
+                features_ffi
+                    .features_buffer_device_address
+                    .map(|s| s.buffer_device_address),
+                features_ffi
+                    .features_buffer_device_address_ext
+                    .map(|s| s.buffer_device_address),
             ]
             .into_iter()
             .flatten()
@@ -14945,7 +15387,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             buffer_device_address_capture_replay: [
-                features_ffi.features_vulkan12.map(|s| s.buffer_device_address_capture_replay),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.buffer_device_address_capture_replay),
                 features_ffi
                     .features_buffer_device_address
                     .map(|s| s.buffer_device_address_capture_replay),
@@ -14959,7 +15403,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             buffer_device_address_multi_device: [
-                features_ffi.features_vulkan12.map(|s| s.buffer_device_address_multi_device),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.buffer_device_address_multi_device),
                 features_ffi
                     .features_buffer_device_address
                     .map(|s| s.buffer_device_address_multi_device),
@@ -14997,8 +15443,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             compute_full_subgroups: [
-                features_ffi.features_vulkan13.map(|s| s.compute_full_subgroups),
-                features_ffi.features_subgroup_size_control.map(|s| s.compute_full_subgroups),
+                features_ffi
+                    .features_vulkan13
+                    .map(|s| s.compute_full_subgroups),
+                features_ffi
+                    .features_subgroup_size_control
+                    .map(|s| s.compute_full_subgroups),
             ]
             .into_iter()
             .flatten()
@@ -15146,7 +15596,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             descriptor_binding_partially_bound: [
-                features_ffi.features_vulkan12.map(|s| s.descriptor_binding_partially_bound),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.descriptor_binding_partially_bound),
                 features_ffi
                     .features_descriptor_indexing
                     .map(|s| s.descriptor_binding_partially_bound),
@@ -15292,11 +15744,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            descriptor_indexing: [features_ffi.features_vulkan12.map(|s| s.descriptor_indexing)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            descriptor_indexing: [features_ffi
+                .features_vulkan12
+                .map(|s| s.descriptor_indexing)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             descriptor_set_host_mapping: [features_ffi
                 .features_descriptor_set_host_mapping_valve
@@ -15352,11 +15806,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            draw_indirect_count: [features_ffi.features_vulkan12.map(|s| s.draw_indirect_count)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            draw_indirect_count: [features_ffi
+                .features_vulkan12
+                .map(|s| s.draw_indirect_count)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             draw_indirect_first_instance: [features_ffi
                 .features_vulkan10
@@ -15373,18 +15829,22 @@ impl From<&FeaturesFfi> for Features {
                 != 0,
             dynamic_rendering: [
                 features_ffi.features_vulkan13.map(|s| s.dynamic_rendering),
-                features_ffi.features_dynamic_rendering.map(|s| s.dynamic_rendering),
+                features_ffi
+                    .features_dynamic_rendering
+                    .map(|s| s.dynamic_rendering),
             ]
             .into_iter()
             .flatten()
             .next()
             .unwrap_or(0)
                 != 0,
-            events: [features_ffi.features_portability_subset_khr.map(|s| s.events)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            events: [features_ffi
+                .features_portability_subset_khr
+                .map(|s| s.events)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             exclusive_scissor: [features_ffi
                 .features_exclusive_scissor_nv
@@ -15687,17 +16147,21 @@ impl From<&FeaturesFfi> for Features {
                 .next()
                 .unwrap_or(0)
                 != 0,
-            format_a4b4g4r4: [features_ffi.features_4444formats_ext.map(|s| s.format_a4b4g4r4)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            format_a4b4g4r4: [features_ffi
+                .features_4444formats_ext
+                .map(|s| s.format_a4b4g4r4)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
-            format_a4r4g4b4: [features_ffi.features_4444formats_ext.map(|s| s.format_a4r4g4b4)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            format_a4r4g4b4: [features_ffi
+                .features_4444formats_ext
+                .map(|s| s.format_a4r4g4b4)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             format_rgba10x6_without_y_cb_cr_sampler: [features_ffi
                 .features_rgba10x6_formats_ext
@@ -15834,7 +16298,9 @@ impl From<&FeaturesFfi> for Features {
                 != 0,
             host_query_reset: [
                 features_ffi.features_vulkan12.map(|s| s.host_query_reset),
-                features_ffi.features_host_query_reset.map(|s| s.host_query_reset),
+                features_ffi
+                    .features_host_query_reset
+                    .map(|s| s.host_query_reset),
             ]
             .into_iter()
             .flatten()
@@ -15903,8 +16369,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             imageless_framebuffer: [
-                features_ffi.features_vulkan12.map(|s| s.imageless_framebuffer),
-                features_ffi.features_imageless_framebuffer.map(|s| s.imageless_framebuffer),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.imageless_framebuffer),
+                features_ffi
+                    .features_imageless_framebuffer
+                    .map(|s| s.imageless_framebuffer),
             ]
             .into_iter()
             .flatten()
@@ -15924,11 +16394,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            indirect_copy: [features_ffi.features_copy_memory_indirect_nv.map(|s| s.indirect_copy)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            indirect_copy: [features_ffi
+                .features_copy_memory_indirect_nv
+                .map(|s| s.indirect_copy)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             inherited_conditional_rendering: [features_ffi
                 .features_conditional_rendering_ext
@@ -15952,8 +16424,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             inline_uniform_block: [
-                features_ffi.features_vulkan13.map(|s| s.inline_uniform_block),
-                features_ffi.features_inline_uniform_block.map(|s| s.inline_uniform_block),
+                features_ffi
+                    .features_vulkan13
+                    .map(|s| s.inline_uniform_block),
+                features_ffi
+                    .features_inline_uniform_block
+                    .map(|s| s.inline_uniform_block),
             ]
             .into_iter()
             .flatten()
@@ -16011,11 +16487,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            memory_priority: [features_ffi.features_memory_priority_ext.map(|s| s.memory_priority)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            memory_priority: [features_ffi
+                .features_memory_priority_ext
+                .map(|s| s.memory_priority)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             mesh_shader: [
                 features_ffi.features_mesh_shader_ext.map(|s| s.mesh_shader),
@@ -16034,11 +16512,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            micromap: [features_ffi.features_opacity_micromap_ext.map(|s| s.micromap)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            micromap: [features_ffi
+                .features_opacity_micromap_ext
+                .map(|s| s.micromap)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             micromap_capture_replay: [features_ffi
                 .features_opacity_micromap_ext
@@ -16056,11 +16536,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            min_lod: [features_ffi.features_image_view_min_lod_ext.map(|s| s.min_lod)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            min_lod: [features_ffi
+                .features_image_view_min_lod_ext
+                .map(|s| s.min_lod)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             multi_draw: [features_ffi.features_multi_draw_ext.map(|s| s.multi_draw)]
                 .into_iter()
@@ -16104,8 +16586,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             multiview_geometry_shader: [
-                features_ffi.features_vulkan11.map(|s| s.multiview_geometry_shader),
-                features_ffi.features_multiview.map(|s| s.multiview_geometry_shader),
+                features_ffi
+                    .features_vulkan11
+                    .map(|s| s.multiview_geometry_shader),
+                features_ffi
+                    .features_multiview
+                    .map(|s| s.multiview_geometry_shader),
             ]
             .into_iter()
             .flatten()
@@ -16129,8 +16615,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             multiview_tessellation_shader: [
-                features_ffi.features_vulkan11.map(|s| s.multiview_tessellation_shader),
-                features_ffi.features_multiview.map(|s| s.multiview_tessellation_shader),
+                features_ffi
+                    .features_vulkan11
+                    .map(|s| s.multiview_tessellation_shader),
+                features_ffi
+                    .features_multiview
+                    .map(|s| s.multiview_tessellation_shader),
             ]
             .into_iter()
             .flatten()
@@ -16169,11 +16659,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            null_descriptor: [features_ffi.features_robustness2_ext.map(|s| s.null_descriptor)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            null_descriptor: [features_ffi
+                .features_robustness2_ext
+                .map(|s| s.null_descriptor)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             occlusion_query_precise: [features_ffi
                 .features_vulkan10
@@ -16183,11 +16675,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            optical_flow: [features_ffi.features_optical_flow_nv.map(|s| s.optical_flow)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            optical_flow: [features_ffi
+                .features_optical_flow_nv
+                .map(|s| s.optical_flow)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             pageable_device_local_memory: [features_ffi
                 .features_pageable_device_local_memory_ext
@@ -16214,7 +16708,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             pipeline_creation_cache_control: [
-                features_ffi.features_vulkan13.map(|s| s.pipeline_creation_cache_control),
+                features_ffi
+                    .features_vulkan13
+                    .map(|s| s.pipeline_creation_cache_control),
                 features_ffi
                     .features_pipeline_creation_cache_control
                     .map(|s| s.pipeline_creation_cache_control),
@@ -16280,11 +16776,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            present_barrier: [features_ffi.features_present_barrier_nv.map(|s| s.present_barrier)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            present_barrier: [features_ffi
+                .features_present_barrier_nv
+                .map(|s| s.present_barrier)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             present_id: [features_ffi.features_present_id_khr.map(|s| s.present_id)]
                 .into_iter()
@@ -16292,11 +16790,13 @@ impl From<&FeaturesFfi> for Features {
                 .next()
                 .unwrap_or(0)
                 != 0,
-            present_wait: [features_ffi.features_present_wait_khr.map(|s| s.present_wait)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            present_wait: [features_ffi
+                .features_present_wait_khr
+                .map(|s| s.present_wait)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             primitive_fragment_shading_rate: [features_ffi
                 .features_fragment_shading_rate_khr
@@ -16365,7 +16865,9 @@ impl From<&FeaturesFfi> for Features {
                 != 0,
             protected_memory: [
                 features_ffi.features_vulkan11.map(|s| s.protected_memory),
-                features_ffi.features_protected_memory.map(|s| s.protected_memory),
+                features_ffi
+                    .features_protected_memory
+                    .map(|s| s.protected_memory),
             ]
             .into_iter()
             .flatten()
@@ -16528,8 +17030,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             robust_image_access: [
-                features_ffi.features_vulkan13.map(|s| s.robust_image_access),
-                features_ffi.features_image_robustness.map(|s| s.robust_image_access),
+                features_ffi
+                    .features_vulkan13
+                    .map(|s| s.robust_image_access),
+                features_ffi
+                    .features_image_robustness
+                    .map(|s| s.robust_image_access),
             ]
             .into_iter()
             .flatten()
@@ -16545,8 +17051,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             runtime_descriptor_array: [
-                features_ffi.features_vulkan12.map(|s| s.runtime_descriptor_array),
-                features_ffi.features_descriptor_indexing.map(|s| s.runtime_descriptor_array),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.runtime_descriptor_array),
+                features_ffi
+                    .features_descriptor_indexing
+                    .map(|s| s.runtime_descriptor_array),
             ]
             .into_iter()
             .flatten()
@@ -16596,8 +17106,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             sampler_ycbcr_conversion: [
-                features_ffi.features_vulkan11.map(|s| s.sampler_ycbcr_conversion),
-                features_ffi.features_sampler_ycbcr_conversion.map(|s| s.sampler_ycbcr_conversion),
+                features_ffi
+                    .features_vulkan11
+                    .map(|s| s.sampler_ycbcr_conversion),
+                features_ffi
+                    .features_sampler_ycbcr_conversion
+                    .map(|s| s.sampler_ycbcr_conversion),
             ]
             .into_iter()
             .flatten()
@@ -16605,8 +17119,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             scalar_block_layout: [
-                features_ffi.features_vulkan12.map(|s| s.scalar_block_layout),
-                features_ffi.features_scalar_block_layout.map(|s| s.scalar_block_layout),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.scalar_block_layout),
+                features_ffi
+                    .features_scalar_block_layout
+                    .map(|s| s.scalar_block_layout),
             ]
             .into_iter()
             .flatten()
@@ -16614,7 +17132,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             separate_depth_stencil_layouts: [
-                features_ffi.features_vulkan12.map(|s| s.separate_depth_stencil_layouts),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.separate_depth_stencil_layouts),
                 features_ffi
                     .features_separate_depth_stencil_layouts
                     .map(|s| s.separate_depth_stencil_layouts),
@@ -16705,8 +17225,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             shader_buffer_int64_atomics: [
-                features_ffi.features_vulkan12.map(|s| s.shader_buffer_int64_atomics),
-                features_ffi.features_shader_atomic_int64.map(|s| s.shader_buffer_int64_atomics),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.shader_buffer_int64_atomics),
+                features_ffi
+                    .features_shader_atomic_int64
+                    .map(|s| s.shader_buffer_int64_atomics),
             ]
             .into_iter()
             .flatten()
@@ -16732,7 +17256,9 @@ impl From<&FeaturesFfi> for Features {
                 .unwrap_or(0)
                 != 0,
             shader_demote_to_helper_invocation: [
-                features_ffi.features_vulkan13.map(|s| s.shader_demote_to_helper_invocation),
+                features_ffi
+                    .features_vulkan13
+                    .map(|s| s.shader_demote_to_helper_invocation),
                 features_ffi
                     .features_shader_demote_to_helper_invocation
                     .map(|s| s.shader_demote_to_helper_invocation),
@@ -16751,8 +17277,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             shader_draw_parameters: [
-                features_ffi.features_vulkan11.map(|s| s.shader_draw_parameters),
-                features_ffi.features_shader_draw_parameters.map(|s| s.shader_draw_parameters),
+                features_ffi
+                    .features_vulkan11
+                    .map(|s| s.shader_draw_parameters),
+                features_ffi
+                    .features_shader_draw_parameters
+                    .map(|s| s.shader_draw_parameters),
             ]
             .into_iter()
             .flatten()
@@ -16769,7 +17299,9 @@ impl From<&FeaturesFfi> for Features {
                 != 0,
             shader_float16: [
                 features_ffi.features_vulkan12.map(|s| s.shader_float16),
-                features_ffi.features_shader_float16_int8.map(|s| s.shader_float16),
+                features_ffi
+                    .features_shader_float16_int8
+                    .map(|s| s.shader_float16),
             ]
             .into_iter()
             .flatten()
@@ -16859,7 +17391,9 @@ impl From<&FeaturesFfi> for Features {
                 != 0,
             shader_int8: [
                 features_ffi.features_vulkan12.map(|s| s.shader_int8),
-                features_ffi.features_shader_float16_int8.map(|s| s.shader_int8),
+                features_ffi
+                    .features_shader_float16_int8
+                    .map(|s| s.shader_int8),
             ]
             .into_iter()
             .flatten()
@@ -16867,7 +17401,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             shader_integer_dot_product: [
-                features_ffi.features_vulkan13.map(|s| s.shader_integer_dot_product),
+                features_ffi
+                    .features_vulkan13
+                    .map(|s| s.shader_integer_dot_product),
                 features_ffi
                     .features_shader_integer_dot_product
                     .map(|s| s.shader_integer_dot_product),
@@ -16893,11 +17429,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            shader_output_layer: [features_ffi.features_vulkan12.map(|s| s.shader_output_layer)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            shader_output_layer: [features_ffi
+                .features_vulkan12
+                .map(|s| s.shader_output_layer)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             shader_output_viewport_index: [features_ffi
                 .features_vulkan12
@@ -17025,8 +17563,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             shader_shared_int64_atomics: [
-                features_ffi.features_vulkan12.map(|s| s.shader_shared_int64_atomics),
-                features_ffi.features_shader_atomic_int64.map(|s| s.shader_shared_int64_atomics),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.shader_shared_int64_atomics),
+                features_ffi
+                    .features_shader_atomic_int64
+                    .map(|s| s.shader_shared_int64_atomics),
             ]
             .into_iter()
             .flatten()
@@ -17150,7 +17692,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             shader_subgroup_extended_types: [
-                features_ffi.features_vulkan12.map(|s| s.shader_subgroup_extended_types),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.shader_subgroup_extended_types),
                 features_ffi
                     .features_shader_subgroup_extended_types
                     .map(|s| s.shader_subgroup_extended_types),
@@ -17169,7 +17713,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             shader_terminate_invocation: [
-                features_ffi.features_vulkan13.map(|s| s.shader_terminate_invocation),
+                features_ffi
+                    .features_vulkan13
+                    .map(|s| s.shader_terminate_invocation),
                 features_ffi
                     .features_shader_terminate_invocation
                     .map(|s| s.shader_terminate_invocation),
@@ -17235,7 +17781,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             shader_zero_initialize_workgroup_memory: [
-                features_ffi.features_vulkan13.map(|s| s.shader_zero_initialize_workgroup_memory),
+                features_ffi
+                    .features_vulkan13
+                    .map(|s| s.shader_zero_initialize_workgroup_memory),
                 features_ffi
                     .features_zero_initialize_workgroup_memory
                     .map(|s| s.shader_zero_initialize_workgroup_memory),
@@ -17261,11 +17809,13 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            smooth_lines: [features_ffi.features_line_rasterization_ext.map(|s| s.smooth_lines)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            smooth_lines: [features_ffi
+                .features_line_rasterization_ext
+                .map(|s| s.smooth_lines)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             sparse_binding: [features_ffi.features_vulkan10.features.sparse_binding]
                 .into_iter()
@@ -17393,8 +17943,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             storage_buffer16_bit_access: [
-                features_ffi.features_vulkan11.map(|s| s.storage_buffer16_bit_access),
-                features_ffi.features_16bit_storage.map(|s| s.storage_buffer16_bit_access),
+                features_ffi
+                    .features_vulkan11
+                    .map(|s| s.storage_buffer16_bit_access),
+                features_ffi
+                    .features_16bit_storage
+                    .map(|s| s.storage_buffer16_bit_access),
             ]
             .into_iter()
             .flatten()
@@ -17402,8 +17956,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             storage_buffer8_bit_access: [
-                features_ffi.features_vulkan12.map(|s| s.storage_buffer8_bit_access),
-                features_ffi.features_8bit_storage.map(|s| s.storage_buffer8_bit_access),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.storage_buffer8_bit_access),
+                features_ffi
+                    .features_8bit_storage
+                    .map(|s| s.storage_buffer8_bit_access),
             ]
             .into_iter()
             .flatten()
@@ -17411,8 +17969,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             storage_input_output16: [
-                features_ffi.features_vulkan11.map(|s| s.storage_input_output16),
-                features_ffi.features_16bit_storage.map(|s| s.storage_input_output16),
+                features_ffi
+                    .features_vulkan11
+                    .map(|s| s.storage_input_output16),
+                features_ffi
+                    .features_16bit_storage
+                    .map(|s| s.storage_input_output16),
             ]
             .into_iter()
             .flatten()
@@ -17420,8 +17982,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             storage_push_constant16: [
-                features_ffi.features_vulkan11.map(|s| s.storage_push_constant16),
-                features_ffi.features_16bit_storage.map(|s| s.storage_push_constant16),
+                features_ffi
+                    .features_vulkan11
+                    .map(|s| s.storage_push_constant16),
+                features_ffi
+                    .features_16bit_storage
+                    .map(|s| s.storage_push_constant16),
             ]
             .into_iter()
             .flatten()
@@ -17429,8 +17995,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             storage_push_constant8: [
-                features_ffi.features_vulkan12.map(|s| s.storage_push_constant8),
-                features_ffi.features_8bit_storage.map(|s| s.storage_push_constant8),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.storage_push_constant8),
+                features_ffi
+                    .features_8bit_storage
+                    .map(|s| s.storage_push_constant8),
             ]
             .into_iter()
             .flatten()
@@ -17446,8 +18016,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             subgroup_size_control: [
-                features_ffi.features_vulkan13.map(|s| s.subgroup_size_control),
-                features_ffi.features_subgroup_size_control.map(|s| s.subgroup_size_control),
+                features_ffi
+                    .features_vulkan13
+                    .map(|s| s.subgroup_size_control),
+                features_ffi
+                    .features_subgroup_size_control
+                    .map(|s| s.subgroup_size_control),
             ]
             .into_iter()
             .flatten()
@@ -17488,7 +18062,9 @@ impl From<&FeaturesFfi> for Features {
                 != 0,
             synchronization2: [
                 features_ffi.features_vulkan13.map(|s| s.synchronization2),
-                features_ffi.features_synchronization2.map(|s| s.synchronization2),
+                features_ffi
+                    .features_synchronization2
+                    .map(|s| s.synchronization2),
             ]
             .into_iter()
             .flatten()
@@ -17550,7 +18126,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             texture_compression_astc_hdr: [
-                features_ffi.features_vulkan13.map(|s| s.texture_compression_astc_hdr),
+                features_ffi
+                    .features_vulkan13
+                    .map(|s| s.texture_compression_astc_hdr),
                 features_ffi
                     .features_texture_compression_astchdr
                     .map(|s| s.texture_compression_astc_hdr),
@@ -17602,7 +18180,9 @@ impl From<&FeaturesFfi> for Features {
                 != 0,
             timeline_semaphore: [
                 features_ffi.features_vulkan12.map(|s| s.timeline_semaphore),
-                features_ffi.features_timeline_semaphore.map(|s| s.timeline_semaphore),
+                features_ffi
+                    .features_timeline_semaphore
+                    .map(|s| s.timeline_semaphore),
             ]
             .into_iter()
             .flatten()
@@ -17625,14 +18205,18 @@ impl From<&FeaturesFfi> for Features {
             .next()
             .unwrap_or(0)
                 != 0,
-            triangle_fans: [features_ffi.features_portability_subset_khr.map(|s| s.triangle_fans)]
-                .into_iter()
-                .flatten()
-                .next()
-                .unwrap_or(0)
+            triangle_fans: [features_ffi
+                .features_portability_subset_khr
+                .map(|s| s.triangle_fans)]
+            .into_iter()
+            .flatten()
+            .next()
+            .unwrap_or(0)
                 != 0,
             uniform_and_storage_buffer16_bit_access: [
-                features_ffi.features_vulkan11.map(|s| s.uniform_and_storage_buffer16_bit_access),
+                features_ffi
+                    .features_vulkan11
+                    .map(|s| s.uniform_and_storage_buffer16_bit_access),
                 features_ffi
                     .features_16bit_storage
                     .map(|s| s.uniform_and_storage_buffer16_bit_access),
@@ -17643,7 +18227,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             uniform_and_storage_buffer8_bit_access: [
-                features_ffi.features_vulkan12.map(|s| s.uniform_and_storage_buffer8_bit_access),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.uniform_and_storage_buffer8_bit_access),
                 features_ffi
                     .features_8bit_storage
                     .map(|s| s.uniform_and_storage_buffer8_bit_access),
@@ -17654,7 +18240,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             uniform_buffer_standard_layout: [
-                features_ffi.features_vulkan12.map(|s| s.uniform_buffer_standard_layout),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.uniform_buffer_standard_layout),
                 features_ffi
                     .features_uniform_buffer_standard_layout
                     .map(|s| s.uniform_buffer_standard_layout),
@@ -17674,7 +18262,9 @@ impl From<&FeaturesFfi> for Features {
                 != 0,
             variable_pointers: [
                 features_ffi.features_vulkan11.map(|s| s.variable_pointers),
-                features_ffi.features_variable_pointers.map(|s| s.variable_pointers),
+                features_ffi
+                    .features_variable_pointers
+                    .map(|s| s.variable_pointers),
             ]
             .into_iter()
             .flatten()
@@ -17682,8 +18272,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             variable_pointers_storage_buffer: [
-                features_ffi.features_vulkan11.map(|s| s.variable_pointers_storage_buffer),
-                features_ffi.features_variable_pointers.map(|s| s.variable_pointers_storage_buffer),
+                features_ffi
+                    .features_vulkan11
+                    .map(|s| s.variable_pointers_storage_buffer),
+                features_ffi
+                    .features_variable_pointers
+                    .map(|s| s.variable_pointers_storage_buffer),
             ]
             .into_iter()
             .flatten()
@@ -17731,8 +18325,12 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             vulkan_memory_model: [
-                features_ffi.features_vulkan12.map(|s| s.vulkan_memory_model),
-                features_ffi.features_vulkan_memory_model.map(|s| s.vulkan_memory_model),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.vulkan_memory_model),
+                features_ffi
+                    .features_vulkan_memory_model
+                    .map(|s| s.vulkan_memory_model),
             ]
             .into_iter()
             .flatten()
@@ -17753,7 +18351,9 @@ impl From<&FeaturesFfi> for Features {
             .unwrap_or(0)
                 != 0,
             vulkan_memory_model_device_scope: [
-                features_ffi.features_vulkan12.map(|s| s.vulkan_memory_model_device_scope),
+                features_ffi
+                    .features_vulkan12
+                    .map(|s| s.vulkan_memory_model_device_scope),
                 features_ffi
                     .features_vulkan_memory_model
                     .map(|s| s.vulkan_memory_model_device_scope),
@@ -17827,34 +18427,79 @@ impl IntoIterator for Features {
     fn into_iter(self) -> Self::IntoIter {
         [
             ("accelerationStructure", self.acceleration_structure),
-            ("accelerationStructureCaptureReplay", self.acceleration_structure_capture_replay),
-            ("accelerationStructureHostCommands", self.acceleration_structure_host_commands),
-            ("accelerationStructureIndirectBuild", self.acceleration_structure_indirect_build),
-            ("advancedBlendCoherentOperations", self.advanced_blend_coherent_operations),
+            (
+                "accelerationStructureCaptureReplay",
+                self.acceleration_structure_capture_replay,
+            ),
+            (
+                "accelerationStructureHostCommands",
+                self.acceleration_structure_host_commands,
+            ),
+            (
+                "accelerationStructureIndirectBuild",
+                self.acceleration_structure_indirect_build,
+            ),
+            (
+                "advancedBlendCoherentOperations",
+                self.advanced_blend_coherent_operations,
+            ),
             ("alphaToOne", self.alpha_to_one),
             ("amigoProfiling", self.amigo_profiling),
-            ("attachmentFeedbackLoopLayout", self.attachment_feedback_loop_layout),
-            ("attachmentFragmentShadingRate", self.attachment_fragment_shading_rate),
+            (
+                "attachmentFeedbackLoopLayout",
+                self.attachment_feedback_loop_layout,
+            ),
+            (
+                "attachmentFragmentShadingRate",
+                self.attachment_fragment_shading_rate,
+            ),
             ("borderColorSwizzle", self.border_color_swizzle),
-            ("borderColorSwizzleFromImage", self.border_color_swizzle_from_image),
+            (
+                "borderColorSwizzleFromImage",
+                self.border_color_swizzle_from_image,
+            ),
             ("bresenhamLines", self.bresenham_lines),
             ("bufferDeviceAddress", self.buffer_device_address),
-            ("bufferDeviceAddressCaptureReplay", self.buffer_device_address_capture_replay),
-            ("bufferDeviceAddressMultiDevice", self.buffer_device_address_multi_device),
+            (
+                "bufferDeviceAddressCaptureReplay",
+                self.buffer_device_address_capture_replay,
+            ),
+            (
+                "bufferDeviceAddressMultiDevice",
+                self.buffer_device_address_multi_device,
+            ),
             ("colorWriteEnable", self.color_write_enable),
-            ("computeDerivativeGroupLinear", self.compute_derivative_group_linear),
-            ("computeDerivativeGroupQuads", self.compute_derivative_group_quads),
+            (
+                "computeDerivativeGroupLinear",
+                self.compute_derivative_group_linear,
+            ),
+            (
+                "computeDerivativeGroupQuads",
+                self.compute_derivative_group_quads,
+            ),
             ("computeFullSubgroups", self.compute_full_subgroups),
             ("conditionalRendering", self.conditional_rendering),
-            ("constantAlphaColorBlendFactors", self.constant_alpha_color_blend_factors),
+            (
+                "constantAlphaColorBlendFactors",
+                self.constant_alpha_color_blend_factors,
+            ),
             ("cooperativeMatrix", self.cooperative_matrix),
-            ("cooperativeMatrixRobustBufferAccess", self.cooperative_matrix_robust_buffer_access),
+            (
+                "cooperativeMatrixRobustBufferAccess",
+                self.cooperative_matrix_robust_buffer_access,
+            ),
             ("cornerSampledImage", self.corner_sampled_image),
             ("coverageReductionMode", self.coverage_reduction_mode),
-            ("customBorderColorWithoutFormat", self.custom_border_color_without_format),
+            (
+                "customBorderColorWithoutFormat",
+                self.custom_border_color_without_format,
+            ),
             ("customBorderColors", self.custom_border_colors),
             ("decodeModeSharedExponent", self.decode_mode_shared_exponent),
-            ("dedicatedAllocationImageAliasing", self.dedicated_allocation_image_aliasing),
+            (
+                "dedicatedAllocationImageAliasing",
+                self.dedicated_allocation_image_aliasing,
+            ),
             ("depthBiasClamp", self.depth_bias_clamp),
             ("depthBounds", self.depth_bounds),
             ("depthClamp", self.depth_clamp),
@@ -17869,7 +18514,10 @@ impl IntoIterator for Features {
                 "descriptorBindingInlineUniformBlockUpdateAfterBind",
                 self.descriptor_binding_inline_uniform_block_update_after_bind,
             ),
-            ("descriptorBindingPartiallyBound", self.descriptor_binding_partially_bound),
+            (
+                "descriptorBindingPartiallyBound",
+                self.descriptor_binding_partially_bound,
+            ),
             (
                 "descriptorBindingSampledImageUpdateAfterBind",
                 self.descriptor_binding_sampled_image_update_after_bind,
@@ -17903,9 +18551,18 @@ impl IntoIterator for Features {
                 self.descriptor_binding_variable_descriptor_count,
             ),
             ("descriptorBuffer", self.descriptor_buffer),
-            ("descriptorBufferCaptureReplay", self.descriptor_buffer_capture_replay),
-            ("descriptorBufferImageLayoutIgnored", self.descriptor_buffer_image_layout_ignored),
-            ("descriptorBufferPushDescriptors", self.descriptor_buffer_push_descriptors),
+            (
+                "descriptorBufferCaptureReplay",
+                self.descriptor_buffer_capture_replay,
+            ),
+            (
+                "descriptorBufferImageLayoutIgnored",
+                self.descriptor_buffer_image_layout_ignored,
+            ),
+            (
+                "descriptorBufferPushDescriptors",
+                self.descriptor_buffer_push_descriptors,
+            ),
             ("descriptorIndexing", self.descriptor_indexing),
             ("descriptorSetHostMapping", self.descriptor_set_host_mapping),
             ("deviceCoherentMemory", self.device_coherent_memory),
@@ -17915,14 +18572,20 @@ impl IntoIterator for Features {
             ("deviceMemoryReport", self.device_memory_report),
             ("diagnosticsConfig", self.diagnostics_config),
             ("drawIndirectCount", self.draw_indirect_count),
-            ("drawIndirectFirstInstance", self.draw_indirect_first_instance),
+            (
+                "drawIndirectFirstInstance",
+                self.draw_indirect_first_instance,
+            ),
             ("dualSrcBlend", self.dual_src_blend),
             ("dynamicRendering", self.dynamic_rendering),
             ("events", self.events),
             ("exclusiveScissor", self.exclusive_scissor),
             ("extendedDynamicState", self.extended_dynamic_state),
             ("extendedDynamicState2", self.extended_dynamic_state2),
-            ("extendedDynamicState2LogicOp", self.extended_dynamic_state2_logic_op),
+            (
+                "extendedDynamicState2LogicOp",
+                self.extended_dynamic_state2_logic_op,
+            ),
             (
                 "extendedDynamicState2PatchControlPoints",
                 self.extended_dynamic_state2_patch_control_points,
@@ -17947,7 +18610,10 @@ impl IntoIterator for Features {
                 "extendedDynamicState3ColorBlendEquation",
                 self.extended_dynamic_state3_color_blend_equation,
             ),
-            ("extendedDynamicState3ColorWriteMask", self.extended_dynamic_state3_color_write_mask),
+            (
+                "extendedDynamicState3ColorWriteMask",
+                self.extended_dynamic_state3_color_write_mask,
+            ),
             (
                 "extendedDynamicState3ConservativeRasterizationMode",
                 self.extended_dynamic_state3_conservative_rasterization_mode,
@@ -18000,8 +18666,14 @@ impl IntoIterator for Features {
                 "extendedDynamicState3LineStippleEnable",
                 self.extended_dynamic_state3_line_stipple_enable,
             ),
-            ("extendedDynamicState3LogicOpEnable", self.extended_dynamic_state3_logic_op_enable),
-            ("extendedDynamicState3PolygonMode", self.extended_dynamic_state3_polygon_mode),
+            (
+                "extendedDynamicState3LogicOpEnable",
+                self.extended_dynamic_state3_logic_op_enable,
+            ),
+            (
+                "extendedDynamicState3PolygonMode",
+                self.extended_dynamic_state3_polygon_mode,
+            ),
             (
                 "extendedDynamicState3ProvokingVertexMode",
                 self.extended_dynamic_state3_provoking_vertex_mode,
@@ -18022,7 +18694,10 @@ impl IntoIterator for Features {
                 "extendedDynamicState3SampleLocationsEnable",
                 self.extended_dynamic_state3_sample_locations_enable,
             ),
-            ("extendedDynamicState3SampleMask", self.extended_dynamic_state3_sample_mask),
+            (
+                "extendedDynamicState3SampleMask",
+                self.extended_dynamic_state3_sample_mask,
+            ),
             (
                 "extendedDynamicState3ShadingRateImageEnable",
                 self.extended_dynamic_state3_shading_rate_image_enable,
@@ -18031,7 +18706,10 @@ impl IntoIterator for Features {
                 "extendedDynamicState3TessellationDomainOrigin",
                 self.extended_dynamic_state3_tessellation_domain_origin,
             ),
-            ("extendedDynamicState3ViewportSwizzle", self.extended_dynamic_state3_viewport_swizzle),
+            (
+                "extendedDynamicState3ViewportSwizzle",
+                self.extended_dynamic_state3_viewport_swizzle,
+            ),
             (
                 "extendedDynamicState3ViewportWScalingEnable",
                 self.extended_dynamic_state3_viewport_w_scaling_enable,
@@ -18040,19 +18718,40 @@ impl IntoIterator for Features {
             ("fillModeNonSolid", self.fill_mode_non_solid),
             ("formatA4B4G4R4", self.format_a4b4g4r4),
             ("formatA4R4G4B4", self.format_a4r4g4b4),
-            ("formatRgba10x6WithoutYCbCrSampler", self.format_rgba10x6_without_y_cb_cr_sampler),
+            (
+                "formatRgba10x6WithoutYCbCrSampler",
+                self.format_rgba10x6_without_y_cb_cr_sampler,
+            ),
             ("fragmentDensityMap", self.fragment_density_map),
-            ("fragmentDensityMapDeferred", self.fragment_density_map_deferred),
-            ("fragmentDensityMapDynamic", self.fragment_density_map_dynamic),
+            (
+                "fragmentDensityMapDeferred",
+                self.fragment_density_map_deferred,
+            ),
+            (
+                "fragmentDensityMapDynamic",
+                self.fragment_density_map_dynamic,
+            ),
             (
                 "fragmentDensityMapNonSubsampledImages",
                 self.fragment_density_map_non_subsampled_images,
             ),
             ("fragmentDensityMapOffset", self.fragment_density_map_offset),
-            ("fragmentShaderBarycentric", self.fragment_shader_barycentric),
-            ("fragmentShaderPixelInterlock", self.fragment_shader_pixel_interlock),
-            ("fragmentShaderSampleInterlock", self.fragment_shader_sample_interlock),
-            ("fragmentShaderShadingRateInterlock", self.fragment_shader_shading_rate_interlock),
+            (
+                "fragmentShaderBarycentric",
+                self.fragment_shader_barycentric,
+            ),
+            (
+                "fragmentShaderPixelInterlock",
+                self.fragment_shader_pixel_interlock,
+            ),
+            (
+                "fragmentShaderSampleInterlock",
+                self.fragment_shader_sample_interlock,
+            ),
+            (
+                "fragmentShaderShadingRateInterlock",
+                self.fragment_shader_shading_rate_interlock,
+            ),
             ("fragmentShadingRateEnums", self.fragment_shading_rate_enums),
             ("fragmentStoresAndAtomics", self.fragment_stores_and_atomics),
             ("fullDrawIndexUint32", self.full_draw_index_uint32),
@@ -18063,19 +18762,31 @@ impl IntoIterator for Features {
             ("hostQueryReset", self.host_query_reset),
             ("image2DViewOf3D", self.image2_d_view_of3_d),
             ("imageCompressionControl", self.image_compression_control),
-            ("imageCompressionControlSwapchain", self.image_compression_control_swapchain),
+            (
+                "imageCompressionControlSwapchain",
+                self.image_compression_control_swapchain,
+            ),
             ("imageCubeArray", self.image_cube_array),
             ("imageFootprint", self.image_footprint),
             ("imageView2DOn3DImage", self.image_view2_d_on3_d_image),
-            ("imageViewFormatReinterpretation", self.image_view_format_reinterpretation),
+            (
+                "imageViewFormatReinterpretation",
+                self.image_view_format_reinterpretation,
+            ),
             ("imageViewFormatSwizzle", self.image_view_format_swizzle),
             ("imagelessFramebuffer", self.imageless_framebuffer),
             ("independentBlend", self.independent_blend),
             ("indexTypeUint8", self.index_type_uint8),
             ("indirectCopy", self.indirect_copy),
-            ("inheritedConditionalRendering", self.inherited_conditional_rendering),
+            (
+                "inheritedConditionalRendering",
+                self.inherited_conditional_rendering,
+            ),
             ("inheritedQueries", self.inherited_queries),
-            ("inheritedViewportScissor2D", self.inherited_viewport_scissor2_d),
+            (
+                "inheritedViewportScissor2D",
+                self.inherited_viewport_scissor2_d,
+            ),
             ("inlineUniformBlock", self.inline_uniform_block),
             ("invocationMask", self.invocation_mask),
             ("largePoints", self.large_points),
@@ -18095,26 +18806,59 @@ impl IntoIterator for Features {
             ("multiDrawIndirect", self.multi_draw_indirect),
             ("multiViewport", self.multi_viewport),
             ("multisampleArrayImage", self.multisample_array_image),
-            ("multisampledRenderToSingleSampled", self.multisampled_render_to_single_sampled),
+            (
+                "multisampledRenderToSingleSampled",
+                self.multisampled_render_to_single_sampled,
+            ),
             ("multiview", self.multiview),
             ("multiviewGeometryShader", self.multiview_geometry_shader),
             ("multiviewMeshShader", self.multiview_mesh_shader),
-            ("multiviewPerViewViewports", self.multiview_per_view_viewports),
-            ("multiviewTessellationShader", self.multiview_tessellation_shader),
-            ("mutableComparisonSamplers", self.mutable_comparison_samplers),
+            (
+                "multiviewPerViewViewports",
+                self.multiview_per_view_viewports,
+            ),
+            (
+                "multiviewTessellationShader",
+                self.multiview_tessellation_shader,
+            ),
+            (
+                "mutableComparisonSamplers",
+                self.mutable_comparison_samplers,
+            ),
             ("mutableDescriptorType", self.mutable_descriptor_type),
-            ("noInvocationFragmentShadingRates", self.no_invocation_fragment_shading_rates),
+            (
+                "noInvocationFragmentShadingRates",
+                self.no_invocation_fragment_shading_rates,
+            ),
             ("nonSeamlessCubeMap", self.non_seamless_cube_map),
             ("nullDescriptor", self.null_descriptor),
             ("occlusionQueryPrecise", self.occlusion_query_precise),
             ("opticalFlow", self.optical_flow),
-            ("pageableDeviceLocalMemory", self.pageable_device_local_memory),
-            ("performanceCounterMultipleQueryPools", self.performance_counter_multiple_query_pools),
-            ("performanceCounterQueryPools", self.performance_counter_query_pools),
-            ("pipelineCreationCacheControl", self.pipeline_creation_cache_control),
+            (
+                "pageableDeviceLocalMemory",
+                self.pageable_device_local_memory,
+            ),
+            (
+                "performanceCounterMultipleQueryPools",
+                self.performance_counter_multiple_query_pools,
+            ),
+            (
+                "performanceCounterQueryPools",
+                self.performance_counter_query_pools,
+            ),
+            (
+                "pipelineCreationCacheControl",
+                self.pipeline_creation_cache_control,
+            ),
             ("pipelineExecutableInfo", self.pipeline_executable_info),
-            ("pipelineFragmentShadingRate", self.pipeline_fragment_shading_rate),
-            ("pipelinePropertiesIdentifier", self.pipeline_properties_identifier),
+            (
+                "pipelineFragmentShadingRate",
+                self.pipeline_fragment_shading_rate,
+            ),
+            (
+                "pipelinePropertiesIdentifier",
+                self.pipeline_properties_identifier,
+            ),
             ("pipelineProtectedAccess", self.pipeline_protected_access),
             ("pipelineRobustness", self.pipeline_robustness),
             ("pipelineStatisticsQuery", self.pipeline_statistics_query),
@@ -18122,13 +18866,22 @@ impl IntoIterator for Features {
             ("presentBarrier", self.present_barrier),
             ("presentId", self.present_id),
             ("presentWait", self.present_wait),
-            ("primitiveFragmentShadingRate", self.primitive_fragment_shading_rate),
+            (
+                "primitiveFragmentShadingRate",
+                self.primitive_fragment_shading_rate,
+            ),
             (
                 "primitiveFragmentShadingRateMeshShader",
                 self.primitive_fragment_shading_rate_mesh_shader,
             ),
-            ("primitiveTopologyListRestart", self.primitive_topology_list_restart),
-            ("primitiveTopologyPatchListRestart", self.primitive_topology_patch_list_restart),
+            (
+                "primitiveTopologyListRestart",
+                self.primitive_topology_list_restart,
+            ),
+            (
+                "primitiveTopologyPatchListRestart",
+                self.primitive_topology_patch_list_restart,
+            ),
             ("primitivesGeneratedQuery", self.primitives_generated_query),
             (
                 "primitivesGeneratedQueryWithNonZeroStreams",
@@ -18154,7 +18907,10 @@ impl IntoIterator for Features {
                 self.rasterization_order_stencil_attachment_access,
             ),
             ("rayQuery", self.ray_query),
-            ("rayTracingInvocationReorder", self.ray_tracing_invocation_reorder),
+            (
+                "rayTracingInvocationReorder",
+                self.ray_tracing_invocation_reorder,
+            ),
             ("rayTracingMaintenance1", self.ray_tracing_maintenance1),
             ("rayTracingMotionBlur", self.ray_tracing_motion_blur),
             (
@@ -18170,15 +18926,24 @@ impl IntoIterator for Features {
                 "rayTracingPipelineShaderGroupHandleCaptureReplayMixed",
                 self.ray_tracing_pipeline_shader_group_handle_capture_replay_mixed,
             ),
-            ("rayTracingPipelineTraceRaysIndirect", self.ray_tracing_pipeline_trace_rays_indirect),
+            (
+                "rayTracingPipelineTraceRaysIndirect",
+                self.ray_tracing_pipeline_trace_rays_indirect,
+            ),
             (
                 "rayTracingPipelineTraceRaysIndirect2",
                 self.ray_tracing_pipeline_trace_rays_indirect2,
             ),
-            ("rayTraversalPrimitiveCulling", self.ray_traversal_primitive_culling),
+            (
+                "rayTraversalPrimitiveCulling",
+                self.ray_traversal_primitive_culling,
+            ),
             ("rectangularLines", self.rectangular_lines),
             ("reportAddressBinding", self.report_address_binding),
-            ("representativeFragmentTest", self.representative_fragment_test),
+            (
+                "representativeFragmentTest",
+                self.representative_fragment_test,
+            ),
             ("robustBufferAccess", self.robust_buffer_access),
             ("robustBufferAccess2", self.robust_buffer_access2),
             ("robustImageAccess", self.robust_image_access),
@@ -18189,34 +18954,85 @@ impl IntoIterator for Features {
             ("samplerAnisotropy", self.sampler_anisotropy),
             ("samplerFilterMinmax", self.sampler_filter_minmax),
             ("samplerMipLodBias", self.sampler_mip_lod_bias),
-            ("samplerMirrorClampToEdge", self.sampler_mirror_clamp_to_edge),
+            (
+                "samplerMirrorClampToEdge",
+                self.sampler_mirror_clamp_to_edge,
+            ),
             ("samplerYcbcrConversion", self.sampler_ycbcr_conversion),
             ("scalarBlockLayout", self.scalar_block_layout),
-            ("separateDepthStencilLayouts", self.separate_depth_stencil_layouts),
+            (
+                "separateDepthStencilLayouts",
+                self.separate_depth_stencil_layouts,
+            ),
             ("separateStencilMaskRef", self.separate_stencil_mask_ref),
-            ("shaderBufferFloat16AtomicAdd", self.shader_buffer_float16_atomic_add),
-            ("shaderBufferFloat16AtomicMinMax", self.shader_buffer_float16_atomic_min_max),
-            ("shaderBufferFloat16Atomics", self.shader_buffer_float16_atomics),
-            ("shaderBufferFloat32AtomicAdd", self.shader_buffer_float32_atomic_add),
-            ("shaderBufferFloat32AtomicMinMax", self.shader_buffer_float32_atomic_min_max),
-            ("shaderBufferFloat32Atomics", self.shader_buffer_float32_atomics),
-            ("shaderBufferFloat64AtomicAdd", self.shader_buffer_float64_atomic_add),
-            ("shaderBufferFloat64AtomicMinMax", self.shader_buffer_float64_atomic_min_max),
-            ("shaderBufferFloat64Atomics", self.shader_buffer_float64_atomics),
+            (
+                "shaderBufferFloat16AtomicAdd",
+                self.shader_buffer_float16_atomic_add,
+            ),
+            (
+                "shaderBufferFloat16AtomicMinMax",
+                self.shader_buffer_float16_atomic_min_max,
+            ),
+            (
+                "shaderBufferFloat16Atomics",
+                self.shader_buffer_float16_atomics,
+            ),
+            (
+                "shaderBufferFloat32AtomicAdd",
+                self.shader_buffer_float32_atomic_add,
+            ),
+            (
+                "shaderBufferFloat32AtomicMinMax",
+                self.shader_buffer_float32_atomic_min_max,
+            ),
+            (
+                "shaderBufferFloat32Atomics",
+                self.shader_buffer_float32_atomics,
+            ),
+            (
+                "shaderBufferFloat64AtomicAdd",
+                self.shader_buffer_float64_atomic_add,
+            ),
+            (
+                "shaderBufferFloat64AtomicMinMax",
+                self.shader_buffer_float64_atomic_min_max,
+            ),
+            (
+                "shaderBufferFloat64Atomics",
+                self.shader_buffer_float64_atomics,
+            ),
             ("shaderBufferInt64Atomics", self.shader_buffer_int64_atomics),
             ("shaderClipDistance", self.shader_clip_distance),
             ("shaderCoreBuiltins", self.shader_core_builtins),
             ("shaderCullDistance", self.shader_cull_distance),
-            ("shaderDemoteToHelperInvocation", self.shader_demote_to_helper_invocation),
+            (
+                "shaderDemoteToHelperInvocation",
+                self.shader_demote_to_helper_invocation,
+            ),
             ("shaderDeviceClock", self.shader_device_clock),
             ("shaderDrawParameters", self.shader_draw_parameters),
-            ("shaderEarlyAndLateFragmentTests", self.shader_early_and_late_fragment_tests),
+            (
+                "shaderEarlyAndLateFragmentTests",
+                self.shader_early_and_late_fragment_tests,
+            ),
             ("shaderFloat16", self.shader_float16),
             ("shaderFloat64", self.shader_float64),
-            ("shaderImageFloat32AtomicAdd", self.shader_image_float32_atomic_add),
-            ("shaderImageFloat32AtomicMinMax", self.shader_image_float32_atomic_min_max),
-            ("shaderImageFloat32Atomics", self.shader_image_float32_atomics),
-            ("shaderImageGatherExtended", self.shader_image_gather_extended),
+            (
+                "shaderImageFloat32AtomicAdd",
+                self.shader_image_float32_atomic_add,
+            ),
+            (
+                "shaderImageFloat32AtomicMinMax",
+                self.shader_image_float32_atomic_min_max,
+            ),
+            (
+                "shaderImageFloat32Atomics",
+                self.shader_image_float32_atomics,
+            ),
+            (
+                "shaderImageGatherExtended",
+                self.shader_image_gather_extended,
+            ),
             ("shaderImageInt64Atomics", self.shader_image_int64_atomics),
             (
                 "shaderInputAttachmentArrayDynamicIndexing",
@@ -18233,7 +19049,10 @@ impl IntoIterator for Features {
             ("shaderIntegerFunctions2", self.shader_integer_functions2),
             ("shaderModuleIdentifier", self.shader_module_identifier),
             ("shaderOutputLayer", self.shader_output_layer),
-            ("shaderOutputViewportIndex", self.shader_output_viewport_index),
+            (
+                "shaderOutputViewportIndex",
+                self.shader_output_viewport_index,
+            ),
             ("shaderResourceMinLod", self.shader_resource_min_lod),
             ("shaderResourceResidency", self.shader_resource_residency),
             (
@@ -18248,15 +19067,42 @@ impl IntoIterator for Features {
                 "shaderSampledImageArrayNonUniformIndexing",
                 self.shader_sampled_image_array_non_uniform_indexing,
             ),
-            ("shaderSharedFloat16AtomicAdd", self.shader_shared_float16_atomic_add),
-            ("shaderSharedFloat16AtomicMinMax", self.shader_shared_float16_atomic_min_max),
-            ("shaderSharedFloat16Atomics", self.shader_shared_float16_atomics),
-            ("shaderSharedFloat32AtomicAdd", self.shader_shared_float32_atomic_add),
-            ("shaderSharedFloat32AtomicMinMax", self.shader_shared_float32_atomic_min_max),
-            ("shaderSharedFloat32Atomics", self.shader_shared_float32_atomics),
-            ("shaderSharedFloat64AtomicAdd", self.shader_shared_float64_atomic_add),
-            ("shaderSharedFloat64AtomicMinMax", self.shader_shared_float64_atomic_min_max),
-            ("shaderSharedFloat64Atomics", self.shader_shared_float64_atomics),
+            (
+                "shaderSharedFloat16AtomicAdd",
+                self.shader_shared_float16_atomic_add,
+            ),
+            (
+                "shaderSharedFloat16AtomicMinMax",
+                self.shader_shared_float16_atomic_min_max,
+            ),
+            (
+                "shaderSharedFloat16Atomics",
+                self.shader_shared_float16_atomics,
+            ),
+            (
+                "shaderSharedFloat32AtomicAdd",
+                self.shader_shared_float32_atomic_add,
+            ),
+            (
+                "shaderSharedFloat32AtomicMinMax",
+                self.shader_shared_float32_atomic_min_max,
+            ),
+            (
+                "shaderSharedFloat32Atomics",
+                self.shader_shared_float32_atomics,
+            ),
+            (
+                "shaderSharedFloat64AtomicAdd",
+                self.shader_shared_float64_atomic_add,
+            ),
+            (
+                "shaderSharedFloat64AtomicMinMax",
+                self.shader_shared_float64_atomic_min_max,
+            ),
+            (
+                "shaderSharedFloat64Atomics",
+                self.shader_shared_float64_atomics,
+            ),
             ("shaderSharedInt64Atomics", self.shader_shared_int64_atomics),
             ("shaderSMBuiltins", self.shader_sm_builtins),
             (
@@ -18275,9 +19121,18 @@ impl IntoIterator for Features {
                 "shaderStorageImageArrayNonUniformIndexing",
                 self.shader_storage_image_array_non_uniform_indexing,
             ),
-            ("shaderStorageImageExtendedFormats", self.shader_storage_image_extended_formats),
-            ("shaderStorageImageMultisample", self.shader_storage_image_multisample),
-            ("shaderStorageImageReadWithoutFormat", self.shader_storage_image_read_without_format),
+            (
+                "shaderStorageImageExtendedFormats",
+                self.shader_storage_image_extended_formats,
+            ),
+            (
+                "shaderStorageImageMultisample",
+                self.shader_storage_image_multisample,
+            ),
+            (
+                "shaderStorageImageReadWithoutFormat",
+                self.shader_storage_image_read_without_format,
+            ),
             (
                 "shaderStorageImageWriteWithoutFormat",
                 self.shader_storage_image_write_without_format,
@@ -18291,9 +19146,18 @@ impl IntoIterator for Features {
                 self.shader_storage_texel_buffer_array_non_uniform_indexing,
             ),
             ("shaderSubgroupClock", self.shader_subgroup_clock),
-            ("shaderSubgroupExtendedTypes", self.shader_subgroup_extended_types),
-            ("shaderSubgroupUniformControlFlow", self.shader_subgroup_uniform_control_flow),
-            ("shaderTerminateInvocation", self.shader_terminate_invocation),
+            (
+                "shaderSubgroupExtendedTypes",
+                self.shader_subgroup_extended_types,
+            ),
+            (
+                "shaderSubgroupUniformControlFlow",
+                self.shader_subgroup_uniform_control_flow,
+            ),
+            (
+                "shaderTerminateInvocation",
+                self.shader_terminate_invocation,
+            ),
             (
                 "shaderTessellationAndGeometryPointSize",
                 self.shader_tessellation_and_geometry_point_size,
@@ -18314,14 +19178,29 @@ impl IntoIterator for Features {
                 "shaderUniformTexelBufferArrayNonUniformIndexing",
                 self.shader_uniform_texel_buffer_array_non_uniform_indexing,
             ),
-            ("shaderZeroInitializeWorkgroupMemory", self.shader_zero_initialize_workgroup_memory),
-            ("shadingRateCoarseSampleOrder", self.shading_rate_coarse_sample_order),
+            (
+                "shaderZeroInitializeWorkgroupMemory",
+                self.shader_zero_initialize_workgroup_memory,
+            ),
+            (
+                "shadingRateCoarseSampleOrder",
+                self.shading_rate_coarse_sample_order,
+            ),
             ("shadingRateImage", self.shading_rate_image),
             ("smoothLines", self.smooth_lines),
             ("sparseBinding", self.sparse_binding),
-            ("sparseImageFloat32AtomicAdd", self.sparse_image_float32_atomic_add),
-            ("sparseImageFloat32AtomicMinMax", self.sparse_image_float32_atomic_min_max),
-            ("sparseImageFloat32Atomics", self.sparse_image_float32_atomics),
+            (
+                "sparseImageFloat32AtomicAdd",
+                self.sparse_image_float32_atomic_add,
+            ),
+            (
+                "sparseImageFloat32AtomicMinMax",
+                self.sparse_image_float32_atomic_min_max,
+            ),
+            (
+                "sparseImageFloat32Atomics",
+                self.sparse_image_float32_atomics,
+            ),
             ("sparseImageInt64Atomics", self.sparse_image_int64_atomics),
             ("sparseResidency16Samples", self.sparse_residency16_samples),
             ("sparseResidency2Samples", self.sparse_residency2_samples),
@@ -18339,11 +19218,17 @@ impl IntoIterator for Features {
             ("storageInputOutput16", self.storage_input_output16),
             ("storagePushConstant16", self.storage_push_constant16),
             ("storagePushConstant8", self.storage_push_constant8),
-            ("subgroupBroadcastDynamicId", self.subgroup_broadcast_dynamic_id),
+            (
+                "subgroupBroadcastDynamicId",
+                self.subgroup_broadcast_dynamic_id,
+            ),
             ("subgroupSizeControl", self.subgroup_size_control),
             ("subpassMergeFeedback", self.subpass_merge_feedback),
             ("subpassShading", self.subpass_shading),
-            ("supersampleFragmentShadingRates", self.supersample_fragment_shading_rates),
+            (
+                "supersampleFragmentShadingRates",
+                self.supersample_fragment_shading_rates,
+            ),
             ("swapchainMaintenance1", self.swapchain_maintenance1),
             ("synchronization2", self.synchronization2),
             ("taskShader", self.task_shader),
@@ -18353,8 +19238,14 @@ impl IntoIterator for Features {
             ("texelBufferAlignment", self.texel_buffer_alignment),
             ("textureBlockMatch", self.texture_block_match),
             ("textureBoxFilter", self.texture_box_filter),
-            ("textureCompressionASTC_HDR", self.texture_compression_astc_hdr),
-            ("textureCompressionASTC_LDR", self.texture_compression_astc_ldr),
+            (
+                "textureCompressionASTC_HDR",
+                self.texture_compression_astc_hdr,
+            ),
+            (
+                "textureCompressionASTC_LDR",
+                self.texture_compression_astc_ldr,
+            ),
             ("textureCompressionBC", self.texture_compression_bc),
             ("textureCompressionETC2", self.texture_compression_etc2),
             ("textureSampleWeighted", self.texture_sample_weighted),
@@ -18366,28 +19257,55 @@ impl IntoIterator for Features {
                 self.transform_feedback_preserves_provoking_vertex,
             ),
             ("triangleFans", self.triangle_fans),
-            ("uniformAndStorageBuffer16BitAccess", self.uniform_and_storage_buffer16_bit_access),
-            ("uniformAndStorageBuffer8BitAccess", self.uniform_and_storage_buffer8_bit_access),
-            ("uniformBufferStandardLayout", self.uniform_buffer_standard_layout),
+            (
+                "uniformAndStorageBuffer16BitAccess",
+                self.uniform_and_storage_buffer16_bit_access,
+            ),
+            (
+                "uniformAndStorageBuffer8BitAccess",
+                self.uniform_and_storage_buffer8_bit_access,
+            ),
+            (
+                "uniformBufferStandardLayout",
+                self.uniform_buffer_standard_layout,
+            ),
             ("variableMultisampleRate", self.variable_multisample_rate),
             ("variablePointers", self.variable_pointers),
-            ("variablePointersStorageBuffer", self.variable_pointers_storage_buffer),
-            ("vertexAttributeAccessBeyondStride", self.vertex_attribute_access_beyond_stride),
-            ("vertexAttributeInstanceRateDivisor", self.vertex_attribute_instance_rate_divisor),
+            (
+                "variablePointersStorageBuffer",
+                self.variable_pointers_storage_buffer,
+            ),
+            (
+                "vertexAttributeAccessBeyondStride",
+                self.vertex_attribute_access_beyond_stride,
+            ),
+            (
+                "vertexAttributeInstanceRateDivisor",
+                self.vertex_attribute_instance_rate_divisor,
+            ),
             (
                 "vertexAttributeInstanceRateZeroDivisor",
                 self.vertex_attribute_instance_rate_zero_divisor,
             ),
             ("vertexInputDynamicState", self.vertex_input_dynamic_state),
-            ("vertexPipelineStoresAndAtomics", self.vertex_pipeline_stores_and_atomics),
+            (
+                "vertexPipelineStoresAndAtomics",
+                self.vertex_pipeline_stores_and_atomics,
+            ),
             ("vulkanMemoryModel", self.vulkan_memory_model),
             (
                 "vulkanMemoryModelAvailabilityVisibilityChains",
                 self.vulkan_memory_model_availability_visibility_chains,
             ),
-            ("vulkanMemoryModelDeviceScope", self.vulkan_memory_model_device_scope),
+            (
+                "vulkanMemoryModelDeviceScope",
+                self.vulkan_memory_model_device_scope,
+            ),
             ("wideLines", self.wide_lines),
-            ("workgroupMemoryExplicitLayout", self.workgroup_memory_explicit_layout),
+            (
+                "workgroupMemoryExplicitLayout",
+                self.workgroup_memory_explicit_layout,
+            ),
             (
                 "workgroupMemoryExplicitLayout16BitAccess",
                 self.workgroup_memory_explicit_layout16_bit_access,
@@ -18647,9 +19565,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_1, device_extensions.khr_16bit_storage]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_1,
+            device_extensions.khr_16bit_storage,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan11.is_none()].into_iter().all(|x| x)
         {
             self.features_16bit_storage = Some(Default::default());
@@ -18657,9 +19578,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_1, device_extensions.khr_multiview]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_1,
+            device_extensions.khr_multiview,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan11.is_none()].into_iter().all(|x| x)
         {
             self.features_multiview = Some(Default::default());
@@ -18675,9 +19599,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_1, device_extensions.khr_sampler_ycbcr_conversion]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_1,
+            device_extensions.khr_sampler_ycbcr_conversion,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan11.is_none()].into_iter().all(|x| x)
         {
             self.features_sampler_ycbcr_conversion = Some(Default::default());
@@ -18693,9 +19620,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_1, device_extensions.khr_variable_pointers]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_1,
+            device_extensions.khr_variable_pointers,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan11.is_none()].into_iter().all(|x| x)
         {
             self.features_variable_pointers = Some(Default::default());
@@ -18703,9 +19633,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_2, device_extensions.khr_8bit_storage]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_2,
+            device_extensions.khr_8bit_storage,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_8bit_storage = Some(Default::default());
@@ -18713,9 +19646,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_2, device_extensions.khr_buffer_device_address]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_2,
+            device_extensions.khr_buffer_device_address,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_buffer_device_address = Some(Default::default());
@@ -18723,9 +19659,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_2, device_extensions.ext_descriptor_indexing]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_2,
+            device_extensions.ext_descriptor_indexing,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_descriptor_indexing = Some(Default::default());
@@ -18733,9 +19672,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_2, device_extensions.ext_host_query_reset]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_2,
+            device_extensions.ext_host_query_reset,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_host_query_reset = Some(Default::default());
@@ -18743,9 +19685,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_2, device_extensions.khr_imageless_framebuffer]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_2,
+            device_extensions.khr_imageless_framebuffer,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_imageless_framebuffer = Some(Default::default());
@@ -18753,9 +19698,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_2, device_extensions.ext_scalar_block_layout]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_2,
+            device_extensions.ext_scalar_block_layout,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_scalar_block_layout = Some(Default::default());
@@ -18772,13 +19720,19 @@ impl FeaturesFfi {
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_separate_depth_stencil_layouts = Some(Default::default());
-            let member = self.features_separate_depth_stencil_layouts.as_mut().unwrap();
+            let member = self
+                .features_separate_depth_stencil_layouts
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_2, device_extensions.khr_shader_atomic_int64]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_2,
+            device_extensions.khr_shader_atomic_int64,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_shader_atomic_int64 = Some(Default::default());
@@ -18786,9 +19740,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_2, device_extensions.khr_shader_float16_int8]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_2,
+            device_extensions.khr_shader_float16_int8,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_shader_float16_int8 = Some(Default::default());
@@ -18805,13 +19762,19 @@ impl FeaturesFfi {
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_shader_subgroup_extended_types = Some(Default::default());
-            let member = self.features_shader_subgroup_extended_types.as_mut().unwrap();
+            let member = self
+                .features_shader_subgroup_extended_types
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_2, device_extensions.khr_timeline_semaphore]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_2,
+            device_extensions.khr_timeline_semaphore,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_timeline_semaphore = Some(Default::default());
@@ -18828,13 +19791,19 @@ impl FeaturesFfi {
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_uniform_buffer_standard_layout = Some(Default::default());
-            let member = self.features_uniform_buffer_standard_layout.as_mut().unwrap();
+            let member = self
+                .features_uniform_buffer_standard_layout
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_2, device_extensions.khr_vulkan_memory_model]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_2,
+            device_extensions.khr_vulkan_memory_model,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan12.is_none()].into_iter().all(|x| x)
         {
             self.features_vulkan_memory_model = Some(Default::default());
@@ -18842,9 +19811,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_3, device_extensions.khr_dynamic_rendering]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_3,
+            device_extensions.khr_dynamic_rendering,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_dynamic_rendering = Some(Default::default());
@@ -18852,9 +19824,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_3, device_extensions.ext_image_robustness]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_3,
+            device_extensions.ext_image_robustness,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_image_robustness = Some(Default::default());
@@ -18862,9 +19837,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_3, device_extensions.ext_inline_uniform_block]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_3,
+            device_extensions.ext_inline_uniform_block,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_inline_uniform_block = Some(Default::default());
@@ -18872,9 +19850,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_3, device_extensions.khr_maintenance4]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_3,
+            device_extensions.khr_maintenance4,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_maintenance4 = Some(Default::default());
@@ -18891,13 +19872,19 @@ impl FeaturesFfi {
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_pipeline_creation_cache_control = Some(Default::default());
-            let member = self.features_pipeline_creation_cache_control.as_mut().unwrap();
+            let member = self
+                .features_pipeline_creation_cache_control
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_3, device_extensions.ext_private_data]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_3,
+            device_extensions.ext_private_data,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_private_data = Some(Default::default());
@@ -18914,13 +19901,19 @@ impl FeaturesFfi {
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_shader_demote_to_helper_invocation = Some(Default::default());
-            let member = self.features_shader_demote_to_helper_invocation.as_mut().unwrap();
+            let member = self
+                .features_shader_demote_to_helper_invocation
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_3, device_extensions.khr_shader_integer_dot_product]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_3,
+            device_extensions.khr_shader_integer_dot_product,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_shader_integer_dot_product = Some(Default::default());
@@ -18928,9 +19921,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_3, device_extensions.khr_shader_terminate_invocation]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_3,
+            device_extensions.khr_shader_terminate_invocation,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_shader_terminate_invocation = Some(Default::default());
@@ -18938,9 +19934,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_3, device_extensions.ext_subgroup_size_control]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_3,
+            device_extensions.ext_subgroup_size_control,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_subgroup_size_control = Some(Default::default());
@@ -18948,9 +19947,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_3, device_extensions.khr_synchronization2]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_3,
+            device_extensions.khr_synchronization2,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_synchronization2 = Some(Default::default());
@@ -18958,9 +19960,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [api_version >= crate::Version::V1_3, device_extensions.ext_texture_compression_astc_hdr]
-            .into_iter()
-            .any(|x| x)
+        if [
+            api_version >= crate::Version::V1_3,
+            device_extensions.ext_texture_compression_astc_hdr,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_texture_compression_astchdr = Some(Default::default());
@@ -18977,11 +19982,16 @@ impl FeaturesFfi {
             && [self.features_vulkan13.is_none()].into_iter().all(|x| x)
         {
             self.features_zero_initialize_workgroup_memory = Some(Default::default());
-            let member = self.features_zero_initialize_workgroup_memory.as_mut().unwrap();
+            let member = self
+                .features_zero_initialize_workgroup_memory
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_acceleration_structure].into_iter().any(|x| x)
+        if [device_extensions.khr_acceleration_structure]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_acceleration_structure_khr = Some(Default::default());
@@ -18998,11 +20008,16 @@ impl FeaturesFfi {
             && [].into_iter().all(|x| x)
         {
             self.features_fragment_shader_barycentric_khr = Some(Default::default());
-            let member = self.features_fragment_shader_barycentric_khr.as_mut().unwrap();
+            let member = self
+                .features_fragment_shader_barycentric_khr
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_fragment_shading_rate].into_iter().any(|x| x)
+        if [device_extensions.khr_fragment_shading_rate]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_fragment_shading_rate_khr = Some(Default::default());
@@ -19010,9 +20025,12 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_global_priority, device_extensions.ext_global_priority_query]
-            .into_iter()
-            .any(|x| x)
+        if [
+            device_extensions.khr_global_priority,
+            device_extensions.ext_global_priority_query,
+        ]
+        .into_iter()
+        .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_global_priority_query_khr = Some(Default::default());
@@ -19020,7 +20038,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_performance_query].into_iter().any(|x| x)
+        if [device_extensions.khr_performance_query]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_performance_query_khr = Some(Default::default());
@@ -19028,15 +20048,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_pipeline_executable_properties].into_iter().any(|x| x)
+        if [device_extensions.khr_pipeline_executable_properties]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_pipeline_executable_properties_khr = Some(Default::default());
-            let member = self.features_pipeline_executable_properties_khr.as_mut().unwrap();
+            let member = self
+                .features_pipeline_executable_properties_khr
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_portability_subset].into_iter().any(|x| x)
+        if [device_extensions.khr_portability_subset]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_portability_subset_khr = Some(Default::default());
@@ -19063,7 +20090,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_ray_tracing_maintenance1].into_iter().any(|x| x)
+        if [device_extensions.khr_ray_tracing_maintenance1]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_ray_tracing_maintenance1_khr = Some(Default::default());
@@ -19071,7 +20100,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_ray_tracing_pipeline].into_iter().any(|x| x)
+        if [device_extensions.khr_ray_tracing_pipeline]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_ray_tracing_pipeline_khr = Some(Default::default());
@@ -19086,19 +20117,29 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_shader_subgroup_uniform_control_flow].into_iter().any(|x| x)
+        if [device_extensions.khr_shader_subgroup_uniform_control_flow]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shader_subgroup_uniform_control_flow_khr = Some(Default::default());
-            let member = self.features_shader_subgroup_uniform_control_flow_khr.as_mut().unwrap();
+            let member = self
+                .features_shader_subgroup_uniform_control_flow_khr
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.khr_workgroup_memory_explicit_layout].into_iter().any(|x| x)
+        if [device_extensions.khr_workgroup_memory_explicit_layout]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_workgroup_memory_explicit_layout_khr = Some(Default::default());
-            let member = self.features_workgroup_memory_explicit_layout_khr.as_mut().unwrap();
+            let member = self
+                .features_workgroup_memory_explicit_layout_khr
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
@@ -19109,7 +20150,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_astc_decode_mode].into_iter().any(|x| x)
+        if [device_extensions.ext_astc_decode_mode]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_astc_decode_ext = Some(Default::default());
@@ -19117,7 +20160,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_device_address_binding_report].into_iter().any(|x| x)
+        if [device_extensions.ext_device_address_binding_report]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_address_binding_report_ext = Some(Default::default());
@@ -19125,15 +20170,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_attachment_feedback_loop_layout].into_iter().any(|x| x)
+        if [device_extensions.ext_attachment_feedback_loop_layout]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_attachment_feedback_loop_layout_ext = Some(Default::default());
-            let member = self.features_attachment_feedback_loop_layout_ext.as_mut().unwrap();
+            let member = self
+                .features_attachment_feedback_loop_layout_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_blend_operation_advanced].into_iter().any(|x| x)
+        if [device_extensions.ext_blend_operation_advanced]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_blend_operation_advanced_ext = Some(Default::default());
@@ -19141,7 +20193,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_border_color_swizzle].into_iter().any(|x| x)
+        if [device_extensions.ext_border_color_swizzle]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_border_color_swizzle_ext = Some(Default::default());
@@ -19149,17 +20203,24 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_buffer_device_address].into_iter().any(|x| x)
-            && [self.features_vulkan12.is_none(), self.features_buffer_device_address.is_none()]
-                .into_iter()
-                .all(|x| x)
+        if [device_extensions.ext_buffer_device_address]
+            .into_iter()
+            .any(|x| x)
+            && [
+                self.features_vulkan12.is_none(),
+                self.features_buffer_device_address.is_none(),
+            ]
+            .into_iter()
+            .all(|x| x)
         {
             self.features_buffer_device_address_ext = Some(Default::default());
             let member = self.features_buffer_device_address_ext.as_mut().unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_color_write_enable].into_iter().any(|x| x)
+        if [device_extensions.ext_color_write_enable]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_color_write_enable_ext = Some(Default::default());
@@ -19167,7 +20228,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_conditional_rendering].into_iter().any(|x| x)
+        if [device_extensions.ext_conditional_rendering]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_conditional_rendering_ext = Some(Default::default());
@@ -19175,7 +20238,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_custom_border_color].into_iter().any(|x| x)
+        if [device_extensions.ext_custom_border_color]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_custom_border_color_ext = Some(Default::default());
@@ -19183,7 +20248,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_depth_clamp_zero_one].into_iter().any(|x| x)
+        if [device_extensions.ext_depth_clamp_zero_one]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_depth_clamp_zero_one_ext = Some(Default::default());
@@ -19191,7 +20258,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_depth_clip_control].into_iter().any(|x| x)
+        if [device_extensions.ext_depth_clip_control]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_depth_clip_control_ext = Some(Default::default());
@@ -19199,7 +20268,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_depth_clip_enable].into_iter().any(|x| x)
+        if [device_extensions.ext_depth_clip_enable]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_depth_clip_enable_ext = Some(Default::default());
@@ -19207,7 +20278,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_descriptor_buffer].into_iter().any(|x| x)
+        if [device_extensions.ext_descriptor_buffer]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_descriptor_buffer_ext = Some(Default::default());
@@ -19215,7 +20288,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_device_memory_report].into_iter().any(|x| x)
+        if [device_extensions.ext_device_memory_report]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_device_memory_report_ext = Some(Default::default());
@@ -19223,7 +20298,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_extended_dynamic_state2].into_iter().any(|x| x)
+        if [device_extensions.ext_extended_dynamic_state2]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_extended_dynamic_state2_ext = Some(Default::default());
@@ -19231,7 +20308,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_extended_dynamic_state3].into_iter().any(|x| x)
+        if [device_extensions.ext_extended_dynamic_state3]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_extended_dynamic_state3_ext = Some(Default::default());
@@ -19239,7 +20318,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_extended_dynamic_state].into_iter().any(|x| x)
+        if [device_extensions.ext_extended_dynamic_state]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_extended_dynamic_state_ext = Some(Default::default());
@@ -19254,7 +20335,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_fragment_density_map2].into_iter().any(|x| x)
+        if [device_extensions.ext_fragment_density_map2]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_fragment_density_map2_ext = Some(Default::default());
@@ -19262,7 +20345,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_fragment_density_map].into_iter().any(|x| x)
+        if [device_extensions.ext_fragment_density_map]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_fragment_density_map_ext = Some(Default::default());
@@ -19270,23 +20355,35 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_fragment_shader_interlock].into_iter().any(|x| x)
+        if [device_extensions.ext_fragment_shader_interlock]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_fragment_shader_interlock_ext = Some(Default::default());
-            let member = self.features_fragment_shader_interlock_ext.as_mut().unwrap();
+            let member = self
+                .features_fragment_shader_interlock_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_graphics_pipeline_library].into_iter().any(|x| x)
+        if [device_extensions.ext_graphics_pipeline_library]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_graphics_pipeline_library_ext = Some(Default::default());
-            let member = self.features_graphics_pipeline_library_ext.as_mut().unwrap();
+            let member = self
+                .features_graphics_pipeline_library_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_image_2d_view_of_3d].into_iter().any(|x| x)
+        if [device_extensions.ext_image_2d_view_of_3d]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_image2_d_view_of3_d_ext = Some(Default::default());
@@ -19294,23 +20391,35 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_image_compression_control].into_iter().any(|x| x)
+        if [device_extensions.ext_image_compression_control]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_image_compression_control_ext = Some(Default::default());
-            let member = self.features_image_compression_control_ext.as_mut().unwrap();
+            let member = self
+                .features_image_compression_control_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_image_compression_control_swapchain].into_iter().any(|x| x)
+        if [device_extensions.ext_image_compression_control_swapchain]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_image_compression_control_swapchain_ext = Some(Default::default());
-            let member = self.features_image_compression_control_swapchain_ext.as_mut().unwrap();
+            let member = self
+                .features_image_compression_control_swapchain_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_image_view_min_lod].into_iter().any(|x| x)
+        if [device_extensions.ext_image_view_min_lod]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_image_view_min_lod_ext = Some(Default::default());
@@ -19318,7 +20427,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_index_type_uint8].into_iter().any(|x| x)
+        if [device_extensions.ext_index_type_uint8]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_index_type_uint8_ext = Some(Default::default());
@@ -19326,7 +20437,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_legacy_dithering].into_iter().any(|x| x)
+        if [device_extensions.ext_legacy_dithering]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_legacy_dithering_ext = Some(Default::default());
@@ -19334,7 +20447,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_line_rasterization].into_iter().any(|x| x)
+        if [device_extensions.ext_line_rasterization]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_line_rasterization_ext = Some(Default::default());
@@ -19342,7 +20457,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_memory_priority].into_iter().any(|x| x)
+        if [device_extensions.ext_memory_priority]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_memory_priority_ext = Some(Default::default());
@@ -19362,11 +20479,16 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_multisampled_render_to_single_sampled].into_iter().any(|x| x)
+        if [device_extensions.ext_multisampled_render_to_single_sampled]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_multisampled_render_to_single_sampled_ext = Some(Default::default());
-            let member = self.features_multisampled_render_to_single_sampled_ext.as_mut().unwrap();
+            let member = self
+                .features_multisampled_render_to_single_sampled_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
@@ -19383,7 +20505,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_non_seamless_cube_map].into_iter().any(|x| x)
+        if [device_extensions.ext_non_seamless_cube_map]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_non_seamless_cube_map_ext = Some(Default::default());
@@ -19391,7 +20515,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_opacity_micromap].into_iter().any(|x| x)
+        if [device_extensions.ext_opacity_micromap]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_opacity_micromap_ext = Some(Default::default());
@@ -19399,15 +20525,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_pageable_device_local_memory].into_iter().any(|x| x)
+        if [device_extensions.ext_pageable_device_local_memory]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_pageable_device_local_memory_ext = Some(Default::default());
-            let member = self.features_pageable_device_local_memory_ext.as_mut().unwrap();
+            let member = self
+                .features_pageable_device_local_memory_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_pipeline_properties].into_iter().any(|x| x)
+        if [device_extensions.ext_pipeline_properties]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_pipeline_properties_ext = Some(Default::default());
@@ -19415,15 +20548,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_pipeline_protected_access].into_iter().any(|x| x)
+        if [device_extensions.ext_pipeline_protected_access]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_pipeline_protected_access_ext = Some(Default::default());
-            let member = self.features_pipeline_protected_access_ext.as_mut().unwrap();
+            let member = self
+                .features_pipeline_protected_access_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_pipeline_robustness].into_iter().any(|x| x)
+        if [device_extensions.ext_pipeline_robustness]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_pipeline_robustness_ext = Some(Default::default());
@@ -19431,23 +20571,35 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_primitive_topology_list_restart].into_iter().any(|x| x)
+        if [device_extensions.ext_primitive_topology_list_restart]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_primitive_topology_list_restart_ext = Some(Default::default());
-            let member = self.features_primitive_topology_list_restart_ext.as_mut().unwrap();
+            let member = self
+                .features_primitive_topology_list_restart_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_primitives_generated_query].into_iter().any(|x| x)
+        if [device_extensions.ext_primitives_generated_query]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_primitives_generated_query_ext = Some(Default::default());
-            let member = self.features_primitives_generated_query_ext.as_mut().unwrap();
+            let member = self
+                .features_primitives_generated_query_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_provoking_vertex].into_iter().any(|x| x)
+        if [device_extensions.ext_provoking_vertex]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_provoking_vertex_ext = Some(Default::default());
@@ -19455,7 +20607,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_rgba10x6_formats].into_iter().any(|x| x)
+        if [device_extensions.ext_rgba10x6_formats]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_rgba10x6_formats_ext = Some(Default::default());
@@ -19472,7 +20626,10 @@ impl FeaturesFfi {
             && [].into_iter().all(|x| x)
         {
             self.features_rasterization_order_attachment_access_ext = Some(Default::default());
-            let member = self.features_rasterization_order_attachment_access_ext.as_mut().unwrap();
+            let member = self
+                .features_rasterization_order_attachment_access_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
@@ -19482,7 +20639,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_shader_atomic_float2].into_iter().any(|x| x)
+        if [device_extensions.ext_shader_atomic_float2]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shader_atomic_float2_ext = Some(Default::default());
@@ -19490,7 +20649,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_shader_atomic_float].into_iter().any(|x| x)
+        if [device_extensions.ext_shader_atomic_float]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shader_atomic_float_ext = Some(Default::default());
@@ -19498,15 +20659,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_shader_image_atomic_int64].into_iter().any(|x| x)
+        if [device_extensions.ext_shader_image_atomic_int64]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shader_image_atomic_int64_ext = Some(Default::default());
-            let member = self.features_shader_image_atomic_int64_ext.as_mut().unwrap();
+            let member = self
+                .features_shader_image_atomic_int64_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_shader_module_identifier].into_iter().any(|x| x)
+        if [device_extensions.ext_shader_module_identifier]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shader_module_identifier_ext = Some(Default::default());
@@ -19514,7 +20682,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_subpass_merge_feedback].into_iter().any(|x| x)
+        if [device_extensions.ext_subpass_merge_feedback]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_subpass_merge_feedback_ext = Some(Default::default());
@@ -19522,7 +20692,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_swapchain_maintenance1].into_iter().any(|x| x)
+        if [device_extensions.ext_swapchain_maintenance1]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_swapchain_maintenance1_ext = Some(Default::default());
@@ -19530,7 +20702,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_texel_buffer_alignment].into_iter().any(|x| x)
+        if [device_extensions.ext_texel_buffer_alignment]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_texel_buffer_alignment_ext = Some(Default::default());
@@ -19538,7 +20712,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_transform_feedback].into_iter().any(|x| x)
+        if [device_extensions.ext_transform_feedback]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_transform_feedback_ext = Some(Default::default());
@@ -19546,7 +20722,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_vertex_attribute_divisor].into_iter().any(|x| x)
+        if [device_extensions.ext_vertex_attribute_divisor]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_vertex_attribute_divisor_ext = Some(Default::default());
@@ -19554,15 +20732,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_vertex_input_dynamic_state].into_iter().any(|x| x)
+        if [device_extensions.ext_vertex_input_dynamic_state]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_vertex_input_dynamic_state_ext = Some(Default::default());
-            let member = self.features_vertex_input_dynamic_state_ext.as_mut().unwrap();
+            let member = self
+                .features_vertex_input_dynamic_state_ext
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_ycbcr_2plane_444_formats].into_iter().any(|x| x)
+        if [device_extensions.ext_ycbcr_2plane_444_formats]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_ycbcr2_plane444_formats_ext = Some(Default::default());
@@ -19570,7 +20755,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.ext_ycbcr_image_arrays].into_iter().any(|x| x)
+        if [device_extensions.ext_ycbcr_image_arrays]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_ycbcr_image_arrays_ext = Some(Default::default());
@@ -19578,7 +20765,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.sec_amigo_profiling].into_iter().any(|x| x)
+        if [device_extensions.sec_amigo_profiling]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_amigo_profiling_sec = Some(Default::default());
@@ -19586,7 +20775,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.amd_device_coherent_memory].into_iter().any(|x| x)
+        if [device_extensions.amd_device_coherent_memory]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_coherent_memory_amd = Some(Default::default());
@@ -19594,15 +20785,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_compute_shader_derivatives].into_iter().any(|x| x)
+        if [device_extensions.nv_compute_shader_derivatives]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_compute_shader_derivatives_nv = Some(Default::default());
-            let member = self.features_compute_shader_derivatives_nv.as_mut().unwrap();
+            let member = self
+                .features_compute_shader_derivatives_nv
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_cooperative_matrix].into_iter().any(|x| x)
+        if [device_extensions.nv_cooperative_matrix]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_cooperative_matrix_nv = Some(Default::default());
@@ -19610,7 +20808,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_copy_memory_indirect].into_iter().any(|x| x)
+        if [device_extensions.nv_copy_memory_indirect]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_copy_memory_indirect_nv = Some(Default::default());
@@ -19618,7 +20818,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_corner_sampled_image].into_iter().any(|x| x)
+        if [device_extensions.nv_corner_sampled_image]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_corner_sampled_image_nv = Some(Default::default());
@@ -19626,7 +20828,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_coverage_reduction_mode].into_iter().any(|x| x)
+        if [device_extensions.nv_coverage_reduction_mode]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_coverage_reduction_mode_nv = Some(Default::default());
@@ -19634,23 +20838,35 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_dedicated_allocation_image_aliasing].into_iter().any(|x| x)
+        if [device_extensions.nv_dedicated_allocation_image_aliasing]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_dedicated_allocation_image_aliasing_nv = Some(Default::default());
-            let member = self.features_dedicated_allocation_image_aliasing_nv.as_mut().unwrap();
+            let member = self
+                .features_dedicated_allocation_image_aliasing_nv
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.valve_descriptor_set_host_mapping].into_iter().any(|x| x)
+        if [device_extensions.valve_descriptor_set_host_mapping]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_descriptor_set_host_mapping_valve = Some(Default::default());
-            let member = self.features_descriptor_set_host_mapping_valve.as_mut().unwrap();
+            let member = self
+                .features_descriptor_set_host_mapping_valve
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_device_generated_commands].into_iter().any(|x| x)
+        if [device_extensions.nv_device_generated_commands]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_device_generated_commands_nv = Some(Default::default());
@@ -19658,7 +20874,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_device_diagnostics_config].into_iter().any(|x| x)
+        if [device_extensions.nv_device_diagnostics_config]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_diagnostics_config_nv = Some(Default::default());
@@ -19666,7 +20884,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_scissor_exclusive].into_iter().any(|x| x)
+        if [device_extensions.nv_scissor_exclusive]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_exclusive_scissor_nv = Some(Default::default());
@@ -19674,7 +20894,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_external_memory_rdma].into_iter().any(|x| x)
+        if [device_extensions.nv_external_memory_rdma]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_external_memory_rdma_nv = Some(Default::default());
@@ -19682,23 +20904,35 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.qcom_fragment_density_map_offset].into_iter().any(|x| x)
+        if [device_extensions.qcom_fragment_density_map_offset]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_fragment_density_map_offset_qcom = Some(Default::default());
-            let member = self.features_fragment_density_map_offset_qcom.as_mut().unwrap();
+            let member = self
+                .features_fragment_density_map_offset_qcom
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_fragment_shading_rate_enums].into_iter().any(|x| x)
+        if [device_extensions.nv_fragment_shading_rate_enums]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_fragment_shading_rate_enums_nv = Some(Default::default());
-            let member = self.features_fragment_shading_rate_enums_nv.as_mut().unwrap();
+            let member = self
+                .features_fragment_shading_rate_enums_nv
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.qcom_image_processing].into_iter().any(|x| x)
+        if [device_extensions.qcom_image_processing]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_image_processing_qcom = Some(Default::default());
@@ -19706,15 +20940,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_inherited_viewport_scissor].into_iter().any(|x| x)
+        if [device_extensions.nv_inherited_viewport_scissor]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_inherited_viewport_scissor_nv = Some(Default::default());
-            let member = self.features_inherited_viewport_scissor_nv.as_mut().unwrap();
+            let member = self
+                .features_inherited_viewport_scissor_nv
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.huawei_invocation_mask].into_iter().any(|x| x)
+        if [device_extensions.huawei_invocation_mask]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_invocation_mask_huawei = Some(Default::default());
@@ -19722,7 +20963,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_linear_color_attachment].into_iter().any(|x| x)
+        if [device_extensions.nv_linear_color_attachment]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_linear_color_attachment_nv = Some(Default::default());
@@ -19730,7 +20973,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_memory_decompression].into_iter().any(|x| x)
+        if [device_extensions.nv_memory_decompression]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_memory_decompression_nv = Some(Default::default());
@@ -19739,18 +20984,25 @@ impl FeaturesFfi {
             head.p_next = member as *mut _ as _;
         }
         if [device_extensions.nv_mesh_shader].into_iter().any(|x| x)
-            && [self.features_mesh_shader_ext.is_none()].into_iter().all(|x| x)
+            && [self.features_mesh_shader_ext.is_none()]
+                .into_iter()
+                .all(|x| x)
         {
             self.features_mesh_shader_nv = Some(Default::default());
             let member = self.features_mesh_shader_nv.as_mut().unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.qcom_multiview_per_view_viewports].into_iter().any(|x| x)
+        if [device_extensions.qcom_multiview_per_view_viewports]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_multiview_per_view_viewports_qcom = Some(Default::default());
-            let member = self.features_multiview_per_view_viewports_qcom.as_mut().unwrap();
+            let member = self
+                .features_multiview_per_view_viewports_qcom
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
@@ -19760,7 +21012,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_present_barrier].into_iter().any(|x| x)
+        if [device_extensions.nv_present_barrier]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_present_barrier_nv = Some(Default::default());
@@ -19768,15 +21022,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_ray_tracing_invocation_reorder].into_iter().any(|x| x)
+        if [device_extensions.nv_ray_tracing_invocation_reorder]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_ray_tracing_invocation_reorder_nv = Some(Default::default());
-            let member = self.features_ray_tracing_invocation_reorder_nv.as_mut().unwrap();
+            let member = self
+                .features_ray_tracing_invocation_reorder_nv
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_ray_tracing_motion_blur].into_iter().any(|x| x)
+        if [device_extensions.nv_ray_tracing_motion_blur]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_ray_tracing_motion_blur_nv = Some(Default::default());
@@ -19784,15 +21045,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_representative_fragment_test].into_iter().any(|x| x)
+        if [device_extensions.nv_representative_fragment_test]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_representative_fragment_test_nv = Some(Default::default());
-            let member = self.features_representative_fragment_test_nv.as_mut().unwrap();
+            let member = self
+                .features_representative_fragment_test_nv
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.arm_shader_core_builtins].into_iter().any(|x| x)
+        if [device_extensions.arm_shader_core_builtins]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shader_core_builtins_arm = Some(Default::default());
@@ -19800,15 +21068,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.amd_shader_early_and_late_fragment_tests].into_iter().any(|x| x)
+        if [device_extensions.amd_shader_early_and_late_fragment_tests]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shader_early_and_late_fragment_tests_amd = Some(Default::default());
-            let member = self.features_shader_early_and_late_fragment_tests_amd.as_mut().unwrap();
+            let member = self
+                .features_shader_early_and_late_fragment_tests_amd
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_shader_image_footprint].into_iter().any(|x| x)
+        if [device_extensions.nv_shader_image_footprint]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shader_image_footprint_nv = Some(Default::default());
@@ -19816,15 +21091,22 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.intel_shader_integer_functions2].into_iter().any(|x| x)
+        if [device_extensions.intel_shader_integer_functions2]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shader_integer_functions2_intel = Some(Default::default());
-            let member = self.features_shader_integer_functions2_intel.as_mut().unwrap();
+            let member = self
+                .features_shader_integer_functions2_intel
+                .as_mut()
+                .unwrap();
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_shader_sm_builtins].into_iter().any(|x| x)
+        if [device_extensions.nv_shader_sm_builtins]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shader_sm_builtins_nv = Some(Default::default());
@@ -19832,7 +21114,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.nv_shading_rate_image].into_iter().any(|x| x)
+        if [device_extensions.nv_shading_rate_image]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_shading_rate_image_nv = Some(Default::default());
@@ -19840,7 +21124,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.huawei_subpass_shading].into_iter().any(|x| x)
+        if [device_extensions.huawei_subpass_shading]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_subpass_shading_huawei = Some(Default::default());
@@ -19848,7 +21134,9 @@ impl FeaturesFfi {
             member.p_next = head.p_next;
             head.p_next = member as *mut _ as _;
         }
-        if [device_extensions.qcom_tile_properties].into_iter().any(|x| x)
+        if [device_extensions.qcom_tile_properties]
+            .into_iter()
+            .any(|x| x)
             && [].into_iter().all(|x| x)
         {
             self.features_tile_properties_qcom = Some(Default::default());
