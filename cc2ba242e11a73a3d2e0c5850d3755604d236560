@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2a10ab57_99c86ab8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1869120
+      },
+      "writtenOn": "2025-03-12T16:00:47Z",
+      "side": 1,
+      "message": "```\nAllLicensesRecorded\nThe license \"BSD-0-Clause\" was found in 1 source files and is missing from the package\u0027s LICENSE file.\n\nThis license was found in \"crates/adler2/LICENSE-0BSD\" on line 3.\n\nThe LICENSE file \"crates/adler2/LICENSE\" contains the licenses \"Apache-2.0\".\n\n📖 See go/compliancelint-checks#AllLicensesRecorded\n```\n\nPlease fix.",
+      "revId": "cc2ba242e11a73a3d2e0c5850d3755604d236560",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
