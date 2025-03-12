@@ -1,6 +1,6 @@
-From cd85e49c438e3aa9dbe2989f91e5ad7d3f4816de Mon Sep 17 00:00:00 2001
+From 27c146d66df8fd832b22462f44b436a4e0313319 Mon Sep 17 00:00:00 2001
 From: Marcin Radomski <dextero@google.com>
-Date: Thu, 17 Aug 2023 16:11:56 +0000
+Date: Wed, 12 Mar 2025 19:51:19 +0000
 Subject: [PATCH] Enable default-initializing liblog_rust to write to logcat on
  Android
 
@@ -22,37 +22,27 @@ Test: run it on a Cuttlefish device
 Test: observe logcat logs on all level from FFI call
 Test: observe all logs on non-FFI call without initializing the logger
 Test: observe set log filter applying only to non-FFI call
-Change-Id: I04dd334c66e5a2be8cfb19e87be3afb9146e5aa6
+Change-Id: I027e3ed859718aa3aaf3ed9703466f7a9df9d1d7
 ---
- src/android_logger.rs |  1 +
- src/lib.rs            | 23 +++++++++++++++++++++++
- 2 files changed, 24 insertions(+)
+ src/lib.rs | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git b/src/android_logger.rs a/src/android_logger.rs
-new file mode 120000
-index 00000000..84b8625c
---- /dev/null
-+++ a/src/android_logger.rs
-@@ -0,0 +1 @@
-+../../android_logger/src/lib.rs
-\ No newline at end of file
-diff --git b/src/lib.rs a/src/lib.rs
-index 6b43a9ae..799b88e1 100644
---- b/src/lib.rs
-+++ a/src/lib.rs
-@@ -397,6 +397,11 @@ mod serde;
+diff --git a/src/lib.rs b/src/lib.rs
+index 843893d0..abdc98c4 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -405,6 +405,10 @@ mod serde;
  #[cfg(feature = "kv")]
  pub mod kv;
  
 +#[cfg(default_log_impl)]
-+extern crate once_cell;
-+#[cfg(default_log_impl)]
++#[path = "../../android_logger/src/lib.rs"]
 +mod android_logger;
 +
  #[cfg(target_has_atomic = "ptr")]
  use std::sync::atomic::{AtomicUsize, Ordering};
  
-@@ -458,7 +463,10 @@ const UNINITIALIZED: usize = 0;
+@@ -466,7 +470,10 @@ const UNINITIALIZED: usize = 0;
  const INITIALIZING: usize = 1;
  const INITIALIZED: usize = 2;
  
@@ -63,7 +53,7 @@ index 6b43a9ae..799b88e1 100644
  
  static LOG_LEVEL_NAMES: [&str; 6] = ["OFF", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
  
-@@ -1505,6 +1513,21 @@ pub fn logger() -> &'static dyn Log {
+@@ -1513,6 +1520,17 @@ pub fn logger() -> &'static dyn Log {
      // write to the `LOGGER` static and initialization of the logger
      // internal state synchronized with current thread.
      if STATE.load(Ordering::Acquire) != INITIALIZED {
@@ -76,15 +66,11 @@ index 6b43a9ae..799b88e1 100644
 +            use android_logger::{AndroidLogger, Config};
 +            use std::sync::OnceLock;
 +            static ANDROID_LOGGER: OnceLock<AndroidLogger> = OnceLock::new();
-+            return
-+                ANDROID_LOGGER.get_or_init(|| {
-+                    // Pass all logs down to liblog - it does its own filtering.
-+                    AndroidLogger::new(Config::default().with_max_level(LevelFilter::Trace))
-+                });
++            return ANDROID_LOGGER.get_or_init(AndroidLogger::default);
 +        }
          static NOP: NopLogger = NopLogger;
          &NOP
      } else {
 -- 
-2.42.0.rc1.204.g551eb34607-goog
+2.49.0.rc0.332.g42c0ae87b1-goog
 
