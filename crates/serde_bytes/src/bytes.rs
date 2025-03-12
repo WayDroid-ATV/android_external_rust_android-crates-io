@@ -103,7 +103,7 @@ impl From<Box<[u8]>> for Box<Bytes> {
     }
 }
 
-impl Default for &Bytes {
+impl<'a> Default for &'a Bytes {
     fn default() -> Self {
         Bytes::new(&[])
     }
