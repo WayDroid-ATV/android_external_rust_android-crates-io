@@ -413,6 +413,7 @@ userfaultfd
 userfaultfd-sys
 utf-8
 uuid
+version_check
 vhost
 vhost-user-backend
 virtio-bindings
