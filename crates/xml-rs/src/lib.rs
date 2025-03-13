@@ -1,4 +1,4 @@
-//#![warn(missing_doc)]
+#![warn(missing_docs)]
 #![forbid(non_camel_case_types)]
 #![forbid(unsafe_code)]
 #![allow(clippy::redundant_closure_for_method_calls)]
@@ -8,15 +8,12 @@
 //!
 //! Please note that functions of this parser may panic.
 //! If a panic could cause a Denial Of Service in your codebase, *you're* responsible for wrapping access to this library in `catch_unwind`.
-//!
 
 #![cfg_attr(doctest, doc = include_str!("../README.md"))]
 
-pub use crate::reader::EventReader;
-pub use crate::reader::ParserConfig;
+pub use crate::reader::{EventReader, ParserConfig};
 pub use crate::util::Encoding;
-pub use crate::writer::EmitterConfig;
-pub use crate::writer::EventWriter;
+pub use crate::writer::{EmitterConfig, EventWriter};
 
 pub mod attribute;
 pub mod common;

@@ -6960,12 +6960,12 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "087f2286ad55b6c36ec93267bcd1cbb740d7f9784879a001f76eea329d488273"
 dependencies = [
- "bitflags 2.8.0",
+ "bitflags 2.9.0",
  "embedded-io",
  "enumn",
  "log",
  "thiserror 2.0.11",
- "zerocopy 0.8.20",
+ "zerocopy 0.8.21",
 ]
 
 [[package]]
@@ -7594,9 +7594,9 @@ dependencies = [
 
 [[package]]
 name = "xml-rs"
-version = "0.8.19"
+version = "0.8.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fcb9cbac069e033553e8bb871be2fbdffcab578eb25bd0f7c508cedc6dcd75a"
+checksum = "c5b940ebc25896e71dd073bad2dbaa2abfe97b0a391415e22ad1326d9c54e3c4"
 
 [[package]]
 name = "yaml-rust"
