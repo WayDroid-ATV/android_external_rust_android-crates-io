@@ -1,0 +1,63 @@
+From b78653088197f916bc5c5123a52e7fb2d52c85b4 Mon Sep 17 00:00:00 2001
+From: Chris Wailes <chriswailes@google.com>
+Date: Thu, 13 Mar 2025 14:23:05 -0700
+Subject: [PATCH] Mark additional code as dependent on linux-sys-raw
+
+Change-Id: I271e7f24acf6c564cb90ff8e903cc4ac2583e26c
+---
+ src/backend/libc/c.rs        | 4 ++--
+ src/backend/libc/mm/types.rs | 2 +-
+ src/fs/mod.rs                | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/backend/libc/c.rs b/src/backend/libc/c.rs
+index 2f737c21..40e6c46d 100644
+--- a/src/backend/libc/c.rs
++++ b/src/backend/libc/c.rs
+@@ -89,7 +89,7 @@ pub(crate) const MSG_DONTWAIT: c_int = MSG_NONBLOCK;
+ // `O_LARGEFILE` can be automatically set by the kernel on Linux:
+ // <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/fs/open.c?h=v6.13#n1423>
+ // so libc implementations may leave it undefined or defined to zero.
+-#[cfg(linux_kernel)]
++#[cfg(feature = "linux-sys-raw")]
+ pub(crate) const O_LARGEFILE: c_int = linux_raw_sys::general::O_LARGEFILE as _;
+
+ // Gated under `_LARGEFILE_SOURCE` but automatically set by the kernel.
+@@ -515,7 +515,7 @@ pub(crate) use statx_flags::*;
+ #[cfg(target_os = "android")]
+ pub(crate) use __fsid_t as fsid_t;
+
+-#[cfg(feature = "mm")]
++#[cfg(all(feature = "mm", feature = "linux-sys-raw"))]
+ #[cfg(target_os = "android")]
+ pub(crate) const MAP_DROPPABLE: c_int = bitcast!(linux_raw_sys::general::MAP_DROPPABLE);
+
+diff --git a/src/backend/libc/mm/types.rs b/src/backend/libc/mm/types.rs
+index 2e8b17c2..a76eb16e 100644
+--- a/src/backend/libc/mm/types.rs
++++ b/src/backend/libc/mm/types.rs
+@@ -241,7 +241,7 @@ bitflags! {
+         #[cfg(any())]
+         const UNINITIALIZED = bitcast!(c::MAP_UNINITIALIZED);
+         /// `MAP_DROPPABLE`
+-        #[cfg(linux_kernel)]
++        #[cfg(feature = "linux-sys-raw")]
+         const DROPPABLE = bitcast!(c::MAP_DROPPABLE);
+
+         /// <https://docs.rs/bitflags/*/bitflags/#externally-defined-flags>
+diff --git a/src/fs/mod.rs b/src/fs/mod.rs
+index 7cf10188..83c2147e 100644
+--- a/src/fs/mod.rs
++++ b/src/fs/mod.rs
+@@ -30,7 +30,7 @@ pub(crate) mod fd;
+ mod getpath;
+ #[cfg(not(target_os = "wasi"))] // WASI doesn't have get[gpu]id.
+ mod id;
+-#[cfg(linux_kernel)]
++#[cfg(feature = "linux-raw-sys")]
+ pub mod inotify;
+ #[cfg(linux_kernel)]
+ mod ioctl;
+--
+2.49.0.rc1.451.g8f38331e32-goog
+
