@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "rustix",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.38.31",
+    cargo_pkg_version: "1.0.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -40,6 +40,7 @@ rust_library {
         "libbitflags",
         "liberrno",
         "liblibc",
+        "liblinux_raw_sys",
     ],
     aliases: ["errno:libc_errno"],
     apex_available: [

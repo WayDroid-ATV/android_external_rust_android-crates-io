@@ -30,17 +30,17 @@ diff --git a/src/backend/libc/fs/mod.rs b/src/backend/libc/fs/mod.rs
 index c17e8636..d342f3a2 100644
 --- a/src/backend/libc/fs/mod.rs
 +++ b/src/backend/libc/fs/mod.rs
-@@ -15,9 +15,9 @@ pub(crate) mod syscalls;
+@@ -16,9 +16,9 @@ pub(crate) mod syscalls;
  pub(crate) mod types;
- 
+
  // TODO: Fix linux-raw-sys to define ioctl codes for sparc.
 -#[cfg(all(linux_kernel, any(target_arch = "sparc", target_arch = "sparc64")))]
 +#[cfg(all(feature = "linux-raw-sys", any(target_arch = "sparc", target_arch = "sparc64")))]
- pub(crate) const EXT4_IOC_RESIZE_FS: crate::ioctl::RawOpcode = 0x8008_6610;
- 
+ pub(crate) const EXT4_IOC_RESIZE_FS: crate::ioctl::Opcode = 0x8008_6610;
+
 -#[cfg(all(linux_kernel, not(any(target_arch = "sparc", target_arch = "sparc64"))))]
 +#[cfg(all(feature = "linux-raw-sys", not(any(target_arch = "sparc", target_arch = "sparc64"))))]
- pub(crate) const EXT4_IOC_RESIZE_FS: crate::ioctl::RawOpcode =
+ pub(crate) const EXT4_IOC_RESIZE_FS: crate::ioctl::Opcode =
      linux_raw_sys::ioctl::EXT4_IOC_RESIZE_FS as crate::ioctl::RawOpcode;
 diff --git a/src/backend/libc/fs/syscalls.rs b/src/backend/libc/fs/syscalls.rs
 index 593b234a..134d66ff 100644
@@ -49,7 +49,7 @@ index 593b234a..134d66ff 100644
 @@ -1729,7 +1729,7 @@ pub(crate) fn memfd_create(name: &CStr, flags: MemfdFlags) -> io::Result<OwnedFd
      unsafe { ret_owned_fd(memfd_create(c_str(name), bitflags_bits!(flags))) }
  }
- 
+
 -#[cfg(linux_kernel)]
 +#[cfg(feature = "linux-raw-sys")]
  pub(crate) fn openat2(
@@ -78,7 +78,7 @@ index 490f183f..ad2fe4fa 100644
 +++ b/src/fs/ioctl.rs
 @@ -58,7 +58,7 @@ pub fn ioctl_ficlone<Fd: AsFd, SrcFd: AsFd>(fd: Fd, src_fd: SrcFd) -> io::Result
  }
- 
+
  /// `ioctl(fd, EXT4_IOC_RESIZE_FS, blocks)`—Resize ext4 filesystem on fd.
 -#[cfg(linux_kernel)]
 +#[cfg(feature = "linux-raw-sys")]
@@ -88,7 +88,7 @@ index 490f183f..ad2fe4fa 100644
 @@ -93,7 +93,7 @@ unsafe impl ioctl::Ioctl for Ficlone<'_> {
      }
  }
- 
+
 -#[cfg(linux_kernel)]
 +#[cfg(feature = "linux-raw-sys")]
  bitflags! {
@@ -116,10 +116,7 @@ diff --git a/src/fs/mod.rs b/src/fs/mod.rs
 index 27d35701..b14ac803 100644
 --- a/src/fs/mod.rs
 +++ b/src/fs/mod.rs
-@@ -47,9 +47,9 @@ mod memfd_create;
- #[cfg(linux_kernel)]
- #[cfg(feature = "fs")]
- mod mount;
+@@ -47,6 +47,6 @@ mod memfd_create;
 -#[cfg(linux_kernel)]
 +#[cfg(feature = "linux-raw-sys")]
  mod openat2;
@@ -128,10 +125,7 @@ index 27d35701..b14ac803 100644
  mod raw_dir;
  mod seek_from;
  #[cfg(target_os = "linux")]
-@@ -115,9 +115,9 @@ pub use memfd_create::memfd_create;
- #[cfg(linux_kernel)]
- #[cfg(feature = "fs")]
- pub use mount::*;
+@@ -115,6 +115,6 @@ pub use memfd_create::memfd_create;
 -#[cfg(linux_kernel)]
 +#[cfg(feature = "linux-raw-sys")]
  pub use openat2::openat2;
@@ -140,6 +134,6 @@ index 27d35701..b14ac803 100644
  pub use raw_dir::{RawDir, RawDirEntry};
  pub use seek_from::SeekFrom;
  #[cfg(target_os = "linux")]
--- 
+--
 2.44.0.291.gc1ea87d7ee-goog
 
