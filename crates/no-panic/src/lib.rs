@@ -132,7 +132,7 @@
 //! [Kixunil]: https://github.com/Kixunil
 //! [`dont_panic`]: https://github.com/Kixunil/dont_panic
 
-#![doc(html_root_url = "https://docs.rs/no-panic/0.1.33")]
+#![doc(html_root_url = "https://docs.rs/no-panic/0.1.35")]
 #![allow(
     clippy::doc_markdown,
     clippy::match_same_arms,
@@ -155,14 +155,25 @@ use syn::{
 pub fn no_panic(args: TokenStream, input: TokenStream) -> TokenStream {
     let args = TokenStream2::from(args);
     let input = TokenStream2::from(input);
-    let expanded = match parse(args, input.clone()) {
-        Ok(function) => expand_no_panic(function),
+    TokenStream::from(match parse(args, input.clone()) {
+        Ok(function) => {
+            let expanded = expand_no_panic(function);
+            quote! {
+                #[cfg(not(doc))]
+                #expanded
+                // Keep generated parameter names out of doc builds.
+                #[cfg(doc)]
+                #input
+            }
+        }
         Err(parse_error) => {
             let compile_error = parse_error.to_compile_error();
-            quote!(#compile_error #input)
+            quote! {
+                #compile_error
+                #input
+            }
         }
-    };
-    TokenStream::from(expanded)
+    })
 }
 
 fn parse(args: TokenStream2, input: TokenStream2) -> Result<ItemFn> {
@@ -229,7 +240,6 @@ fn expand_no_panic(mut function: ItemFn) -> TokenStream2 {
     let mut arg_pat = Vec::new();
     let mut arg_val = Vec::new();
     for (i, input) in function.sig.inputs.iter_mut().enumerate() {
-        let numbered = Ident::new(&format!("__arg{}", i), Span::call_site());
         match input {
             FnArg::Typed(PatType { pat, .. })
                 if match pat.as_ref() {
@@ -237,9 +247,14 @@ fn expand_no_panic(mut function: ItemFn) -> TokenStream2 {
                     _ => true,
                 } =>
             {
+                let arg_name = if let Pat::Ident(original_name) = &**pat {
+                    original_name.ident.clone()
+                } else {
+                    Ident::new(&format!("__arg{}", i), Span::call_site())
+                };
                 arg_pat.push(quote!(#pat));
-                arg_val.push(quote!(#numbered));
-                *pat = parse_quote!(mut #numbered);
+                arg_val.push(quote!(#arg_name));
+                *pat = parse_quote!(mut #arg_name);
             }
             FnArg::Typed(_) | FnArg::Receiver(_) => {
                 move_self = Some(quote! {
