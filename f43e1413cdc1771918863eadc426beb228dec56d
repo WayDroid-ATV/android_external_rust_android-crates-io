@@ -16,6 +16,24 @@
       "message": "Can you please add the upstream pull request to the CL description or patch file?\n\nI would like the upstream change to merged before approving this.",
       "revId": "f43e1413cdc1771918863eadc426beb228dec56d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "341ce315_00579b0d",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1928727
+      },
+      "writtenOn": "2025-03-14T22:31:38Z",
+      "side": 1,
+      "message": "upstream pull request: https://github.com/rust-vmm/vhost/pull/284",
+      "parentUuid": "d85d2ae6_6df03241",
+      "revId": "f43e1413cdc1771918863eadc426beb228dec56d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
