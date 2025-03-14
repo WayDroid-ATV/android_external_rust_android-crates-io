@@ -17,6 +17,11 @@
           "no_std": true
         }
       }
+    },
+    {
+      "features": [],
+      "generate_androidbp": false,
+      "generate_rulesmk": true
     }
   ]
 }
