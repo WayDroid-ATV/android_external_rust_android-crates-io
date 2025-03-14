@@ -9,7 +9,7 @@ MODULE_CRATE_NAME := libc
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_ADD_IMPLICIT_DEPS := false
-MODULE_RUST_EDITION := 2015
+MODULE_RUST_EDITION := 2021
 MODULE_RUSTFLAGS += \
 	--cfg 'freebsd11' \
 	--cfg 'libc_align' \
