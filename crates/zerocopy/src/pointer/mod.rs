@@ -8,11 +8,15 @@
 
 //! Abstractions over raw pointers.
 
-mod aliasing_safety;
+mod inner;
+#[doc(hidden)]
+pub mod invariant;
 mod ptr;
 
-pub use aliasing_safety::{AliasingSafe, AliasingSafeReason, BecauseExclusive, BecauseImmutable};
-pub use ptr::{invariant, Ptr};
+#[doc(hidden)]
+pub use invariant::{BecauseExclusive, BecauseImmutable, Read, ReadReason};
+#[doc(hidden)]
+pub use ptr::Ptr;
 
 use crate::Unaligned;
 
@@ -20,14 +24,14 @@ use crate::Unaligned;
 /// to [`TryFromBytes::is_bit_valid`].
 ///
 /// [`TryFromBytes::is_bit_valid`]: crate::TryFromBytes::is_bit_valid
-pub type Maybe<'a, T, Aliasing = invariant::Shared, Alignment = invariant::Any> =
+pub type Maybe<'a, T, Aliasing = invariant::Shared, Alignment = invariant::Unaligned> =
     Ptr<'a, T, (Aliasing, Alignment, invariant::Initialized)>;
 
 /// A semi-user-facing wrapper type representing a maybe-aligned reference, for
 /// use in [`TryFromBytes::is_bit_valid`].
 ///
 /// [`TryFromBytes::is_bit_valid`]: crate::TryFromBytes::is_bit_valid
-pub type MaybeAligned<'a, T, Aliasing = invariant::Shared, Alignment = invariant::Any> =
+pub type MaybeAligned<'a, T, Aliasing = invariant::Shared, Alignment = invariant::Unaligned> =
     Ptr<'a, T, (Aliasing, Alignment, invariant::Valid)>;
 
 // These methods are defined on the type alias, `MaybeAligned`, so as to bring
@@ -35,7 +39,7 @@ pub type MaybeAligned<'a, T, Aliasing = invariant::Shared, Alignment = invariant
 impl<'a, T, Aliasing, Alignment> MaybeAligned<'a, T, Aliasing, Alignment>
 where
     T: 'a + ?Sized,
-    Aliasing: invariant::Aliasing + invariant::AtLeast<invariant::Shared>,
+    Aliasing: invariant::Aliasing,
     Alignment: invariant::Alignment,
 {
     /// Reads the value from `MaybeAligned`.
@@ -44,17 +48,22 @@ where
     pub fn read_unaligned<R>(self) -> T
     where
         T: Copy,
-        R: AliasingSafeReason,
-        T: AliasingSafe<T, Aliasing, R>,
+        R: invariant::ReadReason,
+        T: invariant::Read<Aliasing, R>,
     {
-        let raw = self.as_non_null().as_ptr();
         // SAFETY: By invariant on `MaybeAligned`, `raw` contains
-        // validly-initialized data for `T`. By `T: AliasingSafe`, we are
-        // permitted to perform a read of `raw`'s referent. The value is safe to
-        // read and return, because `T` is copy.
-        unsafe { core::ptr::read_unaligned(raw) }
+        // validly-initialized data for `T`. By `T: Read<Aliasing>`, we are
+        // permitted to perform a read of `self`'s referent.
+        unsafe { self.as_inner().read_unaligned() }
     }
+}
 
+impl<'a, T, Aliasing, Alignment> MaybeAligned<'a, T, Aliasing, Alignment>
+where
+    T: 'a + ?Sized,
+    Aliasing: invariant::Reference,
+    Alignment: invariant::Alignment,
+{
     /// Views the value as an aligned reference.
     ///
     /// This is only available if `T` is [`Unaligned`].
@@ -73,7 +82,7 @@ pub(crate) fn is_zeroed<T, I>(ptr: Ptr<'_, T, I>) -> bool
 where
     T: crate::Immutable + crate::KnownLayout,
     I: invariant::Invariants<Validity = invariant::Initialized>,
-    I::Aliasing: invariant::AtLeast<invariant::Shared>,
+    I::Aliasing: invariant::Reference,
 {
     ptr.as_bytes::<BecauseImmutable>().as_ref().iter().all(|&byte| byte == 0)
 }

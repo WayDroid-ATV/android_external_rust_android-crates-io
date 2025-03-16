@@ -417,6 +417,7 @@ vhost
 vhost-user-backend
 virtio-bindings
 virtio-drivers
+virtio-drivers-and-devices
 virtio-queue
 virtio-vsock
 vm-memory
