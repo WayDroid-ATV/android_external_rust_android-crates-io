@@ -311,6 +311,7 @@ rustc-hash
 rustix
 rustversion
 ryu
+safe-mmio
 same-file
 scopeguard
 sec1

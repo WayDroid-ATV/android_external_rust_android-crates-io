@@ -407,6 +407,7 @@ dependencies = [
  "rustix",
  "rustversion",
  "ryu",
+ "safe-mmio",
  "same-file",
  "scopeguard",
  "sec1",
@@ -5480,6 +5481,15 @@ name = "ryu"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f"
+
+[[package]]
+name = "safe-mmio"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3bc59a975d8faa0b4475145266e9f9eac01f0b3f393d0e5eecc8b88646ca2d29"
+dependencies = [
+ "zerocopy 0.8.23",
+]
 
 [[package]]
 name = "safer-ffi"
