@@ -406,8 +406,7 @@ mod serde;
 pub mod kv;
 
 #[cfg(default_log_impl)]
-extern crate once_cell;
-#[cfg(default_log_impl)]
+#[path = "../../android_logger/src/lib.rs"]
 mod android_logger;
 
 #[cfg(target_has_atomic = "ptr")]
@@ -1530,11 +1529,7 @@ pub fn logger() -> &'static dyn Log {
             use android_logger::{AndroidLogger, Config};
             use std::sync::OnceLock;
             static ANDROID_LOGGER: OnceLock<AndroidLogger> = OnceLock::new();
-            return
-                ANDROID_LOGGER.get_or_init(|| {
-                    // Pass all logs down to liblog - it does its own filtering.
-                    AndroidLogger::new(Config::default().with_max_level(LevelFilter::Trace))
-                });
+            return ANDROID_LOGGER.get_or_init(AndroidLogger::default);
         }
         static NOP: NopLogger = NopLogger;
         &NOP
