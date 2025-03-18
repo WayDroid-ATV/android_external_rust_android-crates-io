@@ -1,0 +1,62 @@
+From bfecd106507b067e60ad16177a668e762ab42acd Mon Sep 17 00:00:00 2001
+From: Marcin Radomski <dextero@google.com>
+Date: Tue, 18 Mar 2025 13:31:21 +0000
+Subject: [PATCH] Avoid panic on buffers with embedded nul bytes
+
+Upstream PR: https://github.com/rust-mobile/android_logger-rs/pull/90
+
+Some crates use log crate with a message padded with a number of
+nullbytes [1]. This currently causes panics.
+
+Using `CStr::from_bytes_until_nul` accepts multiple null-bytes, and
+instead stops at the first nullbyte in a buffer.
+
+This may truncate some logs with text interspersed with nullbytes.
+However, I'd say logging _something_ there is a less-bad option than
+crashing just because we got a nullbyte in the &str.
+
+[1] https://github.com/cloudflare/quiche/blob/d0efd2c5278b9dbe8d6544c3015f8c772f3513b4/quiche/src/tls/mod.rs#L1040
+---
+ src/platform_log_writer.rs | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/src/platform_log_writer.rs b/src/platform_log_writer.rs
+index 85826ca..6ec706d 100644
+--- a/src/platform_log_writer.rs
++++ b/src/platform_log_writer.rs
+@@ -123,7 +123,7 @@ impl PlatformLogWriter<'_> {
+         );
+ 
+         let initialized = unsafe { slice_assume_init_ref(&self.buffer[..len + 1]) };
+-        let msg = CStr::from_bytes_with_nul(initialized)
++        let msg = CStr::from_bytes_until_nul(initialized)
+             .expect("Unreachable: nul terminator was placed at `len`");
+         android_log(self.buf_id, self.priority, self.tag, msg);
+ 
+@@ -265,6 +265,23 @@ pub mod tests {
+         );
+     }
+ 
++    #[test]
++    fn output_specified_len_accepts_extra_trailing_nuls() {
++        let mut writer = get_tag_writer();
++        let log_string = "abcde\0\0\0";
++        let first_nul = log_string.find('\0').unwrap();
++        writer
++            .write_str(log_string)
++            .expect("Unable to write to PlatformLogWriter");
++
++        unsafe { writer.output_specified_len(8) };
++
++        assert_eq!(
++            unsafe { slice_assume_init_ref(&writer.buffer[..first_nul]) },
++            &log_string.as_bytes()[..first_nul]
++        );
++    }
++
+     #[test]
+     fn copy_bytes_to_start() {
+         let mut writer = get_tag_writer();
+-- 
+2.49.0.rc1.451.g8f38331e32-goog
+
