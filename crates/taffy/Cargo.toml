@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.65"
 name = "taffy"
-version = "0.7.6"
+version = "0.7.7"
 authors = [
     "Alice Cecile <alice.i.cecile@gmail.com>",
     "Johnathan Kelley <jkelleyrtp@gmail.com>",
@@ -55,9 +55,34 @@ rustdoc-args = [
     "docsrs",
 ]
 
-[profile.release]
-lto = true
-panic = "abort"
+[features]
+alloc = ["serde?/alloc"]
+block_layout = []
+content_size = []
+debug = ["std"]
+default = [
+    "std",
+    "taffy_tree",
+    "flexbox",
+    "grid",
+    "block_layout",
+    "content_size",
+    "detailed_layout_info",
+]
+detailed_layout_info = []
+flexbox = []
+grid = [
+    "alloc",
+    "dep:grid",
+]
+profile = ["std"]
+serde = ["dep:serde"]
+std = [
+    "grid?/std",
+    "serde?/std",
+    "slotmap?/std",
+]
+taffy_tree = ["dep:slotmap"]
 
 [lib]
 name = "taffy"
@@ -123,31 +148,6 @@ default-features = false
 [dev-dependencies.serde_json]
 version = "1.0.93"
 
-[features]
-alloc = ["serde?/alloc"]
-block_layout = []
-content_size = []
-debug = ["std"]
-default = [
-    "std",
-    "taffy_tree",
-    "flexbox",
-    "grid",
-    "block_layout",
-    "content_size",
-    "detailed_layout_info",
-]
-detailed_layout_info = []
-flexbox = []
-grid = [
-    "alloc",
-    "dep:grid",
-]
-profile = ["std"]
-serde = ["dep:serde"]
-std = [
-    "grid?/std",
-    "serde?/std",
-    "slotmap?/std",
-]
-taffy_tree = ["dep:slotmap"]
+[profile.release]
+lto = true
+panic = "abort"

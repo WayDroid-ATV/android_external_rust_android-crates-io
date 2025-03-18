@@ -104,12 +104,15 @@ impl Rand32 {
     pub fn rand_float(&mut self) -> f32 {
         // This impl was taken more or less from `rand`, see
         // <https://docs.rs/rand/0.7.0/src/rand/distributions/float.rs.html#104-117>
+        // Note that we use f32::MANTISSA_DIGITS = 24, where that impl passes the
+        // number as an input to the macro and uses 23 so needs a +1.
+        // See https://todo.sr.ht/~icefox/oorandom/9
         // There MAY be better ways to do this, see:
         // https://mumble.net/~campbell/2014/04/28/uniform-random-float
         // https://mumble.net/~campbell/2014/04/28/random_real.c
         // https://github.com/Lokathor/randomize/issues/34
         const TOTAL_BITS: u32 = 32;
-        const PRECISION: u32 = core::f32::MANTISSA_DIGITS + 1;
+        const PRECISION: u32 = core::f32::MANTISSA_DIGITS;
         const MANTISSA_SCALE: f32 = 1.0 / ((1u32 << PRECISION) as f32);
         let mut u = self.rand_u32();
         u >>= TOTAL_BITS - PRECISION;
@@ -226,7 +229,7 @@ impl Rand64 {
     /// Produces a random `f64` in the range `[0.0, 1.0)`.
     pub fn rand_float(&mut self) -> f64 {
         const TOTAL_BITS: u32 = 64;
-        const PRECISION: u32 = core::f64::MANTISSA_DIGITS + 1;
+        const PRECISION: u32 = core::f64::MANTISSA_DIGITS;
         const MANTISSA_SCALE: f64 = 1.0 / ((1u64 << PRECISION) as f64);
         let mut u = self.rand_u64();
         u >>= TOTAL_BITS - PRECISION;
@@ -350,16 +353,16 @@ mod tests {
             /*
             TODO: Randomize changed its int-to-float conversion functions and now they don't
             match ours.
-                        for _ in 0..1000 {
-                            // Now make sure our own float conversion function works.
-                            let f1 = r1.rand_float();
-                            //let f2 = randomize::f32_half_open_right(r2.next_u32());
-                            let f2 = randomize::f32_open(r2.next_u32());
-                            assert_eq!(f1, f2);
-                            assert!(f1 >= 0.0);
-                            assert!(f1 < 1.0);
-                        }
-                         */
+            for _ in 0..1000 {
+                // Now make sure our own float conversion function works.
+                let f1 = r1.rand_float();
+                //let f2 = randomize::f32_half_open_right(r2.next_u32());
+                let f2 = randomize::f32_open(r2.next_u32());
+                assert_eq!(f1, f2);
+                assert!(f1 >= 0.0);
+                assert!(f1 < 1.0);
+            }
+            */
         }
     }
 
