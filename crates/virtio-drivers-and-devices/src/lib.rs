@@ -12,7 +12,7 @@
 //!
 //! ```
 //! use core::ptr::NonNull;
-//! use virtio_drivers::transport::mmio::{MmioTransport, VirtIOHeader};
+//! use virtio_drivers_and_devices::transport::mmio::{MmioTransport, VirtIOHeader};
 //!
 //! # fn example(mmio_device_address: usize, mmio_size: usize) {
 //! let header = NonNull::new(mmio_device_address as *mut VirtIOHeader).unwrap();
@@ -23,9 +23,9 @@
 //! You can then check what kind of VirtIO device it is and construct the appropriate driver:
 //!
 //! ```
-//! # use virtio_drivers::Hal;
+//! # use virtio_drivers_and_devices::Hal;
 //! # #[cfg(feature = "alloc")]
-//! use virtio_drivers::{
+//! use virtio_drivers_and_devices::{
 //!     device::console::VirtIOConsole,
 //!     transport::{mmio::MmioTransport, DeviceType, Transport},
 //! };
@@ -62,7 +62,7 @@ use core::ptr::{self, NonNull};
 use device::socket::SocketError;
 use thiserror::Error;
 
-pub use self::hal::{BufferDirection, Hal, PhysAddr};
+pub use self::hal::{BufferDirection, DeviceHal, Hal, PhysAddr};
 
 /// The page size in bytes supported by the library (4 KiB).
 pub const PAGE_SIZE: usize = 0x1000;
