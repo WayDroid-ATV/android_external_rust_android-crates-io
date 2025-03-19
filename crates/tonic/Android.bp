@@ -31,7 +31,7 @@ rust_library {
         "libbase64_rust",
         "libbytes",
         "libh2",
-        "libhttp",
+        "libhttp-0.2.12",
         "libhttp_body",
         "libhyper",
         "libhyper_timeout",

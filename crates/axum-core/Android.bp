@@ -25,7 +25,7 @@ rust_library {
     rustlibs: [
         "libbytes",
         "libfutures_util",
-        "libhttp",
+        "libhttp-0.2.12",
         "libhttp_body",
         "libmime",
         "libtower_layer",

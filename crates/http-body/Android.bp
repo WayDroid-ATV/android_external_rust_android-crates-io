@@ -28,7 +28,7 @@ rust_test {
     edition: "2018",
     rustlibs: [
         "libbytes",
-        "libhttp",
+        "libhttp-0.2.12",
         "libpin_project_lite",
         "libtokio",
     ],
@@ -49,7 +49,7 @@ rust_test {
     edition: "2018",
     rustlibs: [
         "libbytes",
-        "libhttp",
+        "libhttp-0.2.12",
         "libhttp_body",
         "libpin_project_lite",
         "libtokio",
@@ -66,7 +66,7 @@ rust_library {
     edition: "2018",
     rustlibs: [
         "libbytes",
-        "libhttp",
+        "libhttp-0.2.12",
         "libpin_project_lite",
     ],
     apex_available: [

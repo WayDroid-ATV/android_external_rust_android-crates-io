@@ -27,7 +27,7 @@ rust_library {
         "libbitflags-1.3.2",
         "libbytes",
         "libfutures_util",
-        "libhttp",
+        "libhttp-0.2.12",
         "libhttp_body",
         "libhyper",
         "libitoa",

@@ -27,7 +27,7 @@ rust_library {
         "libfutures_core",
         "libfutures_sink",
         "libfutures_util",
-        "libhttp",
+        "libhttp-0.2.12",
         "libindexmap",
         "libslab",
         "libtokio",
