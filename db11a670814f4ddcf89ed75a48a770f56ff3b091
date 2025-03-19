@@ -16,6 +16,29 @@
       "message": "You will need to resolve the merge conflict before submitting.",
       "revId": "db11a670814f4ddcf89ed75a48a770f56ff3b091",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "081bf04a_d25573d9",
+        "filename": "crates/image/src/codecs/jpeg/transform.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 3273323
+      },
+      "writtenOn": "2025-03-19T16:47:30Z",
+      "side": 1,
+      "message": "Please fix this WARNING reported by ComplianceLint: AllLicensesRecorded\n\nAnalyzer Description: Reports third party compliance warnings. go/compliancelint\nOwner: opensource-compliance-team@google.com\n\nAllLicensesRecorded\nThe license \"IJG\" was found in 1 source files and is missing from the package\u0027s LICENSE file.\n\nThis license was found in \"crates/image/src/codecs/jpeg/transform.rs\" on line 26.\n\nThe LICENSE file \"crates/image/LICENSE\" contains the licenses \"Apache-2.0\".\n\n📖 See go/compliancelint-checks#AllLicensesRecorded",
+      "range": {
+        "startLine": 26,
+        "startChar": 0,
+        "endLine": 51,
+        "endChar": 0
+      },
+      "revId": "db11a670814f4ddcf89ed75a48a770f56ff3b091",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
