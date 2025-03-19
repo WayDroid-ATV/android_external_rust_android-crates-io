@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "302fe9a6_deac2fa5",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1903830
+      },
+      "writtenOn": "2025-03-19T18:33:05Z",
+      "side": 1,
+      "message": "Given the presubmit failures from SDV et al, my plan is to submit this change separately, fix the targets in internal, and then test the update.",
+      "revId": "adf2f221b07830a5f6ab39b0684f454908530e27",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
