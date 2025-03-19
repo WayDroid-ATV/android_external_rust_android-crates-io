@@ -16,6 +16,24 @@
       "message": "Is there a bug number associated with this request? Is it needed as part of an upgrade or is this something you\u0027re independently adding to the monorepo?",
       "revId": "41521df18578263ddc8e623ccb0415799b6b08b6",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dc91d16c_db67bcb7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1380243
+      },
+      "writtenOn": "2025-03-19T14:06:13Z",
+      "side": 1,
+      "message": "http://b/404230136 is the bug, I\u0027ll add it here. I marked this change as WIP but Dominic marked it as ready for review already. `safe-mmio` will be needed for the next version of `virtio-drivers`, and probably some other Rust driver crates in future.",
+      "parentUuid": "7ce63f96_62fc57c1",
+      "revId": "41521df18578263ddc8e623ccb0415799b6b08b6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
