@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f1a9943b_2dc084ec",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-03-19T16:17:15Z",
+      "side": 1,
+      "message": "Defaulting to trace level logging seems like a serious issue.\n\nEven if `liblog` will avoid emitting these to `logcat`, it will require Rust to *format* every `trace!` statement. One of the advantages of using `log` or `tracing` is that log messages are only formatted if they\u0027re likely to be emitted.\n\nIf we change the default log level from Off to Trace, we are likely going to incur large amounts of unexpected allocation and formatting overhead that people thought would not be suffered outside debugging.",
+      "revId": "9e50c5285733f51a068b448e3ab2582c428be729",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
