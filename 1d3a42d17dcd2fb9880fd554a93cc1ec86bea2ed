@@ -22,6 +22,23 @@
       },
       "revId": "1d3a42d17dcd2fb9880fd554a93cc1ec86bea2ed",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2936f9fc_765e8270",
+        "filename": "crates/miniz_oxide/patches/Cargo.toml.patch",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-03-19T08:26:47Z",
+      "side": 1,
+      "message": "I\u0027m not sure why this is needed. @jamesfarrell@google.com, is this how we have to handle Zlib?",
+      "revId": "1d3a42d17dcd2fb9880fd554a93cc1ec86bea2ed",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
