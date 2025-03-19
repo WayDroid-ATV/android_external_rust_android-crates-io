@@ -29,6 +29,5 @@
       "generate_androidbp": false,
       "generate_rulesmk": true
     }
-  ],
-  "min_sdk_version": "35"
+  ]
 }
