@@ -16,6 +16,23 @@
       "message": "third-party-review: lgtm.",
       "revId": "d448c3353a6edbc25ec1666cecc161982f21239d",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "cc7c74a8_8660603c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-03-19T08:15:26Z",
+      "side": 1,
+      "message": "You still have to resolve the merge conflict before progressing on this CL.",
+      "revId": "d448c3353a6edbc25ec1666cecc161982f21239d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
