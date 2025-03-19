@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bf4ecb0e_647d8794",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-03-19T16:12:12Z",
+      "side": 1,
+      "message": "I don\u0027t think this is the right way to do this:\n\n1. quiche should not be including the NULs in the tracing report - it almost certainly meant to truncate them off. It\u0027s not against the preconditions to include NULs there, but they probably didn\u0027t mean to.\n2. If `android_logger` can\u0027t render `\u0026str`s with internal nulls, it should probably be handling this at a higher layer of the stack, not during the flush, possibly by replacing NUL with some other codepoint.",
+      "revId": "de0cf806f27f3f127627cde9e6ec57bd21f28504",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
