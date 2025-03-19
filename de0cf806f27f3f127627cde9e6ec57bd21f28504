@@ -16,6 +16,24 @@
       "message": "I don\u0027t think this is the right way to do this:\n\n1. quiche should not be including the NULs in the tracing report - it almost certainly meant to truncate them off. It\u0027s not against the preconditions to include NULs there, but they probably didn\u0027t mean to.\n2. If `android_logger` can\u0027t render `\u0026str`s with internal nulls, it should probably be handling this at a higher layer of the stack, not during the flush, possibly by replacing NUL with some other codepoint.",
       "revId": "de0cf806f27f3f127627cde9e6ec57bd21f28504",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "66283068_768c78b6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1986660
+      },
+      "writtenOn": "2025-03-19T16:47:48Z",
+      "side": 1,
+      "message": "Thanks for the input!\n\n1.: I agree, I\u0027ll drop a patch to upstream quiche as well.\n2.: That was also raised on the upstream PR; I posted a new version that suggest replacing nullbytes with spaces when writing to `PlatformLogWriter`. https://github.com/rust-mobile/android_logger-rs/pull/90",
+      "parentUuid": "bf4ecb0e_647d8794",
+      "revId": "de0cf806f27f3f127627cde9e6ec57bd21f28504",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
