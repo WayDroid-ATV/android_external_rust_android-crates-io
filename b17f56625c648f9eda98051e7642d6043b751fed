@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f38a4398_0c80eb70",
+        "filename": "crates/figment/cargo_embargo.json~",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-03-20T18:34:34Z",
+      "side": 1,
+      "message": "This looks like an emacs tempfile that got left around?",
+      "revId": "b17f56625c648f9eda98051e7642d6043b751fed",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}

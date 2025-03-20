@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b9a73e5b_a12def08",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-03-20T18:34:34Z",
+      "side": 1,
+      "message": "This looks like you didn\u0027t run `./crate_tool import` - I don\u0027t see an update to `pseudo_crate/crate-list.txt`, which that tool would have filled out.",
+      "revId": "27c89b80bde529c04b0144d9585ce9ee687a5105",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2f5b90d8_cc77ebaf",
+        "filename": "crates/figment/Cargo.lock",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2025-03-20T18:34:34Z",
+      "side": 1,
+      "message": "This should not be submitted.",
+      "revId": "27c89b80bde529c04b0144d9585ce9ee687a5105",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
