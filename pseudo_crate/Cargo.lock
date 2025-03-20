@@ -13,9 +13,9 @@ dependencies = [
 
 [[package]]
 name = "acpi"
-version = "5.1.0"
+version = "5.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e42f25ac5fa51f4188d14baf8f387a97dcd8639644b2f3df948bf5f6dd7d6fa"
+checksum = "94476c7ef97af4c4d998b3f422c1b01d5211aad57c80ed200baf148d1f1efab6"
 dependencies = [
  "bit_field",
  "bitflags 2.9.0",
@@ -6945,9 +6945,9 @@ dependencies = [
 
 [[package]]
 name = "virtio-drivers-and-devices"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "087f2286ad55b6c36ec93267bcd1cbb740d7f9784879a001f76eea329d488273"
+checksum = "603664485269cf027cbbf54a2987426e6333d8fda4d0da65def6de0bc8868f51"
 dependencies = [
  "bitflags 2.9.0",
  "embedded-io",

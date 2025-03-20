@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "acpi"
-version = "5.1.0"
+version = "5.2.0"
 authors = ["Isaac Woods"]
 build = false
 autolib = false
@@ -29,6 +29,14 @@ categories = [
 license = "MIT/Apache-2.0"
 repository = "https://github.com/rust-osdev/acpi"
 
+[features]
+alloc = ["allocator_api"]
+allocator_api = []
+default = [
+    "allocator_api",
+    "alloc",
+]
+
 [lib]
 name = "acpi"
 path = "src/lib.rs"
@@ -41,11 +49,3 @@ version = "2.5.0"
 
 [dependencies.log]
 version = "0.4.20"
-
-[features]
-alloc = ["allocator_api"]
-allocator_api = []
-default = [
-    "allocator_api",
-    "alloc",
-]

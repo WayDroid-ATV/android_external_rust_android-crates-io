@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "virtio-drivers-and-devices"
-version = "0.1.0"
+version = "0.2.0"
 authors = [
     "Jiajie Chen <noc@jiegec.ac.cn>",
     "Runji Wang <wangrunji0408@163.com>",
@@ -35,6 +35,14 @@ categories = [
 ]
 license = "MIT"
 repository = "https://github.com/immunant/virtio-drivers-and-devices"
+
+[features]
+alloc = ["zerocopy/alloc"]
+default = [
+    "alloc",
+    "embedded-io",
+]
+embedded-io = ["dep:embedded-io"]
 
 [lib]
 name = "virtio_drivers_and_devices"
@@ -64,11 +72,3 @@ features = ["derive"]
 [dev-dependencies.zerocopy]
 version = "0.8.14"
 features = ["alloc"]
-
-[features]
-alloc = ["zerocopy/alloc"]
-default = [
-    "alloc",
-    "embedded-io",
-]
-embedded-io = ["dep:embedded-io"]

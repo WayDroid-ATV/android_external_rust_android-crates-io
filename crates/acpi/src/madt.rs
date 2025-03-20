@@ -1,9 +1,14 @@
 use crate::{
     sdt::{ExtendedField, SdtHeader, Signature},
+    AcpiError,
     AcpiTable,
 };
 use bit_field::BitField;
-use core::{marker::PhantomData, mem};
+use core::{
+    marker::{PhantomData, PhantomPinned},
+    mem,
+    pin::Pin,
+};
 
 #[cfg(feature = "allocator_api")]
 use crate::{
@@ -21,22 +26,29 @@ pub enum MadtError {
     InvalidLocalNmiLine,
     MpsIntiInvalidPolarity,
     MpsIntiInvalidTriggerMode,
+    WakeupApsTimeout,
 }
 
 /// Represents the MADT - this contains the MADT header fields. You can then iterate over a `Madt`
 /// to read each entry from it.
 ///
 /// In modern versions of ACPI, the MADT can detail one of four interrupt models:
-///     * The ancient dual-i8259 legacy PIC model
-///     * The Advanced Programmable Interrupt Controller (APIC) model
-///     * The Streamlined Advanced Programmable Interrupt Controller (SAPIC) model (for Itanium systems)
-///     * The Generic Interrupt Controller (GIC) model (for ARM systems)
+/// - The ancient dual-i8259 legacy PIC model
+/// - The Advanced Programmable Interrupt Controller (APIC) model
+/// - The Streamlined Advanced Programmable Interrupt Controller (SAPIC) model (for Itanium systems)
+/// - The Generic Interrupt Controller (GIC) model (for ARM systems)
+///
+/// The MADT is a variable-sized structure consisting of a static header and then a variable number of entries.
+/// This type only contains the static portion, and then uses pointer arithmetic to parse the following entries.
+/// To make this sound, this type is `!Unpin` - this prevents you from getting anything other than a `Pin<&Madt>`
+/// out of a `PhysicalMapping`, thereby preventing a `Madt` from being moved before [`Madt::entries`] is called.
 #[repr(C, packed)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub struct Madt {
     pub header: SdtHeader,
     pub local_apic_address: u32,
     pub flags: u32,
+    _pinned: PhantomPinned,
 }
 
 /// ### Safety: Implementation properly represents a valid MADT.
@@ -49,9 +61,18 @@ unsafe impl AcpiTable for Madt {
 }
 
 impl Madt {
+    pub fn get_mpwk_mailbox_addr(self: Pin<&Self>) -> Result<u64, AcpiError> {
+        for entry in self.entries() {
+            if let MadtEntry::MultiprocessorWakeup(entry) = entry {
+                return Ok(entry.mailbox_address);
+            }
+        }
+        Err(AcpiError::InvalidMadt(MadtError::UnexpectedEntry))
+    }
+
     #[cfg(feature = "allocator_api")]
     pub fn parse_interrupt_model_in<'a, A>(
-        &self,
+        self: Pin<&Self>,
         allocator: A,
     ) -> AcpiResult<(InterruptModel<'a, A>, Option<ProcessorInfo<'a, A>>)>
     where
@@ -96,27 +117,24 @@ impl Madt {
 
     #[cfg(feature = "allocator_api")]
     fn parse_apic_model_in<'a, A>(
-        &self,
+        self: Pin<&Self>,
         allocator: A,
     ) -> AcpiResult<(InterruptModel<'a, A>, Option<ProcessorInfo<'a, A>>)>
     where
         A: core::alloc::Allocator + Clone,
     {
-        use crate::{
-            platform::{
-                interrupt::{
-                    Apic,
-                    InterruptSourceOverride,
-                    IoApic,
-                    LocalInterruptLine,
-                    NmiLine,
-                    NmiProcessor,
-                    NmiSource,
-                },
-                Processor,
-                ProcessorState,
+        use crate::platform::{
+            interrupt::{
+                Apic,
+                InterruptSourceOverride,
+                IoApic,
+                LocalInterruptLine,
+                NmiLine,
+                NmiProcessor,
+                NmiSource,
             },
-            AcpiError,
+            Processor,
+            ProcessorState,
         };
 
         let mut local_apic_address = self.local_apic_address as u64;
@@ -303,9 +321,10 @@ impl Madt {
         ))
     }
 
-    pub fn entries(&self) -> MadtEntryIter {
+    pub fn entries(self: Pin<&Self>) -> MadtEntryIter<'_> {
+        let ptr = unsafe { Pin::into_inner_unchecked(self) as *const Madt as *const u8 };
         MadtEntryIter {
-            pointer: unsafe { (self as *const Madt as *const u8).add(mem::size_of::<Madt>()) },
+            pointer: unsafe { ptr.add(mem::size_of::<Madt>()) },
             remaining_length: self.header.length - mem::size_of::<Madt>() as u32,
             _phantom: PhantomData,
         }
@@ -628,6 +647,36 @@ pub struct MultiprocessorWakeupEntry {
     pub mailbox_version: u16,
     _reserved: u32,
     pub mailbox_address: u64,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum MpProtectedModeWakeupCommand {
+    Noop = 0,
+    Wakeup = 1,
+    Sleep = 2,
+    AcceptPages = 3,
+}
+
+impl From<u16> for MpProtectedModeWakeupCommand {
+    fn from(value: u16) -> Self {
+        match value {
+            0 => MpProtectedModeWakeupCommand::Noop,
+            1 => MpProtectedModeWakeupCommand::Wakeup,
+            2 => MpProtectedModeWakeupCommand::Sleep,
+            3 => MpProtectedModeWakeupCommand::AcceptPages,
+            _ => panic!("Invalid value for MpProtectedModeWakeupCommand"),
+        }
+    }
+}
+
+#[repr(C)]
+pub struct MultiprocessorWakeupMailbox {
+    pub command: u16,
+    _reserved: u16,
+    pub apic_id: u32,
+    pub wakeup_vector: u64,
+    pub reserved_for_os: [u64; 254],
+    reserved_for_firmware: [u64; 256],
 }
 
 #[cfg(feature = "allocator_api")]
