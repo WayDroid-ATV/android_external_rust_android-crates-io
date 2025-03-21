@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "74138e63_99623985",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1054468
+      },
+      "writtenOn": "2025-03-21T09:40:28Z",
+      "side": 1,
+      "message": "+1, the security review bit isn\u0027t sticky, so I\u0027m waiting for the merge conflict to be fixed before reviewing.",
+      "parentUuid": "173e93bf_a088e4e8",
+      "revId": "db11a670814f4ddcf89ed75a48a770f56ff3b091",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "081bf04a_d25573d9",
