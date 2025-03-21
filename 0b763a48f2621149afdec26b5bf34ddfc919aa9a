@@ -33,6 +33,23 @@
       "message": "Thank you for the review, I think the security and architecture reviews are the ones still pending. PTAL when you have some time @ajukumar@google.com, @srhines@google.com. Thanks!",
       "revId": "0b763a48f2621149afdec26b5bf34ddfc919aa9a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "89d640bf_c1bce101",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-03-21T16:45:18Z",
+      "side": 1,
+      "message": "Somehow I missed the arch review checkbox last time.",
+      "revId": "0b763a48f2621149afdec26b5bf34ddfc919aa9a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
