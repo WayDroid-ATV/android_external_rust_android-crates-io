@@ -16,7 +16,7 @@ where
     allocator: A,
 }
 
-impl<'a, T, A> ManagedSlice<'a, T, A>
+impl<T, A> ManagedSlice<'_, T, A>
 where
     A: Allocator,
 {
@@ -34,13 +34,13 @@ where
 }
 
 #[cfg(feature = "alloc")]
-impl<'a, T> ManagedSlice<'a, T, alloc::alloc::Global> {
+impl<T> ManagedSlice<'_, T, alloc::alloc::Global> {
     pub fn new(len: usize) -> AcpiResult<Self> {
         Self::new_in(len, alloc::alloc::Global)
     }
 }
 
-impl<'a, T, A> Drop for ManagedSlice<'a, T, A>
+impl<T, A> Drop for ManagedSlice<'_, T, A>
 where
     A: Allocator,
 {
@@ -54,7 +54,7 @@ where
     }
 }
 
-impl<'a, T, A> core::ops::Deref for ManagedSlice<'a, T, A>
+impl<T, A> core::ops::Deref for ManagedSlice<'_, T, A>
 where
     A: Allocator,
 {
@@ -65,11 +65,19 @@ where
     }
 }
 
-impl<'a, T, A> core::ops::DerefMut for ManagedSlice<'a, T, A>
+impl<T, A> core::ops::DerefMut for ManagedSlice<'_, T, A>
 where
     A: Allocator,
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.slice
+    }
+}
+
+impl<T: Clone, A: Allocator + Clone> Clone for ManagedSlice<'_, T, A> {
+    fn clone(&self) -> Self {
+        let mut new_managed_slice = ManagedSlice::new_in(self.len(), self.allocator.clone()).unwrap();
+        new_managed_slice.clone_from_slice(self);
+        new_managed_slice
     }
 }

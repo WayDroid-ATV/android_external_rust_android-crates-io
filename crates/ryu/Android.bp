@@ -23,6 +23,7 @@ rust_library {
     edition: "2018",
     apex_available: [
         "//apex_available:platform",
+        "com.android.uprobestats",
         "com.android.virt",
     ],
     product_available: true,
