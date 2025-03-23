@@ -12,13 +12,8 @@
 [package]
 edition = "2018"
 name = "oorandom"
-version = "11.1.4"
+version = "11.1.5"
 authors = ["Simon Heath <icefox@dreamquest.io>"]
-build = false
-autobins = false
-autoexamples = false
-autotests = false
-autobenches = false
 description = "A tiny, robust PRNG implementation."
 readme = "README.md"
 keywords = [
@@ -34,10 +29,6 @@ categories = [
 ]
 license = "MIT"
 repository = "https://hg.sr.ht/~icefox/oorandom"
-
-[lib]
-name = "oorandom"
-path = "src/lib.rs"
 
 [dependencies]
 

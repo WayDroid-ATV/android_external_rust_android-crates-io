@@ -3,7 +3,7 @@ pub mod interrupt;
 use crate::{
     address::GenericAddress,
     fadt::Fadt,
-    madt::Madt,
+    madt::{Madt, MadtError, MpProtectedModeWakeupCommand, MultiprocessorWakeupMailbox},
     AcpiError,
     AcpiHandler,
     AcpiResult,
@@ -11,7 +11,7 @@ use crate::{
     ManagedSlice,
     PowerProfile,
 };
-use core::alloc::Allocator;
+use core::{alloc::Allocator, mem, ptr};
 use interrupt::InterruptModel;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -45,7 +45,7 @@ pub struct Processor {
     pub is_ap: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProcessorInfo<'a, A>
 where
     A: Allocator,
@@ -65,7 +65,7 @@ where
 }
 
 /// Information about the ACPI Power Management Timer (ACPI PM Timer).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PmTimer {
     /// A generic address to the register block of ACPI PM Timer.
     pub base: GenericAddress,
@@ -85,7 +85,7 @@ impl PmTimer {
 /// `PlatformInfo` allows the collection of some basic information about the platform from some of the fixed-size
 /// tables in a nice way. It requires access to the `FADT` and `MADT`. It is the easiest way to get information
 /// about the processors and interrupt controllers on a platform.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlatformInfo<'a, A>
 where
     A: Allocator,
@@ -102,7 +102,7 @@ where
 }
 
 #[cfg(feature = "alloc")]
-impl<'a> PlatformInfo<'a, alloc::alloc::Global> {
+impl PlatformInfo<'_, alloc::alloc::Global> {
     pub fn new<H>(tables: &AcpiTables<H>) -> AcpiResult<Self>
     where
         H: AcpiHandler,
@@ -111,7 +111,7 @@ impl<'a> PlatformInfo<'a, alloc::alloc::Global> {
     }
 }
 
-impl<'a, A> PlatformInfo<'a, A>
+impl<A> PlatformInfo<'_, A>
 where
     A: Allocator + Clone,
 {
@@ -124,11 +124,71 @@ where
 
         let madt = tables.find_table::<Madt>();
         let (interrupt_model, processor_info) = match madt {
-            Ok(madt) => madt.parse_interrupt_model_in(allocator)?,
+            Ok(madt) => madt.get().parse_interrupt_model_in(allocator)?,
             Err(_) => (InterruptModel::Unknown, None),
         };
         let pm_timer = PmTimer::new(&fadt)?;
 
         Ok(PlatformInfo { power_profile, interrupt_model, processor_info, pm_timer })
     }
+}
+
+/// Wakes up Application Processors (APs) using the Multiprocessor Wakeup Mailbox mechanism.
+///
+/// For Intel processors, the execution environment is:
+/// - Interrupts must be disabled.
+/// - RFLAGES.IF set to 0.
+/// - Long mode enabled.
+/// - Paging mode is enabled and physical memory for waking vector is identity mapped (virtual address equals physical address).
+/// - Waking vector must be contained within one physical page.
+/// - Selectors are set to flat and otherwise not used.
+pub fn wakeup_aps<H>(
+    tables: &AcpiTables<H>,
+    handler: H,
+    apic_id: u32,
+    wakeup_vector: u64,
+    timeout_loops: u64,
+) -> Result<(), AcpiError>
+where
+    H: AcpiHandler,
+{
+    let madt = tables.find_table::<Madt>()?;
+    let mailbox_addr = madt.get().get_mpwk_mailbox_addr()?;
+    let mut mpwk_mapping = unsafe {
+        handler.map_physical_region::<MultiprocessorWakeupMailbox>(
+            mailbox_addr as usize,
+            mem::size_of::<MultiprocessorWakeupMailbox>(),
+        )
+    };
+
+    // Reset command
+    unsafe {
+        ptr::write_volatile(&mut mpwk_mapping.command, MpProtectedModeWakeupCommand::Noop as u16);
+    }
+
+    // Fill the mailbox
+    mpwk_mapping.apic_id = apic_id;
+    mpwk_mapping.wakeup_vector = wakeup_vector;
+    unsafe {
+        ptr::write_volatile(&mut mpwk_mapping.command, MpProtectedModeWakeupCommand::Wakeup as u16);
+    }
+
+    // Wait to join
+    let mut loops = 0;
+    let mut command = MpProtectedModeWakeupCommand::Wakeup;
+    while command != MpProtectedModeWakeupCommand::Noop {
+        if loops >= timeout_loops {
+            return Err(AcpiError::InvalidMadt(MadtError::WakeupApsTimeout));
+        }
+        // SAFETY: The caller must ensure that the provided `handler` correctly handles these
+        // operations and that the specified `mailbox_addr` is valid.
+        unsafe {
+            command = ptr::read_volatile(&mpwk_mapping.command).into();
+        }
+        core::hint::spin_loop();
+        loops += 1;
+    }
+    drop(mpwk_mapping);
+
+    Ok(())
 }

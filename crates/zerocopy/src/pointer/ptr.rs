@@ -6,10 +6,17 @@
 // This file may not be copied, modified, or distributed except according to
 // those terms.
 
-use core::{marker::PhantomData, ptr::NonNull};
+use core::{
+    fmt::{Debug, Formatter},
+    marker::PhantomData,
+    ptr::NonNull,
+};
 
 use super::{inner::PtrInner, invariant::*};
-use crate::{CastType, KnownLayout};
+use crate::{
+    util::{AlignmentVariance, Covariant, TransparentWrapper, ValidityVariance},
+    AlignmentError, CastError, CastType, KnownLayout, SizeError, TryFromBytes, ValidityError,
+};
 
 /// Module used to gate access to [`Ptr`]'s fields.
 mod def {
@@ -131,7 +138,6 @@ pub use def::Ptr;
 /// External trait implementations on [`Ptr`].
 mod _external {
     use super::*;
-    use core::fmt::{Debug, Formatter};
 
     /// SAFETY: Shared pointers are safely `Copy`. `Ptr`'s other invariants
     /// (besides aliasing) are unaffected by the number of references that exist
@@ -172,7 +178,6 @@ mod _external {
 /// Methods for converting to and from `Ptr` and Rust's safe reference types.
 mod _conversions {
     use super::*;
-    use crate::util::{AlignmentVariance, Covariant, TransparentWrapper, ValidityVariance};
 
     /// `&'a T` → `Ptr<'a, T>`
     impl<'a, T> Ptr<'a, T, (Shared, Aligned, Valid)>
@@ -518,7 +523,6 @@ mod _conversions {
 /// State transitions between invariants.
 mod _transitions {
     use super::*;
-    use crate::{AlignmentError, TryFromBytes, ValidityError};
 
     impl<'a, T, I> Ptr<'a, T, I>
     where
@@ -526,14 +530,14 @@ mod _transitions {
         I: Invariants,
     {
         /// Returns a `Ptr` with [`Exclusive`] aliasing if `self` already has
-        /// `Exclusive` aliasing.
+        /// `Exclusive` aliasing, or generates a compile-time assertion failure.
         ///
         /// This allows code which is generic over aliasing to down-cast to a
         /// concrete aliasing.
         ///
         /// [`Exclusive`]: crate::pointer::invariant::Exclusive
         #[inline]
-        pub(crate) fn into_exclusive_or_post_monomorphization_error(
+        pub(crate) fn into_exclusive_or_pme(
             self,
         ) -> Ptr<'a, T, (Exclusive, I::Alignment, I::Validity)> {
             // NOTE(https://github.com/rust-lang/rust/issues/131625): We do this
@@ -801,7 +805,6 @@ mod _transitions {
             T: TryFromBytes + Read<I::Aliasing, R>,
             I::Aliasing: Reference,
             I: Invariants<Validity = Initialized>,
-            R: crate::pointer::ReadReason,
         {
             // This call may panic. If that happens, it doesn't cause any soundness
             // issues, as we have not generated any invalid state which we need to
@@ -829,7 +832,6 @@ mod _transitions {
 /// Casts of the referent type.
 mod _casts {
     use super::*;
-    use crate::{CastError, SizeError};
 
     impl<'a, T, I> Ptr<'a, T, I>
     where
@@ -894,8 +896,6 @@ mod _casts {
         where
             T: Read<I::Aliasing, R>,
             U: 'a + ?Sized + Read<I::Aliasing, S> + CastableFrom<T, I::Validity, I::Validity>,
-            R: ReadReason,
-            S: ReadReason,
             F: FnOnce(*mut T) -> *mut U,
         {
             // SAFETY: Because `T` and `U` both implement `Read<I::Aliasing, _>`,
@@ -918,7 +918,6 @@ mod _casts {
         #[allow(clippy::wrong_self_convention)]
         pub(crate) fn as_bytes<R>(self) -> Ptr<'a, [u8], (I::Aliasing, Aligned, Valid)>
         where
-            R: ReadReason,
             T: Read<I::Aliasing, R>,
             I::Aliasing: Reference,
         {
@@ -1016,7 +1015,6 @@ mod _casts {
             CastError<Self, U>,
         >
         where
-            R: ReadReason,
             I::Aliasing: Reference,
             U: 'a + ?Sized + KnownLayout + Read<I::Aliasing, R>,
         {
@@ -1079,7 +1077,6 @@ mod _casts {
         where
             I::Aliasing: Reference,
             U: 'a + ?Sized + KnownLayout + Read<I::Aliasing, R>,
-            R: ReadReason,
         {
             // TODO(#67): Remove this allow. See NonNulSlicelExt for more
             // details.
@@ -1163,38 +1160,6 @@ mod _casts {
 /// Projections through the referent.
 mod _project {
     use super::*;
-
-    impl<'a, T, I> Ptr<'a, T, I>
-    where
-        T: 'a + ?Sized,
-        I: Invariants<Validity = Initialized>,
-    {
-        /// Projects a field from `self`.
-        ///
-        /// # Safety
-        ///
-        /// `project` has the same safety preconditions as
-        /// `cast_unsized_unchecked`.
-        #[doc(hidden)]
-        #[inline]
-        pub unsafe fn project<U: 'a + ?Sized>(
-            self,
-            projector: impl FnOnce(*mut T) -> *mut U,
-        ) -> Ptr<'a, U, (I::Aliasing, Unaligned, Initialized)> {
-            // TODO(#1122): If `cast_unsized` were able to reason that, when
-            // casting from an `Initialized` pointer, the result is another
-            // `Initialized` pointer, we could remove this method entirely.
-
-            // SAFETY: This method has the same safety preconditions as
-            // `cast_unsized_unchecked`.
-            let ptr = unsafe { self.cast_unsized_unchecked(projector) };
-
-            // SAFETY: If all of the bytes of `self` are initialized (as
-            // promised by `I: Invariants<Validity = Initialized>`), then any
-            // subset of those bytes are also all initialized.
-            unsafe { ptr.assume_validity::<Initialized>() }
-        }
-    }
 
     impl<'a, T, I> Ptr<'a, [T], I>
     where
