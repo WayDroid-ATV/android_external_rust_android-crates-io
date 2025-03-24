@@ -11,14 +11,8 @@
 
 [package]
 name = "android_log-sys"
-version = "0.3.2"
+version = "0.3.1"
 authors = ["The android_log_sys Developers"]
-build = false
-autolib = false
-autobins = false
-autoexamples = false
-autotests = false
-autobenches = false
 description = """
 FFI bindings to Android log Library.
 """
@@ -35,4 +29,3 @@ repository = "https://github.com/rust-mobile/android_log-sys-rs"
 
 [lib]
 name = "android_log_sys"
-path = "src/lib.rs"
