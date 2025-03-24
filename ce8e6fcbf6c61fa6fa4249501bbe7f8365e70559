@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "25c3049a_82755bc2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 2001130
+      },
+      "writtenOn": "2025-03-24T14:54:07Z",
+      "side": 1,
+      "message": "Friendly ping for 3p review.",
+      "revId": "ce8e6fcbf6c61fa6fa4249501bbe7f8365e70559",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
