@@ -6,5 +6,5 @@ fn default_init() {
     android_logger::init_once(Default::default());
 
     // android_logger has default log level "off"
-    assert_eq!(log::max_level(), log::LevelFilter::Trace);
+    assert_eq!(log::max_level(), log::LevelFilter::Off);
 }
