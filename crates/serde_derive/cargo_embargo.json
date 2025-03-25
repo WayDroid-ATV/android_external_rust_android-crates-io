@@ -14,5 +14,6 @@
       "generate_rulesmk": true,
       "tests": false
     }
-  ]
+  ],
+  "min_sdk_version": "29"
 }

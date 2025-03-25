@@ -1,7 +1,9 @@
 {
   "package": {
     "gbm": {
-      "license_text": ["LICENSE"]
+      "license_text": [
+        "LICENSE"
+      ]
     }
   },
   "run_cargo": false,
@@ -11,5 +13,6 @@
   },
   "features": [
     "drm-support"
-  ]
+  ],
+  "min_sdk_version": "29"
 }

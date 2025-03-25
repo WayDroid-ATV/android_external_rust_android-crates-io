@@ -3,5 +3,6 @@
   "features": [
     "parser"
   ],
-  "run_cargo": false
+  "run_cargo": false,
+  "min_sdk_version": "29"
 }

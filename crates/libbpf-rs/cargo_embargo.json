@@ -12,5 +12,6 @@
     ]
   },
   "product_available": false,
-  "vendor_available": false
+  "vendor_available": false,
+  "min_sdk_version": "29"
 }

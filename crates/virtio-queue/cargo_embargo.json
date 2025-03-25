@@ -6,8 +6,12 @@
     "virtio-queue": {
       "device_supported": false,
       "host_first_multilib": true,
-      "license_text": ["LICENSE-APACHE", "LICENSE-BSD-3-Clause"]
+      "license_text": [
+        "LICENSE-APACHE",
+        "LICENSE-BSD-3-Clause"
+      ]
     }
   },
-  "run_cargo": false
+  "run_cargo": false,
+  "min_sdk_version": "29"
 }

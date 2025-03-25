@@ -2,7 +2,9 @@
   "run_cargo": false,
   "package": {
     "uuid": {
-      "dep_blocklist": ["libtrybuild"]
+      "dep_blocklist": [
+        "libtrybuild"
+      ]
     }
   },
   "variants": [
@@ -29,5 +31,6 @@
       },
       "generate_rulesmk": true
     }
-  ]
+  ],
+  "min_sdk_version": "29"
 }

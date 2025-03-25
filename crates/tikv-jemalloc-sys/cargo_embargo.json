@@ -6,6 +6,9 @@
     }
   },
   "run_cargo": false,
-  "extra_cfg": ["prefixed"],
-  "tests": false
+  "extra_cfg": [
+    "prefixed"
+  ],
+  "tests": false,
+  "min_sdk_version": "29"
 }

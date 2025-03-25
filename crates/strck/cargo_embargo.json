@@ -1,3 +1,6 @@
 {
-    "features": ["ident"]
+  "features": [
+    "ident"
+  ],
+  "min_sdk_version": "29"
 }

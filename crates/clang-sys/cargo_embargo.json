@@ -8,5 +8,6 @@
       "copy_out": true,
       "device_supported": false
     }
-  }
+  },
+  "min_sdk_version": "29"
 }

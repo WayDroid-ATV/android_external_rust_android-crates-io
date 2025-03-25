@@ -8,5 +8,6 @@
         "libproc_macro_crate"
       ]
     }
-  }
+  },
+  "min_sdk_version": "29"
 }

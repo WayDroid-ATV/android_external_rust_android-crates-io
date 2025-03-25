@@ -1,0 +1,70 @@
+From c8429943e1c53006652e8925d1d5e3728828c566 Mon Sep 17 00:00:00 2001
+From: Marcin Radomski <dextero@google.com>
+Date: Tue, 18 Mar 2025 13:31:21 +0000
+Subject: [PATCH] Avoid panic on buffers with embedded nul bytes
+
+Upstream PR: https://github.com/rust-mobile/android_logger-rs/pull/90
+
+Some crates use log crate with a message padded with a number of
+nullbytes [1]. This currently causes panics.
+
+Replace the nullbytes with spaces when printing the log message to
+prevent this crash.
+
+[1] https://github.com/cloudflare/quiche/blob/d0efd2c5278b9dbe8d6544c3015f8c772f3513b4/quiche/src/tls/mod.rs#L1040
+---
+ src/platform_log_writer.rs | 24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/src/platform_log_writer.rs b/src/platform_log_writer.rs
+index 85826ca..2a7b53a 100644
+--- a/src/platform_log_writer.rs
++++ b/src/platform_log_writer.rs
+@@ -113,7 +113,7 @@ impl PlatformLogWriter<'_> {
+     /// Output buffer up until the \0 which will be placed at `len` position.
+     ///
+     /// # Safety
+-    /// The first `len` bytes of `self.buffer` must be initialized.
++    /// The first `len` bytes of `self.buffer` must be initialized and not contain nullbytes.
+     unsafe fn output_specified_len(&mut self, len: usize) {
+         let mut last_byte = MaybeUninit::new(b'\0');
+ 
+@@ -152,7 +152,13 @@ impl fmt::Write for PlatformLogWriter<'_> {
+                 .zip(incoming_bytes)
+                 .enumerate()
+                 .fold(None, |acc, (i, (output, input))| {
+-                    output.write(*input);
++                    if *input == b'\0' {
++                        // Replace nullbytes with whitespace, so we can put the message in a CStr
++                        // later to pass it through a const char*.
++                        output.write(b' ');
++                    } else {
++                        output.write(*input);
++                    }
+                     if *input == b'\n' { Some(i) } else { acc }
+                 });
+ 
+@@ -297,6 +303,20 @@ pub mod tests {
+         );
+     }
+ 
++    #[test]
++    fn writer_substitutes_nullbytes_with_spaces() {
++        let test_string = "Test_string_with\0\0\0\0nullbytes\0";
++        let mut writer = get_tag_writer();
++        writer
++            .write_str(test_string)
++            .expect("Unable to write to PlatformLogWriter");
++
++        assert_eq!(
++            unsafe { slice_assume_init_ref(&writer.buffer[..test_string.len()]) },
++            test_string.replace("\0", " ").as_bytes()
++        );
++    }
++
+     fn get_tag_writer() -> PlatformLogWriter<'static> {
+         PlatformLogWriter::new(
+             None,
+-- 
+2.49.0.rc1.451.g8f38331e32-goog
+

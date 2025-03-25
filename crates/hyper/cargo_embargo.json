@@ -1,5 +1,6 @@
 {
   "features": [
+    "backports",
     "client",
     "default",
     "full",

@@ -17,20 +17,19 @@ rust_test {
     name: "android_logger_test_src_lib",
     crate_name: "android_logger",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.13.3",
+    cargo_pkg_version: "0.15.0",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
-    edition: "2015",
+    edition: "2021",
     features: [
         "default",
         "regex",
     ],
     rustlibs: [
         "libandroid_log_sys",
-        "libenv_logger",
+        "libenv_filter",
         "liblog_rust",
-        "libonce_cell",
     ],
 }
 
@@ -38,11 +37,11 @@ rust_test {
     name: "android_logger_test_tests_config_log_level",
     crate_name: "config_log_level",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.13.3",
+    cargo_pkg_version: "0.15.0",
     crate_root: "tests/config_log_level.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
-    edition: "2015",
+    edition: "2021",
     features: [
         "default",
         "regex",
@@ -50,9 +49,8 @@ rust_test {
     rustlibs: [
         "libandroid_log_sys",
         "libandroid_logger",
-        "libenv_logger",
+        "libenv_filter",
         "liblog_rust",
-        "libonce_cell",
     ],
 }
 
@@ -60,11 +58,11 @@ rust_test {
     name: "android_logger_test_tests_default_init",
     crate_name: "default_init",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.13.3",
+    cargo_pkg_version: "0.15.0",
     crate_root: "tests/default_init.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
-    edition: "2015",
+    edition: "2021",
     features: [
         "default",
         "regex",
@@ -72,9 +70,8 @@ rust_test {
     rustlibs: [
         "libandroid_log_sys",
         "libandroid_logger",
-        "libenv_logger",
+        "libenv_filter",
         "liblog_rust",
-        "libonce_cell",
     ],
 }
 
@@ -82,11 +79,11 @@ rust_test {
     name: "android_logger_test_tests_multiple_init",
     crate_name: "multiple_init",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.13.3",
+    cargo_pkg_version: "0.15.0",
     crate_root: "tests/multiple_init.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
-    edition: "2015",
+    edition: "2021",
     features: [
         "default",
         "regex",
@@ -94,9 +91,8 @@ rust_test {
     rustlibs: [
         "libandroid_log_sys",
         "libandroid_logger",
-        "libenv_logger",
+        "libenv_filter",
         "liblog_rust",
-        "libonce_cell",
     ],
 }
 
@@ -104,18 +100,17 @@ rust_library {
     name: "libandroid_logger",
     crate_name: "android_logger",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.13.3",
+    cargo_pkg_version: "0.15.0",
     crate_root: "src/lib.rs",
-    edition: "2015",
+    edition: "2021",
     features: [
         "default",
         "regex",
     ],
     rustlibs: [
         "libandroid_log_sys",
-        "libenv_logger",
+        "libenv_filter",
         "liblog_rust",
-        "libonce_cell",
     ],
     apex_available: [
         "//apex_available:platform",

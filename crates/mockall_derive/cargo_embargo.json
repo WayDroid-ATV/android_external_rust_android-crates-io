@@ -8,5 +8,6 @@
         "libpretty_assertions"
       ]
     }
-  }
+  },
+  "min_sdk_version": "29"
 }

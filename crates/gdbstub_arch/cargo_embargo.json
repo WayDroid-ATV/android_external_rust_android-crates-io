@@ -3,7 +3,10 @@
   "tests": true,
   "package": {
     "gdbstub_arch": {
-      "license_text": ["LICENSE-APACHE"]
+      "license_text": [
+        "LICENSE-APACHE"
+      ]
     }
-  }
+  },
+  "min_sdk_version": "29"
 }

@@ -10,5 +10,6 @@
     "libvsprintf": [
       "//external/rust/android-crates-io/crates/libbpf-rs"
     ]
-  }
+  },
+  "min_sdk_version": "29"
 }

@@ -8,9 +8,10 @@
   "recovery_available": true,
   "vendor_ramdisk_available": true,
   "package": {
-    "icu_properties" : {
+    "icu_properties": {
       "add_module_block": "icu4x_bionic_dep.bp.fragment"
     }
   },
-  "native_bridge_supported": true
+  "native_bridge_supported": true,
+  "min_sdk_version": "29"
 }

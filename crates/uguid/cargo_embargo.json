@@ -15,5 +15,6 @@
       "host_supported": false,
       "no_std": true
     }
-  }
+  },
+  "min_sdk_version": "29"
 }

@@ -10,5 +10,6 @@
     "icu_collections": {
       "add_module_block": "icu4x_bionic_dep.bp.fragment"
     }
-  }
+  },
+  "min_sdk_version": "29"
 }

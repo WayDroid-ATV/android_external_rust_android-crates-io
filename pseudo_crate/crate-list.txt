@@ -39,9 +39,11 @@ bytemuck_derive
 byteorder
 bytes
 camino
+cargo-platform
 cast
 cesu8
 cexpr
+cfg-expr
 cfg-if
 chrono
 ciborium
@@ -95,6 +97,7 @@ drm-ffi
 drm-fourcc
 either
 enum-as-inner
+enum-primitive-derive
 enumn
 env_filter
 env_logger
@@ -147,6 +150,7 @@ hashbrown
 hashlink
 heck
 hex
+home
 hound
 http
 http-body
@@ -184,6 +188,7 @@ json-strip-comments
 kernlog
 khronos
 khronos-egl
+kobject-uevent
 lazy_static
 lazycell
 libbpf-rs
@@ -248,6 +253,7 @@ oorandom
 open-enum
 open-enum-derive
 openssl-macros
+os_pipe
 os_str_bytes
 p9
 p9_wire_format_derive
@@ -308,9 +314,11 @@ rusqlite
 rustc-demangle
 rustc-demangle-capi
 rustc-hash
+rustc-stable-hash
 rustix
 rustversion
 ryu
+safe-mmio
 same-file
 scopeguard
 sec1
@@ -331,11 +339,13 @@ shared_library
 shlex
 signal-hook
 signal-hook-registry
+simd-adler32
 siphasher
 slab
 slotmap
 smallvec
 smccc
+smol_str
 socket2
 spdx
 spidev

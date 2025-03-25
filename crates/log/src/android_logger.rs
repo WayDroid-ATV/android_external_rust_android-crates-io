@@ -1,1 +1,0 @@
-../../android_logger/src/lib.rs

@@ -1,0 +1,142 @@
+From ed09380b0bac10179dd69f4a4d4581e6c9e050b7 Mon Sep 17 00:00:00 2001
+From: Marcin Radomski <dextero@google.com>
+Date: Thu, 20 Mar 2025 13:58:18 +0000
+Subject: [PATCH] Enable embedding android_logger in liblog_rust
+
+Update of the patch file from aosp/2717316 compatible with
+android_logger 0.15.0.
+
+Replace crate:: imports with relative ones.
+
+Also, add default_log_impl cfg that, when enabled:
+* Removes the dependency on env_filter,
+* Imports all log crate symbols from current crate.
+
+This makes it possible to embed android_logger as mod inside liblog_rust
+crate, so that AndroidLogger can be used as default logger instead of a
+NopLogger.
+
+Changing that default prevents dropping logs when the logger is
+uninitialized. This can happen by accident when an application doesn't
+intialize the logger in all linker namespaces it pulls libraries from.
+See discussion at b/294216366#comment7.
+
+Bug: 275290559
+Test: compile test app from aosp/2717614
+Test: run it on a Cuttlefish device
+Test: observe logcat logs on all level from FFI call
+Test: observe all logs on non-FFI call without initializing the logger
+Test: observe set log filter applying only to non-FFI call
+Change-Id: I3f1bd7a34ebc8ead779ac028c66ac6c1e752fbe7
+---
+ src/arrays.rs              |  2 +-
+ src/config.rs              | 16 +++++++++++++++-
+ src/id.rs                  |  3 +++
+ src/lib.rs                 | 14 ++++++++++++--
+ src/platform_log_writer.rs | 10 ++++++++--
+ 5 files changed, 39 insertions(+), 6 deletions(-)
+
+diff --git a/src/arrays.rs b/src/arrays.rs
+index f67b8e58..94625a7a 100644
+--- a/src/arrays.rs
++++ b/src/arrays.rs
+@@ -1,4 +1,4 @@
+-use crate::LOGGING_TAG_MAX_LEN;
++use super::LOGGING_TAG_MAX_LEN;
+ use std::ffi::CStr;
+ use std::mem::MaybeUninit;
+ 
+diff --git a/src/config.rs b/src/config.rs
+index bd14f585..a8b8ce0b 100644
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -1,4 +1,18 @@
+-use crate::{FormatFn, LogId};
++#[cfg(default_log_impl)]
++use {
++    crate as log,
++    super::log_ffi,
++};
++#[cfg(default_log_impl)]
++mod env_filter {
++    #[derive(Debug)]
++    pub struct Filter;
++    impl Filter {
++        pub fn matches(&self, _: &crate::Record) -> bool { true }
++    }
++}
++
++use super::{FormatFn, LogId};
+ use log::{Level, LevelFilter, Record};
+ use std::ffi::CString;
+ use std::fmt;
+diff --git a/src/id.rs b/src/id.rs
+index 0b6597bb..77c2b850 100644
+--- a/src/id.rs
++++ b/src/id.rs
+@@ -1,3 +1,6 @@
++#[cfg(default_log_impl)]
++use super::log_ffi;
++
+ /// Possible identifiers of a specific buffer of Android logging system for
+ /// logging a message.
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+diff --git a/src/lib.rs b/src/lib.rs
+index 9597ae8e..0b324b69 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -63,6 +63,9 @@
+ //! )
+ //! ```
+ 
++#[cfg(default_log_impl)]
++use crate as log;
++
+ #[cfg(target_os = "android")]
+ extern crate android_log_sys as log_ffi;
+ 
+@@ -72,9 +75,10 @@ use std::fmt;
+ use std::mem::MaybeUninit;
+ use std::sync::OnceLock;
+ 
+-use crate::arrays::{fill_tag_bytes, uninit_array};
+-use crate::platform_log_writer::PlatformLogWriter;
++use self::arrays::{fill_tag_bytes, uninit_array};
++use self::platform_log_writer::PlatformLogWriter;
+ pub use config::Config;
++#[cfg(not(default_log_impl))]
+ pub use env_filter::{Builder as FilterBuilder, Filter};
+ pub use id::LogId;
+ 
+@@ -236,4 +240,10 @@ pub fn init_once(config: Config) {
+     } else if let Some(level) = log_level {
+         log::set_max_level(level);
+     }
++    // On Android, log crate is patched to default to LevelFilter::Trace rather than Off. Preserve
++    // the existing "android_logger default level is Off" behavior by explicitly setting the level.
++    #[cfg(target_os = "android")]
++    if log_level.is_none() {
++        log::set_max_level(log::LevelFilter::Off);
++    }
+ }
+diff --git a/src/platform_log_writer.rs b/src/platform_log_writer.rs
+index 2a7b53a8..6a3da829 100644
+--- a/src/platform_log_writer.rs
++++ b/src/platform_log_writer.rs
+@@ -1,5 +1,11 @@
+-use crate::arrays::slice_assume_init_ref;
+-use crate::{LOGGING_MSG_MAX_LEN, LogId, android_log, uninit_array};
++#[cfg(default_log_impl)]
++use {
++    crate as log,
++    super::log_ffi,
++};
++
++use super::arrays::slice_assume_init_ref;
++use super::{LOGGING_MSG_MAX_LEN, LogId, android_log, uninit_array};
+ use log::Level;
+ #[cfg(target_os = "android")]
+ use log_ffi::LogPriority;
+-- 
+2.49.0.rc1.451.g8f38331e32-goog
+

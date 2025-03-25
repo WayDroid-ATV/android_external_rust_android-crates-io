@@ -31,6 +31,7 @@ rust_library {
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "29",
 }
 
 rust_binary {
@@ -52,4 +53,5 @@ rust_binary {
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "29",
 }

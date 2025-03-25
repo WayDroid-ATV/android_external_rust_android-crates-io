@@ -9,10 +9,7 @@ package {
 license {
     name: "external_rust_crates_tinystr_license",
     visibility: [":__subpackages__"],
-    license_kinds: [
-        "SPDX-license-identifier-Unicode-3.0",
-        "legacy_notice",
-    ],
+    license_kinds: ["SPDX-license-identifier-Unicode-3.0"],
     license_text: ["LICENSE"],
 }
 
@@ -40,6 +37,7 @@ rust_library {
     vendor_available: true,
     vendor_ramdisk_available: true,
     ramdisk_available: true,
+    min_sdk_version: "29",
     target: {
         linux_bionic: {
             enabled: true,

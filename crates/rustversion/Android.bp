@@ -26,4 +26,5 @@ rust_proc_macro {
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "29",
 }

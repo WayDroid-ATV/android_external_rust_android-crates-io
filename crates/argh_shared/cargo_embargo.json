@@ -7,5 +7,6 @@
   "module_blocklist": [
     "argh_shared_test_src_lib"
   ],
-  "run_cargo": false
+  "run_cargo": false,
+  "min_sdk_version": "29"
 }

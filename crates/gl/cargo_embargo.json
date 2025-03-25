@@ -1,7 +1,8 @@
 {
-    "package": {
+  "package": {
     "gl": {
       "copy_out": true
     }
-  }
+  },
+  "min_sdk_version": "29"
 }

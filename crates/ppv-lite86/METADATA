@@ -1,17 +1,17 @@
 name: "ppv-lite86"
-description: "Implementation of the crypto-simd API for x86"
+description: "Cross-platform cryptography-oriented low-level SIMD library."
 third_party {
-  version: "0.2.17"
+  version: "0.2.21"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2022
-    month: 12
+    year: 2025
+    month: 3
     day: 19
   }
   homepage: "https://crates.io/crates/ppv-lite86"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/ppv-lite86/ppv-lite86-0.2.17.crate"
-    version: "0.2.17"
+    value: "https://static.crates.io/crates/ppv-lite86/ppv-lite86-0.2.21.crate"
+    version: "0.2.21"
   }
 }

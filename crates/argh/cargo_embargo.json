@@ -14,5 +14,6 @@
   },
   "module_blocklist": [
     "argh_test_tests_compiletest"
-  ]
+  ],
+  "min_sdk_version": "29"
 }

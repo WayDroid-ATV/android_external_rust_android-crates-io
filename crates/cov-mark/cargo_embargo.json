@@ -9,5 +9,6 @@
         "cov-mark_test_tests_smoke": "cov-mark_disabled_test_tests_smoke"
       }
     }
-  ]
+  ],
+  "min_sdk_version": "29"
 }

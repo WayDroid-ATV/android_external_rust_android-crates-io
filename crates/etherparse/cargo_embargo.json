@@ -1,4 +1,5 @@
 {
   "run_cargo": false,
-  "tests": false
+  "tests": false,
+  "min_sdk_version": "29"
 }

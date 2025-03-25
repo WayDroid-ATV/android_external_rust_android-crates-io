@@ -10,9 +10,16 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
+edition = "2021"
 name = "android_logger"
-version = "0.13.3"
+version = "0.15.0"
 authors = ["The android_logger Developers"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = """
 A logging implementation for `log` which hooks to android log output.
 """
@@ -23,23 +30,50 @@ keywords = [
     "log",
     "logger",
 ]
-categories = ["api-bindings"]
+categories = [
+    "api-bindings",
+    "os::android-apis",
+]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/rust-mobile/android_logger-rs"
 
-[dependencies.android_log-sys]
-version = "0.3"
+[package.metadata.docs.rs]
+targets = [
+    "aarch64-linux-android",
+    "arm-linux-androideabi",
+    "armv7-linux-androideabi",
+    "i686-linux-android",
+    "thumbv7neon-linux-androideabi",
+    "x86_64-linux-android",
+]
 
-[dependencies.env_logger]
-version = "0.10"
+[lib]
+name = "android_logger"
+path = "src/lib.rs"
+
+[[test]]
+name = "config_log_level"
+path = "tests/config_log_level.rs"
+
+[[test]]
+name = "default_init"
+path = "tests/default_init.rs"
+
+[[test]]
+name = "multiple_init"
+path = "tests/multiple_init.rs"
+
+[dependencies.android_log-sys]
+version = "0.3.2"
+
+[dependencies.env_filter]
+version = "0.1"
 default-features = false
 
 [dependencies.log]
 version = "0.4"
 
-[dependencies.once_cell]
-version = "1.9"
-
 [features]
+android-api-30 = []
 default = ["regex"]
-regex = ["env_logger/regex"]
+regex = ["env_filter/regex"]

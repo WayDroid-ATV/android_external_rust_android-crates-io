@@ -406,8 +406,7 @@ mod serde;
 pub mod kv;
 
 #[cfg(default_log_impl)]
-extern crate once_cell;
-#[cfg(default_log_impl)]
+#[path = "../../android_logger/src/lib.rs"]
 mod android_logger;
 
 #[cfg(target_has_atomic = "ptr")]

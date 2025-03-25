@@ -18,13 +18,14 @@ rust_library {
     host_supported: true,
     crate_name: "ppv_lite86",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.17",
+    cargo_pkg_version: "0.2.21",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
     ],
+    rustlibs: ["libzerocopy"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -39,16 +40,17 @@ rust_test {
     host_supported: true,
     crate_name: "ppv_lite86",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.17",
+    cargo_pkg_version: "0.2.21",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "std",
     ],
+    rustlibs: ["libzerocopy"],
 }

@@ -6,5 +6,6 @@
       "add_module_block": "cargo2android_module.bp.fragment"
     }
   },
-  "run_cargo": false
+  "run_cargo": false,
+  "min_sdk_version": "29"
 }

@@ -7,5 +7,6 @@
       "add_toplevel_block": "cargo2android-extra-module.bp.fragment"
     }
   },
-  "run_cargo": false
+  "run_cargo": false,
+  "min_sdk_version": "29"
 }

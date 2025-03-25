@@ -14,5 +14,6 @@
     }
   },
   "run_cargo": false,
-  "generate_rulesmk": true
+  "generate_rulesmk": true,
+  "min_sdk_version": "29"
 }
