@@ -1,0 +1,56 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "36fb9a17_cb95439e",
+        "filename": "crates/image/LICENSE",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 3687220
+      },
+      "writtenOn": "2025-03-26T01:46:43Z",
+      "side": 1,
+      "message": "LICENSE file should contain the Apache 2.0 text, followed by a separator line -----, followed by the MIT text. Copy BOTH licenses text from LICENSE_APACHE and LICENSE-MIT and add that to this file. \n\n```\n\u003cText of LICENSE-APACHE\u003e\n--------\n\u003cTEXT of LICENSE-MIT\u003e\n```",
+      "revId": "e48688ae6c88b336cc5582e14d5a318676620cc6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c4e6da9c_e3a8672f",
+        "filename": "crates/image/METADATA",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 3687220
+      },
+      "writtenOn": "2025-03-26T01:46:43Z",
+      "side": 1,
+      "message": "Add primary_source:true",
+      "fixSuggestions": [
+        {
+          "fixId": "0773f764_6a9c8842",
+          "description": "prompt_to_edit API",
+          "replacements": [
+            {
+              "path": "crates/image/METADATA",
+              "range": {
+                "startLine": 16,
+                "startChar": 0,
+                "endLine": 16,
+                "endChar": 0
+              },
+              "replacement": "    primary_source: true\n"
+            }
+          ]
+        }
+      ],
+      "revId": "e48688ae6c88b336cc5582e14d5a318676620cc6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
