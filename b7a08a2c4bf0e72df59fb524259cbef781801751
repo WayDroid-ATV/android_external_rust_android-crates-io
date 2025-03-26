@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7cbf2098_49a4750d",
+        "filename": "crates/byteorder-lite/UNLICENSE",
+        "patchSetId": 4
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1553141
+      },
+      "writtenOn": "2025-03-26T20:33:53Z",
+      "side": 1,
+      "message": "Please follow the guide on go/thirdpartylicenses#same to fix the lint issue.",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 0
+      },
+      "revId": "b7a08a2c4bf0e72df59fb524259cbef781801751",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
