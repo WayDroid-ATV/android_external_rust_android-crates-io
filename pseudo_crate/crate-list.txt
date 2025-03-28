@@ -39,7 +39,6 @@ bytemuck_derive
 byteorder
 bytes
 camino
-cargo-platform
 cast
 cesu8
 cexpr

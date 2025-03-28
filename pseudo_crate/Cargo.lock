@@ -138,7 +138,6 @@ dependencies = [
  "byteorder",
  "bytes",
  "camino",
- "cargo-platform",
  "cast",
  "cesu8",
  "cexpr",
@@ -1119,15 +1118,6 @@ name = "camino"
 version = "1.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b96ec4966b5813e2c0507c1f86115c8c5abaadc3980879c3424042a02fd1ad3"
-
-[[package]]
-name = "cargo-platform"
-version = "0.1.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e35af189006b9c0f00a064685c727031e3ed2d8020f7ba284d78cc2671bd36ea"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "cast"
