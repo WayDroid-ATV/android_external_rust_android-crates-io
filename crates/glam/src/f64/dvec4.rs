@@ -279,6 +279,48 @@ impl DVec4 {
         self.x.max(self.y.max(self.z.max(self.w)))
     }
 
+    /// Returns the index of the first minimum element of `self`.
+    #[doc(alias = "argmin")]
+    #[inline]
+    #[must_use]
+    pub fn min_position(self) -> usize {
+        let mut min = self.x;
+        let mut index = 0;
+        if self.y < min {
+            min = self.y;
+            index = 1;
+        }
+        if self.z < min {
+            min = self.z;
+            index = 2;
+        }
+        if self.w < min {
+            index = 3;
+        }
+        index
+    }
+
+    /// Returns the index of the first maximum element of `self`.
+    #[doc(alias = "argmax")]
+    #[inline]
+    #[must_use]
+    pub fn max_position(self) -> usize {
+        let mut max = self.x;
+        let mut index = 0;
+        if self.y > max {
+            max = self.y;
+            index = 1;
+        }
+        if self.z > max {
+            max = self.z;
+            index = 2;
+        }
+        if self.w > max {
+            index = 3;
+        }
+        index
+    }
+
     /// Returns the sum of all elements of `self`.
     ///
     /// In other words, this computes `self.x + self.y + ..`.
@@ -441,9 +483,9 @@ impl DVec4 {
     #[must_use]
     pub fn is_negative_bitmask(self) -> u32 {
         (self.x.is_sign_negative() as u32)
-            | (self.y.is_sign_negative() as u32) << 1
-            | (self.z.is_sign_negative() as u32) << 2
-            | (self.w.is_sign_negative() as u32) << 3
+            | ((self.y.is_sign_negative() as u32) << 1)
+            | ((self.z.is_sign_negative() as u32) << 2)
+            | ((self.w.is_sign_negative() as u32) << 3)
     }
 
     /// Returns `true` if, and only if, all elements are finite.  If any element is either
@@ -1027,6 +1069,18 @@ impl DVec4 {
     #[must_use]
     pub fn as_u64vec4(&self) -> crate::U64Vec4 {
         crate::U64Vec4::new(self.x as u64, self.y as u64, self.z as u64, self.w as u64)
+    }
+
+    /// Casts all elements of `self` to `usize`.
+    #[inline]
+    #[must_use]
+    pub fn as_usizevec4(&self) -> crate::USizeVec4 {
+        crate::USizeVec4::new(
+            self.x as usize,
+            self.y as usize,
+            self.z as usize,
+            self.w as usize,
+        )
     }
 }
 

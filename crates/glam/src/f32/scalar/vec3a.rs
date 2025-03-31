@@ -290,6 +290,40 @@ impl Vec3A {
         self.x.max(self.y.max(self.z))
     }
 
+    /// Returns the index of the first minimum element of `self`.
+    #[doc(alias = "argmin")]
+    #[inline]
+    #[must_use]
+    pub fn min_position(self) -> usize {
+        let mut min = self.x;
+        let mut index = 0;
+        if self.y < min {
+            min = self.y;
+            index = 1;
+        }
+        if self.z < min {
+            index = 2;
+        }
+        index
+    }
+
+    /// Returns the index of the first maximum element of `self`.
+    #[doc(alias = "argmax")]
+    #[inline]
+    #[must_use]
+    pub fn max_position(self) -> usize {
+        let mut max = self.x;
+        let mut index = 0;
+        if self.y > max {
+            max = self.y;
+            index = 1;
+        }
+        if self.z > max {
+            index = 2;
+        }
+        index
+    }
+
     /// Returns the sum of all elements of `self`.
     ///
     /// In other words, this computes `self.x + self.y + ..`.
@@ -419,8 +453,8 @@ impl Vec3A {
     #[must_use]
     pub fn is_negative_bitmask(self) -> u32 {
         (self.x.is_sign_negative() as u32)
-            | (self.y.is_sign_negative() as u32) << 1
-            | (self.z.is_sign_negative() as u32) << 2
+            | ((self.y.is_sign_negative() as u32) << 1)
+            | ((self.z.is_sign_negative() as u32) << 2)
     }
 
     /// Returns `true` if, and only if, all elements are finite.  If any element is either
@@ -931,6 +965,24 @@ impl Vec3A {
         )
     }
 
+    /// Rotates towards `rhs` up to `max_angle` (in radians).
+    ///
+    /// When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to
+    /// `self.angle_between(rhs)`, the result will be parallel to `rhs`. If `max_angle` is negative,
+    /// rotates towards the exact opposite of `rhs`. Will not go past the target.
+    #[inline]
+    #[must_use]
+    pub fn rotate_towards(self, rhs: Self, max_angle: f32) -> Self {
+        let angle_between = self.angle_between(rhs);
+        // When `max_angle < 0`, rotate no further than `PI` radians away
+        let angle = max_angle.clamp(angle_between - core::f32::consts::PI, angle_between);
+        let axis = self
+            .cross(rhs)
+            .try_normalize()
+            .unwrap_or_else(|| self.any_orthogonal_vector().normalize());
+        Quat::from_axis_angle(axis.into(), angle) * self
+    }
+
     /// Returns some vector that is orthogonal to the given one.
     ///
     /// The input vector must be finite and non-zero.
@@ -1090,6 +1142,13 @@ impl Vec3A {
     #[must_use]
     pub fn as_u64vec3(&self) -> crate::U64Vec3 {
         crate::U64Vec3::new(self.x as u64, self.y as u64, self.z as u64)
+    }
+
+    /// Casts all elements of `self` to `usize`.
+    #[inline]
+    #[must_use]
+    pub fn as_usizevec3(&self) -> crate::USizeVec3 {
+        crate::USizeVec3::new(self.x as usize, self.y as usize, self.z as usize)
     }
 }
 

@@ -1,6 +1,6 @@
 // Generated from vec.rs.tera template. Edit the template, not the generated file.
 
-use crate::{BVec2, I16Vec2, I64Vec3, I8Vec2, IVec2, U16Vec2, U64Vec2, U8Vec2, UVec2};
+use crate::{BVec2, I16Vec2, I64Vec3, I8Vec2, IVec2, U16Vec2, U64Vec2, U8Vec2, USizeVec2, UVec2};
 
 use core::fmt;
 use core::iter::{Product, Sum};
@@ -222,6 +222,30 @@ impl I64Vec2 {
         self.x.max(self.y)
     }
 
+    /// Returns the index of the first minimum element of `self`.
+    #[doc(alias = "argmin")]
+    #[inline]
+    #[must_use]
+    pub fn min_position(self) -> usize {
+        if self.x <= self.y {
+            0
+        } else {
+            1
+        }
+    }
+
+    /// Returns the index of the first maximum element of `self`.
+    #[doc(alias = "argmax")]
+    #[inline]
+    #[must_use]
+    pub fn max_position(self) -> usize {
+        if self.x >= self.y {
+            0
+        } else {
+            1
+        }
+    }
+
     /// Returns the sum of all elements of `self`.
     ///
     /// In other words, this computes `self.x + self.y + ..`.
@@ -337,7 +361,7 @@ impl I64Vec2 {
     #[inline]
     #[must_use]
     pub fn is_negative_bitmask(self) -> u32 {
-        (self.x.is_negative() as u32) | (self.y.is_negative() as u32) << 1
+        (self.x.is_negative() as u32) | ((self.y.is_negative() as u32) << 1)
     }
 
     /// Computes the squared length of `self`.
@@ -510,6 +534,13 @@ impl I64Vec2 {
     #[must_use]
     pub fn as_u64vec2(&self) -> crate::U64Vec2 {
         crate::U64Vec2::new(self.x as u64, self.y as u64)
+    }
+
+    /// Casts all elements of `self` to `usize`.
+    #[inline]
+    #[must_use]
+    pub fn as_usizevec2(&self) -> crate::USizeVec2 {
+        crate::USizeVec2::new(self.x as usize, self.y as usize)
     }
 
     /// Returns a vector containing the wrapping addition of `self` and `rhs`.
@@ -1932,6 +1963,15 @@ impl TryFrom<U64Vec2> for I64Vec2 {
 
     #[inline]
     fn try_from(v: U64Vec2) -> Result<Self, Self::Error> {
+        Ok(Self::new(i64::try_from(v.x)?, i64::try_from(v.y)?))
+    }
+}
+
+impl TryFrom<USizeVec2> for I64Vec2 {
+    type Error = core::num::TryFromIntError;
+
+    #[inline]
+    fn try_from(v: USizeVec2) -> Result<Self, Self::Error> {
         Ok(Self::new(i64::try_from(v.x)?, i64::try_from(v.y)?))
     }
 }

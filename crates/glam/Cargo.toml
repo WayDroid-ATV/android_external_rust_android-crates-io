@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.68.2"
 name = "glam"
-version = "0.30.0"
+version = "0.30.1"
 authors = ["Cameron Hart <cameron.hart@gmail.com>"]
 build = false
 autolib = false
@@ -36,6 +36,22 @@ categories = [
 ]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bitshifter/glam-rs"
+
+[badges.maintenance]
+status = "actively-developed"
+
+[features]
+bytecheck = ["rkyv/bytecheck"]
+core-simd = []
+cuda = []
+debug-glam-assert = []
+default = ["std"]
+fast-math = []
+glam-assert = []
+libm = ["dep:libm"]
+nostd-libm = ["dep:libm"]
+scalar-math = []
+std = []
 
 [lib]
 name = "glam"
@@ -117,6 +133,10 @@ path = "tests/swizzles_u64.rs"
 [[test]]
 name = "swizzles_u8"
 path = "tests/swizzles_u8.rs"
+
+[[test]]
+name = "swizzles_usize"
+path = "tests/swizzles_usize.rs"
 
 [[test]]
 name = "vec2"
@@ -241,17 +261,6 @@ default-features = false
 [dev-dependencies.serde_json]
 version = "1.0"
 
-[features]
-bytecheck = ["rkyv/bytecheck"]
-core-simd = []
-cuda = []
-debug-glam-assert = []
-default = ["std"]
-fast-math = []
-glam-assert = []
-scalar-math = []
-std = []
-
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.criterion]
 version = "0.5"
 features = ["html_reports"]
@@ -261,9 +270,6 @@ version = "0.14"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies.wasm-bindgen-test]
 version = "0.3"
-
-[badges.maintenance]
-status = "actively-developed"
 
 [lints.rust.unexpected_cfgs]
 level = "warn"

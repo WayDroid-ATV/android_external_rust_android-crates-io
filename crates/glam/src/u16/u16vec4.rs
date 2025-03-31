@@ -2,7 +2,9 @@
 
 #[cfg(not(feature = "scalar-math"))]
 use crate::BVec4A;
-use crate::{BVec4, I16Vec4, I64Vec4, I8Vec4, IVec4, U16Vec2, U16Vec3, U64Vec4, U8Vec4, UVec4};
+use crate::{
+    BVec4, I16Vec4, I64Vec4, I8Vec4, IVec4, U16Vec2, U16Vec3, U64Vec4, U8Vec4, USizeVec4, UVec4,
+};
 
 use core::fmt;
 use core::iter::{Product, Sum};
@@ -256,6 +258,48 @@ impl U16Vec4 {
         self.x.max(self.y.max(self.z.max(self.w)))
     }
 
+    /// Returns the index of the first minimum element of `self`.
+    #[doc(alias = "argmin")]
+    #[inline]
+    #[must_use]
+    pub fn min_position(self) -> usize {
+        let mut min = self.x;
+        let mut index = 0;
+        if self.y < min {
+            min = self.y;
+            index = 1;
+        }
+        if self.z < min {
+            min = self.z;
+            index = 2;
+        }
+        if self.w < min {
+            index = 3;
+        }
+        index
+    }
+
+    /// Returns the index of the first maximum element of `self`.
+    #[doc(alias = "argmax")]
+    #[inline]
+    #[must_use]
+    pub fn max_position(self) -> usize {
+        let mut max = self.x;
+        let mut index = 0;
+        if self.y > max {
+            max = self.y;
+            index = 1;
+        }
+        if self.z > max {
+            max = self.z;
+            index = 2;
+        }
+        if self.w > max {
+            index = 3;
+        }
+        index
+    }
+
     /// Returns the sum of all elements of `self`.
     ///
     /// In other words, this computes `self.x + self.y + ..`.
@@ -488,6 +532,18 @@ impl U16Vec4 {
     #[must_use]
     pub fn as_u64vec4(&self) -> crate::U64Vec4 {
         crate::U64Vec4::new(self.x as u64, self.y as u64, self.z as u64, self.w as u64)
+    }
+
+    /// Casts all elements of `self` to `usize`.
+    #[inline]
+    #[must_use]
+    pub fn as_usizevec4(&self) -> crate::USizeVec4 {
+        crate::USizeVec4::new(
+            self.x as usize,
+            self.y as usize,
+            self.z as usize,
+            self.w as usize,
+        )
     }
 
     /// Returns a vector containing the wrapping addition of `self` and `rhs`.
@@ -2087,6 +2143,20 @@ impl TryFrom<U64Vec4> for U16Vec4 {
 
     #[inline]
     fn try_from(v: U64Vec4) -> Result<Self, Self::Error> {
+        Ok(Self::new(
+            u16::try_from(v.x)?,
+            u16::try_from(v.y)?,
+            u16::try_from(v.z)?,
+            u16::try_from(v.w)?,
+        ))
+    }
+}
+
+impl TryFrom<USizeVec4> for U16Vec4 {
+    type Error = core::num::TryFromIntError;
+
+    #[inline]
+    fn try_from(v: USizeVec4) -> Result<Self, Self::Error> {
         Ok(Self::new(
             u16::try_from(v.x)?,
             u16::try_from(v.y)?,

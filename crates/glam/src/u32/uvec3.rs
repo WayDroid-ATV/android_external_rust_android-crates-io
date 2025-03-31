@@ -1,7 +1,8 @@
 // Generated from vec.rs.tera template. Edit the template, not the generated file.
 
 use crate::{
-    BVec3, BVec3A, I16Vec3, I64Vec3, I8Vec3, IVec3, U16Vec3, U64Vec3, U8Vec3, UVec2, UVec4,
+    BVec3, BVec3A, I16Vec3, I64Vec3, I8Vec3, IVec3, U16Vec3, U64Vec3, U8Vec3, USizeVec3, UVec2,
+    UVec4,
 };
 
 use core::fmt;
@@ -262,6 +263,40 @@ impl UVec3 {
         self.x.max(self.y.max(self.z))
     }
 
+    /// Returns the index of the first minimum element of `self`.
+    #[doc(alias = "argmin")]
+    #[inline]
+    #[must_use]
+    pub fn min_position(self) -> usize {
+        let mut min = self.x;
+        let mut index = 0;
+        if self.y < min {
+            min = self.y;
+            index = 1;
+        }
+        if self.z < min {
+            index = 2;
+        }
+        index
+    }
+
+    /// Returns the index of the first maximum element of `self`.
+    #[doc(alias = "argmax")]
+    #[inline]
+    #[must_use]
+    pub fn max_position(self) -> usize {
+        let mut max = self.x;
+        let mut index = 0;
+        if self.y > max {
+            max = self.y;
+            index = 1;
+        }
+        if self.z > max {
+            index = 2;
+        }
+        index
+    }
+
     /// Returns the sum of all elements of `self`.
     ///
     /// In other words, this computes `self.x + self.y + ..`.
@@ -466,6 +501,13 @@ impl UVec3 {
     #[must_use]
     pub fn as_u64vec3(&self) -> crate::U64Vec3 {
         crate::U64Vec3::new(self.x as u64, self.y as u64, self.z as u64)
+    }
+
+    /// Casts all elements of `self` to `usize`.
+    #[inline]
+    #[must_use]
+    pub fn as_usizevec3(&self) -> crate::USizeVec3 {
+        crate::USizeVec3::new(self.x as usize, self.y as usize, self.z as usize)
     }
 
     /// Returns a vector containing the wrapping addition of `self` and `rhs`.
@@ -1943,6 +1985,19 @@ impl TryFrom<U64Vec3> for UVec3 {
 
     #[inline]
     fn try_from(v: U64Vec3) -> Result<Self, Self::Error> {
+        Ok(Self::new(
+            u32::try_from(v.x)?,
+            u32::try_from(v.y)?,
+            u32::try_from(v.z)?,
+        ))
+    }
+}
+
+impl TryFrom<USizeVec3> for UVec3 {
+    type Error = core::num::TryFromIntError;
+
+    #[inline]
+    fn try_from(v: USizeVec3) -> Result<Self, Self::Error> {
         Ok(Self::new(
             u32::try_from(v.x)?,
             u32::try_from(v.y)?,

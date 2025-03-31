@@ -1,7 +1,8 @@
 // Generated from vec.rs.tera template. Edit the template, not the generated file.
 
 use crate::{
-    BVec3, BVec3A, I16Vec3, I64Vec3, I8Vec3, IVec2, IVec4, U16Vec3, U64Vec3, U8Vec3, UVec3,
+    BVec3, BVec3A, I16Vec3, I64Vec3, I8Vec3, IVec2, IVec4, U16Vec3, U64Vec3, U8Vec3, USizeVec3,
+    UVec3,
 };
 
 use core::fmt;
@@ -274,6 +275,40 @@ impl IVec3 {
         self.x.max(self.y.max(self.z))
     }
 
+    /// Returns the index of the first minimum element of `self`.
+    #[doc(alias = "argmin")]
+    #[inline]
+    #[must_use]
+    pub fn min_position(self) -> usize {
+        let mut min = self.x;
+        let mut index = 0;
+        if self.y < min {
+            min = self.y;
+            index = 1;
+        }
+        if self.z < min {
+            index = 2;
+        }
+        index
+    }
+
+    /// Returns the index of the first maximum element of `self`.
+    #[doc(alias = "argmax")]
+    #[inline]
+    #[must_use]
+    pub fn max_position(self) -> usize {
+        let mut max = self.x;
+        let mut index = 0;
+        if self.y > max {
+            max = self.y;
+            index = 1;
+        }
+        if self.z > max {
+            index = 2;
+        }
+        index
+    }
+
     /// Returns the sum of all elements of `self`.
     ///
     /// In other words, this computes `self.x + self.y + ..`.
@@ -392,8 +427,8 @@ impl IVec3 {
     #[must_use]
     pub fn is_negative_bitmask(self) -> u32 {
         (self.x.is_negative() as u32)
-            | (self.y.is_negative() as u32) << 1
-            | (self.z.is_negative() as u32) << 2
+            | ((self.y.is_negative() as u32) << 1)
+            | ((self.z.is_negative() as u32) << 2)
     }
 
     /// Computes the squared length of `self`.
@@ -553,6 +588,13 @@ impl IVec3 {
     #[must_use]
     pub fn as_u64vec3(&self) -> crate::U64Vec3 {
         crate::U64Vec3::new(self.x as u64, self.y as u64, self.z as u64)
+    }
+
+    /// Casts all elements of `self` to `usize`.
+    #[inline]
+    #[must_use]
+    pub fn as_usizevec3(&self) -> crate::USizeVec3 {
+        crate::USizeVec3::new(self.x as usize, self.y as usize, self.z as usize)
     }
 
     /// Returns a vector containing the wrapping addition of `self` and `rhs`.
@@ -2086,6 +2128,19 @@ impl TryFrom<U64Vec3> for IVec3 {
 
     #[inline]
     fn try_from(v: U64Vec3) -> Result<Self, Self::Error> {
+        Ok(Self::new(
+            i32::try_from(v.x)?,
+            i32::try_from(v.y)?,
+            i32::try_from(v.z)?,
+        ))
+    }
+}
+
+impl TryFrom<USizeVec3> for IVec3 {
+    type Error = core::num::TryFromIntError;
+
+    #[inline]
+    fn try_from(v: USizeVec3) -> Result<Self, Self::Error> {
         Ok(Self::new(
             i32::try_from(v.x)?,
             i32::try_from(v.y)?,

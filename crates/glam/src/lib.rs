@@ -31,6 +31,8 @@
   * vectors: [`I64Vec2`], [`I64Vec3`] and [`I64Vec4`]
 * [`u64`](mod@u64) types
   * vectors: [`U64Vec2`], [`U64Vec3`] and [`U64Vec4`]
+* [`usize`](mod@usize) types
+  * vectors: [`USizeVec2`], [`USizeVec3`] and [`USizeVec4`]
 * [`bool`](mod@bool) types
   * vectors: [`BVec2`], [`BVec3`] and [`BVec4`]
 
@@ -227,7 +229,8 @@ and benchmarks.
 * `std` - the default feature, has no dependencies.
 * `approx` - traits and macros for approximate float comparisons
 * `bytemuck` - for casting into slices of bytes
-* `libm` - uses `libm` math functions instead of `std`, required to compile with `no_std`
+* `libm` - uses `libm` math functions instead of `std`
+* `nostd-libm` - uses `libm` math functions if `std` is not available
 * `mint` - for interoperating with other 3D math libraries
 * `rand` - implementations of `Distribution` trait for all `glam` types.
 * `rkyv` - implementations of `Archive`, `Serialize` and `Deserialize` for all
@@ -256,7 +259,7 @@ and benchmarks.
 The minimum supported Rust version is `1.68.2`.
 
 */
-#![doc(html_root_url = "https://docs.rs/glam/0.30.0")]
+#![doc(html_root_url = "https://docs.rs/glam/0.30.1")]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(target_arch = "spirv", feature(repr_simd))]
 #![deny(
@@ -272,8 +275,14 @@ The minimum supported Rust version is `1.68.2`.
     feature(portable_simd)
 )]
 
-#[cfg(all(not(feature = "std"), not(feature = "libm")))]
-compile_error!("You must specify a math backend using either the `std` feature or `libm` feature");
+#[cfg(all(
+    not(feature = "std"),
+    not(feature = "libm"),
+    not(feature = "nostd-libm")
+))]
+compile_error!(
+    "You must specify a math backend. Consider enabling either `std`, `libm`, or `nostd-libm`."
+);
 
 #[macro_use]
 mod macros;
@@ -356,6 +365,10 @@ pub use self::i64::*;
 /** `u64` vector types. */
 pub mod u64;
 pub use self::u64::*;
+
+/** `usize` vector types. */
+pub mod usize;
+pub use self::usize::*;
 
 /** Traits adding swizzle methods to all vector types. */
 pub mod swizzles;

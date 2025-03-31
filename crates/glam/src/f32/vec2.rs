@@ -230,6 +230,30 @@ impl Vec2 {
         self.x.max(self.y)
     }
 
+    /// Returns the index of the first minimum element of `self`.
+    #[doc(alias = "argmin")]
+    #[inline]
+    #[must_use]
+    pub fn min_position(self) -> usize {
+        if self.x <= self.y {
+            0
+        } else {
+            1
+        }
+    }
+
+    /// Returns the index of the first maximum element of `self`.
+    #[doc(alias = "argmax")]
+    #[inline]
+    #[must_use]
+    pub fn max_position(self) -> usize {
+        if self.x >= self.y {
+            0
+        } else {
+            1
+        }
+    }
+
     /// Returns the sum of all elements of `self`.
     ///
     /// In other words, this computes `self.x + self.y + ..`.
@@ -355,7 +379,7 @@ impl Vec2 {
     #[inline]
     #[must_use]
     pub fn is_negative_bitmask(self) -> u32 {
-        (self.x.is_sign_negative() as u32) | (self.y.is_sign_negative() as u32) << 1
+        (self.x.is_sign_negative() as u32) | ((self.y.is_sign_negative() as u32) << 1)
     }
 
     /// Returns `true` if, and only if, all elements are finite.  If any element is either
@@ -928,9 +952,6 @@ impl Vec2 {
     pub fn rotate_towards(&self, rhs: Self, max_angle: f32) -> Self {
         let a = self.angle_to(rhs);
         let abs_a = math::abs(a);
-        if abs_a <= 1e-4 {
-            return rhs;
-        }
         // When `max_angle < 0`, rotate no further than `PI` radians away
         let angle = max_angle.clamp(abs_a - core::f32::consts::PI, abs_a) * math::signum(a);
         Self::from_angle(angle).rotate(*self)
@@ -997,6 +1018,13 @@ impl Vec2 {
     #[must_use]
     pub fn as_u64vec2(&self) -> crate::U64Vec2 {
         crate::U64Vec2::new(self.x as u64, self.y as u64)
+    }
+
+    /// Casts all elements of `self` to `usize`.
+    #[inline]
+    #[must_use]
+    pub fn as_usizevec2(&self) -> crate::USizeVec2 {
+        crate::USizeVec2::new(self.x as usize, self.y as usize)
     }
 }
 
