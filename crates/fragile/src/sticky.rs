@@ -22,7 +22,7 @@ use crate::StackToken;
 /// Because [`Sticky`] allows values to be kept alive for longer than the
 /// [`Sticky`] itself, it requires all its contents to be `'static` for
 /// soundness.  More importantly it also requires the use of [`StackToken`]s.
-/// For information about how to use stack tokens and why they are neded,
+/// For information about how to use stack tokens and why they are needed,
 /// refer to [`stack_token!`](crate::stack_token).
 ///
 /// As this uses TLS internally the general rules about the platform limitations
@@ -35,23 +35,14 @@ pub struct Sticky<T: 'static> {
 
 impl<T> Drop for Sticky<T> {
     fn drop(&mut self) {
-        // if the type needs dropping we can only do so on the
-        // right thread.  worst case we leak the value until the
-        // thread dies.
+        // if the type needs dropping we can only do so on the right thread.
+        // worst case we leak the value until the thread dies when drop will be
+        // called by the registry.
         if mem::needs_drop::<T>() {
             unsafe {
                 if self.is_valid() {
                     self.unsafe_take_value();
                 }
-            }
-
-        // otherwise we take the liberty to drop the value
-        // right here and now.  We can however only do that if
-        // we are on the right thread.  If we are not, we again
-        // need to wait for the thread to shut down.
-        } else if let Some(entry) = registry::try_remove(self.item_id, self.thread_id) {
-            unsafe {
-                (entry.drop)(entry.ptr);
             }
         }
     }
@@ -76,7 +67,7 @@ impl<T> Sticky<T> {
         };
 
         let thread_id = thread_id::get();
-        let item_id = registry::insert(thread_id, entry);
+        let item_id = registry::insert(entry);
 
         Sticky {
             item_id,
@@ -89,9 +80,7 @@ impl<T> Sticky<T> {
     fn with_value<F: FnOnce(*mut T) -> R, R>(&self, f: F) -> R {
         self.assert_thread();
 
-        registry::with(self.item_id, self.thread_id, |entry| {
-            f(entry.ptr.cast::<T>())
-        })
+        registry::with(self.item_id, |entry| f(entry.ptr.cast::<T>()))
     }
 
     /// Returns `true` if the access is valid.
@@ -125,9 +114,7 @@ impl<T> Sticky<T> {
     }
 
     unsafe fn unsafe_take_value(&mut self) -> T {
-        let ptr = registry::remove(self.item_id, self.thread_id)
-            .ptr
-            .cast::<T>();
+        let ptr = registry::try_remove(self.item_id).unwrap().ptr.cast::<T>();
         *Box::from_raw(ptr)
     }
 
@@ -293,7 +280,7 @@ impl<T: fmt::Debug> fmt::Debug for Sticky<T> {
     }
 }
 
-// similar as for fragile ths type is sync because it only accesses TLS data
+// similar as for fragile the type is sync because it only accesses TLS data
 // which is thread local.  There is nothing that needs to be synchronized.
 unsafe impl<T> Sync for Sticky<T> {}
 
@@ -420,4 +407,20 @@ fn test_two_stickies() {
 
     drop(s1);
     drop(s2);
+}
+
+#[test]
+fn test_thread_spawn() {
+    use crate::{stack_token, Sticky};
+    use std::{mem::ManuallyDrop, thread};
+
+    let dummy_sticky = thread::spawn(|| Sticky::new(())).join().unwrap();
+    let sticky_string = ManuallyDrop::new(Sticky::new(String::from("Hello World")));
+    stack_token!(t);
+
+    let hello: &str = sticky_string.get(t);
+
+    assert_eq!(hello, "Hello World");
+    drop(dummy_sticky);
+    assert_eq!(hello, "Hello World");
 }
