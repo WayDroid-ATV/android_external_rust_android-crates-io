@@ -24,8 +24,10 @@ rust_library {
     features: [
         "alloc",
         "default",
+        "serde",
         "std",
     ],
+    rustlibs: ["libserde"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

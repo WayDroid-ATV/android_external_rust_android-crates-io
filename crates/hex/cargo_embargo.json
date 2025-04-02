@@ -1,7 +1,12 @@
 {
   "run_cargo": false,
   "variants": [
-    {},
+    {
+      "features": [
+	"default",
+	"serde"
+      ]
+    },
     {
       "features": [
         "alloc"

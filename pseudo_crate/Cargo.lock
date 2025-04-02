@@ -163,6 +163,7 @@ dependencies = [
  "const-oid",
  "coset",
  "cov-mark",
+ "crates-index",
  "crc",
  "crc-catalog",
  "crc32fast",
@@ -1541,6 +1542,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "53fe5e26ff1b7aef8bca9c6080520cfb8d9333c7568e1829cef191a9723e5504"
 dependencies = [
  "libc 0.2.161",
+]
+
+[[package]]
+name = "crates-index"
+version = "3.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69e3808083c321289507b81dbcb0130d4bd9603871ce73486d47605286637c74"
+dependencies = [
+ "hex",
+ "home",
+ "http 1.1.0",
+ "memchr",
+ "rustc-hash 2.1.1",
+ "rustc-stable-hash",
+ "semver",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "smol_str",
+ "thiserror 2.0.11",
+ "toml 0.8.19",
 ]
 
 [[package]]
