@@ -41,6 +41,7 @@ byteorder
 bytes
 camino
 cargo-platform
+cargo_metadata
 cast
 cesu8
 cexpr
