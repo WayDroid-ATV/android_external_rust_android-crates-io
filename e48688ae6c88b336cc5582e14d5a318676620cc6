@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "781ee8cd_dfeac21b",
+        "filename": "crates/image/LICENSE",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1229163
+      },
+      "writtenOn": "2025-04-04T20:07:23Z",
+      "side": 1,
+      "message": "Regenerated with a newer version of the cargo tool.\nIt is now preferring to select the APACHE license. I haven\u0027t manually edited any of these files. Please reopen this comment if I missed something. Thank you!",
+      "parentUuid": "36fb9a17_cb95439e",
+      "revId": "e48688ae6c88b336cc5582e14d5a318676620cc6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c4e6da9c_e3a8672f",
@@ -49,6 +67,24 @@
           ]
         }
       ],
+      "revId": "e48688ae6c88b336cc5582e14d5a318676620cc6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "48342837_630deeff",
+        "filename": "crates/image/METADATA",
+        "patchSetId": 3
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 1229163
+      },
+      "writtenOn": "2025-04-04T20:07:23Z",
+      "side": 1,
+      "message": "Is this a must? This file is overwritten by the cargo import tool, i can\u0027t edit it.\nDo you know what cargo_embargo config would add this flag?\nThanks!",
+      "parentUuid": "c4e6da9c_e3a8672f",
       "revId": "e48688ae6c88b336cc5582e14d5a318676620cc6",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }

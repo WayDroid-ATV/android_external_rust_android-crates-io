@@ -57,6 +57,30 @@
       },
       "revId": "db11a670814f4ddcf89ed75a48a770f56ff3b091",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "01606b12_5e11ece0",
+        "filename": "crates/image/src/codecs/jpeg/transform.rs",
+        "patchSetId": 1
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1229163
+      },
+      "writtenOn": "2025-04-04T20:07:23Z",
+      "side": 1,
+      "message": "I will need a bit of help to register this license in the cargo_embargo tool. Will update ASAP.",
+      "parentUuid": "081bf04a_d25573d9",
+      "range": {
+        "startLine": 26,
+        "startChar": 0,
+        "endLine": 51,
+        "endChar": 0
+      },
+      "revId": "db11a670814f4ddcf89ed75a48a770f56ff3b091",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
