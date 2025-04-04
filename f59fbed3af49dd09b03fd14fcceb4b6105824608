@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c9bc6f69_cc4dc4e0",
+        "filename": "crates/image/src/lib.rs",
+        "patchSetId": 6
+      },
+      "lineNbr": 270,
+      "author": {
+        "id": 1229163
+      },
+      "writtenOn": "2025-04-04T21:25:25Z",
+      "side": 1,
+      "message": "We are not using the \"jpeg\" feature, therefore we don\u0027t include the jpeg module that has the extra license found by the checker.\nThis means we are not actually using that file. I can\u0027t tell if this voids the need to fix the license warning for IJG.",
+      "range": {
+        "startLine": 270,
+        "startChar": 4,
+        "endLine": 270,
+        "endChar": 28
+      },
+      "revId": "f59fbed3af49dd09b03fd14fcceb4b6105824608",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
