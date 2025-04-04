@@ -22,6 +22,30 @@
       },
       "revId": "b7a08a2c4bf0e72df59fb524259cbef781801751",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8d21ad83_90e27e4d",
+        "filename": "crates/byteorder-lite/UNLICENSE",
+        "patchSetId": 4
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1229163
+      },
+      "writtenOn": "2025-04-04T19:40:35Z",
+      "side": 1,
+      "message": "Updated the CL. Regenerated with a fresh version of cargo_embargo. \nThis file is now deleted. PTAL.",
+      "parentUuid": "7cbf2098_49a4750d",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 24,
+        "endChar": 0
+      },
+      "revId": "b7a08a2c4bf0e72df59fb524259cbef781801751",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
