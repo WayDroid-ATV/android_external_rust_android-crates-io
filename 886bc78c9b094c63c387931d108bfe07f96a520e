@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dabbbd02_79460feb",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2025-04-04T20:18:24Z",
+      "side": 1,
+      "message": "This needs to be moved to internal gerrit now. I\u0027m so sorry for the unnecessary churn. We can no longer +2 and submit from here.",
+      "revId": "886bc78c9b094c63c387931d108bfe07f96a520e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
