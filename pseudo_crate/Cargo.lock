@@ -338,6 +338,7 @@ dependencies = [
  "mockall_derive",
  "moveit",
  "named-lock",
+ "netlink-packet-utils",
  "nix 0.29.0",
  "no-panic",
  "nom",
@@ -4479,6 +4480,18 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
+]
+
+[[package]]
+name = "netlink-packet-utils"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ede8a08c71ad5a95cdd0e4e52facd37190977039a4704eb82a283f713747d34"
+dependencies = [
+ "anyhow",
+ "byteorder",
+ "paste",
+ "thiserror 1.0.49",
 ]
 
 [[package]]
