@@ -4,5 +4,6 @@
     "libzerocopy_derive": "libzerocopy_derive-0.7.35"
   },
   "run_cargo": false,
+  "min_sdk_version": "29",
   "generate_rulesmk": false
 }

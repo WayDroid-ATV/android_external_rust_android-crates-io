@@ -33,6 +33,7 @@ rust_library {
     ],
     product_available: true,
     vendor_available: true,
+    min_sdk_version: "29",
     // Doesn't compile on 32-bit targets.
     target: {
         android_arm: {

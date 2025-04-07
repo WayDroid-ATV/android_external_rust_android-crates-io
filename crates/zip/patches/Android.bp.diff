@@ -2,8 +2,7 @@ diff --git a/Android.bp b/Android.bp
 index be44509..ccac5a9 100644
 --- a/Android.bp
 +++ b/Android.bp
-@@ -36,11 +36,16 @@ rust_library {
-         "libbyteorder",
+@@ -30,11 +30,16 @@ rust_library {
          "libcrc32fast",
          "libflate2",
      ],
@@ -13,6 +12,7 @@ index be44509..ccac5a9 100644
      ],
      product_available: true,
      vendor_available: true,
+     min_sdk_version: "29",
 +    arch: {
 +        arm: {
 +            rustlibs: ["libcrossbeam_utils"],

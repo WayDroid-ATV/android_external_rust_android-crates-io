@@ -2,8 +2,7 @@ diff --git a/Android.bp b/Android.bp
 index 42138df..3ad0d2c 100644
 --- a/Android.bp
 +++ b/Android.bp
-@@ -31,31 +31,49 @@ rust_library {
-         "libserde",
+@@ -27,31 +27,49 @@ rust_library {
      ],
      proc_macros: ["libp9_wire_format_derive"],
      compile_multilib: "first",
@@ -13,6 +12,7 @@ index 42138df..3ad0d2c 100644
      ],
      product_available: true,
      vendor_available: true,
+     min_sdk_version: "29",
 +    // Doesn't compile on 32-bit targets.
 +    target: {
 +        android_arm: {

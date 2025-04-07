@@ -2,7 +2,7 @@ diff --git a/Android.bp b/Android.bp
 index 60c613c..8f26c4f 100644
 --- a/Android.bp
 +++ b/Android.bp
-@@ -19,19 +19,7 @@ rust_library {
+@@ -19,20 +19,7 @@ rust_library {
      cargo_env_compat: true,
      cargo_pkg_version: "1.4.3+v1.4.5",
      crate_root: "src/lib.rs",
@@ -11,6 +11,7 @@ index 60c613c..8f26c4f 100644
 -        "//apex_available:platform",
 -        "//apex_available:anyapex",
 -    ],
+-    min_sdk_version: "29",
 -}
 -
 -rust_ffi_static {
