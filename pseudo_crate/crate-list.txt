@@ -38,6 +38,7 @@ buddy_system_allocator
 bytemuck
 bytemuck_derive
 byteorder
+byteorder-lite
 bytes
 camino
 cargo-platform
@@ -231,6 +232,7 @@ miette
 miette-derive
 mime
 minimal-lexical
+miniz_oxide
 mio
 mls-rs
 mls-rs-codec
@@ -286,6 +288,7 @@ pkcs8
 plotters
 plotters-backend
 plotters-svg
+png
 poll_token_derive
 portable-atomic
 potential_utf
