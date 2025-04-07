@@ -15,5 +15,6 @@
     }
   },
   "run_cargo": false,
+  "min_sdk_version": "29",
   "tests": true
 }
