@@ -243,6 +243,7 @@ mockall
 mockall_derive
 moveit
 named-lock
+netlink-packet-core
 netlink-packet-utils
 nix
 no-panic
