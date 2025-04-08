@@ -1,17 +1,17 @@
 name: "tokio"
 description: "An event-driven, non-blocking I/O platform for writing asynchronous I/O backed applications."
 third_party {
-  version: "1.42.0"
+  version: "1.42.1"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 12
-    day: 4
+    year: 2025
+    month: 4
+    day: 8
   }
   homepage: "https://crates.io/crates/tokio"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/tokio/tokio-1.42.0.crate"
-    version: "1.42.0"
+    value: "https://static.crates.io/crates/tokio/tokio-1.42.1.crate"
+    version: "1.42.1"
   }
 }
