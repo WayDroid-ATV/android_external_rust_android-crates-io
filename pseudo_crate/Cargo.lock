@@ -190,6 +190,7 @@ dependencies = [
  "darling_core",
  "darling_macro",
  "dashmap",
+ "dasp_sample",
  "data-encoding",
  "debug_tree",
  "der",
@@ -1859,6 +1860,12 @@ dependencies = [
  "once_cell",
  "parking_lot_core",
 ]
+
+[[package]]
+name = "dasp_sample"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c87e182de0887fd5361989c677c4e8f5000cd9491d6d563161a8f3a5519fc7f"
 
 [[package]]
 name = "data-encoding"

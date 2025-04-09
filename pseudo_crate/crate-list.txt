@@ -85,6 +85,7 @@ darling
 darling_core
 darling_macro
 dashmap
+dasp_sample
 data-encoding
 debug_tree
 der
