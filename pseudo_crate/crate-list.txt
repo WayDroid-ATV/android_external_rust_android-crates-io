@@ -121,6 +121,7 @@ flagset
 flate2
 fnv
 foldhash
+font-types
 foreign-types
 foreign-types-shared
 form_urlencoded
@@ -318,6 +319,7 @@ rand_core
 rand_xorshift
 rayon
 rayon-core
+read-fonts
 regex
 regex-automata
 regex-syntax

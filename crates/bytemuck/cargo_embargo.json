@@ -9,7 +9,8 @@
       "features": [
         "extern_crate_std",
         "derive",
-        "extern_crate_alloc"
+        "extern_crate_alloc",
+        "min_const_generics"
       ],
       "tests": true,
       "min_sdk_version": "34"

@@ -226,6 +226,7 @@ dependencies = [
  "flate2",
  "fnv",
  "foldhash",
+ "font-types",
  "foreign-types 0.3.2",
  "foreign-types-shared 0.1.1",
  "form_urlencoded",
@@ -420,6 +421,7 @@ dependencies = [
  "rand_xorshift",
  "rayon",
  "rayon-core",
+ "read-fonts",
  "regex",
  "regex-automata 0.1.10",
  "regex-syntax",
@@ -2437,6 +2439,15 @@ dependencies = [
  "walkdir",
  "winapi",
  "yeslogic-fontconfig-sys",
+]
+
+[[package]]
+name = "font-types"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fa6a5e5a77b5f3f7f9e32879f484aa5b3632ddfbe568a16266c904a6f32cdaf"
+dependencies = [
+ "bytemuck",
 ]
 
 [[package]]
@@ -5827,6 +5838,16 @@ checksum = "1465873a3dfdaa8ae7cb14b4383657caab0b3e8a0aa9ae8e04b044854c8dfce2"
 dependencies = [
  "crossbeam-deque",
  "crossbeam-utils",
+]
+
+[[package]]
+name = "read-fonts"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "600e807b48ac55bad68a8cb75cc3c7739f139b9248f7e003e01e080f589b5288"
+dependencies = [
+ "bytemuck",
+ "font-types",
 ]
 
 [[package]]
