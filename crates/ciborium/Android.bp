@@ -41,6 +41,7 @@ rust_library {
 
 rust_library_rlib {
     name: "libciborium_nostd",
+    defaults: ["rust_baremetal_defaults"],
     crate_name: "ciborium",
     cargo_env_compat: true,
     cargo_pkg_version: "0.2.2",

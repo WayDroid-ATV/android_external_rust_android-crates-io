@@ -15,6 +15,7 @@ license {
 
 rust_library_rlib {
     name: "libsafe_mmio",
+    defaults: ["rust_baremetal_defaults"],
     crate_name: "safe_mmio",
     cargo_env_compat: true,
     cargo_pkg_version: "0.2.1",
@@ -38,6 +39,7 @@ rust_library_rlib {
 
 rust_test {
     name: "safe-mmio_test_src_lib",
+    defaults: ["rust_baremetal_defaults"],
     crate_name: "safe_mmio",
     cargo_env_compat: true,
     cargo_pkg_version: "0.2.1",

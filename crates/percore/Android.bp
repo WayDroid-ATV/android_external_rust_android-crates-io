@@ -15,6 +15,7 @@ license {
 
 rust_library_rlib {
     name: "libpercore",
+    defaults: ["rust_baremetal_defaults"],
     crate_name: "percore",
     cargo_env_compat: true,
     cargo_pkg_version: "0.1.0",

@@ -15,6 +15,7 @@ license {
 
 rust_library_rlib {
     name: "libvirtio_drivers",
+    defaults: ["rust_baremetal_defaults"],
     crate_name: "virtio_drivers",
     cargo_env_compat: true,
     cargo_pkg_version: "0.9.0",
@@ -43,6 +44,7 @@ rust_library_rlib {
 
 rust_test {
     name: "virtio-drivers_test_src_lib",
+    defaults: ["rust_baremetal_defaults"],
     crate_name: "virtio_drivers",
     cargo_env_compat: true,
     cargo_pkg_version: "0.9.0",

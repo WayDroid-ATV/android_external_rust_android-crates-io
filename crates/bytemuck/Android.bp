@@ -208,6 +208,7 @@ rust_library {
 
 rust_library_rlib {
     name: "libbytemuck_nostd",
+    defaults: ["rust_baremetal_defaults"],
     crate_name: "bytemuck",
     cargo_env_compat: true,
     cargo_pkg_version: "1.22.0",
