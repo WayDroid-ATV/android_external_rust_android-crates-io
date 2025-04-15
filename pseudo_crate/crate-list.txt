@@ -190,6 +190,7 @@ instant
 intrusive-collections
 ipnet
 ipp
+ippusb
 is-terminal
 itertools
 itoa
