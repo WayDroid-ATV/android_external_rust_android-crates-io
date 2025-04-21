@@ -35,6 +35,12 @@ rust_test {
     ],
     rustlibs: ["libbytemuck"],
     proc_macros: ["libbytemuck_derive"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }
 
 rust_test {
@@ -59,6 +65,12 @@ rust_test {
     ],
     rustlibs: ["libbytemuck"],
     proc_macros: ["libbytemuck_derive"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }
 
 rust_test {
@@ -83,6 +95,12 @@ rust_test {
     ],
     rustlibs: ["libbytemuck"],
     proc_macros: ["libbytemuck_derive"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }
 
 rust_test {
@@ -107,6 +125,12 @@ rust_test {
     ],
     rustlibs: ["libbytemuck"],
     proc_macros: ["libbytemuck_derive"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }
 
 rust_test {
@@ -131,6 +155,12 @@ rust_test {
     ],
     rustlibs: ["libbytemuck"],
     proc_macros: ["libbytemuck_derive"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }
 
 rust_test {
@@ -155,6 +185,12 @@ rust_test {
     ],
     rustlibs: ["libbytemuck"],
     proc_macros: ["libbytemuck_derive"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }
 
 rust_test {
@@ -179,6 +215,12 @@ rust_test {
     ],
     rustlibs: ["libbytemuck"],
     proc_macros: ["libbytemuck_derive"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }
 
 rust_library {
@@ -204,6 +246,12 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "34",
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }
 
 rust_library_rlib {
@@ -234,4 +282,10 @@ rust_library_rlib {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }
