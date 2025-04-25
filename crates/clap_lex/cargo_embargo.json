@@ -4,5 +4,10 @@
     "//apex_available:platform"
   ],
   "min_sdk_version": "29",
-  "tests": true
+  "tests": true,
+  "package": {
+    "clap_lex": {
+      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
+    }
+  }
 }

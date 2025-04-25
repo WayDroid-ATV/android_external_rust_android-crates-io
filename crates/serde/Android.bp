@@ -40,6 +40,11 @@ rust_library {
     vendor_ramdisk_available: true,
     ramdisk_available: true,
     min_sdk_version: "29",
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -63,6 +68,11 @@ rust_test {
         "std",
     ],
     proc_macros: ["libserde_derive"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_library_rlib {
@@ -97,6 +107,11 @@ rust_library_rlib {
     vendor_ramdisk_available: true,
     ramdisk_available: true,
     min_sdk_version: "29",
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 dirgroup {

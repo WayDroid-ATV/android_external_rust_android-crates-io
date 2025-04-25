@@ -14,5 +14,10 @@
     "//apex_available:platform"
   ],
   "min_sdk_version": "29",
-  "run_cargo": false
+  "run_cargo": false,
+  "package": {
+    "clap": {
+      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
+    }
+  }
 }

@@ -52,6 +52,11 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -94,6 +99,11 @@ rust_test {
         "librand",
         "libregex_syntax",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -137,6 +147,11 @@ rust_test {
         "libregex",
         "libregex_syntax",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -180,6 +195,11 @@ rust_test {
         "libregex",
         "libregex_syntax",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -223,6 +243,11 @@ rust_test {
         "libregex",
         "libregex_syntax",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -266,6 +291,11 @@ rust_test {
         "libregex",
         "libregex_syntax",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -309,6 +339,11 @@ rust_test {
         "libregex",
         "libregex_syntax",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -352,6 +387,11 @@ rust_test {
         "libregex",
         "libregex_syntax",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -395,6 +435,11 @@ rust_test {
         "libregex",
         "libregex_syntax",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -438,6 +483,11 @@ rust_test {
         "libregex",
         "libregex_syntax",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -481,4 +531,9 @@ rust_test {
         "libregex",
         "libregex_syntax",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }

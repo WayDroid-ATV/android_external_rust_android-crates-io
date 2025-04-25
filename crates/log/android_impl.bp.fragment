@@ -8,5 +8,8 @@ target: {
         shared_libs: [
             "liblog",
         ],
-    }
+    },
+    windows: {
+        enabled: true,
+    },
 }

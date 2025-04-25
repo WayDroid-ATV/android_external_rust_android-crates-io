@@ -40,6 +40,9 @@ rust_library {
                 "liblog",
             ],
         },
+        windows: {
+            enabled: true,
+        },
     },
 }
 
@@ -74,6 +77,9 @@ rust_library {
                 "liblog",
             ],
         },
+        windows: {
+            enabled: true,
+        },
     },
 }
 
@@ -107,6 +113,9 @@ rust_library {
             shared_libs: [
                 "liblog",
             ],
+        },
+        windows: {
+            enabled: true,
         },
     },
 }

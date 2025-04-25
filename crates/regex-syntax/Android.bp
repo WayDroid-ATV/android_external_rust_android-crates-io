@@ -39,6 +39,11 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 rust_test {
@@ -65,4 +70,9 @@ rust_test {
         "unicode-script",
         "unicode-segment",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }

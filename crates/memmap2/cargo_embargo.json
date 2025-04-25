@@ -6,7 +6,8 @@
     "memmap2": {
       "dep_blocklist": [
         "libowning_ref"
-      ]
+      ],
+      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
     }
   }
 }

@@ -8,7 +8,8 @@
   "tests": true,
   "package": {
     "libc": {
-      "rulesmk_patch": "patches/rules.mk.diff"
+      "rulesmk_patch": "patches/rules.mk.diff",
+      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
     }
   },
   "variants": [
