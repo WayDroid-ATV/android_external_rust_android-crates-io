@@ -18,7 +18,7 @@ rust_library_host {
     host_cross_supported: false,
     crate_name: "pdl_compiler",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.1",
+    cargo_pkg_version: "0.3.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -46,7 +46,7 @@ rust_binary_host {
     host_cross_supported: false,
     crate_name: "pdlc",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.1",
+    cargo_pkg_version: "0.3.2",
     crate_root: "src/main.rs",
     edition: "2021",
     features: [
@@ -99,13 +99,6 @@ genrule_defaults {
         "//packages/modules/Nfc:__subpackages__",
         "//tools/netsim:__subpackages__",
     ],
-}
-
-// Defaults for rust_noalloc backend generation.
-genrule_defaults {
-    name: "pdl_rust_noalloc_generator_defaults",
-    cmd: "$(location :pdlc) --output-format rust_no_alloc $(in) > $(out)",
-    tools: [":pdlc"],
 }
 
 // Defaults for PDL python backend generation.
@@ -378,14 +371,6 @@ python_test_host {
             embedded_launcher: true,
         },
     },
-}
-
-// Generate the rust_noalloc backend srcs against the little-endian test vectors
-genrule {
-    name: "pdl_rust_noalloc_le_test_backend_srcs",
-    defaults: ["pdl_rust_noalloc_generator_defaults"],
-    srcs: ["tests/canonical/le_rust_noalloc_test_file.pdl"],
-    out: ["_packets.rs"],
 }
 
 // Generate the C++ parser+serializer backend for the

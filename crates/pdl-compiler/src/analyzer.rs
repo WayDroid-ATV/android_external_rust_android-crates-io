@@ -137,7 +137,9 @@ pub enum ErrorCode {
     InvalidConditionIdentifier = 47,
     InvalidConditionValue = 48,
     E49 = 49,
-    ReusedConditionIdentifier = 50,
+    InvalidFieldOffset = 51,
+    InvalidFieldSize = 52,
+    InvalidPacketSize = 53,
 }
 
 impl From<ErrorCode> for String {
@@ -1514,7 +1516,6 @@ fn check_optional_fields(file: &File) -> Result<(), Diagnostics> {
     let mut diagnostics: Diagnostics = Default::default();
     for decl in &file.declarations {
         let mut local_scope: HashMap<String, &Field> = HashMap::new();
-        let mut condition_ids: HashMap<String, &Field> = HashMap::new();
         for field in decl.fields() {
             if let Some(ref cond) = field.cond {
                 match &field.desc {
@@ -1595,24 +1596,102 @@ fn check_optional_fields(file: &File) -> Result<(), Diagnostics> {
                     ),
                     _ => unreachable!(),
                 }
-                if let Some(prev_field) = condition_ids.insert(cond.id.to_owned(), field) {
-                    diagnostics.push(
-                        Diagnostic::error()
-                            .with_code(ErrorCode::ReusedConditionIdentifier)
-                            .with_message("reused condition identifier".to_owned())
-                            .with_labels(vec![
-                                field.loc.primary(),
-                                prev_field
-                                    .loc
-                                    .secondary()
-                                    .with_message(format!("`{}` is first used here", cond.id)),
-                            ]),
-                    )
-                }
             }
             if let Some(id) = field.id() {
                 local_scope.insert(id.to_owned(), field);
             }
+        }
+    }
+    diagnostics.err_or(())
+}
+
+/// Check field offsets.
+/// Raises error diagnostics for the following cases:
+///      - non bit-field field not aligned to a octet boundary
+fn check_field_offsets(file: &File, scope: &Scope, schema: &Schema) -> Result<(), Diagnostics> {
+    let mut diagnostics: Diagnostics = Default::default();
+    for decl in &file.declarations {
+        let mut offset = 0;
+
+        for field in decl.fields() {
+            match &field.desc {
+                FieldDesc::Typedef { type_id, .. }
+                    if matches!(
+                        scope.typedef.get(type_id),
+                        Some(Decl { desc: DeclDesc::Enum { .. }, .. })
+                    ) => {}
+                FieldDesc::Payload { .. }
+                | FieldDesc::Body { .. }
+                | FieldDesc::Typedef { .. }
+                | FieldDesc::Array { .. }
+                | FieldDesc::Padding { .. }
+                | FieldDesc::Checksum { .. } => {
+                    if offset % 8 != 0 {
+                        diagnostics.push(
+                            Diagnostic::error()
+                                .with_code(ErrorCode::InvalidFieldOffset)
+                                .with_message(format!(
+                                    "{} field is not aligned to an octet boundary",
+                                    field.kind()
+                                ))
+                                .with_labels(vec![field.loc.primary()]),
+                        )
+                    }
+                }
+                FieldDesc::Size { .. }
+                | FieldDesc::Count { .. }
+                | FieldDesc::ElementSize { .. }
+                | FieldDesc::FixedEnum { .. }
+                | FieldDesc::FixedScalar { .. }
+                | FieldDesc::Group { .. }
+                | FieldDesc::Flag { .. }
+                | FieldDesc::Reserved { .. }
+                | FieldDesc::Scalar { .. } => (),
+            }
+            offset = match schema.field_size[&field.key] {
+                Size::Static(size) => offset + size,
+                Size::Dynamic | Size::Unknown => 0,
+            };
+        }
+    }
+    diagnostics.err_or(())
+}
+
+/// Check field sizes.
+/// Raises error diagnostics for the following cases:
+///      - struct size is not an integral number of octets
+///      - packet size is not an integral number of octets
+///      - scalar array element size is not an integral number of octets
+fn check_decl_sizes(file: &File, schema: &Schema) -> Result<(), Diagnostics> {
+    let mut diagnostics: Diagnostics = Default::default();
+    for decl in &file.declarations {
+        let mut static_size = 0;
+
+        for field in decl.fields() {
+            match &field.desc {
+                FieldDesc::Array { width: Some(width), .. } if width % 8 != 0 => diagnostics.push(
+                    Diagnostic::error()
+                        .with_code(ErrorCode::InvalidFieldSize)
+                        .with_message(
+                            "array element size is not an integral number of octets".to_owned(),
+                        )
+                        .with_labels(vec![field.loc.primary()]),
+                ),
+                _ => (),
+            }
+            static_size += schema.field_size[&field.key].static_().unwrap_or(0);
+        }
+
+        if static_size % 8 != 0 {
+            diagnostics.push(
+                Diagnostic::error()
+                    .with_code(ErrorCode::InvalidPacketSize)
+                    .with_message(format!(
+                        "{} size is not an integral number of octets",
+                        decl.kind()
+                    ))
+                    .with_labels(vec![decl.loc.primary()]),
+            )
         }
     }
     diagnostics.err_or(())
@@ -1722,25 +1801,24 @@ fn desugar_flags(file: &mut File) {
             | DeclDesc::Struct { fields, .. }
             | DeclDesc::Group { fields, .. } => {
                 // Gather information about condition flags.
-                let mut condition_ids: HashMap<String, (String, usize)> = HashMap::new();
+                let mut condition_ids: HashMap<String, Vec<(String, usize)>> = HashMap::new();
                 for field in fields.iter() {
                     if let Some(ref cond) = field.cond {
-                        condition_ids.insert(
-                            cond.id.to_owned(),
-                            (field.id().unwrap().to_owned(), cond.value.unwrap()),
-                        );
+                        condition_ids
+                            .entry(cond.id.to_owned())
+                            .or_default()
+                            .push((field.id().unwrap().to_owned(), cond.value.unwrap()));
                     }
                 }
                 // Replace condition flags in the fields.
                 for field in fields.iter_mut() {
-                    if let Some((optional_field_id, set_value)) =
+                    if let Some(optional_field_ids) =
                         field.id().and_then(|id| condition_ids.get(id))
                     {
                         field.desc = FieldDesc::Flag {
                             id: field.id().unwrap().to_owned(),
-                            optional_field_id: optional_field_id.to_owned(),
-                            set_value: *set_value,
-                        }
+                            optional_field_ids: optional_field_ids.to_owned(),
+                        };
                     }
                 }
             }
@@ -1768,6 +1846,9 @@ pub fn analyze(file: &File) -> Result<File, Diagnostics> {
     desugar_flags(&mut file);
     let scope = Scope::new(&file)?;
     check_decl_constraints(&file, &scope)?;
+    let schema = Schema::new(&file);
+    check_field_offsets(&file, &scope, &schema)?;
+    check_decl_sizes(&file, &schema)?;
     Ok(file)
 }
 
@@ -2987,16 +3068,137 @@ mod test {
     }
 
     #[test]
-    fn test_e50() {
+    fn test_e51() {
         raises!(
-            ReusedConditionIdentifier,
+            InvalidFieldOffset,
             r#"
         little_endian_packets
-        packet B {
-            c : 1,
-            _reserved_ : 7,
-            x : 8 if c = 1,
-            y : 8 if c = 0,
+        struct S { a: 8 }
+        packet A {
+            a : 1,
+            s : S,
+            c : 7,
+        }
+        "#
+        );
+
+        raises!(
+            InvalidFieldOffset,
+            r#"
+        little_endian_packets
+        packet A {
+            a : 1,
+            b : 8[],
+            c : 7,
+        }
+        "#
+        );
+
+        raises!(
+            InvalidFieldOffset,
+            r#"
+        big_endian_packets
+        packet A {
+            a : 1,
+            _payload_,
+            b : 7,
+        }
+        "#
+        );
+
+        raises!(
+            InvalidFieldOffset,
+            r#"
+        big_endian_packets
+        packet A {
+            a : 1,
+            _body_,
+            b : 7,
+        }
+        "#
+        );
+
+        raises!(
+            InvalidFieldOffset,
+            r#"
+        little_endian_packets
+        custom_field F : 8 "f"
+        packet A {
+            a : 1,
+            f : F,
+        }
+        "#
+        );
+    }
+
+    #[test]
+    fn test_e52() {
+        raises!(
+            InvalidPacketSize,
+            r#"
+        little_endian_packets
+        packet A {
+            a : 1,
+        }
+        "#
+        );
+
+        raises!(
+            InvalidPacketSize,
+            r#"
+        little_endian_packets
+        packet A {
+            a : 8[],
+            b : 1,
+        }
+        "#
+        );
+
+        raises!(
+            InvalidPacketSize,
+            r#"
+        little_endian_packets
+        packet A {
+            a : 8[],
+            b : 1,
+        }
+        "#
+        );
+
+        raises!(
+            InvalidPacketSize,
+            r#"
+        little_endian_packets
+        struct S {
+            _size_(_payload_) : 8,
+            _payload_,
+        }
+        packet A {
+            a : S,
+            b : 1,
+        }
+        "#
+        );
+
+        raises!(
+            InvalidPacketSize,
+            r#"
+        little_endian_packets
+        struct A {
+            a : 1,
+        }
+        "#
+        );
+    }
+
+    #[test]
+    fn test_e53() {
+        raises!(
+            InvalidFieldSize,
+            r#"
+        little_endian_packets
+        packet A {
+            a : 12[],
         }
         "#
         );

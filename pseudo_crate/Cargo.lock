@@ -5214,9 +5214,9 @@ dependencies = [
 
 [[package]]
 name = "pdl-compiler"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb6114f8249f6d767f90884bfc4305b2e392b1bd70c2f1660a891959f3c8029f"
+checksum = "36351a4c62b0d63cbc803df83f5e15e37e4c008dce9e437edb64c9e1159bb6b3"
 dependencies = [
  "argh",
  "codespan-reporting",

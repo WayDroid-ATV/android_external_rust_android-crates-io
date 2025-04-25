@@ -12,13 +12,18 @@
 [package]
 edition = "2021"
 name = "pdl-compiler"
-version = "0.3.1"
+version = "0.3.2"
 authors = [
     "Henri Chataing <henrichataing@google.com>",
     "David de Jesus Duarte <licorne@google.com>",
     "Martin Geisler <mgeisler@google.com>",
 ]
+build = false
 exclude = ["editors/*"]
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 default-run = "pdlc"
 description = "Parser and serializer generator for protocol binary packets"
 readme = "README.md"
@@ -32,6 +37,10 @@ categories = ["parsing"]
 license = "Apache-2.0"
 repository = "https://github.com/google/pdl/"
 resolver = "1"
+
+[lib]
+name = "pdl_compiler"
+path = "src/lib.rs"
 
 [[bin]]
 name = "pdlc"
@@ -47,10 +56,10 @@ version = "0.11.1"
 version = "0.4.0"
 
 [dependencies.pest]
-version = "2.5.5"
+version = "2.7.6"
 
 [dependencies.pest_derive]
-version = "2.5.5"
+version = "2.7.6"
 
 [dependencies.prettyplease]
 version = "0.2.6"
