@@ -26,6 +26,7 @@ rust_library {
         "error-context",
         "help",
         "std",
+        "string",
         "usage",
     ],
     rustlibs: ["libclap_builder"],
@@ -57,6 +58,7 @@ rust_binary {
         "error-context",
         "help",
         "std",
+        "string",
         "usage",
     ],
     rustlibs: [

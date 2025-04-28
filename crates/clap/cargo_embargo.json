@@ -4,6 +4,7 @@
     "error-context",
     "help",
     "std",
+    "string",
     "usage"
   ],
   "module_name_overrides": {

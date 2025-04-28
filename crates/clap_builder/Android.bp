@@ -25,6 +25,7 @@ rust_library {
         "error-context",
         "help",
         "std",
+        "string",
         "suggestions",
         "usage",
     ],
