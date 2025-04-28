@@ -116,8 +116,8 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
         // Link descriptors together.
         for i in 0..(size - 1) {
             desc_shadow[i as usize].next = i + 1;
-            // Safe because `desc` is properly aligned, dereferenceable, initialised, and the device
-            // won't access the descriptors for the duration of this unsafe block.
+            // SAFETY: `desc` is properly aligned, dereferenceable, initialised,
+            // and the device won't access the descriptors for the duration of this unsafe block.
             unsafe {
                 (*desc.as_ptr())[i as usize].next = i + 1;
             }
@@ -187,7 +187,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
         let head = self.add_direct(inputs, outputs);
 
         let avail_slot = self.avail_idx & (SIZE as u16 - 1);
-        // Safe because self.avail is properly aligned, dereferenceable and initialised.
+        // SAFETY: `self.avail` is properly aligned, dereferenceable and initialised.
         unsafe {
             (*self.avail.as_ptr()).ring[avail_slot as usize] = head;
         }
@@ -198,7 +198,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
 
         // increase head of avail ring
         self.avail_idx = self.avail_idx.wrapping_add(1);
-        // Safe because self.avail is properly aligned, dereferenceable and initialised.
+        // SAFETY: `self.avail` is properly aligned, dereferenceable and initialised.
         unsafe {
             (*self.avail.as_ptr())
                 .idx
@@ -222,7 +222,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
 
             // Write to desc_shadow then copy.
             let desc = &mut self.desc_shadow[usize::from(self.free_head)];
-            // Safe because our caller promises that the buffers live at least until `pop_used`
+            // SAFETY: Our caller promises that the buffers live at least until `pop_used`
             // returns them.
             unsafe {
                 desc.set_buf::<H>(buffer, direction, DescFlags::NEXT);
@@ -257,7 +257,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
             <[Descriptor]>::new_box_zeroed_with_elems(inputs.len() + outputs.len()).unwrap();
         for (i, (buffer, direction)) in InputOutputIter::new(inputs, outputs).enumerate() {
             let desc = &mut indirect_list[i];
-            // Safe because our caller promises that the buffers live at least until `pop_used`
+            // SAFETY: Our caller promises that the buffers live at least until `pop_used`
             // returns them.
             unsafe {
                 desc.set_buf::<H>(buffer, direction, DescFlags::NEXT);
@@ -280,6 +280,11 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
         // responsible for freeing the memory after the buffer chain is popped.
         let direct_desc = &mut self.desc_shadow[usize::from(head)];
         self.free_head = direct_desc.next;
+
+        // SAFETY: Using `Box::leak` on `indirect_list` guarantees it won't be deallocated
+        // when this function returns. The allocation isn't freed until
+        // `recycle_descriptors` is called, at which point the allocation is no longer being
+        // used.
         unsafe {
             direct_desc.set_buf::<H>(
                 Box::leak(indirect_list).as_bytes().into(),
@@ -305,7 +310,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
         outputs: &'a mut [&'a mut [u8]],
         transport: &mut impl Transport,
     ) -> Result<u32> {
-        // Safe because we don't return until the same token has been popped, so the buffers remain
+        // SAFETY: We don't return until the same token has been popped, so the buffers remain
         // valid and are not otherwise accessed until then.
         let token = unsafe { self.add(inputs, outputs) }?;
 
@@ -319,8 +324,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
             spin_loop();
         }
 
-        // Safe because these are the same buffers as we passed to `add` above and they are still
-        // valid.
+        // SAFETY: These are the same buffers as we passed to `add` above and they are still valid.
         unsafe { self.pop_used(token, inputs, outputs) }
     }
 
@@ -330,8 +334,8 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
     pub fn set_dev_notify(&mut self, enable: bool) {
         let avail_ring_flags = if enable { 0x0000 } else { 0x0001 };
         if !self.event_idx {
-            // Safe because self.avail points to a valid, aligned, initialised, dereferenceable, readable
-            // instance of AvailRing.
+            // SAFETY: `self.avail` points to a valid, aligned, initialised, dereferenceable, readable
+            // instance of `AvailRing`.
             unsafe {
                 (*self.avail.as_ptr())
                     .flags
@@ -346,13 +350,13 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
     /// This will be false if the device has supressed notifications.
     pub fn should_notify(&self) -> bool {
         if self.event_idx {
-            // Safe because self.used points to a valid, aligned, initialised, dereferenceable, readable
-            // instance of UsedRing.
+            // SAFETY: `self.used` points to a valid, aligned, initialised, dereferenceable, readable
+            // instance of `UsedRing`.
             let avail_event = unsafe { (*self.used.as_ptr()).avail_event.load(Ordering::Acquire) };
             self.avail_idx >= avail_event.wrapping_add(1)
         } else {
-            // Safe because self.used points to a valid, aligned, initialised, dereferenceable, readable
-            // instance of UsedRing.
+            // SAFETY: `self.used` points to a valid, aligned, initialised, dereferenceable, readable
+            // instance of `UsedRing`.
             unsafe { (*self.used.as_ptr()).flags.load(Ordering::Acquire) & 0x0001 == 0 }
         }
     }
@@ -361,7 +365,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
     /// the device.
     fn write_desc(&mut self, index: u16) {
         let index = usize::from(index);
-        // Safe because self.desc is properly aligned, dereferenceable and initialised, and nothing
+        // SAFETY: `self.desc` is properly aligned, dereferenceable and initialised, and nothing
         // else reads or writes the descriptor during this block.
         unsafe {
             (*self.desc.as_ptr())[index] = self.desc_shadow[index].clone();
@@ -370,8 +374,8 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
 
     /// Returns whether there is a used element that can be popped.
     pub fn can_pop(&self) -> bool {
-        // Safe because self.used points to a valid, aligned, initialised, dereferenceable, readable
-        // instance of UsedRing.
+        // SAFETY: `self.used` points to a valid, aligned, initialised, dereferenceable, readable
+        // instance of `UsedRing`.
         self.last_used_idx != unsafe { (*self.used.as_ptr()).idx.load(Ordering::Acquire) }
     }
 
@@ -380,8 +384,8 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
     pub fn peek_used(&self) -> Option<u16> {
         if self.can_pop() {
             let last_used_slot = self.last_used_idx & (SIZE as u16 - 1);
-            // Safe because self.used points to a valid, aligned, initialised, dereferenceable,
-            // readable instance of UsedRing.
+            // SAFETY: `self.used` points to a valid, aligned, initialised, dereferenceable,
+            // readable instance of `UsedRing`.
             Some(unsafe { (*self.used.as_ptr()).ring[last_used_slot as usize].id as u16 })
         } else {
             None
@@ -436,6 +440,9 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
                 self.num_used -= 1;
                 head_desc.next = original_free_head;
 
+                // SAFETY: `paddr` comes from a previous call `H::share` (inside
+                // `Descriptor::set_buf`, which was called from `add_direct` or `add_indirect`).
+                // `indirect_list` is owned by this function and is not accessed from any other threads.
                 unsafe {
                     H::unshare(
                         paddr as usize,
@@ -515,8 +522,8 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
         let last_used_slot = self.last_used_idx & (SIZE as u16 - 1);
         let index;
         let len;
-        // Safe because self.used points to a valid, aligned, initialised, dereferenceable, readable
-        // instance of UsedRing.
+        // SAFETY: `self.used` points to a valid, aligned, initialised, dereferenceable, readable
+        // instance of `UsedRing`.
         unsafe {
             index = (*self.used.as_ptr()).ring[last_used_slot as usize].id as u16;
             len = (*self.used.as_ptr()).ring[last_used_slot as usize].len;
@@ -527,13 +534,15 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
             return Err(Error::WrongToken);
         }
 
-        // Safe because the caller ensures the buffers are valid and match the descriptor.
+        // SAFETY: The caller ensures the buffers are valid and match the descriptor.
         unsafe {
             self.recycle_descriptors(index, inputs, outputs);
         }
         self.last_used_idx = self.last_used_idx.wrapping_add(1);
 
         if self.event_idx {
+            // SAFETY: `self.avail` points to a valid, aligned, initialised, dereferenceable,
+            // readable instance of `AvailRing`.
             unsafe {
                 (*self.avail.as_ptr())
                     .used_event
@@ -579,6 +588,14 @@ impl<H: DeviceHal> MappedDescriptor<H> {
         };
         Ok(Self { desc_copy, dma })
     }
+}
+
+#[cfg(feature = "alloc")]
+#[derive(Debug)]
+struct DescriptorBuffers<'a> {
+    read_buffers: Vec<&'a [u8]>,
+    write_buffers: Vec<&'a mut [u8]>,
+    head: u16,
 }
 
 #[derive(Debug)]
@@ -653,11 +670,24 @@ impl<H: DeviceHal, const SIZE: usize> DeviceVirtQueue<H, SIZE> {
             while !self.can_pop() {
                 spin_loop();
             }
-            // SAFETY: inputs is copied into the first buffer then the they are returned to the used
-            // vring and not accessed again.
-            let (mut buffers, token) = unsafe { self.pop_avail()?.unwrap() };
+            // SAFETY: inputs is copied into the first write buffer then they are returned to the
+            // used vring and not accessed again. This function waits until it can pop the avail
+            // vring so this should never panic
+            let mut popped = unsafe { self.pop_avail()?.unwrap() };
 
-            let out_buf = &mut buffers[0];
+            // If there isn't at least one write buffer, the device isn't ready
+            if popped.write_buffers.is_empty() {
+                return Err(Error::NotReady);
+            }
+
+            // A mix of write and read buffers is currently not supported
+            // TODO: Support popping chains of mixed descriptors by caching any read buffers popped
+            // here.
+            if !popped.read_buffers.is_empty() {
+                return Err(Error::Unsupported);
+            }
+
+            let out_buf = &mut popped.write_buffers[0];
             let mut copied = 0;
             for in_buf in inputs {
                 out_buf[copied..copied + in_buf.len()].copy_from_slice(in_buf);
@@ -665,7 +695,8 @@ impl<H: DeviceHal, const SIZE: usize> DeviceVirtQueue<H, SIZE> {
             }
 
             let head_len = copied;
-            self.add_used(token, head_len);
+            // Return the entire popped chain by writing the head to the used vring
+            self.add_used(popped.head, head_len);
 
             if self.should_notify() {
                 transport.notify(self.queue_idx);
@@ -683,20 +714,31 @@ impl<H: DeviceHal, const SIZE: usize> DeviceVirtQueue<H, SIZE> {
     ) -> Result<Option<T>> {
         #[cfg(feature = "alloc")]
         {
-            // SAFETY: The buffers are copied to a single, temporary buffer. Then handler is called on
-            // that and the original buffers are returned to the used vring and not accessed again.
-            let Some((buffers, token)) = (unsafe { self.pop_avail()? }) else {
+            // TODO: Store any popped write buffers to avoid potential deadlocks caused by mixed
+            // descriptor chains.
+            // SAFETY: The buffers are copied to a single temporary buffer. Then handler is called
+            // on that and the original buffers are returned to the used vring and not accessed again.
+            let Some(popped) = (unsafe { self.pop_avail()? }) else {
                 return Ok(None);
             };
 
+            // A mix of write and read buffers is currently not supported
+            // TODO: Support popping chains of mixed descriptors by caching any write buffers popped
+            // here.
+            if !popped.write_buffers.is_empty() {
+                return Err(Error::Unsupported);
+            }
+
             let mut tmp = Vec::new();
-            for in_buf in &buffers {
+            for in_buf in &popped.read_buffers {
                 tmp.extend_from_slice(in_buf);
             }
             let result = handler(tmp.as_slice());
 
-            let head_len = buffers[0].len();
-            self.add_used(token, head_len);
+            self.add_used(
+                popped.head,
+                0, /* zero bytes were written to the write buffers */
+            );
 
             if self.should_notify() {
                 transport.notify(self.queue_idx);
@@ -743,14 +785,16 @@ impl<H: DeviceHal, const SIZE: usize> DeviceVirtQueue<H, SIZE> {
     /// The caller must ensure that the returned buffers are not accessed after the first buffer's
     /// token has been written to the used vring and the `last_used` index has been updated.
     #[cfg(feature = "alloc")]
-    unsafe fn pop_avail<'a>(&mut self) -> Result<Option<(Vec<&'a mut [u8]>, u16)>> {
+    unsafe fn pop_avail<'a>(&mut self) -> Result<Option<DescriptorBuffers<'a>>> {
         let Some(head) = self.peek_avail() else {
             return Ok(None);
         };
-        let mut res = Vec::new();
+        let mut read_buffers = Vec::new();
+        let mut write_buffers = Vec::new();
         let mut next_token = Some(head);
         while let Some(token) = next_token {
             let desc = self.read_desc(token)?;
+            let write = desc.flags.contains(DescFlags::WRITE);
             assert!(!desc.flags.contains(DescFlags::INDIRECT));
             next_token = if desc.flags.contains(DescFlags::NEXT) {
                 Some(desc.next)
@@ -766,6 +810,7 @@ impl<H: DeviceHal, const SIZE: usize> DeviceVirtQueue<H, SIZE> {
             } else {
                 true
             };
+            let avail_len = desc.len as usize;
             if desc_changed {
                 // SAFETY: desc was read from the virtqueue descriptor table and is currently not in
                 // use since it was either obtained by getting the next available index from
@@ -775,12 +820,27 @@ impl<H: DeviceHal, const SIZE: usize> DeviceVirtQueue<H, SIZE> {
                 *mapped_desc = Some(unsafe { MappedDescriptor::map_buf(desc, self.client_id)? });
             }
             let mut buffer = mapped_desc.as_ref().unwrap().dma.raw_slice();
-            // SAFETY: Safety delegated to safety requirements on this function.
-            let buffer = unsafe { buffer.as_mut() };
-            res.push(buffer);
+            if write {
+                // SAFETY: Safety delegated to safety requirements on this function.
+                let buffer = unsafe { &mut buffer.as_mut()[0..avail_len] };
+                write_buffers.push(buffer);
+            } else {
+                // All read descriptors must come before write descriptors so if we've seen any
+                // write descriptors error out.
+                if !write_buffers.is_empty() {
+                    return Err(Error::InvalidDescriptor);
+                }
+                // SAFETY: Safety delegated to safety requirements on this function.
+                let buffer = unsafe { &buffer.as_ref()[0..avail_len] };
+                read_buffers.push(buffer);
+            }
         }
         self.avail_idx = self.avail_idx.wrapping_add(1);
-        Ok(Some((res, head)))
+        Ok(Some(DescriptorBuffers {
+            read_buffers,
+            write_buffers,
+            head,
+        }))
     }
 
     fn can_pop(&self) -> bool {
@@ -1040,7 +1100,7 @@ impl Descriptor {
         direction: BufferDirection,
         extra_flags: DescFlags,
     ) {
-        // Safe because our caller promises that the buffer is valid.
+        // SAFETY: Our caller promises that the buffer is valid.
         unsafe {
             self.addr = H::share(buf, direction) as u64;
         }
@@ -1311,8 +1371,10 @@ mod tests {
             DeviceType,
         },
     };
+    use core::array;
     use core::ptr::NonNull;
     use std::sync::{Arc, Mutex};
+    use std::thread;
 
     #[test]
     fn queue_too_big() {
@@ -1584,5 +1646,179 @@ mod tests {
 
         // Check that the transport should be notified again now.
         assert_eq!(queue.should_notify(), true);
+    }
+
+    struct VirtQueuePair<const SIZE: usize> {
+        driver: VirtQueue<FakeHal, SIZE>,
+        device: DeviceVirtQueue<FakeHal, SIZE>,
+        transport: FakeTransport<()>,
+    }
+
+    // Create a device/driver virtqueue pair which share memory in the test process's virtual
+    // address space
+    fn create_queues<const SIZE: usize>(device_type: DeviceType) -> VirtQueuePair<SIZE> {
+        let mut header = VirtIOHeader::make_fake_header(MODERN_VERSION, 1, 0, 0, 4);
+        let state = Arc::new(Mutex::new(State::new(vec![QueueStatus::default()], ())));
+        let mut transport = FakeTransport {
+            device_type,
+            max_queue_size: SIZE as u32,
+            device_features: 0,
+            state: state.clone(),
+        };
+        let driver = VirtQueue::<FakeHal, SIZE>::new(&mut transport, 0, false, true).unwrap();
+        let device = DeviceVirtQueue::<FakeHal, SIZE>::new(&mut transport, 0).unwrap();
+        VirtQueuePair {
+            driver,
+            device,
+            transport,
+        }
+    }
+
+    // Run a test with the given callbacks using a virtqueue pair. Since this spins up new threads
+    // we must assert whether the threads join or not to ensure that asserts in the callback get
+    // called before the test's main thread returns.
+    fn queue_pair_test<const SIZE: usize>(
+        driver_func: impl FnOnce(VirtQueue<FakeHal, SIZE>, FakeTransport<()>) + Send + 'static,
+        device_func: impl FnOnce(DeviceVirtQueue<FakeHal, SIZE>, FakeTransport<()>) + Send + 'static,
+    ) {
+        let mut queues = create_queues::<SIZE>(DeviceType::Socket);
+        let mut dev_transport = queues.transport.clone();
+        let driver_handle = thread::spawn(move || driver_func(queues.driver, queues.transport));
+        let device_handle = thread::spawn(move || device_func(queues.device, dev_transport));
+        // If the driver panics while the device is waiting on it this is expected to hang.
+        assert!(device_handle.join().is_ok());
+        assert!(driver_handle.join().is_ok());
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn simple_send_to_device() {
+        // This test sends [0..10] using 1 10-byte descriptor
+        let mut data: [u8; 10] = array::from_fn(|i| i as u8);
+        queue_pair_test::<8>(
+            move |mut driver, mut transport| {
+                driver
+                    .add_notify_wait_pop(&[&data], &mut [], &mut transport)
+                    .unwrap();
+            },
+            move |mut device, mut transport| {
+                // Wait until the driver adds to the avail vring
+                while !device.can_pop() {
+                    spin_loop();
+                }
+                let poll_res = device
+                    .poll(&mut transport, |buffer| {
+                        // Make sure what's read from the buffers matches what was send in
+                        // add_notify_wait_pop
+                        assert_eq!(buffer, data);
+                        Ok(Some(()))
+                    })
+                    .unwrap();
+                // Make sure that polling actually invoked the callback
+                assert!(poll_res.is_some());
+            },
+        );
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn split_send_to_device() {
+        // This test sends [0..10] using 10 1-byte descriptors
+        // Data sent from the device using multiple descriptors
+        let driver_data: [[u8; 1]; 10] = array::from_fn(|i| [i as u8]);
+        // Data in a single descriptor as the device is expected to receive it
+        let device_data: [u8; 10] = array::from_fn(|i| i as u8);
+
+        queue_pair_test::<16>(
+            move |mut driver, mut transport| {
+                // Creates a &[&[u8]] from driver_data and sends it to the device
+                driver
+                    .add_notify_wait_pop(
+                        array::from_fn::<&[u8], 10, _>(|i| driver_data[i].as_slice()).as_slice(),
+                        &mut [],
+                        &mut transport,
+                    )
+                    .unwrap();
+            },
+            move |mut device, mut transport| {
+                // Wait until the driver adds to the avail vring
+                while !device.can_pop() {
+                    spin_loop();
+                }
+                let poll_res = device
+                    .poll(&mut transport, |buffer| {
+                        assert_eq!(buffer, device_data);
+                        Ok(Some(()))
+                    })
+                    .unwrap();
+                // Make sure that polling actually invoked the callback
+                assert!(poll_res.is_some());
+            },
+        );
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn recv_from_device() {
+        // This test makes 1 10-byte descriptor available to the device and receives [0..10] in the
+        // driver using it.
+        // A buffer for the driver to receive the data in
+        let mut buffer = [0u8; 10];
+        // The data the device will send
+        let data: [u8; 10] = array::from_fn(|i| i as u8);
+        queue_pair_test::<8>(
+            move |mut driver, mut transport| {
+                assert_eq!(buffer, [0; 10]);
+                // Add a write descriptor for the device to use then pop it
+                driver
+                    .add_notify_wait_pop(&[], &mut [&mut buffer], &mut transport)
+                    .unwrap();
+                // Make sure the device wrote the expected data to the buffer
+                assert_eq!(buffer, data);
+            },
+            move |mut device, mut transport| {
+                // Wait until the driver adds a descriptor and write the contents of data to it
+                device
+                    .wait_pop_add_notify(&[&data], &mut transport)
+                    .unwrap();
+            },
+        );
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn recv_from_device_with_retry() {
+        // In this test the driver makes a read descriptor available, the device pops it to try to
+        // send some data but returns Err. The driver then makes a write descriptor available and
+        // the device retries and succeeds at sending the data.
+        let mut buffer = [0u8; 10];
+        let data: [u8; 10] = array::from_fn(|i| i as u8);
+        queue_pair_test::<8>(
+            move |mut driver, mut transport| {
+                // Add a 1-byte read descriptor to the avail vring
+                let read_buffer = [0; 1];
+                unsafe {
+                    driver.add(&[&read_buffer], &mut []).unwrap();
+                }
+                // Make sure the device didn't try to write to the buffer
+                assert_eq!(buffer, [0; 10]);
+                // Add 1 10-byte write descriptor to the avail vring
+                driver
+                    .add_notify_wait_pop(&[], &mut [&mut buffer], &mut transport)
+                    .unwrap();
+                // Make sure the device wrote to the second descriptor
+                assert_eq!(buffer, data);
+            },
+            move |mut device, mut transport| {
+                // Wait until there's a descriptor in the avail vring
+                let res = device.wait_pop_add_notify(&[&data], &mut transport);
+                // The first descriptor will be read-only so wait_pop_add_notify should return Err
+                assert_eq!(res, Err(Error::NotReady));
+                // Wait until there's another descriptor added and use that to send data
+                device
+                    .wait_pop_add_notify(&[&data], &mut transport)
+                    .unwrap();
+            },
+        );
     }
 }

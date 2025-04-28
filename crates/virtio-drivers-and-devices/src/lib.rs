@@ -42,7 +42,7 @@
 //! ```
 
 #![cfg_attr(not(test), no_std)]
-#![deny(unused_must_use, missing_docs)]
+#![deny(unused_must_use, missing_docs, clippy::undocumented_unsafe_blocks)]
 #![allow(clippy::identity_op)]
 #![allow(dead_code)]
 
@@ -106,6 +106,9 @@ pub enum Error {
     /// Error from the socket device.
     #[error("Error from the socket device: {0}")]
     SocketDeviceError(#[from] SocketError),
+    /// Invalid descriptor or descriptor chain.
+    #[error("Popped an invalid descriptor or descriptor chain")]
+    InvalidDescriptor,
 }
 
 #[cfg(feature = "alloc")]

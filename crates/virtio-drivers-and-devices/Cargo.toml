@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "virtio-drivers-and-devices"
-version = "0.2.0"
+version = "0.2.1"
 authors = [
     "Jiajie Chen <noc@jiegec.ac.cn>",
     "Runji Wang <wangrunji0408@163.com>",
