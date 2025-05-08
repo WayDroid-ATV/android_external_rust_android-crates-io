@@ -102,6 +102,7 @@ drm
 drm-ffi
 drm-fourcc
 either
+elf
 enum-as-inner
 enum-primitive-derive
 enumn
