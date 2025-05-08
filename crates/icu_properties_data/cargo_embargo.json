@@ -5,7 +5,7 @@
   "native_bridge_supported": true,
   "package": {
     "icu_properties_data": {
-      "add_module_block": "icu4x_bionic_dep.bp.fragment"
+      "add_module_block": "icu_properties_data.bp.fragment"
     }
   },
   "min_sdk_version": "29"

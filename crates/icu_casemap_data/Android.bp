@@ -38,4 +38,6 @@ rust_library {
             enabled: true,
         },
     },
+    srcs: ["data/*.data"],
+
 }
