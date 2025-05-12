@@ -148,6 +148,7 @@ dependencies = [
  "camino",
  "cargo-platform",
  "cargo_metadata",
+ "cargo_toml",
  "cast",
  "cesu8",
  "cexpr",
@@ -1243,6 +1244,16 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.11",
+]
+
+[[package]]
+name = "cargo_toml"
+version = "0.22.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02260d489095346e5cafd04dea8e8cb54d1d74fcd759022a9b72986ebe9a1257"
+dependencies = [
+ "serde",
+ "toml 0.8.19",
 ]
 
 [[package]]

@@ -43,6 +43,7 @@ bytes
 camino
 cargo-platform
 cargo_metadata
+cargo_toml
 cast
 cesu8
 cexpr
