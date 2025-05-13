@@ -110,7 +110,7 @@ dependencies = [
  "aho-corasick",
  "android_bp",
  "android_log-sys",
- "android_logger",
+ "android_logger 0.15.0",
  "anes 0.2.0",
  "annotate-snippets",
  "anstyle",
@@ -193,6 +193,8 @@ dependencies = [
  "dashmap",
  "dasp_sample",
  "data-encoding",
+ "dc_bundle",
+ "dc_layout",
  "debug_tree",
  "der",
  "der_derive",
@@ -487,7 +489,7 @@ dependencies = [
  "syn-mid",
  "sync_wrapper 1.0.2",
  "synstructure",
- "taffy",
+ "taffy 0.7.7",
  "tar",
  "tempfile",
  "termcolor",
@@ -601,6 +603,18 @@ name = "android_log-sys"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84521a3cf562bc62942e294181d9eef17eb38ceb8c68677bc49f144e4c3d4f8d"
+
+[[package]]
+name = "android_logger"
+version = "0.13.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c494134f746c14dc653a35a4ea5aca24ac368529da5370ecf41fe0341c35772f"
+dependencies = [
+ "android_log-sys",
+ "env_logger 0.10.2",
+ "log",
+ "once_cell",
+]
 
 [[package]]
 name = "android_logger"
@@ -1892,6 +1906,35 @@ name = "data-encoding"
 version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "575f75dfd25738df5b91b8e43e14d44bda14637a58fae779fd2b064f8bf3e010"
+
+[[package]]
+name = "dc_bundle"
+version = "0.34.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbe10818dde1e93d98eec4a88e1265f1bea9c3f87c57a5acdc4d76754972a9d2"
+dependencies = [
+ "log",
+ "protobuf 3.2.0",
+ "protobuf-codegen",
+ "serde",
+ "serde_bytes",
+ "thiserror 2.0.11",
+]
+
+[[package]]
+name = "dc_layout"
+version = "0.34.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b8be64ccb6386b6cb07347047f56c943ae1c708632f58b4798f947b094d6419"
+dependencies = [
+ "android_logger 0.13.3",
+ "dc_bundle",
+ "log",
+ "protobuf 3.2.0",
+ "serde",
+ "taffy 0.6.3",
+ "thiserror 2.0.11",
+]
 
 [[package]]
 name = "debug_tree"
@@ -6891,6 +6934,19 @@ dependencies = [
  "pkg-config",
  "toml 0.8.19",
  "version-compare",
+]
+
+[[package]]
+name = "taffy"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "136661daffcdfb128afb0d45a8f7e88078739196d64d7ffa47f8513f4a00a6d7"
+dependencies = [
+ "arrayvec",
+ "grid 0.15.0",
+ "num-traits",
+ "serde",
+ "slotmap",
 ]
 
 [[package]]
