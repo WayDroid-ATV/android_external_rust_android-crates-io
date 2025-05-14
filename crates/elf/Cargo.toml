@@ -11,14 +11,21 @@
 
 [package]
 edition = "2021"
+rust-version = "1.81.0"
 name = "elf"
-version = "0.7.4"
+version = "0.8.0"
 authors = ["Christopher Cole <chris.cole.09@gmail.com>"]
+build = false
 exclude = [
     ".gitignore",
     "/.github",
     "/sample-objects",
 ]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "A pure-rust library for parsing ELF files"
 documentation = "https://docs.rs/elf/latest/elf/"
 readme = "README.md"
@@ -36,16 +43,18 @@ categories = [
 license = "MIT/Apache-2.0"
 repository = "https://github.com/cole14/rust-elf/"
 
-[lib]
-name = "elf"
-
-[dependencies]
-
 [features]
+alloc = []
 default = [
+    "alloc",
     "std",
     "to_str",
 ]
-nightly = []
-std = []
+std = ["alloc"]
 to_str = []
+
+[lib]
+name = "elf"
+path = "src/lib.rs"
+
+[dependencies]

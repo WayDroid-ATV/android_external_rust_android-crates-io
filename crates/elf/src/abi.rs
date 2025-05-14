@@ -98,7 +98,7 @@ pub const ELFOSABI_FENIXOS: u8 = 16;
 pub const ELFOSABI_CLOUDABI: u8 = 17;
 /// Stratus Technologies OpenVOS
 pub const ELFOSABI_OPENVOS: u8 = 18;
-/// 64-255 Architecture-specific value range
+// 64-255 Architecture-specific value range
 
 // ET_* define constants for the ELF File Header's e_type field.
 // Represented as Elf32_Half in Elf32_Ehdr and Elf64_Half in Elf64_Ehdr which
@@ -500,8 +500,18 @@ pub const EM_MOXIE: u16 = 223;
 pub const EM_AMDGPU: u16 = 224;
 /// RISC-V
 pub const EM_RISCV: u16 = 243;
+/// Lanai 32-bit processor
+pub const EM_LANAI: u16 = 244;
 /// Linux BPF
 pub const EM_BPF: u16 = 247;
+/// NEC SX-Aurora VE
+pub const EM_VE: u16 = 251;
+/// C-Sky
+pub const EM_CSKY: u16 = 252;
+/// LoongArch
+pub const EM_LOONGARCH: u16 = 258;
+/// Fujitsu FR-V
+pub const EM_FRV: u16 = 0x5441;
 
 // EV_* define constants for the ELF File Header's e_version field.
 // Represented as Elf32_Word in Elf32_Ehdr and Elf64_Word in Elf64_Ehdr which
@@ -783,11 +793,13 @@ pub const STB_HIOS: u8 = 12;
 /// Values between [STB_LOPROC, STB_HIPROC] in this inclusive range are reserved
 /// for processor-specific semantics.
 pub const STB_LOPROC: u8 = 13;
+/// GLIBC alias for `STB_LOPROC`
+pub const STB_MIPS_SPLIT_COMMON: u8 = STB_LOPROC;
 /// Values between [STB_LOPROC, STB_HIPROC] in this inclusive range are reserved
 /// for processor-specific semantics.
 pub const STB_HIPROC: u8 = 15;
 
-/// STV_* define constants for the ELF Symbol's st_visibility (encoded in the st_other field).
+// STV_* define constants for the ELF Symbol's st_visibility (encoded in the st_other field).
 
 /// The visibility of symbols with the STV_DEFAULT attribute is as specified by
 /// the symbol's binding type.  That is, global and weak symbols are visible
@@ -1148,7 +1160,7 @@ pub const ELFCOMPRESS_LOPROC: u32 = 0x70000000;
 pub const ELFCOMPRESS_HIPROC: u32 = 0x7fffffff;
 
 /// GNU-extension notes have this name
-pub const ELF_NOTE_GNU: &str = "GNU";
+pub const ELF_NOTE_GNU: &[u8] = b"GNU\0";
 
 // Note header descriptor types constants (n_type)
 
@@ -1192,7 +1204,7 @@ pub const NT_SIGINFO: u64 = 0x53494749;
 pub const NT_FILE: u64 = 0x46494c45;
 /// Contains copy of user_fxsr_struct
 pub const NT_PRXFPREG: u64 = 0x46e62b7f;
-/// /// PowerPC Altivec/VMX registers
+/// PowerPC Altivec/VMX registers
 pub const NT_PPC_VMX: u64 = 0x100;
 /// PowerPC SPE/EVR registers
 pub const NT_PPC_SPE: u64 = 0x101;
@@ -2658,3 +2670,511 @@ pub const R_X86_64_RELATIVE64: u32 = 38;
 pub const R_X86_64_GOTPCRELX: u32 = 41;
 /// `G + GOT + A - P`
 pub const R_X86_64_REX_GOTPCRELX: u32 = 42;
+
+//   __  __ ___ ____  ____
+//  |  \/  |_ _|  _ \/ ___|
+//  | |\/| || || |_) \___ \
+//  | |  | || ||  __/ ___) |
+//  |_|  |_|___|_|   |____/
+//
+// MIPS-specific declarations
+// See: https://www.linux-mips.org/pub/linux/mips/doc/ABI/elf64-2.4.pdf
+// See: https://refspecs.linuxfoundation.org/elf/mipsabi.pdf
+
+/// At least one .noreorder assembly directive appeared in a source contributing to the object
+pub const EF_MIPS_NOREORDER: u32 = 0x00000001;
+/// This file contains position-independent code
+pub const EF_MIPS_PIC: u32 = 0x00000002;
+/// This file’s code follows standard conventions for calling position-independent code
+pub const EF_MIPS_CPIC: u32 = 0x00000004;
+pub const EF_MIPS_XGOT: u32 = 0x00000008;
+/// This file contains UCODE (obsolete)
+pub const EF_MIPS_64BIT_WHIRL: u32 = 0x00000010;
+/// This file follows the MIPS III 32-bit ABI. (Its `EI_CLASS` will be `ELFCLASS32`.)
+pub const EF_MIPS_ABI2: u32 = 0x00000020;
+/// Obsolete
+pub const EF_MIPS_ABI_ON32: u32 = 0x00000040;
+/// This `.MIPS.options` section in this file contains one or more descriptors, currently types `ODK_GP_GROUP` and/or
+/// `ODK_IDENT`, which should be processed first by `ld`.
+pub const EF_MIPS_OPTIONS_FIRST: u32 = 0x00000080;
+/// Code compiled for 64-bit machine with 32-bit registers
+pub const EF_MIPS_32BITMODE: u32 = 0x00000100;
+/// Uses FP64 (12 callee-saved)
+pub const EF_MIPS_FP64: u32 = 0x00000200;
+/// Uses IEEE 754-2008 NaN encoding
+pub const EF_MIPS_NAN2008: u32 = 0x00000400;
+/// Embedded ABI - MIPS32 with 32-bit address
+pub const EF_MIPS_ABI_EABI32: u32 = 0x00003000;
+/// Embedded ABI - MIPS64 with 32-bit address, similar to n32
+pub const EF_MIPS_ABI_EABI64: u32 = 0x00004000;
+/// Machine variant bits, but not standard
+pub const EF_MIPS_MACH: u32 = 0x00FF0000;
+/// MicroMIPS
+pub const EF_MIPS_ARCH_ASE_MICROMIPS: u32 = 0x02000000;
+/// Application-specific architectural extensions used by this object file
+pub const EF_MIPS_ARCH_ASE: u32 = 0x0f000000;
+/// Uses MDMX multimedia extensions
+pub const EF_MIPS_ARCH_ASE_MDMX: u32 = 0x08000000;
+/// Uses MIPS-16 ISA extensions
+pub const EF_MIPS_ARCH_ASE_M16: u32 = 0x04000000;
+/// Architecture assumed by code in this file, given by the value of the 4-bit field selected by the mask
+pub const EF_MIPS_ARCH: u32 = 0xf0000000;
+/// MIPS I
+pub const EF_MIPS_ARCH_1: u32 = 0x00000000;
+/// MIPS II
+pub const EF_MIPS_ARCH_2: u32 = 0x10000000;
+/// MIPS III
+pub const EF_MIPS_ARCH_3: u32 = 0x20000000;
+/// MIPS IV
+pub const EF_MIPS_ARCH_4: u32 = 0x30000000;
+/// MIPS V (unused)
+pub const EF_MIPS_ARCH_5: u32 = 0x40000000;
+/// MIPS32 R1
+pub const EF_MIPS_ARCH_32: u32 = 0x50000000;
+/// MIPS64 R1
+pub const EF_MIPS_ARCH_64: u32 = 0x60000000;
+/// MIPS3 R2
+pub const EF_MIPS_ARCH_32R2: u32 = 0x70000000;
+/// MIPS64 R2
+pub const EF_MIPS_ARCH_64R2: u32 = 0x80000000;
+/// MIPS32 R6
+pub const EF_MIPS_ARCH_32R6: u32 = 0x90000000;
+/// MIPS64 R6
+pub const EF_MIPS_ARCH_64R6: u32 = 0xa0000000;
+
+/// DSO library information used in link
+pub const SHT_MIPS_LIBLIST: u32 = 0x70000000;
+/// MIPS symbol table extension
+pub const SHT_MIPS_MSYM: u32 = 0x70000001;
+/// Symbols conflicting with DSO-defined symbols
+pub const SHT_MIPS_CONFLICT: u32 = 0x70000002;
+/// Global pointer table
+pub const SHT_MIPS_GPTAB: u32 = 0x70000003;
+/// Reserved
+pub const SHT_MIPS_UCODE: u32 = 0x70000004;
+/// Reserved (obsolete debug information)
+pub const SHT_MIPS_DEBUG: u32 = 0x70000005;
+/// Register usage information
+pub const SHT_MIPS_REGINFO: u32 = 0x70000006;
+/// OSF reserved
+pub const SHT_MIPS_PACKAGE: u32 = 0x70000007;
+/// OSF reserved
+pub const SHT_MIPS_PACKSYM: u32 = 0x70000008;
+/// Dynamic relocation?
+pub const SHT_MIPS_RELD: u32 = 0x70000009;
+/// Subprogram interface information
+pub const SHT_MIPS_IFACE: u32 = 0x7000000b;
+/// Section content classification
+pub const SHT_MIPS_CONTENT: u32 = 0x7000000c;
+/// General options
+pub const SHT_MIPS_OPTIONS: u32 = 0x7000000d;
+/// Delta C++: symbol table
+pub const SHT_MIPS_DELTASYM: u32 = 0x7000001b;
+/// Delta C++: instance table
+pub const SHT_MIPS_DELTAINST: u32 = 0x7000001c;
+/// Delta C++: class table
+pub const SHT_MIPS_DELTACLASS: u32 = 0x7000001d;
+/// DWARF debug information
+pub const SHT_MIPS_DWARF: u32 = 0x7000001e;
+/// Delta C++: declarations
+pub const SHT_MIPS_DELTADECL: u32 = 0x7000001f;
+/// Symbol-to-library mapping.
+pub const SHT_MIPS_SYMBOL_LIB: u32 = 0x70000020;
+/// Event locations
+pub const SHT_MIPS_EVENTS: u32 = 0x70000021;
+// this is listed in the 64-bit ELF Object File Specification as "???" and
+// no other implementation has a comment about its purpose
+pub const SHT_MIPS_TRANSLATE: u32 = 0x70000022;
+/// Special pixie sections
+pub const SHT_MIPS_PIXIE: u32 = 0x70000023;
+/// Address translation table
+pub const SHT_MIPS_XLATE: u32 = 0x70000024;
+/// SGI internal address translation tablea
+pub const SHT_MIPS_XLATE_DEBUG: u32 = 0x70000025;
+/// Intermediate code
+pub const SHT_MIPS_WHIRL: u32 = 0x70000026;
+/// C++ exception handling region info
+pub const SHT_MIPS_EH_REGION: u32 = 0x70000027;
+/// Obsolete
+pub const SHT_MIPS_XLATE_OLD: u32 = 0x70000028;
+/// Runtime procedure descriptor table exception information (ucode)
+pub const SHT_MIPS_PDR_EXCEPTION: u32 = 0x70000029;
+
+/// Section must be part of global data area.
+pub const SHF_MIPS_GPREL: u32 = 0x10000000;
+/// Section data should be merged to eliminate duplication
+pub const SHF_MIPS_MERGE: u32 = 0x20000000;
+/// Section data is addresses by default. Address size to be inferred from section entry size.
+pub const SHF_MIPS_ADDR: u32 = 0x40000000;
+/// Section data is string data by default
+pub const SHF_MIPS_STRING: u32 = 0x80000000;
+/// Section data may not be stripped
+pub const SHF_MIPS_NOSTRIP: u32 = 0x08000000;
+/// Section data local to process
+pub const SHF_MIPS_LOCAL: u32 = 0x04000000;
+/// Linker must generate implicit hidden weak names
+pub const SHF_MIPS_NAMES: u32 = 0x02000000;
+/// Section contains text/data which may be replicated in other sections. Linker must retain only one copy.
+pub const SHF_MIPS_NODUPE: u32 = 0x01000000;
+
+/// DSO export class
+pub const STO_EXPORT: u8 = 3;
+/// Default: `STB_GLOBAL` or `STB_WEAK` are preemptible, `STB_LOCAL` are hidden.
+pub const STO_DEFAULT: u8 = 0;
+/// Not referenced outside executable/DSO
+pub const STO_INTERNAL: u8 = 1;
+/// Not visible outside executable/DSO
+pub const STO_HIDDEN: u8 = 2;
+/// Not preemptible
+pub const STO_PROTECTED: u8 = 3;
+/// Symbol is optional. If no definition is available at runtime, it is resolved to the symbol `_RLD_MISSING`.
+pub const STO_OPTIONAL: u8 = 4;
+pub const STO_MIPS_PLT: u8 = 8;
+pub const STO_MIPS_SC_ALIGN_UNUSED: u8 = 0xff;
+
+/// Section indices between SHN_LORESERVE and SHN_HIRESERVE are reserved for special values — they do not refer to the
+/// section header table.
+pub const SHN_LORESERVE: u16 = 0xff00;
+/// Section indices between SHN_LOPROC and SHN_HIPROC are reserved for processor-specific values.
+pub const SHN_LOPROC: u16 = 0xff00;
+/// Allocated common symbols in a DSO
+pub const SHN_MIPS_ACOMMON: u16 = 0xff00;
+/// Reserved (obsolete).
+pub const SHN_MIPS_TEXT: u16 = 0xff01;
+/// Reserved (obsolete).
+pub const SHN_MIPS_DATA: u16 = 0xff02;
+/// gp-addressable common symbolsb (relocatable objects only).
+pub const SHN_MIPS_SCOMMON: u16 = 0xff03;
+/// gp-addressable undefined symbolsc (relocatable objects only).
+pub const SHN_MIPS_SUNDEFINED: u16 = 0xff04;
+/// Local common, equivalent to SHN_COMMON, except that the common block will be allocated in a local section, i.e. one
+/// replicated for each process in a multi-process program sharing memory.
+pub const SHN_MIPS_LCOMMON: u16 = 0xff05;
+/// Local undefined symbol, equivalent to SHN_UNDEFINED, except that the symbol must resolve to a local section, i.e.
+/// one replicated for each process in a multi-process program sharing memory.
+pub const SHN_MIPS_LUNDEFINED: u16 = 0xff06;
+/// Section indices between SHN_LOPROC and SHN_HIPROC are reserved for processor-specific values.
+pub const SHN_HIPROC: u16 = 0xff1f;
+/// Section indices between SHN_LORESERVE and SHN_HIRESERVE are reserved for special values — they do not refer to the
+/// section header table.
+pub const SHN_HIRESERVE: u16 = 0xffff;
+
+// `kind` field in `ELF_Options`
+
+/// Undefined
+pub const ODK_NULL: u8 = 0;
+/// Register usage information
+pub const ODK_REGINF: u8 = 1;
+/// Exception processing options
+pub const ODK_EXCEPTION: u8 = 2;
+/// Section padding options
+pub const ODK_PA: u8 = 3;
+/// Hardware patches applied
+pub const ODK_HWPATC: u8 = 4;
+/// Linker fill value
+pub const ODK_FIL: u8 = 5;
+/// Space for tool identification
+pub const ODK_TAG: u8 = 6;
+/// Hardware AND patches applied
+pub const ODK_HWAN: u8 = 7;
+/// Hardware OR patches applied
+pub const ODK_HWO: u8 = 8;
+/// GP group to use for text/data sections
+pub const ODK_GP_GROU: u8 = 9;
+/// ID information
+pub const ODK_IDEN: u8 = 10;
+/// Page size information
+pub const ODK_PAGESIZ: u8 = 11;
+
+// Values for `info' in Elf_Options for ODK_EXCEPTIONS entries.
+
+/// Min FPU exception enable
+pub const OEX_FPU_MIN: u32 = 0x0000001f;
+/// Max FPU exception enable
+pub const OEX_FPU_MAX: u32 = 0x00001f00;
+/// Page zero of the virtual address space must be mapped
+pub const OEX_PAGE0: u32 = 0x00010000;
+/// Run in sequential memory mode
+pub const OEX_SMM: u32 = 0x00020000;
+/// Run in precise FP exception mode
+pub const OEX_PRECISEFP: u32 = 0x00040000;
+/// Dismiss invalid address traps
+pub const OEX_DISMISS: u32 = 0x00080000;
+pub const OEX_FPU_INEX: u32 = 0x01;
+pub const OEX_FPU_UFLO: u32 = 0x02;
+pub const OEX_FPU_OFLO: u32 = 0x04;
+pub const OEX_FPU_DIV0: u32 = 0x08;
+pub const OEX_FPU_INVAL: u32 = 0x10;
+
+/// Patch for R4000 branch at end-of-page bug
+pub const OHW_R4KEOP: u32 = 0x00000001;
+/// Object contains prefetch instructions which may cause R8000 prefetch bug to occur
+pub const OHW_R8KPFETCH: u32 = 0x00000002;
+/// Patch for R5000 branch at end-of-page bug
+pub const OHW_R5KEOP: u32 = 0x00000004;
+/// R5000 cvt.[ds].l bug: clean=1
+pub const OHW_R5KCVTL: u32 = 0x00000008;
+/// Requires patch for R10000 misaligned load.
+pub const OHW_R10KLDL: u32 = 0x00000010;
+
+pub const OPAD_PREFIX: u32 = 0x1;
+pub const OPAD_POSTFIX: u32 = 0x2;
+pub const OPAD_SYMBOL: u32 = 0x4;
+
+// Hardware Patch AND/OR Options Descriptor Flags
+
+/// Object checked for R4K end-of-page bug.
+pub const OHWA0_R4KEOP_CHECKED: u32 = 0x00000001;
+/// Object verified clean of R4K end-of-page bug.
+pub const OHWA0_R4KEOP_CLEAN: u32 = 0x00000002;
+/// Object requires call to fixade
+pub const OHWO0_FIXADE: u32 = 0x00000001;
+
+/// None — value is zero.
+pub const RSS_UNDEF: u32 = 0;
+/// Value of gp
+pub const RSS_GP: u32 = 1;
+/// Value of gp used to create object being relocated
+pub const RSS_GP0: u32 = 2;
+/// Address of location being relocated
+pub const RSS_LOC: u32 = 3;
+
+// Relocation Types
+
+/// None
+pub const R_MIPS_NONE: u8 = 0;
+/// `S + sign_extend(A)`
+pub const R_MIPS_16: u8 = 1;
+/// `S + A`
+pub const R_MIPS_32: u8 = 2;
+/// Alias of `R_MIPS_32`
+pub const R_MIPS_ADD: u8 = R_MIPS_32;
+/// `S + A - EA`jA
+pub const R_MIPS_REL32: u8 = 3;
+/// Alias of `MIPS_REL32`
+pub const R_MIPS_REL: u8 = R_MIPS_REL32;
+/// local - `(((A << 2) | (P&0xf0000000)) + S) >> 2`
+/// external - `(sign_extend(A<<2) + S) >> 2`
+pub const R_MIPS_26: u8 = 4;
+/// `%high (AHL + S)`
+pub const R_MIPS_HI16: u8 = 5;
+/// `%high (AHL + S)`
+pub const R_MIPS_LO16: u8 = 6;
+/// external `sign_extend(A) + S - GP`
+pub const R_MIPS_GPREL16: u8 = 7;
+/// local `sign_extend(A) + S + GP0 - GP`
+pub const R_MIPS_GPREL: u8 = R_MIPS_GPREL16;
+/// `sign_extend(A) + L`
+pub const R_MIPS_LITERAL: u8 = 8;
+/// external - `G`
+pub const R_MIPS_GOT16: u8 = 9;
+/// local - `f`
+pub const R_MIPS_GOT: u8 = R_MIPS_GOT16;
+/// `sign_extend(A) + S - P`
+pub const R_MIPS_PC16: u8 = 10;
+/// `G`
+pub const R_MIPS_CALL16: u8 = 11;
+/// Alias for `R_MIPS_CALL16`
+pub const R_MIPS_CALL: u8 = R_MIPS_CALL16;
+/// `A + S + GP0 - GP`
+pub const R_MIPS_GPREL32: u8 = 12;
+/// `S`
+pub const R_MIPS_SHIFT5: u8 = 16;
+/// `S`
+pub const R_MIPS_SHIFT6: u8 = 17;
+/// `S + A`
+pub const R_MIPS_64: u8 = 18;
+/// `G`
+pub const R_MIPS_GOT_DISP: u8 = 19;
+/// `h`
+pub const R_MIPS_GOT_PAGE: u8 = 20;
+/// `h`
+pub const R_MIPS_GOT_OFST: u8 = 21;
+/// `%high(G)`
+pub const R_MIPS_GOT_HI16: u8 = 22;
+/// `G`
+pub const R_MIPS_GOT_LO16: u8 = 23;
+/// `S - A`
+pub const R_MIPS_SUB: u8 = 24;
+/// Insert addend as instruction immediately prior to addressed location
+pub const R_MIPS_INSERT_A: u8 = 25;
+/// Insert addend as instruction immediately prior to addressed location
+pub const R_MIPS_INSERT_B: u8 = 26;
+/// Remove the addressed 32-bit object (normally an instruction).
+pub const R_MIPS_DELETE: u8 = 27;
+/// `%higher(A+S)`
+pub const R_MIPS_HIGHER: u8 = 28;
+/// `%highest(A+S)`
+pub const R_MIPS_HIGHEST: u8 = 29;
+/// `%high(G)`
+pub const R_MIPS_CALL_HI16: u8 = 30;
+/// `G`
+pub const R_MIPS_CALL_LO16: u8 = 31;
+/// `S+A-scn_addr` (section displacement)
+pub const R_MIPS_SCN_DISP: u8 = 32;
+/// `S + A`
+pub const R_MIPS_REL16: u8 = 33;
+/// V-half16 any oS + sign_extend(A)
+pub const R_MIPS_ADD_IMMEDIATE: u8 = 34;
+/// T-word32 any Deprecated (protected jump)
+pub const R_MIPS_PJUMP: u8 = 35;
+/// T-word32 any qS + A - EA
+pub const R_MIPS_RELGOT: u8 = 36;
+/// T-word32 any pProtected jump conversion
+pub const R_MIPS_JALR: u8 = 37;
+
+/// Module number 32 bit
+pub const R_MIPS_TLS_DTPMOD32: u8 = 38;
+/// Module-relative offset 32-bit
+pub const R_MIPS_TLS_DTPREL3: u8 = 39;
+/// Module number 64 bit
+pub const R_MIPS_TLS_DTPMOD6: u8 = 40;
+/// Module-relative offset 64-bit
+pub const R_MIPS_TLS_DTPREL64: u8 = 41;
+/// 16-bit GOT offset for GD
+pub const R_MIPS_TLS_GD: u8 = 42;
+/// 16 bit GOT offset for LDM
+pub const R_MIPS_TLS_LDM: u8 = 43;
+/// Module-relative offset, high 16-bits
+pub const R_MIPS_TLS_DTPREL_HI16: u8 = 44;
+/// Module-relative offset, low 16-bits
+pub const R_MIPS_TLS_DTPREL_LO16: u8 = 45;
+/// 16-bit GOT offset for IE
+pub const R_MIPS_TLS_GOTTPREL: u8 = 46;
+/// TP-relative offset, 32-bit
+pub const R_MIPS_TLS_TPREL32: u8 = 47;
+///  TP-relative offset, 64-bit
+pub const R_MIPS_TLS_TPREL64: u8 = 48;
+/// TP-relative offset, high 16-bits
+pub const R_MIPS_TLS_TPREL_HI16: u8 = 49;
+/// TP-relative offset, low 16-bits
+pub const R_MIPS_TLS_TPREL_LO16: u8 = 50;
+pub const R_MIPS_GLOB_DAT: u8 = 51;
+pub const R_MIPS_COPY: u8 = 126;
+pub const R_MIPS_JUMP_SLOT: u8 = 127;
+
+/// Version ID for the Runtime Linker Interface
+pub const DT_MIPS_RLD_VERSION: u32 = 0x70000001;
+/// Timestamp
+pub const DT_MIPS_TIME_STAMP: u32 = 0x70000002;
+/// Checksum
+pub const DT_MIPS_ICHECKSUM: u32 = 0x70000003;
+/// String table index of a compatible version string
+pub const DT_MIPS_IVERSION: u32 = 0x70000004;
+/// MIPS-specific flags
+pub const DT_MIPS_FLAG: u32 = 0x70000005;
+/// The base address assumed for the executable/DSO at static link time
+pub const DT_MIPS_BASE_ADDRESS: u32 = 0x70000006;
+pub const DT_MIPS_MSYM: u32 = 0x70000007;
+/// The address of the `.conflict` section
+pub const DT_MIPS_CONFLICT: u32 = 0x70000008;
+/// The address of the `.liblist` section
+pub const DT_MIPS_LIBLIST: u32 = 0x70000009;
+/// The number of local GOT entries.
+pub const DT_MIPS_LOCAL_GOTNO: u32 = 0x7000000a;
+/// The number of entries in the `.conflict` section
+pub const DT_MIPS_CONFLICTNO: u32 = 0x7000000b;
+/// The number of entries in the `.liblist` section
+pub const DT_MIPS_LIBLISTNO: u32 = 0x70000010;
+/// The number of entries in the `.dynsym` section
+pub const DT_MIPS_SYMTABNO: u32 = 0x70000011;
+/// the index into the dynamic symbol table of the first external symbol that is not referenced in the same object
+pub const DT_MIPS_UNREFEXTNO: u32 = 0x70000012;
+/// The index into the dynamic symbol table of the first entry that corresponds to an external symbol with an entry in
+/// the GOT
+pub const DT_MIPS_GOTSYM: u32 = 0x70000013;
+/// The number of page table entries in the GOT
+pub const DT_MIPS_HIPAGENO: u32 = 0x70000014;
+/// Address of run time loader map
+pub const DT_MIPS_RLD_MAP: u32 = 0x70000016;
+/// Delta C++ class definition table
+pub const DT_MIPS_DELTA_CLASS: u32 = 0x70000017;
+/// The number of entries in Delta C++ class definition table
+pub const DT_MIPS_DELTA_CLASS_NO: u32 = 0x70000018;
+/// Delta C++ class instances table
+pub const DT_MIPS_DELTA_INSTANCE: u32 = 0x70000019;
+/// The number of entries in the Delta C++ class instances table
+pub const DT_MIPS_DELTA_INSTANCE_NO: u32 = 0x7000001a;
+/// Delta relocations table
+pub const DT_MIPS_DELTA_RELOC: u32 = 0x7000001b;
+/// The number of entries in the Delta relocations table
+pub const DT_MIPS_DELTA_RELOC_NO: u32 = 0x7000001c;
+/// Delta symbols table
+pub const DT_MIPS_DELTA_SYM: u32 = 0x7000001d;
+/// The number of entries in the Delta symbols table
+pub const DT_MIPS_DELTA_SYM_NO: u32 = 0x7000001e;
+/// Delta symbols which hold the class declaration table
+pub const DT_MIPS_DELTA_CLASSSYM: u32 = 0x70000020;
+/// The number of entries in the Delta symbols with class delcaration table
+pub const DT_MIPS_DELTA_CLASSSYM_NO: u32 = 0x70000021;
+/// Flags regarding the C++ flavor
+pub const DT_MIPS_CXX_FLAGS: u32 = 0x70000022;
+/// The address of an initialization routine created by pixie
+pub const DT_MIPS_PIXIE_INIT: u32 = 0x70000023;
+/// The address of the `.MIPS.symlib` section, describing a mapping from the `.dynsym` symbols to the DSOs where they
+/// are defined
+pub const DT_MIPS_SYMBOL_LIB: u32 = 0x70000024;
+/// The index in the GOT of the first page table entry for a segment
+pub const DT_MIPS_LOCALPAGE_GOTIDX: u32 = 0x70000025;
+/// The index in the GOT of the first entry for a local symbol
+pub const DT_MIPS_LOCAL_GOTIDX: u32 = 0x70000026;
+/// The index in the GOT of the first entry for a hidden symbol
+pub const DT_MIPS_HIDDEN_GOTIDX: u32 = 0x70000027;
+/// The index in the GOT of the first entry for a protected symbol
+pub const DT_MIPS_PROTECTED_GOTIDX: u32 = 0x70000028;
+/// The address of the Options section, containing various execution options
+pub const DT_MIPS_OPTIONS: u32 = 0x70000029;
+/// The address of the `.MIPS.interface` section, describing subprogram interfaces
+pub const DT_MIPS_INTERFACE: u32 = 0x7000002a;
+pub const DT_MIPS_DYNSTR_ALIGN: u32 = 0x7000002b;
+/// The size in bytes of the .MIPS.interface section
+pub const DT_MIPS_INTERFACE_SIZE: u32 = 0x7000002c;
+/// When present, contains the link-time address of `_rld_text_resolve` to place in GOT entry 0. When missing or
+/// different from the address in `rld` of the `_rld_text_resolve` function, then `rld` will place the actual address of
+/// `_rld_text_resolve` in entry 0 of GOT at run-time.
+pub const DT_MIPS_RLD_TEXT_RESOLVE_ADDR: u32 = 0x7000002d;
+/// an index to the string table.
+pub const DT_MIPS_PERF_SUFFIX: u32 = 0x7000002e;
+/// The size of a ucode compact relocation header record
+pub const DT_MIPS_COMPACT_SIZE: u32 = 0x7000002f;
+/// The GP value of a specific GP relative range
+pub const DT_MIPS_GP_VALUE: u32 = 0x70000030;
+/// The address of an auxiliary dynamic table in the case of multigot
+pub const DT_MIPS_AUX_DYNAMIC: u32 = 0x70000031;
+/// Informs the runtime linker (`rld`) that the `.symlib` section is fully filled out and preemption is not used
+pub const DT_MIPS_DIRECT: u32 = 0x70000032;
+/// The dynamic symbol entry of a callback function
+pub const DT_MIPS_RLD_OBJ_UPDATE: u32 = 0x70000033;
+
+/// None
+pub const RHF_NONE: u32 = 0x00000000;
+/// Use runtime loading shortcuts if possible
+pub const RHF_QUICKSTART: u32 = 0x00000001;
+/// Hash size not a power of two
+pub const RHF_NOTPOT: u32 = 0x00000002;
+/// Ignore LD_LIBRARY_PATH
+pub const RHF_NO_LIBRARY_REPLACEMENT: u32 = 0x00000004;
+/// DSO addresses may not be relocated by rld
+pub const RHF_NO_MOVE: u32 = 0x00000008;
+/// Contains SGI-specific features
+pub const RHF_SGI_ONLY: u32 = 0x00000010;
+/// Guarantee that .init will finish executing before any non-.init code in the DSO is called
+pub const RHF_GUARANTEE_INIT: u32 = 0x00000020;
+/// Contains Delta C++ code
+pub const RHF_DELTA_C_PLUS_PLUS: u32 = 0x00000040;
+/// Guarantee that .init will begin executing before any non-.init code in the DSO is called
+pub const RHF_GUARANTEE_START_INIT: u32 = 0x00000080;
+/// Generated by pixie
+pub const RHF_PIXIE: u32 = 0x00000100;
+/// Delay-load DSO by default
+pub const RHF_DEFAULT_DELAY_LOAD: u32 = 0x00000200;
+/// Object may be requickstarted
+pub const RHF_REQUICKSTART: u32 = 0x00000400;
+/// Object has been requickstarted
+pub const RHF_REQUICKSTARTED: u32 = 0x00000800;
+/// Generated by cord
+pub const RHF_CORD: u32 = 0x00001000;
+/// Object contains no unresolved undef symbols
+pub const RHF_NO_UNRES_UNDEF: u32 = 0x00002000;
+/// Symbol table is in a safe order
+pub const RHF_RLD_ORDER_SAFE: u32 = 0x00004000;

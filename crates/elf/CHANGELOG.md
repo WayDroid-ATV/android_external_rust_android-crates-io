@@ -3,6 +3,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
+## [0.8.0] - 2025-05-13
+
+### Breaking Improvements
+
+- Drop "nightly" feature in favor of stabilized core::error::Error for ParseError when building for no_std. This bumps the MSRV to 1.81.0 (Sept. 5, 2024).
+- Change dyn.d_val() and dyn.d_ptr() to take self by ref
+- Relax NoteAny parsing to allow notes with names that contain invalid utf8 sequences
+
+### New Features
+
+- Add ElfStream::segment_data() to get raw segment data
+- Add ABI constants for MIPS
+- Drop "nightly" feature in favor of stabilized core::error::Error for ParseError when building for no_std
+- Add EM_CSKY, EM_LOONGARCH EM_FRV, EM_LANAI, and EM_VE
+- Make to_str no_std compatible
+- Make Symbol fields st_info and st_other fully public
+- Add NoteAny::name_str() helper to parse the note name as valid UTF8
+
+### Bug Fixes
+
+- Update e_machine_to_str to return proper value for EM_RISCV
+- Various docstring fixes
+
 ## [0.7.4] - 2023-11-22
 
 ### Bug Fixes
@@ -177,6 +200,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Add a `no_std` option by fully moving the parser over to lazy zero-alloc parsing patterns.
 
 <!-- next-url -->
+[0.8.0]: https://github.com/cole14/rust-elf/compare/v0.7.4...v0.8.0
 [0.7.4]: https://github.com/cole14/rust-elf/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/cole14/rust-elf/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/cole14/rust-elf/compare/v0.7.1...v0.7.2

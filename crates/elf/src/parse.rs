@@ -83,7 +83,7 @@ impl std::error::Error for ParseError {
     }
 }
 
-#[cfg(all(feature = "nightly", not(feature = "std")))]
+#[cfg(not(feature = "std"))]
 impl core::error::Error for ParseError {
     fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         match *self {
@@ -253,7 +253,7 @@ impl<'data, E: EndianParse, P: ParseAt> ParsingIterator<'data, E, P> {
     }
 }
 
-impl<'data, E: EndianParse, P: ParseAt> Iterator for ParsingIterator<'data, E, P> {
+impl<E: EndianParse, P: ParseAt> Iterator for ParsingIterator<'_, E, P> {
     type Item = P;
     fn next(&mut self) -> Option<Self::Item> {
         if self.data.is_empty() {
