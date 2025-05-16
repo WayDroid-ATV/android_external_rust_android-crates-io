@@ -41,3 +41,33 @@ rust_library {
     vendor_available: true,
     min_sdk_version: "29",
 }
+
+rust_library {
+    name: "libserde_json_arbitrary_precision",
+    host_supported: true,
+    crate_name: "serde_json",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.0.140",
+    crate_root: "src/lib.rs",
+    edition: "2021",
+    features: [
+        "arbitrary_precision",
+        "default",
+        "std",
+    ],
+    cfgs: ["fast_arithmetic=\"64\""],
+    rustlibs: [
+        "libitoa",
+        "libmemchr",
+        "libryu",
+        "libserde",
+    ],
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.uprobestats",
+        "com.android.virt",
+    ],
+    product_available: true,
+    vendor_available: true,
+    min_sdk_version: "29",
+}
