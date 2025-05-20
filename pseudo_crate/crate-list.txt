@@ -250,6 +250,7 @@ mls-rs-core
 mls-rs-crypto-traits
 mockall
 mockall_derive
+mockall_double
 moveit
 named-lock
 netlink-packet-core
