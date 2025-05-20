@@ -20,6 +20,7 @@ rust_library_host {
     cargo_pkg_version: "0.22.1",
     crate_root: "src/cargo_toml.rs",
     edition: "2021",
+    features: ["features"],
     rustlibs: [
         "libserde",
         "libtoml",

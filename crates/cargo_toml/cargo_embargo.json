@@ -1,4 +1,5 @@
 {
+  "features": ["features"],
   "package": {
     "cargo_toml": {
       "device_supported": false
