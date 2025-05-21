@@ -27,6 +27,7 @@ rust_library {
         "//apex_available:anyapex",
     ],
     product_available: true,
+    recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
     target: {
@@ -64,6 +65,7 @@ rust_library {
         "//apex_available:anyapex",
     ],
     product_available: true,
+    recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
     target: {
@@ -101,6 +103,7 @@ rust_library {
         "//apex_available:anyapex",
     ],
     product_available: true,
+    recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
     target: {
@@ -139,6 +142,7 @@ rust_library_rlib {
         "libcore.rust_sysroot",
     ],
     product_available: true,
+    recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
 }
