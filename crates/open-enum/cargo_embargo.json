@@ -1,5 +1,6 @@
 {
   "run_cargo": false,
+  "generate_rulesmk": true,
   "module_blocklist": [
     "test_lints"
   ],
