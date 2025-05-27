@@ -98,6 +98,7 @@ diplomat
 diplomat-runtime
 diplomat_core
 displaydoc
+doc-comment
 document-features
 downcast
 downcast-rs

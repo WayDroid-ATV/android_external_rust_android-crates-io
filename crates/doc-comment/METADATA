@@ -1,0 +1,17 @@
+name: "doc-comment"
+description: "Macro to generate doc comments"
+third_party {
+  version: "0.3.3"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 5
+    day: 10
+  }
+  homepage: "https://crates.io/crates/doc-comment"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/doc-comment/doc-comment-0.3.3.crate"
+    version: "0.3.3"
+  }
+}
