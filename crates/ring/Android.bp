@@ -51,7 +51,7 @@ rust_library {
         "std",
     ],
     rustlibs: [
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libspin",
         "libuntrusted",
@@ -90,7 +90,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libspin",
         "libuntrusted",
@@ -122,7 +122,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -151,7 +151,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -180,7 +180,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -209,7 +209,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -238,7 +238,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -267,7 +267,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -296,7 +296,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -325,7 +325,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -354,7 +354,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -383,7 +383,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -412,7 +412,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -441,7 +441,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -470,7 +470,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -499,7 +499,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libring",
         "libspin",
@@ -516,7 +516,7 @@ rust_library_rlib {
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
-        "libgetrandom",
+        "libgetrandom-0.2.16",
         "liblibc",
         "libspin_nostd",
         "libuntrusted",

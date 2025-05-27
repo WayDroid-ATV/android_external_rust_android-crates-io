@@ -1,6 +1,7 @@
 bitflags
 clap
 clap_lex
+getrandom
 hashbrown
 http
 jni

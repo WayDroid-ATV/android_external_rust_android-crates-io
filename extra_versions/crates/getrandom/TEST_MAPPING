@@ -94,26 +94,15 @@
       "path": "system/security/keystore2/legacykeystore"
     }
   ],
-  "presubmit": [
+  "postsubmit": [
     {
-      "name": "getrandom_test_src_lib"
+      "name": "getrandom_test_src_lib-0.2.16"
     },
     {
-      "name": "getrandom_test_tests_normal"
+      "name": "getrandom_test_tests_normal-0.2.16"
     },
     {
-      "name": "getrandom_test_tests_rdrand"
-    }
-  ],
-  "presubmit-rust": [
-    {
-      "name": "getrandom_test_src_lib"
-    },
-    {
-      "name": "getrandom_test_tests_normal"
-    },
-    {
-      "name": "getrandom_test_tests_rdrand"
+      "name": "getrandom_test_tests_rdrand-0.2.16"
     }
   ]
 }

@@ -26,7 +26,7 @@ rust_library {
         "getrandom",
         "std",
     ],
-    rustlibs: ["libgetrandom"],
+    rustlibs: ["libgetrandom-0.2.16"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -54,5 +54,5 @@ rust_test {
         "getrandom",
         "std",
     ],
-    rustlibs: ["libgetrandom"],
+    rustlibs: ["libgetrandom-0.2.16"],
 }

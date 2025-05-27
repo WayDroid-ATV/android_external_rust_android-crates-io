@@ -31,6 +31,6 @@ index 745d2e8..8e44ff7 100644
      ],
      rustlibs: [
          "libcfg_if",
-         "libgetrandom",
+         "libgetrandom-0.2.16",
          "libonce_cell",
          "libzerocopy",
