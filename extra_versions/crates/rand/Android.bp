@@ -2,19 +2,19 @@
 // Do not modify this file because the changes will be overridden on upgrade.
 
 package {
-    default_applicable_licenses: ["external_rust_crates_rand_license"],
+    default_applicable_licenses: ["external_rust_crates_rand-0.6_license"],
     default_team: "trendy_team_android_rust",
 }
 
 license {
-    name: "external_rust_crates_rand_license",
+    name: "external_rust_crates_rand-0.6_license",
     visibility: [":__subpackages__"],
     license_kinds: ["SPDX-license-identifier-Apache-2.0"],
     license_text: ["LICENSE"],
 }
 
 rust_library {
-    name: "librand",
+    name: "librand-0.8",
     host_supported: true,
     crate_name: "rand",
     cargo_env_compat: true,
@@ -33,8 +33,8 @@ rust_library {
     ],
     rustlibs: [
         "liblibc",
-        "librand_chacha",
-        "librand_core",
+        "librand_chacha-0.3",
+        "librand_core-0.6",
     ],
     apex_available: [
         "//apex_available:platform",
