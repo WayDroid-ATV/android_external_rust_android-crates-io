@@ -450,6 +450,7 @@ dependencies = [
  "same-file",
  "scopeguard",
  "sec1",
+ "selinux-sys",
  "semver",
  "serde",
  "serde-xml-rs",
@@ -1051,6 +1052,26 @@ dependencies = [
  "shlex",
  "syn 2.0.100",
  "which",
+]
+
+[[package]]
+name = "bindgen"
+version = "0.70.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f49d8fed880d473ea71efb9bf597651e77201bdd4893efe54c9e5d65ae04ce6f"
+dependencies = [
+ "bitflags 2.9.0",
+ "cexpr",
+ "clang-sys",
+ "itertools 0.12.1",
+ "log",
+ "prettyplease 0.2.31",
+ "proc-macro2 1.0.94",
+ "quote 1.0.40",
+ "regex",
+ "rustc-hash 1.1.0",
+ "shlex",
+ "syn 2.0.100",
 ]
 
 [[package]]
@@ -2188,6 +2209,12 @@ dependencies = [
  "libc 0.2.168",
  "linux-raw-sys 0.6.5",
 ]
+
+[[package]]
+name = "dunce"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
 name = "dwrote"
@@ -6398,6 +6425,18 @@ checksum = "49db231d56a190491cb4aeda9527f1ad45345af50b0851622a7adb8c03b01c32"
 dependencies = [
  "core-foundation-sys",
  "libc 0.2.168",
+]
+
+[[package]]
+name = "selinux-sys"
+version = "0.6.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5e6e2b8e07a8ff45c90f8e3611bf10c4da7a28d73a26f9ede04f927da234f52"
+dependencies = [
+ "bindgen 0.70.1",
+ "cc",
+ "dunce",
+ "walkdir",
 ]
 
 [[package]]

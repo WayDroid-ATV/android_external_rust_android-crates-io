@@ -1,0 +1,25 @@
+From 19ab00cf369d9323601cfb81ae71c909c30ccd6d Mon Sep 17 00:00:00 2001
+From: Eric Caruso <ejcaruso@google.com>
+Date: Thu, 15 May 2025 11:47:28 -0400
+Subject: [PATCH] selinux-sys: Remove layout tests from generated code
+
+Change-Id: I927b5ad92e3b17bde3e1d7c33917f6c15296eade
+---
+ crates/selinux-sys/build.rs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/build.rs b/build.rs
+index 11079164..5a77ac9a 100644
+--- a/build.rs
++++ b/build.rs
+@@ -346,6 +346,7 @@ fn generate_bindings(target: &str, sysroot: Option<&Path>, out_dir: &Path, inclu
+         .derive_eq(true)
+         .derive_ord(true)
+         .impl_debug(true)
++        .layout_tests(false)
+         .clang_arg(format!("--target={clang_target}"))
+         .clang_args(&["-I", path_to_str(include_path)]);
+ 
+-- 
+2.49.0.1045.g170613ef41-goog
+

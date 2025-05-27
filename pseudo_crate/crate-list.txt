@@ -348,6 +348,7 @@ safe-mmio
 same-file
 scopeguard
 sec1
+selinux-sys
 semver
 serde
 serde-xml-rs

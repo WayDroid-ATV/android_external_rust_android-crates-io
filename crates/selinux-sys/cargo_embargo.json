@@ -1,0 +1,9 @@
+{
+  "run_cargo": true,
+  "min_sdk_version": "29",
+  "package": {
+    "selinux-sys": {
+      "copy_out": true
+    }
+  }
+}
