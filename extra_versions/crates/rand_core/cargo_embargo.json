@@ -1,0 +1,11 @@
+{
+  "module_name_overrides": {
+    "libgetrandom": "libgetrandom-0.2.16"
+  },
+  "features": [
+    "std"
+  ],
+  "run_cargo": false,
+  "tests": true,
+  "min_sdk_version": "29"
+}
