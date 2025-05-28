@@ -6,6 +6,7 @@
   },
   "module_visibility": {
     "libtikv_jemallocator": [
+      "//build/kati:__subpackages__",
       "//external/n2:__subpackages__"
     ]
   },

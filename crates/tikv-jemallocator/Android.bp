@@ -28,5 +28,8 @@ rust_library_host {
         "liblibc",
         "libtikv_jemalloc_sys",
     ],
-    visibility: ["//external/n2:__subpackages__"],
+    visibility: [
+        "//build/kati:__subpackages__",
+        "//external/n2:__subpackages__",
+    ],
 }
