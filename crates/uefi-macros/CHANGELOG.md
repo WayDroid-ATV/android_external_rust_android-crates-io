@@ -1,6 +1,19 @@
 # uefi-macros - [Unreleased]
 
 
+# uefi-macros - 0.18.1 (2025-05-04)
+
+Minor documentation updates.
+
+
+# uefi-macros - 0.18.0 (2025-02-07)
+
+As of this release, the project has been relicensed from MPL-2.0 to
+Apache-2.0/MIT, to better align with the Rust crate ecosystem. (This does not
+alter the license of previous releases.)
+Details at <https://github.com/rust-osdev/uefi-rs/issues/1470>.
+
+
 # uefi-macros - 0.17.0 (2024-10-23)
 
 ## Changed

@@ -9,7 +9,7 @@ package {
 license {
     name: "external_rust_crates_uefi-macros_license",
     visibility: [":__subpackages__"],
-    license_kinds: ["SPDX-license-identifier-MPL-2.0"],
+    license_kinds: ["SPDX-license-identifier-Apache-2.0"],
     license_text: ["LICENSE"],
 }
 
@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libuefi_macros",
     crate_name: "uefi_macros",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.17.0",
+    cargo_pkg_version: "0.18.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
