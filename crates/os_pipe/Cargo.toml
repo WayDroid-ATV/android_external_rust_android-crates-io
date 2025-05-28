@@ -13,9 +13,10 @@
 edition = "2021"
 rust-version = "1.63"
 name = "os_pipe"
-version = "1.2.1"
+version = "1.2.2"
 authors = ["Jack O'Connor"]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -32,6 +33,9 @@ keywords = [
 license = "MIT"
 repository = "https://github.com/oconnor663/os_pipe.rs"
 
+[features]
+io_safety = []
+
 [lib]
 name = "os_pipe"
 path = "src/lib.rs"
@@ -47,9 +51,6 @@ path = "src/bin/cat_both.rs"
 [[bin]]
 name = "swap"
 path = "src/bin/swap.rs"
-
-[features]
-io_safety = []
 
 [target."cfg(not(windows))".dependencies.libc]
 version = "0.2.62"
