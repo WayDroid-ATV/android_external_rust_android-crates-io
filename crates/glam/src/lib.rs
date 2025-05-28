@@ -240,6 +240,7 @@ and benchmarks.
 * `bytecheck` - to perform archive validation when using the `rkyv` feature
 * `serde` - implementations of `Serialize` and `Deserialize` for all `glam`
   types. Note that serialization should work between builds of `glam` with and without SIMD enabled
+* `speedy` - implementations of `speedy`'s `Readable` and `Writable` for all `glam` types.
 * `scalar-math` - disables SIMD support and uses native alignment for all types.
 * `debug-glam-assert` - adds assertions in debug builds which check the validity of parameters
   passed to `glam` to help catch runtime errors.
@@ -259,7 +260,7 @@ and benchmarks.
 The minimum supported Rust version is `1.68.2`.
 
 */
-#![doc(html_root_url = "https://docs.rs/glam/0.30.1")]
+#![doc(html_root_url = "https://docs.rs/glam/0.30.3")]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(target_arch = "spirv", feature(repr_simd))]
 #![deny(

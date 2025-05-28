@@ -88,6 +88,17 @@ impl Vec4 {
     /// The unit axes.
     pub const AXES: [Self; 4] = [Self::X, Self::Y, Self::Z, Self::W];
 
+    /// Vec4 uses Rust Portable SIMD
+    pub const USES_CORE_SIMD: bool = false;
+    /// Vec4 uses Arm NEON
+    pub const USES_NEON: bool = false;
+    /// Vec4 uses scalar math
+    pub const USES_SCALAR_MATH: bool = true;
+    /// Vec4 uses Intel SSE2
+    pub const USES_SSE2: bool = false;
+    /// Vec4 uses WebAssembly 128-bit SIMD
+    pub const USES_WASM32_SIMD: bool = false;
+
     /// Creates a new vector.
     #[inline(always)]
     #[must_use]
@@ -232,35 +243,44 @@ impl Vec4 {
 
     /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
     ///
-    /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+    /// In other words this computes `[min(x, rhs.x), min(self.y, rhs.y), ..]`.
+    ///
+    /// NaN propogation does not follow IEEE 754-2008 semantics for minNum and may differ on
+    /// different SIMD architectures.
     #[inline]
     #[must_use]
     pub fn min(self, rhs: Self) -> Self {
         Self {
-            x: self.x.min(rhs.x),
-            y: self.y.min(rhs.y),
-            z: self.z.min(rhs.z),
-            w: self.w.min(rhs.w),
+            x: if self.x < rhs.x { self.x } else { rhs.x },
+            y: if self.y < rhs.y { self.y } else { rhs.y },
+            z: if self.z < rhs.z { self.z } else { rhs.z },
+            w: if self.w < rhs.w { self.w } else { rhs.w },
         }
     }
 
     /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
     ///
-    /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+    /// In other words this computes `[max(self.x, rhs.x), max(self.y, rhs.y), ..]`.
+    ///
+    /// NaN propogation does not follow IEEE 754-2008 semantics for maxNum and may differ on
+    /// different SIMD architectures.
     #[inline]
     #[must_use]
     pub fn max(self, rhs: Self) -> Self {
         Self {
-            x: self.x.max(rhs.x),
-            y: self.y.max(rhs.y),
-            z: self.z.max(rhs.z),
-            w: self.w.max(rhs.w),
+            x: if self.x > rhs.x { self.x } else { rhs.x },
+            y: if self.y > rhs.y { self.y } else { rhs.y },
+            z: if self.z > rhs.z { self.z } else { rhs.z },
+            w: if self.w > rhs.w { self.w } else { rhs.w },
         }
     }
 
     /// Component-wise clamping of values, similar to [`f32::clamp`].
     ///
     /// Each element in `min` must be less-or-equal to the corresponding element in `max`.
+    ///
+    /// NaN propogation does not follow IEEE 754-2008 semantics and may differ on
+    /// different SIMD architectures.
     ///
     /// # Panics
     ///
@@ -275,19 +295,27 @@ impl Vec4 {
     /// Returns the horizontal minimum of `self`.
     ///
     /// In other words this computes `min(x, y, ..)`.
+    ///
+    /// NaN propogation does not follow IEEE 754-2008 semantics and may differ on
+    /// different SIMD architectures.
     #[inline]
     #[must_use]
     pub fn min_element(self) -> f32 {
-        self.x.min(self.y.min(self.z.min(self.w)))
+        let min = |a, b| if a < b { a } else { b };
+        min(self.x, min(self.y, min(self.z, self.w)))
     }
 
     /// Returns the horizontal maximum of `self`.
     ///
     /// In other words this computes `max(x, y, ..)`.
+    ///
+    /// NaN propogation does not follow IEEE 754-2008 semantics and may differ on
+    /// different SIMD architectures.
     #[inline]
     #[must_use]
     pub fn max_element(self) -> f32 {
-        self.x.max(self.y.max(self.z.max(self.w)))
+        let max = |a, b| if a > b { a } else { b };
+        max(self.x, max(self.y, max(self.z, self.w)))
     }
 
     /// Returns the index of the first minimum element of `self`.
@@ -490,6 +518,9 @@ impl Vec4 {
     ///
     /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
     /// into the first lowest bit, element `y` into the second, etc.
+    ///
+    /// An element is negative if it has a negative sign, including -0.0, NaNs with negative sign
+    /// bit and negative infinity.
     #[inline]
     #[must_use]
     pub fn is_negative_bitmask(self) -> u32 {
@@ -670,6 +701,21 @@ impl Vec4 {
     #[must_use]
     pub fn normalize_or_zero(self) -> Self {
         self.normalize_or(Self::ZERO)
+    }
+
+    /// Returns `self` normalized to length 1.0 and the length of `self`.
+    ///
+    /// If `self` is zero length then `(Self::X, 0.0)` is returned.
+    #[inline]
+    #[must_use]
+    pub fn normalize_and_length(self) -> (Self, f32) {
+        let length = self.length();
+        let rcp = 1.0 / length;
+        if rcp.is_finite() && rcp > 0.0 {
+            (self * rcp, length)
+        } else {
+            (Self::X, 0.0)
+        }
     }
 
     /// Returns whether `self` is length `1.0` or not.

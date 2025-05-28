@@ -5,9 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to
 [Semantic Versioning].
 
+## [0.30.3] - 2025-05-01
+
+### Added
+
+* Added `speedy` feature, implementing serialization and deserialization via the
+  `speedy` crate.
+
+* Added `fract_gl` to the 'FloatExt' trait which uses the GLSL specification of
+  `fract`, `self - self.floor()`.
+
+## [0.30.2] - 2025-04-13
+
+### Added
+
+* Added precision conversion functions for affine types:
+  `Affine3A::as_daffine3`, `DAffine3::as_affine3a`, `Affine2::as_daffine2` and
+  `DAffine3::as_affine2`
+
+* Added `normalize_and_length` method to `f32` and `f64` vectors.
+
+### Changed
+
+* Vector min and max scalar implementations have been changed to use an `if`
+  check instead of the built in Rust floating point primitive `min` and `max`
+  methods. The Rust methods have special handling for `NaN` propagation however
+  because this is not consistent between the different SIMD implementations in
+  glam the most efficient implementation is preferred.
+
 ## [0.30.1] - 2025-03-20
 
-## Added
+### Added
 
 * Added `usize` vector types, `USizeVec2`, `USizeVec3` and `USizeVec4`.
 
@@ -16,7 +44,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 * Added `rotate_towards` method to 3D vector types.
 
-## Changed
+### Changed
 
 * Removed the small angle check from 2D vector `rotate_towards` implementations
   as it was unnecessary and would not preserve the length of the input.
@@ -1204,7 +1232,9 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 [Keep a Changelog]: https://keepachangelog.com/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[Unreleased]: https://github.com/bitshifter/glam-rs/compare/0.30.1...HEAD
+[Unreleased]: https://github.com/bitshifter/glam-rs/compare/0.30.3...HEAD
+[0.30.3]: https://github.com/bitshifter/glam-rs/compare/0.30.2...0.30.3
+[0.30.2]: https://github.com/bitshifter/glam-rs/compare/0.30.1...0.30.2
 [0.30.1]: https://github.com/bitshifter/glam-rs/compare/0.30.0...0.30.1
 [0.30.0]: https://github.com/bitshifter/glam-rs/compare/0.29.2...0.30.0
 [0.29.2]: https://github.com/bitshifter/glam-rs/compare/0.29.1...0.29.2
