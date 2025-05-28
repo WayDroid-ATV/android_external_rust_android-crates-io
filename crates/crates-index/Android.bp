@@ -17,7 +17,7 @@ rust_library_host {
     name: "libcrates_index",
     crate_name: "crates_index",
     cargo_env_compat: true,
-    cargo_pkg_version: "3.8.0",
+    cargo_pkg_version: "3.10.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
