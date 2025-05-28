@@ -17,16 +17,15 @@ rust_library_host {
     name: "libmiette",
     crate_name: "miette",
     cargo_env_compat: true,
-    cargo_pkg_version: "6.0.1",
+    cargo_pkg_version: "7.6.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
         "default",
         "derive",
-        "miette-derive",
     ],
     rustlibs: [
-        "libthiserror",
+        "libcfg_if",
         "libunicode_width",
     ],
     proc_macros: ["libmiette_derive"],

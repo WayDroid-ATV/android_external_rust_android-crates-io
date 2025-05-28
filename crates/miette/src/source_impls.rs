@@ -1,12 +1,7 @@
 /*!
 Default trait implementations for [`SourceCode`].
 */
-use std::{
-    borrow::{Cow, ToOwned},
-    collections::VecDeque,
-    fmt::Debug,
-    sync::Arc,
-};
+use std::{borrow::Cow, collections::VecDeque, fmt::Debug, sync::Arc};
 
 use crate::{MietteError, MietteSpanContents, SourceCode, SourceSpan, SpanContents};
 
@@ -109,7 +104,7 @@ impl SourceCode for [u8] {
     }
 }
 
-impl<'src> SourceCode for &'src [u8] {
+impl SourceCode for &[u8] {
     fn read_span<'a>(
         &'a self,
         span: &SourceSpan,
@@ -148,7 +143,7 @@ impl SourceCode for str {
 }
 
 /// Makes `src: &'static str` or `struct S<'a> { src: &'a str }` usable.
-impl<'s> SourceCode for &'s str {
+impl SourceCode for &str {
     fn read_span<'a>(
         &'a self,
         span: &SourceSpan,

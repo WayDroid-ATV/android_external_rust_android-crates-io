@@ -24,10 +24,10 @@ pub use ReportHandler as EyreContext;
 #[allow(unreachable_pub)]
 pub use WrapErr as Context;
 
-#[cfg(not(feature = "fancy-no-backtrace"))]
+#[cfg(not(feature = "fancy-base"))]
 use crate::DebugReportHandler;
 use crate::Diagnostic;
-#[cfg(feature = "fancy-no-backtrace")]
+#[cfg(feature = "fancy-base")]
 use crate::MietteHandler;
 
 use error::ErrorImpl;
@@ -57,7 +57,7 @@ pub struct Report {
 unsafe impl Sync for Report {}
 unsafe impl Send for Report {}
 
-///
+#[allow(missing_docs)]
 pub type ErrorHook =
     Box<dyn Fn(&(dyn Diagnostic + 'static)) -> Box<dyn ReportHandler> + Sync + Send + 'static>;
 
@@ -102,14 +102,14 @@ fn capture_handler(error: &(dyn Diagnostic + 'static)) -> Box<dyn ReportHandler>
 }
 
 fn get_default_printer(_err: &(dyn Diagnostic + 'static)) -> Box<dyn ReportHandler + 'static> {
-    #[cfg(feature = "fancy-no-backtrace")]
+    #[cfg(feature = "fancy-base")]
     return Box::new(MietteHandler::new());
-    #[cfg(not(feature = "fancy-no-backtrace"))]
+    #[cfg(not(feature = "fancy-base"))]
     return Box::new(DebugReportHandler::new());
 }
 
 impl dyn ReportHandler {
-    ///
+    #[allow(missing_docs)]
     pub fn is<T: ReportHandler>(&self) -> bool {
         // Get `TypeId` of the type this function is instantiated with.
         let t = core::any::TypeId::of::<T>();
@@ -121,7 +121,7 @@ impl dyn ReportHandler {
         t == concrete
     }
 
-    ///
+    #[allow(missing_docs)]
     pub fn downcast_ref<T: ReportHandler>(&self) -> Option<&T> {
         if self.is::<T>() {
             unsafe { Some(&*(self as *const dyn ReportHandler as *const T)) }
@@ -130,7 +130,7 @@ impl dyn ReportHandler {
         }
     }
 
-    ///
+    #[allow(missing_docs)]
     pub fn downcast_mut<T: ReportHandler>(&mut self) -> Option<&mut T> {
         if self.is::<T>() {
             unsafe { Some(&mut *(self as *mut dyn ReportHandler as *mut T)) }
@@ -475,6 +475,7 @@ pub mod private {
     }
 
     #[cfg_attr(track_caller, track_caller)]
+    #[cold]
     pub fn new_adhoc<M>(message: M) -> Report
     where
         M: Display + Debug + Send + Sync + 'static,

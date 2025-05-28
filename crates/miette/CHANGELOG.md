@@ -1,5 +1,112 @@
 # `miette` Release Changelog
 
+<a name="7.6.0"></a>
+## 7.6.0 (2025-04-27)
+
+### Bug Fixes
+
+* **graphical:** prevent leading newline when no link/code (#418) ([1e1938a0](https://github.com/zkat/miette/commit/1e1938a099409969c69b9f070e0fb0d13d564527))
+* **clippy:** elide lifetimes (#423) ([9ba6fad7](https://github.com/zkat/miette/commit/9ba6fad7694c1271f287b8f659a857c4ff540a55))
+* **highlight:** increase syntax highlighter config priority (#424) ([58d9f124](https://github.com/zkat/miette/commit/58d9f12411e7d3d6d580eb219ea32321e6918d79))
+* **deps:** miette can now be used without syn (#436) ([521ef91f](https://github.com/zkat/miette/commit/521ef91f77a143eb5cedfa1344428b804802179d))
+
+### Features
+
+* **graphical:** support rendering related diagnostics as nested (#417) ([771a0751](https://github.com/zkat/miette/commit/771a07519f078b94aceb1a2d2532d786f09f350b))
+* **labels:** add support for disabling the primary label line/col information (#419) ([f2ef693d](https://github.com/zkat/miette/commit/f2ef693d1ce7230e6b9f12805f018f095534b441))
+* **deps:** update `thiserror` from 1.0.56 to 2.0.11 (#426) ([59c81617](https://github.com/zkat/miette/commit/59c81617de8650a6ff3b193b41b4297e560726a0))
+
+<a name="7.5.0"></a>
+## 7.5.0 (2025-02-01)
+
+### Features
+
+* **graphical:** support rendering related diagnostics as nested (#417) ([771a0751](https://github.com/zkat/miette/commit/771a07519f078b94aceb1a2d2532d786f09f350b))
+
+### Bug Fixes
+
+* **graphical:** prevent leading newline when no link/code (#418) ([1e1938a0](https://github.com/zkat/miette/commit/1e1938a099409969c69b9f070e0fb0d13d564527))
+
+<a name="7.4.0"></a>
+## 7.4.0 (2024-11-27)
+
+### Features
+
+* **graphical:** Inherit source code to causes (#401) ([465e6b6a](https://github.com/zkat/miette/commit/465e6b6ab627f8da34baa5f46441d944fb88186e))
+* **report:** Implement `WrapError` for `Option` (#409) ([7fae60fd](https://github.com/zkat/miette/commit/7fae60fd8462f95cf3140c6a3b9eb06cb7953405))
+
+<a name="7.3.0"></a>
+## 7.3.0 (2024-11-26)
+
+### Features
+
+* **SourceSpan:** add impl From<InclusiveRange> (#385) ([73da45b6](https://github.com/zkat/miette/commit/73da45b65c965777a00ba64aa03a247c0e5241ca))
+* **Report:** add `from_err()` method to `Report` (#403) ([93d3bd11](https://github.com/zkat/miette/commit/93d3bd118a072c35aa761f0ec74317166ec08113))
+* **Diagnostic:** Implement `Diagnostic` for `Infallible` (#402) ([f3fb4c1e](https://github.com/zkat/miette/commit/f3fb4c1ecd196ce389cbd71139bb7e3b35474add))
+
+### Performance
+
+* **handlers:** optimize string-buffer reallocations (#387) ([b8dfcda4](https://github.com/zkat/miette/commit/b8dfcda4a8c10a14116ee275250356ac991dc7be))
+
+### Bug Fixes
+
+* **graphical:** fix nested error wrapping (#358) ([3eabbceb](https://github.com/zkat/miette/commit/3eabbcebf113d1d620a6a3f98e8a455414ed3042))
+* **docs:** updated example image (fixes #111) (#270) ([7b42b12c](https://github.com/zkat/miette/commit/7b42b12c5f6316322ce79c59bcb9e99f5d49edb8))
+* **clippy:** Fix clippy lints in docs (#365) ([ea4296da](https://github.com/zkat/miette/commit/ea4296dacec3b0e4762281d9d115c1bd69ecfac3))
+* **docs:** `alt` attribut for `single-line-example.png` (#372) ([b82cc81b](https://github.com/zkat/miette/commit/b82cc81b8ea32a1cf1b4598ed5832bc8e3b0e161))
+* **color:** setting NO_COLOR should not print ansi codes for non-terminals (#381) ([813232ba](https://github.com/zkat/miette/commit/813232ba7957ae09e4fb9d9416d821f4fd9da66d))
+* **clippy:** fix Rust v1.78.0 clippy warnings (#382) ([e1026f75](https://github.com/zkat/miette/commit/e1026f75e0a5d19bbc8e468cb3f5292074543a97))
+* **perf:** mark error constructors cold (#378) ([9bbcf3c6](https://github.com/zkat/miette/commit/9bbcf3c6017fa3455a7db714879816c1cfc511fd))
+* **handlers:** Disable textwrap::smawk feature (#379) ([edfdcb52](https://github.com/zkat/miette/commit/edfdcb525ee30fc54747460ada621f13f0ed1996))
+* **graphical:** Format entire link instead of just name (#389) ([bf5aa374](https://github.com/zkat/miette/commit/bf5aa3742fd664be3c93160b9c28c145b1ed8bc9))
+* **clippy:** fix `clippy::doc_lazy_continuation` lints (#395) ([15beec43](https://github.com/zkat/miette/commit/15beec43303180b811d4c04d1a78775feb9b0905))
+* **graphical:** Handle invalid UTF-8 in source code (#393) ([d6b45585](https://github.com/zkat/miette/commit/d6b4558502e82fa74e030ccb3c8040656590d7eb))
+* **features:** Use `dep:` syntax for dependencies in features. (#394) ([789a04e3](https://github.com/zkat/miette/commit/789a04e30d041179b373b4eb8b340456534a3f0e))
+* **clippy:** Fix `needless_return` lint. (#405) ([5f441d01](https://github.com/zkat/miette/commit/5f441d011560a091fe5d6a6cdb05f09acf622d36))
+
+### Documentation
+
+* **examples:** add serde_json integration example (#407) ([2902a233](https://github.com/zkat/miette/commit/2902a2337c2e36a5d8e0e54b007d6100cca0c9ff))
+
+<a name="7.2.0"></a>
+## 7.2.0 (2024-03-07)
+
+### Features
+
+* **wasm:** add feature "fancy-no-syscall" for wasm targets (#349) ([328bf379](https://github.com/zkat/miette/commit/328bf3792213fc0bed94e72a39acb722b65141dd))
+
+### Bug Fixes
+
+* **label-collections:** Label collection fixes and cleanup (#343) ([75fea093](https://github.com/zkat/miette/commit/75fea0935e495d0215518c80d32dd820910982e3))
+* **invalid span:** skip the snippet when read_span fails (#347) ([7d9dfc6e](https://github.com/zkat/miette/commit/7d9dfc6e8e591f9606c3da55bd8465962358b20f))
+* **redundant-import:** fix a warning and CI failure in nightly (#348) ([6ea86a22](https://github.com/zkat/miette/commit/6ea86a2248854acf88df345814b6c97d31b8b4d9))
+
+<a name="7.1.0"></a>
+## 7.1.0 (2024-02-16)
+
+### Features
+
+* **derive:** enable more boxed types to be #[diagnostic_source] (#338) ([c2f06f6c](https://github.com/zkat/miette/commit/c2f06f6cca15cbdd083dbff3d46b7729056ac6a4))
+* **source:** derive common traits for NamedSource, SourceSpan, and SourceOffset (#340) ([6f09250c](https://github.com/zkat/miette/commit/6f09250cca14561f07fba899a8e6d3c0df14230e))
+* **collection:** add support for collection of labels (#341) ([03060245](https://github.com/zkat/miette/commit/03060245d816a53a33209e6b7e1c3c42948e9962))
+
+### Bug Fixes
+
+* **tests:** revert test-breaking changes of e5c7ae4 (#339) ([6e829f8c](https://github.com/zkat/miette/commit/6e829f8c0ce2fc7bb2fc4041e6a6072f12db1f71))
+
+<a name="7.0.0"></a>
+## 7.0.0 (2024-02-05)
+
+This is a small breaking release on the heels of 6.0 because I neglected to
+bump owo-colors. I figured it's a good time to do it, before 6.0 gets more
+widely used.
+
+### Features
+
+* **fancy:** Add option to change the link display text (#335) ([c7144ee5](https://github.com/zkat/miette/commit/c7144ee513bf8f06c5f7d89c45436802994a51fc))
+* **deps:** bump dependencies ([a4011d17](https://github.com/zkat/miette/commit/a4011d174c40acbba5b0176db7cb71ec5ca0cb49))
+    * **BREAKING CHANGE**: This bumps owo-colors to 4.0, which is a breaking change because we expose its styles as part of the graphical renderer API
+
 <a name="6.0.1"></a>
 ## 6.0.1 (2024-02-04)
 

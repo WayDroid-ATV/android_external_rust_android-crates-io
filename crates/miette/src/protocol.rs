@@ -12,7 +12,7 @@ use std::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::MietteError;
+use crate::{DiagnosticError, MietteError};
 
 /// Adds rich metadata to your Error that can be used by
 /// [`Report`](crate::Report) to print really nice and human-friendly error
@@ -69,7 +69,7 @@ pub trait Diagnostic: std::error::Error {
     }
 }
 
-macro_rules! box_impls {
+macro_rules! box_error_impls {
     ($($box_type:ty),*) => {
         $(
             impl std::error::Error for $box_type {
@@ -85,8 +85,25 @@ macro_rules! box_impls {
     }
 }
 
-box_impls! {
+box_error_impls! {
     Box<dyn Diagnostic>,
+    Box<dyn Diagnostic + Send>,
+    Box<dyn Diagnostic + Send + Sync>
+}
+
+macro_rules! box_borrow_impls {
+    ($($box_type:ty),*) => {
+        $(
+            impl std::borrow::Borrow<dyn Diagnostic> for $box_type {
+                fn borrow(&self) -> &(dyn Diagnostic + 'static) {
+                    self.as_ref()
+                }
+            }
+        )*
+    }
+}
+
+box_borrow_impls! {
     Box<dyn Diagnostic + Send>,
     Box<dyn Diagnostic + Send + Sync>
 }
@@ -117,7 +134,7 @@ impl From<&str> for Box<dyn Diagnostic> {
     }
 }
 
-impl<'a> From<&str> for Box<dyn Diagnostic + Send + Sync + 'a> {
+impl From<&str> for Box<dyn Diagnostic + Send + Sync + '_> {
     fn from(s: &str) -> Self {
         From::from(String::from(s))
     }
@@ -157,18 +174,7 @@ impl From<String> for Box<dyn Diagnostic + Send + Sync> {
 
 impl From<Box<dyn std::error::Error + Send + Sync>> for Box<dyn Diagnostic + Send + Sync> {
     fn from(s: Box<dyn std::error::Error + Send + Sync>) -> Self {
-        #[derive(thiserror::Error)]
-        #[error(transparent)]
-        struct BoxedDiagnostic(Box<dyn std::error::Error + Send + Sync>);
-        impl fmt::Debug for BoxedDiagnostic {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                fmt::Debug::fmt(&self.0, f)
-            }
-        }
-
-        impl Diagnostic for BoxedDiagnostic {}
-
-        Box::new(BoxedDiagnostic(s))
+        Box::new(DiagnosticError(s))
     }
 }
 
@@ -274,6 +280,11 @@ impl LabeledSpan {
             span: span.into(),
             primary: true,
         }
+    }
+
+    /// Change the text of the label
+    pub fn set_label(&mut self, label: Option<String>) {
+        self.label = label;
     }
 
     /// Makes a new label at specified span
@@ -501,7 +512,7 @@ impl<'a> MietteSpanContents<'a> {
         }
     }
 
-    /// Sets the [`language`](SourceCode::language) for syntax highlighting.
+    /// Sets the [`language`](SpanContents::language) for syntax highlighting.
     pub fn with_language(mut self, language: impl Into<String>) -> Self {
         self.language = Some(language.into());
         self
@@ -533,7 +544,7 @@ impl<'a> SpanContents<'a> for MietteSpanContents<'a> {
 }
 
 /// Span within a [`SourceCode`]
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SourceSpan {
     /// The start of the span.
@@ -592,6 +603,28 @@ impl From<std::ops::Range<ByteOffset>> for SourceSpan {
     }
 }
 
+impl From<std::ops::RangeInclusive<ByteOffset>> for SourceSpan {
+    /// # Panics
+    ///
+    /// Panics if the total length of the inclusive range would overflow a
+    /// `usize`. This will only occur with the range `0..=usize::MAX`.
+    fn from(range: std::ops::RangeInclusive<ByteOffset>) -> Self {
+        let (start, end) = range.clone().into_inner();
+        Self {
+            offset: start.into(),
+            length: if range.is_empty() {
+                0
+            } else {
+                // will not overflow because `is_empty() == false` guarantees
+                // that `start <= end`
+                (end - start)
+                    .checked_add(1)
+                    .expect("length of inclusive range should fit in a usize")
+            },
+        }
+    }
+}
+
 impl From<SourceOffset> for SourceSpan {
     fn from(offset: SourceOffset) -> Self {
         Self { offset, length: 0 }
@@ -635,7 +668,7 @@ pub type ByteOffset = usize;
 /**
 Newtype that represents the [`ByteOffset`] from the beginning of a [`SourceCode`]
 */
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SourceOffset(ByteOffset);
 

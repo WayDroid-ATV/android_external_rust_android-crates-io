@@ -28,9 +28,9 @@ diagnostic error code: ruget::api::bad_json
 " />
 
 > **NOTE: You must enable the `"fancy"` crate feature to get fancy report
-output like in the screenshots above.** You should only do this in your
-toplevel crate, as the fancy feature pulls in a number of dependencies that
-libraries and such might not want.
+> output like in the screenshots above.** You should only do this in your
+> toplevel crate, as the fancy feature pulls in a number of dependencies that
+> libraries and such might not want.
 
 ### Table of Contents <!-- omit in toc -->
 
@@ -44,11 +44,15 @@ libraries and such might not want.
   - [... in `main()`](#-in-main)
   - [... diagnostic code URLs](#-diagnostic-code-urls)
   - [... snippets](#-snippets)
+  - [... help text](#-help-text)
+  - [... severity level](#-severity-level)
   - [... multiple related errors](#-multiple-related-errors)
   - [... delayed source code](#-delayed-source-code)
   - [... handler options](#-handler-options)
   - [... dynamic diagnostics](#-dynamic-diagnostics)
   - [... syntax highlighting](#-syntax-highlighting)
+  - [... primary label](#-primary-label)
+  - [... collection of labels](#-collection-of-labels)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
 
@@ -97,7 +101,7 @@ You can derive a `Diagnostic` from any `std::error::Error` type.
 
 `thiserror` is a great way to define them, and plays nicely with `miette`!
 */
-use miette::{Diagnostic, SourceSpan};
+use miette::{Diagnostic, NamedSource, SourceSpan};
 use thiserror::Error;
 
 #[derive(Error, Debug, Diagnostic)]
@@ -124,12 +128,11 @@ Use this `Result` type (or its expanded version) as the return type
 throughout your app (but NOT your libraries! Those should always return
 concrete types!).
 */
-use miette::{NamedSource, Result};
+use miette::Result;
 fn this_fails() -> Result<()> {
     // You can use plain strings as a `Source`, or anything that implements
     // the one-method `Source` trait.
     let src = "source\n  text\n    here".to_string();
-    let len = src.len();
 
     Err(MyBad {
         src: NamedSource::new("bad_file.rs", src),
@@ -159,17 +162,20 @@ And this is the output you'll get if you run this program:
 <img src="https://raw.githubusercontent.com/zkat/miette/main/images/single-line-example.png" alt="
 Narratable printout:
 \
-Error: Types mismatched for operation.
-    Diagnostic severity: error
-Begin snippet starting at line 1, column 1
+diagnostic error code: oops::my::bad (link)
+Error: oops!
 \
-snippet line 1: 3 + &quot;5&quot;
-    label starting at line 1, column 1: int
-    label starting at line 1, column 1: doesn't support these values.
-    label starting at line 1, column 1: string
-diagnostic help: Change int or string to be the right types and try again.
-diagnostic code: nu::parser::unsupported_operation
-For more details, see https://docs.rs/nu-parser/0.1.0/nu-parser/enum.ParseError.html#variant.UnsupportedOperation">
+Begin snippet for bad_file.rs starting
+at line 2, column 3
+\
+snippet line 1: source
+\
+snippet line 2:  text
+    highlight starting at line 1, column 3: This bit here
+\
+snippet line 3: here
+\
+diagnostic help: try doing it better next time?">
 
 ### Using
 
@@ -239,7 +245,7 @@ use miette::{IntoDiagnostic, Result};
 use semver::Version;
 
 pub fn some_tool() -> Result<Version> {
-    Ok("1.2.x".parse().into_diagnostic()?)
+    "1.2.x".parse().into_diagnostic()
 }
 ```
 
@@ -254,24 +260,24 @@ use miette::{IntoDiagnostic, Result, WrapErr};
 use semver::Version;
 
 pub fn some_tool() -> Result<Version> {
-    Ok("1.2.x"
+    "1.2.x"
         .parse()
         .into_diagnostic()
-        .wrap_err("Parsing this tool's semver version failed.")?)
+        .wrap_err("Parsing this tool's semver version failed.")
 }
 ```
 
-To construct your own simple adhoc error use the [miette!] macro:
+To construct your own simple adhoc error use the [`miette!`] macro:
 ```rust
 // my_app/lib/my_internal_file.rs
-use miette::{miette, IntoDiagnostic, Result, WrapErr};
+use miette::{miette, Result};
 use semver::Version;
 
 pub fn some_tool() -> Result<Version> {
     let version = "1.2.x";
-    Ok(version
+    version
         .parse()
-        .map_err(|_| miette!("Invalid version {}", version))?)
+        .map_err(|_| miette!("Invalid version {}", version))
 }
 ```
 There are also similar [bail!] and [ensure!] macros.
@@ -283,9 +289,9 @@ There are also similar [bail!] and [ensure!] macros.
 automatically.
 
 > **NOTE:** You must enable the `"fancy"` crate feature to get fancy report
-output like in the screenshots here.** You should only do this in your
-toplevel crate, as the fancy feature pulls in a number of dependencies that
-libraries and such might not want.
+> output like in the screenshots here.** You should only do this in your
+> toplevel crate, as the fancy feature pulls in a number of dependencies that
+> libraries and such might not want.
 
 ```rust
 use miette::{IntoDiagnostic, Result};
@@ -424,7 +430,7 @@ pub struct MyErrorType {
 }
 ```
 
-##### ... help text
+#### ... help text
 `miette` provides two facilities for supplying help text for your errors:
 
 The first is the `#[help()]` format attribute that applies to structs or
@@ -458,6 +464,19 @@ struct Foo {
 let err = Foo {
     advice: Some("try doing this instead".to_string()),
 };
+```
+
+#### ... severity level
+`miette` provides a way to set the severity level of a diagnostic.
+
+```rust
+use miette::Diagnostic;
+use thiserror::Error;
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("welp")]
+#[diagnostic(severity(Warning))]
+struct Foo;
 ```
 
 #### ... multiple related errors
@@ -627,14 +646,14 @@ customize!
 If you...
 - ...don't know all the possible errors upfront
 - ...need to serialize/deserialize errors
-then you may want to use [`miette!`], [`diagnostic!`] macros or
-[`MietteDiagnostic`] directly to create diagnostic on the fly.
+  then you may want to use [`miette!`], [`diagnostic!`] macros or
+  [`MietteDiagnostic`] directly to create diagnostic on the fly.
 
 ```rust
 
 let source = "2 + 2 * 2 = 8".to_string();
 let report = miette!(
-  labels = vec[
+  labels = vec![
       LabeledSpan::at(12..13, "this should be 6"),
   ],
   help = "'*' has greater precedence than '+'",
@@ -655,12 +674,12 @@ automatically use the [`syntect`] crate to highlight the `#[source_code]`
 field of your [`Diagnostic`].
 
 Syntax detection with [`syntect`] is handled by checking 2 methods on the [`SpanContents`] trait, in order:
-* [language()](SpanContents::language) - Provides the name of the language
+* [`language()`](SpanContents::language) - Provides the name of the language
   as a string. For example `"Rust"` will indicate Rust syntax highlighting.
   You can set the language of the [`SpanContents`] produced by a
   [`NamedSource`] via the [`with_language`](NamedSource::with_language)
   method.
-* [name()](SpanContents::name) - In the absence of an explicitly set
+* [`name()`](SpanContents::name) - In the absence of an explicitly set
   language, the name is assumed to contain a file name or file path.
   The highlighter will check for a file extension at the end of the name and
   try to guess the syntax from that.
@@ -670,6 +689,88 @@ implementation of the [`Highlighter`](highlighters::Highlighter)
 trait to [`MietteHandlerOpts`] by calling the
 [`with_syntax_highlighting`](MietteHandlerOpts::with_syntax_highlighting)
 method. See the [`highlighters`] module docs for more details.
+
+#### ... primary label
+
+You can use the `primary` parameter to `label` to indicate that the label
+is the primary label.
+
+```rust
+#[derive(Debug, Diagnostic, Error)]
+#[error("oops!")]
+struct MyError {
+    #[label(primary, "main issue")]
+    primary_span: SourceSpan,
+
+    #[label("other label")]
+    other_span: SourceSpan,
+}
+```
+
+The `primary` parameter can be used at most once:
+
+```rust
+#[derive(Debug, Diagnostic, Error)]
+#[error("oops!")]
+struct MyError {
+    #[label(primary, "main issue")]
+    primary_span: SourceSpan,
+
+    #[label(primary, "other label")] // Error: Cannot have more than one primary label.
+    other_span: SourceSpan,
+}
+```
+
+#### ... collection of labels
+
+When the number of labels is unknown, you can use a collection of `SourceSpan`
+(or any type convertible into `SourceSpan`). For this, add the `collection`
+parameter to `label` and use any type than can be iterated over for the field.
+
+```rust
+#[derive(Debug, Diagnostic, Error)]
+#[error("oops!")]
+struct MyError {
+    #[label("main issue")]
+    primary_span: SourceSpan,
+
+    #[label(collection, "related to this")]
+    other_spans: Vec<Range<usize>>,
+}
+
+let report: miette::Report = MyError {
+    primary_span: (6, 9).into(),
+    other_spans: vec![19..26, 30..41],
+}.into();
+
+println!("{:?}", report.with_source_code("About something or another or yet another ...".to_string()));
+```
+
+A collection can also be of `LabeledSpan` if you want to have different text
+for different labels. Labels with no text will use the one from the `label`
+attribute
+
+```rust
+#[derive(Debug, Diagnostic, Error)]
+#[error("oops!")]
+struct MyError {
+    #[label("main issue")]
+    primary_span: SourceSpan,
+
+    #[label(collection, "related to this")]
+    other_spans: Vec<LabeledSpan>, // LabeledSpan
+}
+
+let report: miette::Report = MyError {
+    primary_span: (6, 9).into(),
+    other_spans: vec![
+        LabeledSpan::new(None, 19, 7), // Use default text `related to this`
+        LabeledSpan::new(Some("and also this".to_string()), 30, 11), // Use specific text
+    ],
+}.into();
+
+println!("{:?}", report.with_source_code("About something or another or yet another ...".to_string()));
+```
 
 ### MSRV
 
