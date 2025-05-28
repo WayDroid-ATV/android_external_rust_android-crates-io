@@ -13,6 +13,25 @@ project adheres to [Semantic Versioning](https://semver.org/).
 ### Removed
 
 
+## [4.7.2] - 2025-05-16
+
+### Fixed
+
+* Set data terminal ready (DTR) on best-effort for not failing in the situation
+  where we can't detect whether to apply this setting reliably.
+  [#268](https://github.com/serialport/serialport-rs/pull/268)
+
+
+## [4.7.1] - 2025-03-25
+
+### Fixed
+
+* Parsing serial numbers with underscore from Windows HWIDs
+  [#253](https://github.com/serialport/serialport-rs/issues/253)
+* Enumerate Bluetooth serial devices (RFCOMM) on Linux too.
+  [#246](https://github.com/serialport/serialport-rs/issues/246)
+
+
 ## [4.7.0] - 2025-01-13
 
 ### Changed
@@ -493,7 +512,9 @@ Unreleased, happened due to a user error using `cargo-release`.
 * Initial release.
 
 
-[Unreleased]: https://github.com/serialport/serialport-rs/compare/v4.7.0...HEAD
+[Unreleased]: https://github.com/serialport/serialport-rs/compare/v4.7.2...HEAD
+[4.7.2]: https://github.com/serialport/serialport-rs/compare/v4.7.1...v4.7.2
+[4.7.1]: https://github.com/serialport/serialport-rs/compare/v4.7.0...v4.7.1
 [4.7.0]: https://github.com/serialport/serialport-rs/compare/v4.6.1...v4.7.0
 [4.6.1]: https://github.com/serialport/serialport-rs/compare/v4.6.0...v4.6.1
 [4.6.0]: https://github.com/serialport/serialport-rs/compare/v4.5.1...v4.6.0

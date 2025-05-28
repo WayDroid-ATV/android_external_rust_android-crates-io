@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.59.0"
 name = "serialport"
-version = "4.7.0"
+version = "4.7.2"
 authors = [
     "Bryant Mairs <bryant@mai.rs>",
     "Jesse Braham <jesse@beta7.io>",
@@ -36,6 +36,11 @@ keywords = [
 categories = ["hardware-support"]
 license = "MPL-2.0"
 repository = "https://github.com/serialport/serialport-rs"
+
+[features]
+default = ["libudev"]
+hardware-tests = []
+usbportinfo-interface = []
 
 [lib]
 name = "serialport"
@@ -143,11 +148,6 @@ version = "0.6.0"
 
 [dev-dependencies.rustversion]
 version = "1.0.16"
-
-[features]
-default = ["libudev"]
-ignore-hardware-tests = []
-usbportinfo-interface = []
 
 [target.'cfg(all(target_os = "linux", not(target_env = "musl")))'.dependencies.libudev]
 version = "0.3.0"
