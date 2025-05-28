@@ -49,7 +49,7 @@ rust_library {
         "libindexmap",
         "libpin_project",
         "libpin_project_lite",
-        "librand",
+        "librand-0.8",
         "libslab",
         "libtokio",
         "libtokio_util",

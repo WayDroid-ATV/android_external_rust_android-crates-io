@@ -30,7 +30,7 @@ rust_test {
         "default",
         "std",
     ],
-    rustlibs: ["librand"],
+    rustlibs: ["librand-0.8"],
 }
 
 rust_test {
@@ -52,7 +52,7 @@ rust_test {
     ],
     rustlibs: [
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 
@@ -75,7 +75,7 @@ rust_test {
     ],
     rustlibs: [
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 
@@ -98,7 +98,7 @@ rust_test {
     ],
     rustlibs: [
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 
@@ -121,7 +121,7 @@ rust_test {
     ],
     rustlibs: [
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 
@@ -144,7 +144,7 @@ rust_test {
     ],
     rustlibs: [
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 
@@ -167,7 +167,7 @@ rust_test {
     ],
     rustlibs: [
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 

@@ -33,7 +33,7 @@ rust_test {
     ],
     rustlibs: [
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 

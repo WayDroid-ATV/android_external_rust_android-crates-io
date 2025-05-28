@@ -1,4 +1,8 @@
 {
+  "module_name_overrides": {
+    "librand": "librand-0.8",
+    "librand_xorshift": "librand_xorshift-0.3"
+  },
   "apex_available": [
     "//apex_available:platform",
     "com.android.uprobestats",

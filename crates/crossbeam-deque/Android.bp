@@ -34,7 +34,7 @@ rust_test {
         "libcrossbeam_deque",
         "libcrossbeam_epoch",
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 
@@ -59,7 +59,7 @@ rust_test {
         "libcrossbeam_deque",
         "libcrossbeam_epoch",
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 
@@ -84,7 +84,7 @@ rust_test {
         "libcrossbeam_deque",
         "libcrossbeam_epoch",
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 
@@ -109,7 +109,7 @@ rust_test {
         "libcrossbeam_deque",
         "libcrossbeam_epoch",
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 

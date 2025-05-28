@@ -25,7 +25,7 @@ rust_library {
         "libbyteorder",
         "libbytes",
         "liblog_rust",
-        "librand",
+        "librand-0.8",
         "libthiserror",
         "libutf8",
     ],

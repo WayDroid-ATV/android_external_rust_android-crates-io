@@ -34,7 +34,7 @@ rust_test {
         "libbencher",
         "libcfg_if",
         "libquickcheck",
-        "librand",
+        "librand-0.8",
     ],
 }
 

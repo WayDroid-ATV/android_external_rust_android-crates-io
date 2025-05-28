@@ -36,7 +36,7 @@ rust_test {
     ],
     rustlibs: [
         "libcriterion",
-        "librand",
+        "librand-0.8",
     ],
 }
 
@@ -64,7 +64,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libhttparse",
-        "librand",
+        "librand-0.8",
     ],
 }
 

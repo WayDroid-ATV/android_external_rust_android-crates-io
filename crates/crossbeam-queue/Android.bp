@@ -34,7 +34,7 @@ rust_test {
     rustlibs: [
         "libcrossbeam_queue",
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 
@@ -59,7 +59,7 @@ rust_test {
     rustlibs: [
         "libcrossbeam_queue",
         "libcrossbeam_utils",
-        "librand",
+        "librand-0.8",
     ],
 }
 

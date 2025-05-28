@@ -57,6 +57,6 @@ rust_test {
     rustlibs: [
         "libenv_logger",
         "liblibc",
-        "librand",
+        "librand-0.8",
     ],
 }

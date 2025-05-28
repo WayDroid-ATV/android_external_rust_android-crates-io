@@ -31,7 +31,7 @@ rust_library {
         "xxhash3_64",
         "xxhash64",
     ],
-    rustlibs: ["librand"],
+    rustlibs: ["librand-0.8"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -65,7 +65,7 @@ rust_test {
         "xxhash64",
     ],
     rustlibs: [
-        "librand",
+        "librand-0.8",
         "libserde_json",
     ],
 }
