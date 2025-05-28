@@ -315,7 +315,7 @@ dependencies = [
  "libbpf-sys",
  "libc 0.2.168",
  "libfuzzer-sys",
- "libloading 0.8.6",
+ "libloading 0.8.8",
  "libm",
  "libsqlite3-sys",
  "libtest-mimic",
@@ -1430,7 +1430,7 @@ checksum = "0b023947811758c97c59bf9d1c188fd619ad4718dcaa767947df1cadb14f39f4"
 dependencies = [
  "glob",
  "libc 0.2.168",
- "libloading 0.8.6",
+ "libloading 0.8.8",
 ]
 
 [[package]]
@@ -2111,7 +2111,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330c60081dcc4c72131f8eb70510f1ac07223e5d4163db481a04a0befcffa412"
 dependencies = [
- "libloading 0.8.6",
+ "libloading 0.7.4",
 ]
 
 [[package]]
@@ -4264,9 +4264,9 @@ dependencies = [
 
 [[package]]
 name = "libloading"
-version = "0.8.6"
+version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
+checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
  "windows-targets 0.52.6",
