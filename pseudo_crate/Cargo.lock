@@ -573,7 +573,7 @@ dependencies = [
  "xml-rs",
  "yaml-rust",
  "yoke 0.7.5",
- "yoke-derive 0.7.5",
+ "yoke-derive",
  "zerocopy 0.8.24",
  "zerocopy-derive 0.8.24",
  "zerofrom",
@@ -8748,20 +8748,8 @@ checksum = "5f41bb01b8226ef4bfd589436a297c53d118f65921786300e427be8d487695cc"
 dependencies = [
  "serde",
  "stable_deref_trait",
- "yoke-derive 0.8.0",
+ "yoke-derive",
  "zerofrom",
-]
-
-[[package]]
-name = "yoke-derive"
-version = "0.7.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2380878cad4ac9aac1e2435f3eb4020e8374b5f13c296cb75b4620ff8e229154"
-dependencies = [
- "proc-macro2 1.0.94",
- "quote 1.0.40",
- "syn 2.0.100",
- "synstructure",
 ]
 
 [[package]]
