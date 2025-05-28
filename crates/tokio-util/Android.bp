@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "tokio_util",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.7.13",
+    cargo_pkg_version: "0.7.15",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
