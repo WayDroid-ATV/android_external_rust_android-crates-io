@@ -1,6 +1,6 @@
 {
   "module_name_overrides": {
-    "libgetrandom": "libgetrandom-0.2.16"
+    "libgetrandom": "libgetrandom-0.2"
   },
   "apex_available": [
     "//apex_available:platform",
@@ -27,7 +27,7 @@
         "std"
       ],
       "module_name_overrides": {
-        "libgetrandom": "libgetrandom-0.2.16",
+        "libgetrandom": "libgetrandom-0.2",
         "libring_core_0_17_2_": "libring-core",
         "libring_core_0_17_2_test": "libring-test"
       },
@@ -37,7 +37,7 @@
       "features": [
       ],
       "module_name_overrides": {
-        "libgetrandom": "libgetrandom-0.2.16",
+        "libgetrandom": "libgetrandom-0.2",
         "libring_core_0_17_2_": "libring-core",
         "libring_core_0_17_2_test": "libring-test",
         "libring": "libring_nostd",

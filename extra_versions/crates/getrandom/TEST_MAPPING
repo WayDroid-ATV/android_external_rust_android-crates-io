@@ -96,13 +96,13 @@
   ],
   "postsubmit": [
     {
-      "name": "getrandom_test_src_lib-0.2.16"
+      "name": "getrandom_test_src_lib-0.2"
     },
     {
-      "name": "getrandom_test_tests_normal-0.2.16"
+      "name": "getrandom_test_tests_normal-0.2"
     },
     {
-      "name": "getrandom_test_tests_rdrand-0.2.16"
+      "name": "getrandom_test_tests_rdrand-0.2"
     }
   ]
 }

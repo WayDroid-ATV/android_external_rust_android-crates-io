@@ -2,19 +2,19 @@
 // Do not modify this file because the changes will be overridden on upgrade.
 
 package {
-    default_applicable_licenses: ["external_rust_crates_getrandom-0.2.16_license"],
+    default_applicable_licenses: ["external_rust_crates_getrandom-0.2_license"],
     default_team: "trendy_team_android_rust",
 }
 
 license {
-    name: "external_rust_crates_getrandom-0.2.16_license",
+    name: "external_rust_crates_getrandom-0.2_license",
     visibility: [":__subpackages__"],
     license_kinds: ["SPDX-license-identifier-Apache-2.0"],
     license_text: ["LICENSE"],
 }
 
 rust_test {
-    name: "getrandom_test_src_lib-0.2.16",
+    name: "getrandom_test_src_lib-0.2",
     host_supported: true,
     crate_name: "getrandom",
     cargo_env_compat: true,
@@ -34,7 +34,7 @@ rust_test {
 }
 
 rust_test {
-    name: "getrandom_test_tests_normal-0.2.16",
+    name: "getrandom_test_tests_normal-0.2",
     host_supported: true,
     crate_name: "normal",
     cargo_env_compat: true,
@@ -49,13 +49,13 @@ rust_test {
     features: ["std"],
     rustlibs: [
         "libcfg_if",
-        "libgetrandom-0.2.16",
+        "libgetrandom-0.2",
         "liblibc",
     ],
 }
 
 rust_test {
-    name: "getrandom_test_tests_rdrand-0.2.16",
+    name: "getrandom_test_tests_rdrand-0.2",
     host_supported: true,
     crate_name: "rdrand",
     cargo_env_compat: true,
@@ -70,13 +70,13 @@ rust_test {
     features: ["std"],
     rustlibs: [
         "libcfg_if",
-        "libgetrandom-0.2.16",
+        "libgetrandom-0.2",
         "liblibc",
     ],
 }
 
 rust_library {
-    name: "libgetrandom-0.2.16",
+    name: "libgetrandom-0.2",
     host_supported: true,
     crate_name: "getrandom",
     cargo_env_compat: true,

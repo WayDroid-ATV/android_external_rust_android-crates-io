@@ -14,59 +14,18 @@ license {
 }
 
 rust_test {
-    name: "getrandom_test_src_lib",
+    name: "getrandom_test_tests_mod",
     host_supported: true,
-    crate_name: "getrandom",
+    crate_name: "mod",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.16",
-    crate_root: "src/lib.rs",
+    cargo_pkg_version: "0.3.3",
+    crate_root: "tests/mod.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
-    features: ["std"],
-    rustlibs: [
-        "libcfg_if",
-        "liblibc",
-    ],
-}
-
-rust_test {
-    name: "getrandom_test_tests_normal",
-    host_supported: true,
-    crate_name: "normal",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.2.16",
-    crate_root: "tests/normal.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2018",
-    features: ["std"],
-    rustlibs: [
-        "libcfg_if",
-        "libgetrandom",
-        "liblibc",
-    ],
-}
-
-rust_test {
-    name: "getrandom_test_tests_rdrand",
-    host_supported: true,
-    crate_name: "rdrand",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.2.16",
-    crate_root: "tests/rdrand.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2018",
+    edition: "2021",
     features: ["std"],
     rustlibs: [
         "libcfg_if",
@@ -80,9 +39,9 @@ rust_library {
     host_supported: true,
     crate_name: "getrandom",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.16",
+    cargo_pkg_version: "0.3.3",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     features: ["std"],
     rustlibs: [
         "libcfg_if",

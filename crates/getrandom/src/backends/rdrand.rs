@@ -1,16 +1,26 @@
 //! RDRAND backend for x86(-64) targets
-use crate::{lazy::LazyBool, util::slice_as_uninit, Error};
+use crate::{util::slice_as_uninit, Error};
 use core::mem::{size_of, MaybeUninit};
+
+#[path = "../lazy.rs"]
+mod lazy;
+
+#[cfg(not(any(target_arch = "x86_64", target_arch = "x86")))]
+compile_error!("`rdrand` backend can be enabled only for x86 and x86-64 targets!");
 
 cfg_if! {
     if #[cfg(target_arch = "x86_64")] {
         use core::arch::x86_64 as arch;
         use arch::_rdrand64_step as rdrand_step;
+        type Word = u64;
     } else if #[cfg(target_arch = "x86")] {
         use core::arch::x86 as arch;
         use arch::_rdrand32_step as rdrand_step;
+        type Word = u32;
     }
 }
+
+static RDRAND_GOOD: lazy::LazyBool = lazy::LazyBool::new();
 
 // Recommendation from "Intel® Digital Random Number Generator (DRNG) Software
 // Implementation Guide" - Section 5.2.1 and "Intel® 64 and IA-32 Architectures
@@ -18,11 +28,11 @@ cfg_if! {
 const RETRY_LIMIT: usize = 10;
 
 #[target_feature(enable = "rdrand")]
-unsafe fn rdrand() -> Option<usize> {
+unsafe fn rdrand() -> Option<Word> {
     for _ in 0..RETRY_LIMIT {
         let mut val = 0;
         if rdrand_step(&mut val) == 1 {
-            return Some(val as usize);
+            return Some(val);
         }
     }
     None
@@ -91,21 +101,12 @@ fn is_rdrand_good() -> bool {
     unsafe { self_test() }
 }
 
-pub fn getrandom_inner(dest: &mut [MaybeUninit<u8>]) -> Result<(), Error> {
-    static RDRAND_GOOD: LazyBool = LazyBool::new();
-    if !RDRAND_GOOD.unsync_init(is_rdrand_good) {
-        return Err(Error::NO_RDRAND);
-    }
-    // SAFETY: After this point, we know rdrand is supported.
-    unsafe { rdrand_exact(dest) }.ok_or(Error::FAILED_RDRAND)
-}
-
 // TODO: make this function safe when we have feature(target_feature_11)
 #[target_feature(enable = "rdrand")]
 unsafe fn rdrand_exact(dest: &mut [MaybeUninit<u8>]) -> Option<()> {
     // We use chunks_exact_mut instead of chunks_mut as it allows almost all
     // calls to memcpy to be elided by the compiler.
-    let mut chunks = dest.chunks_exact_mut(size_of::<usize>());
+    let mut chunks = dest.chunks_exact_mut(size_of::<Word>());
     for chunk in chunks.by_ref() {
         let src = rdrand()?.to_ne_bytes();
         chunk.copy_from_slice(slice_as_uninit(&src));
@@ -118,4 +119,64 @@ unsafe fn rdrand_exact(dest: &mut [MaybeUninit<u8>]) -> Option<()> {
         tail.copy_from_slice(slice_as_uninit(&src[..n]));
     }
     Some(())
+}
+
+#[cfg(target_arch = "x86_64")]
+#[target_feature(enable = "rdrand")]
+unsafe fn rdrand_u32() -> Option<u32> {
+    rdrand().map(crate::util::truncate)
+}
+
+#[cfg(target_arch = "x86_64")]
+#[target_feature(enable = "rdrand")]
+unsafe fn rdrand_u64() -> Option<u64> {
+    rdrand()
+}
+
+#[cfg(target_arch = "x86")]
+#[target_feature(enable = "rdrand")]
+unsafe fn rdrand_u32() -> Option<u32> {
+    rdrand()
+}
+
+#[cfg(target_arch = "x86")]
+#[target_feature(enable = "rdrand")]
+unsafe fn rdrand_u64() -> Option<u64> {
+    let a = rdrand()?;
+    let b = rdrand()?;
+    Some((u64::from(a) << 32) | u64::from(b))
+}
+
+#[inline]
+pub fn inner_u32() -> Result<u32, Error> {
+    if !RDRAND_GOOD.unsync_init(is_rdrand_good) {
+        return Err(Error::NO_RDRAND);
+    }
+    // SAFETY: After this point, we know rdrand is supported.
+    unsafe { rdrand_u32() }.ok_or(Error::FAILED_RDRAND)
+}
+
+#[inline]
+pub fn inner_u64() -> Result<u64, Error> {
+    if !RDRAND_GOOD.unsync_init(is_rdrand_good) {
+        return Err(Error::NO_RDRAND);
+    }
+    // SAFETY: After this point, we know rdrand is supported.
+    unsafe { rdrand_u64() }.ok_or(Error::FAILED_RDRAND)
+}
+
+#[inline]
+pub fn fill_inner(dest: &mut [MaybeUninit<u8>]) -> Result<(), Error> {
+    if !RDRAND_GOOD.unsync_init(is_rdrand_good) {
+        return Err(Error::NO_RDRAND);
+    }
+    // SAFETY: After this point, we know rdrand is supported.
+    unsafe { rdrand_exact(dest) }.ok_or(Error::FAILED_RDRAND)
+}
+
+impl Error {
+    /// RDRAND instruction failed due to a hardware issue.
+    pub(crate) const FAILED_RDRAND: Error = Self::new_internal(10);
+    /// RDRAND instruction unsupported on this target.
+    pub(crate) const NO_RDRAND: Error = Self::new_internal(11);
 }

@@ -1,6 +1,6 @@
 {
   "module_name_overrides": {
-    "libgetrandom": "libgetrandom-0.2.16",
+    "libgetrandom": "libgetrandom-0.2",
     "libzerocopy": "libzerocopy-0.7.35"
   },
   "package": {

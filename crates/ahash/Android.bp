@@ -38,7 +38,7 @@ rust_library {
     ],
     rustlibs: [
         "libcfg_if",
-        "libgetrandom-0.2.16",
+        "libgetrandom-0.2",
         "libonce_cell",
         "libzerocopy-0.7.35",
     ],

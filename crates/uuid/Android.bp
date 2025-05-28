@@ -31,7 +31,7 @@ rust_library {
     ],
     rustlibs: [
         "libatomic_rust",
-        "libgetrandom-0.2.16",
+        "libgetrandom-0.2",
         "libserde",
     ],
     apex_available: [
@@ -67,7 +67,7 @@ rust_test {
     rustlibs: [
         "libatomic_rust",
         "libbincode",
-        "libgetrandom-0.2.16",
+        "libgetrandom-0.2",
         "libserde",
         "libserde_json",
         "libserde_test",
