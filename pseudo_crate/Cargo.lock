@@ -200,7 +200,7 @@ dependencies = [
  "der_derive",
  "derive_arbitrary",
  "diplomat",
- "diplomat-runtime",
+ "diplomat-runtime 0.12.0",
  "diplomat_core",
  "displaydoc",
  "doc-comment",
@@ -2060,6 +2060,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "diplomat-runtime"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "098f9520ec5c190943b083bca3ea4cc4e67dc5f85a37062e528ecf1d25f04eb4"
+
+[[package]]
 name = "diplomat_core"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3376,7 +3382,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dad3b883dd9a67fbbf7cd7082a319a7a4a7f4a5e917f75c56cd247bec3ba7b82"
 dependencies = [
  "diplomat",
- "diplomat-runtime",
+ "diplomat-runtime 0.10.0",
  "fixed_decimal",
  "icu_calendar",
  "icu_casemap",
