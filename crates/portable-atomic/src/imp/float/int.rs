@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 /*
-AtomicF{32,64} implementation based on AtomicU{32,64}.
+Atomic float implementation based on atomic integer.
 
 This module provides atomic float implementations using atomic integer.
 
 Note that most of `fetch_*` operations of atomic floats are implemented using
 CAS loops, which can be slower than equivalent operations of atomic integers.
 
-GPU targets have atomic instructions for float, so GPU targets will use
-architecture-specific implementations instead of this implementation in the
+AArch64 with FEAT_LSFE and GPU targets have atomic instructions for float.
+Both will use architecture-specific implementations instead of this implementation in the
 future: https://github.com/taiki-e/portable-atomic/issues/34 / https://github.com/taiki-e/portable-atomic/pull/45
 */
 
-// TODO: fetch_{minimum,maximum}* https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3008r2.html
+// TODO: fetch_{minimum,maximum}* https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3008r2.html / https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p0493r5.pdf
 
 #![cfg_attr(
     all(target_pointer_width = "16", not(feature = "fallback")),
@@ -48,13 +48,6 @@ macro_rules! atomic_float {
             }
             pub(crate) const IS_ALWAYS_LOCK_FREE: bool =
                 crate::$atomic_int_type::is_always_lock_free();
-
-            #[inline]
-            pub(crate) fn get_mut(&mut self) -> &mut $float_type {
-                // SAFETY: the mutable reference guarantees unique ownership.
-                // (UnsafeCell::get_mut requires Rust 1.50)
-                unsafe { &mut *self.v.get() }
-            }
 
             #[inline]
             #[cfg_attr(
@@ -187,6 +180,7 @@ macro_rules! atomic_float {
                 self.fetch_update_(order, |x| x.min(val))
             }
             } // cfg_has_atomic_cas!
+
             #[inline]
             #[cfg_attr(miri, track_caller)] // even without panics, this helps for Miri backtraces
             pub(crate) fn fetch_neg(&self, order: Ordering) -> $float_type {
@@ -205,9 +199,17 @@ macro_rules! atomic_float {
     };
 }
 
+#[cfg(portable_atomic_unstable_f16)]
+cfg_has_atomic_16! {
+    atomic_float!(AtomicF16, f16, AtomicU16, u16, 2);
+}
 cfg_has_atomic_32! {
     atomic_float!(AtomicF32, f32, AtomicU32, u32, 4);
 }
 cfg_has_atomic_64! {
     atomic_float!(AtomicF64, f64, AtomicU64, u64, 8);
+}
+#[cfg(portable_atomic_unstable_f128)]
+cfg_has_atomic_128! {
+    atomic_float!(AtomicF128, f128, AtomicU128, u128, 16);
 }

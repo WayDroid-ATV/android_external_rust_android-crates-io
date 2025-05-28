@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 #[derive(Clone, Copy)]
+#[repr(transparent)]
 pub(crate) struct CpuInfo(u32);
 
 impl CpuInfo {
-    const INIT: u32 = 0;
-
     #[inline]
     fn set(&mut self, bit: u32) {
         self.0 = set(self.0, bit);
@@ -18,7 +17,7 @@ impl CpuInfo {
 
 #[inline]
 fn set(x: u32, bit: u32) -> u32 {
-    x | 1 << bit
+    x | (1 << bit)
 }
 #[inline]
 fn test(x: u32, bit: u32) -> bool {
@@ -48,14 +47,21 @@ pub(crate) fn detect() -> CpuInfo {
 macro_rules! flags {
     ($(
         $(#[$attr:meta])*
-        $flag:ident ($shift:literal, $func:ident, $name:literal, $cfg:meta),
+        $flag:ident ($func:ident, $name:literal, any($($cfg:ident),*)),
     )*) => {
+        #[allow(dead_code, non_camel_case_types)]
+        #[repr(u32)]
+        enum CpuInfoFlag {
+            Init = 0,
+            $($flag,)*
+        }
         impl CpuInfo {
+            const INIT: u32 = CpuInfoFlag::Init as u32;
             $(
                 $(#[$attr])*
-                const $flag: u32 = $shift;
+                const $flag: u32 = CpuInfoFlag::$flag as u32;
                 $(#[$attr])*
-                #[cfg(any(test, not($cfg)))]
+                #[cfg(any(test, not(any($($cfg = $name),*))))]
                 #[inline]
                 pub(crate) fn $func(self) -> bool {
                     self.test(Self::$flag)
@@ -63,7 +69,7 @@ macro_rules! flags {
             )*
             #[cfg(test)] // for test
             const ALL_FLAGS: &'static [(&'static str, u32, bool)] = &[$(
-                ($name, Self::$flag, cfg!($cfg)),
+                ($name, Self::$flag, cfg!(any($($cfg = $name),*))),
             )*];
         }
     };
@@ -72,110 +78,209 @@ macro_rules! flags {
 #[cfg(any(target_arch = "aarch64", target_arch = "arm64ec"))]
 flags! {
     // FEAT_LSE, Large System Extensions
-    // https://developer.arm.com/documentation/109697/0100/Feature-descriptions/The-Armv8-1-architecture-extension
+    // https://developer.arm.com/documentation/109697/2024_12/Feature-descriptions/The-Armv8-1-architecture-extension
     // > This feature is supported in AArch64 state only.
     // > FEAT_LSE is OPTIONAL from Armv8.0.
     // > FEAT_LSE is mandatory from Armv8.1.
-    HAS_LSE(1, has_lse, "lse", any(target_feature = "lse", portable_atomic_target_feature = "lse")),
+    HAS_LSE(has_lse, "lse", any(target_feature, portable_atomic_target_feature)),
     // FEAT_LSE2, Large System Extensions version 2
-    // https://developer.arm.com/documentation/109697/0100/Feature-descriptions/The-Armv8-4-architecture-extension
+    // https://developer.arm.com/documentation/109697/2024_12/Feature-descriptions/The-Armv8-4-architecture-extension
     // > This feature is supported in AArch64 state only.
     // > FEAT_LSE2 is OPTIONAL from Armv8.2.
     // > FEAT_LSE2 is mandatory from Armv8.4.
     #[cfg_attr(not(test), allow(dead_code))]
-    HAS_LSE2(2, has_lse2, "lse2", any(target_feature = "lse2", portable_atomic_target_feature = "lse2")),
+    HAS_LSE2(has_lse2, "lse2", any(target_feature, portable_atomic_target_feature)),
     // FEAT_LRCPC3, Load-Acquire RCpc instructions version 3
-    // https://developer.arm.com/documentation/109697/0100/Feature-descriptions/The-Armv8-9-architecture-extension
+    // https://developer.arm.com/documentation/109697/2024_12/Feature-descriptions/The-Armv8-9-architecture-extension
     // > This feature is supported in AArch64 state only.
     // > FEAT_LRCPC3 is OPTIONAL from Armv8.2.
     // > If FEAT_LRCPC3 is implemented, then FEAT_LRCPC2 is implemented.
     #[cfg_attr(not(test), allow(dead_code))]
-    HAS_RCPC3(3, has_rcpc3, "rcpc3", any(target_feature = "rcpc3", portable_atomic_target_feature = "rcpc3")),
+    HAS_RCPC3(has_rcpc3, "rcpc3", any(target_feature, portable_atomic_target_feature)),
     // FEAT_LSE128, 128-bit Atomics
-    // https://developer.arm.com/documentation/109697/0100/Feature-descriptions/The-Armv9-4-architecture-extension
+    // https://developer.arm.com/documentation/109697/2024_12/Feature-descriptions/The-Armv9-4-architecture-extension
     // > This feature is supported in AArch64 state only.
     // > FEAT_LSE128 is OPTIONAL from Armv9.3.
     // > If FEAT_LSE128 is implemented, then FEAT_LSE is implemented.
     #[cfg_attr(not(test), allow(dead_code))]
-    HAS_LSE128(4, has_lse128, "lse128", any(target_feature = "lse128", portable_atomic_target_feature = "lse128")),
+    HAS_LSE128(has_lse128, "lse128", any(target_feature, portable_atomic_target_feature)),
 }
 
 #[cfg(target_arch = "powerpc64")]
 flags! {
     // lqarx and stqcx.
-    HAS_QUADWORD_ATOMICS(1, has_quadword_atomics, "quadword-atomics", any(target_feature = "quadword-atomics", portable_atomic_target_feature = "quadword-atomics")),
+    HAS_QUADWORD_ATOMICS(has_quadword_atomics, "quadword-atomics", any(target_feature, portable_atomic_target_feature)),
 }
 
 #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 flags! {
     // amocas.{w,d,q}
-    HAS_ZACAS(1, has_zacas, "zacas", any(target_feature = "experimental-zacas", portable_atomic_target_feature = "experimental-zacas")),
+    HAS_ZACAS(has_zacas, "zacas", any(target_feature, portable_atomic_target_feature)),
 }
 
 #[cfg(target_arch = "x86_64")]
 flags! {
     // cmpxchg16b
-    HAS_CMPXCHG16B(1, has_cmpxchg16b, "cmpxchg16b", any(target_feature = "cmpxchg16b", portable_atomic_target_feature = "cmpxchg16b")),
+    HAS_CMPXCHG16B(has_cmpxchg16b, "cmpxchg16b", any(target_feature, portable_atomic_target_feature)),
     // atomic vmovdqa
     #[cfg(target_feature = "sse")]
-    HAS_VMOVDQA_ATOMIC(2, has_vmovdqa_atomic, "vmovdqa-atomic", any(/* always false */)),
+    HAS_VMOVDQA_ATOMIC(has_vmovdqa_atomic, "vmovdqa-atomic", any(/* always false */)),
 }
 
-// core::ffi::c_* (except c_void) requires Rust 1.64, libc will soon require Rust 1.47
-#[cfg(not(target_arch = "x86_64"))]
-#[cfg(not(windows))]
-#[allow(dead_code, non_camel_case_types)]
-mod c_types {
-    pub(crate) type c_void = core::ffi::c_void;
-    // c_{,u}int is {i,u}32 on non-16-bit architectures
-    // https://github.com/rust-lang/rust/blob/1.80.0/library/core/src/ffi/mod.rs#L147
-    // (16-bit architectures currently don't use this module)
-    pub(crate) type c_int = i32;
-    pub(crate) type c_uint = u32;
-    // c_{,u}long is {i,u}64 on non-Windows 64-bit targets, otherwise is {i,u}32
-    // https://github.com/rust-lang/rust/blob/1.80.0/library/core/src/ffi/mod.rs#L159
-    // (Windows currently doesn't use this module - this module is cfg(not(windows)))
-    #[cfg(target_pointer_width = "64")]
-    pub(crate) type c_long = i64;
-    #[cfg(not(target_pointer_width = "64"))]
-    pub(crate) type c_long = i32;
-    #[cfg(target_pointer_width = "64")]
-    pub(crate) type c_ulong = u64;
-    #[cfg(not(target_pointer_width = "64"))]
-    pub(crate) type c_ulong = u32;
-    // c_size_t is currently always usize
-    // https://github.com/rust-lang/rust/blob/1.80.0/library/core/src/ffi/mod.rs#L67
-    pub(crate) type c_size_t = usize;
-    // c_char is u8 by default on most non-Apple/non-Windows Arm/PowerPC/RISC-V/s390x/Hexagon targets
-    // (Linux/Android/FreeBSD/NetBSD/OpenBSD/VxWorks/Fuchsia/QNX Neutrino/Horizon/AIX/z/OS)
-    // https://github.com/rust-lang/rust/blob/1.80.0/library/core/src/ffi/mod.rs#L83
-    // https://github.com/llvm/llvm-project/blob/llvmorg-19.1.0/lldb/source/Utility/ArchSpec.cpp#L712
-    // RISC-V https://github.com/riscv-non-isa/riscv-elf-psabi-doc/blob/draft-20240829-13bfa9f54634cb60d86b9b333e109f077805b4b3/riscv-cc.adoc#cc-type-representations
-    // Hexagon https://lists.llvm.org/pipermail/llvm-dev/attachments/20190916/21516a52/attachment-0001.pdf
-    // AIX https://www.ibm.com/docs/en/xl-c-aix/13.1.3?topic=specifiers-character-types
-    // z/OS https://www.ibm.com/docs/en/zos/3.1.0?topic=specifiers-character-types
-    // (Windows currently doesn't use this module)
-    #[cfg(not(target_vendor = "apple"))]
-    pub(crate) type c_char = u8;
-    // c_char is i8 on all Apple targets
-    #[cfg(target_vendor = "apple")]
-    pub(crate) type c_char = i8;
+// Helper macros for defining FFI bindings.
+#[cfg(not(any(windows, target_arch = "x86", target_arch = "x86_64")))]
+#[allow(unused_macros)]
+#[macro_use]
+mod ffi_macros {
+    /// Defines constants with #[cfg(test)] static assertions which checks
+    /// values are the same as the platform's latest header files' ones.
+    // Note: This macro is sys_const!({ }), not sys_const! { }.
+    // An extra brace is used in input to make contents rustfmt-able:.
+    macro_rules! sys_const {
+        ({$(
+            $(#[$attr:meta])*
+            $vis:vis const $name:ident: $ty:ty = $val:expr;
+        )*}) => {
+            $(
+                $(#[$attr])*
+                $vis const $name: $ty = $val;
+            )*
+            // Static assertions for FFI bindings.
+            // This checks that FFI bindings defined in this crate and FFI bindings generated for
+            // the platform's latest header file using bindgen have the same values.
+            // Since this is static assertion, we can detect problems with
+            // `cargo check --tests --target <target>` run in CI (via TESTS=1 build.sh)
+            // without actually running tests on these platforms.
+            // See also https://github.com/taiki-e/test-helper/blob/HEAD/tools/codegen/src/ffi.rs.
+            #[cfg(test)]
+            #[allow(
+                unused_attributes, // for #[allow(..)] in $(#[$attr])*
+                clippy::cast_possible_wrap,
+                clippy::cast_sign_loss,
+                clippy::cast_possible_truncation,
+            )]
+            const _: fn() = || {$(
+                $(#[$attr])*
+                sys_const_cmp!($name, $ty);
+            )*};
+        };
+    }
+    #[cfg(test)]
+    macro_rules! sys_const_cmp {
+        (RTLD_DEFAULT, $ty:ty) => {
+            // ptr comparison and ptr-to-int cast are not stable on const context, so use ptr-to-int
+            // transmute and compare its result.
+            static_assert!(
+                // SAFETY: Pointer-to-integer transmutes are valid (since we are okay with losing the
+                // provenance here). (Same as <pointer>::addr().)
+                unsafe {
+                    core::mem::transmute::<$ty, usize>(RTLD_DEFAULT)
+                        == core::mem::transmute::<$ty, usize>(test_helper::sys::RTLD_DEFAULT)
+                }
+            );
+        };
+        ($name:ident, $ty:ty) => {
+            static_assert!($name == test_helper::sys::$name as $ty);
+        };
+    }
+    /// Defines functions with #[cfg(test)] static assertions which checks
+    /// signatures are the same as the platform's latest header files' ones.
+    // Note: This macro is sys_fn!({ }), not sys_fn! { }.
+    // An extra brace is used in input to make contents rustfmt-able:.
+    macro_rules! sys_fn {
+        ({
+            $(#[$extern_attr:meta])*
+            extern $abi:literal {$(
+                $(#[$fn_attr:meta])*
+                $vis:vis fn $name:ident($($arg_pat:ident: $arg_ty:ty),* $(,)?) $(-> $ret_ty:ty)?;
+            )*}
+        }) => {
+            $(#[$extern_attr])*
+            extern $abi {$(
+                $(#[$fn_attr])*
+                $vis fn $name($($arg_pat: $arg_ty),*) $(-> $ret_ty)?;
+            )*}
+            // Static assertions for FFI bindings.
+            // This checks that FFI bindings defined in this crate and FFI bindings generated for
+            // the platform's latest header file using bindgen have the same signatures.
+            // Since this is static assertion, we can detect problems with
+            // `cargo check --tests --target <target>` run in CI (via TESTS=1 build.sh)
+            // without actually running tests on these platforms.
+            // See also https://github.com/taiki-e/test-helper/blob/HEAD/tools/codegen/src/ffi.rs.
+            #[cfg(test)]
+            const _: fn() = || {$(
+                $(#[$fn_attr])*
+                {
+                    let mut _f: unsafe extern $abi fn($($arg_ty),*) $(-> $ret_ty)? = $name;
+                    _f = test_helper::sys::$name;
+                }
+            )*};
+        };
+    }
+    /// Defines #[repr(C)] structs with #[cfg(test)] static assertions which checks
+    /// fields are the same as the platform's latest header files' ones.
+    // Note: This macro is sys_struct!({ }), not sys_struct! { }.
+    // An extra brace is used in input to make contents rustfmt-able:.
+    macro_rules! sys_struct {
+        ({$(
+            $(#[$struct_attr:meta])*
+            $struct_vis:vis struct $struct_name:ident {$(
+                $(#[$field_attr:meta])*
+                $field_vis:vis $field_name:ident: $field_ty:ty,
+            )*}
+        )*}) => {
+            $(
+                $(#[$struct_attr])*
+                #[derive(Copy, Clone)]
+                #[cfg_attr(test, derive(Debug, PartialEq))]
+                #[repr(C)]
+                $struct_vis struct $struct_name {$(
+                    $(#[$field_attr])*
+                    $field_vis $field_name: $field_ty,
+                )*}
+            )*
+            // Static assertions for FFI bindings.
+            // This checks that FFI bindings defined in this crate and FFI bindings generated for
+            // the platform's latest header file using bindgen have the same fields.
+            // Since this is static assertion, we can detect problems with
+            // `cargo check --tests --target <target>` run in CI (via TESTS=1 build.sh)
+            // without actually running tests on these platforms.
+            // See also https://github.com/taiki-e/test-helper/blob/HEAD/tools/codegen/src/ffi.rs.
+            #[cfg(test)]
+            #[allow(clippy::undocumented_unsafe_blocks)]
+            const _: fn() = || {$(
+                $(#[$struct_attr])*
+                {
+                    static_assert!(
+                        core::mem::size_of::<$struct_name>()
+                            == core::mem::size_of::<test_helper::sys::$struct_name>()
+                    );
+                    let s: $struct_name = unsafe { core::mem::zeroed() };
+                    // field names and types
+                    let _ = test_helper::sys::$struct_name {$(
+                        $(#[$field_attr])*
+                        $field_name: s.$field_name,
+                    )*};
+                    // field offsets
+                    #[cfg(not(portable_atomic_no_offset_of))]
+                    {$(
+                        $(#[$field_attr])*
+                        static_assert!(
+                            core::mem::offset_of!($struct_name, $field_name) ==
+                            core::mem::offset_of!(test_helper::sys::$struct_name, $field_name),
+                        );
+                    )*}
+                }
+            )*};
+        };
+    }
 
     // Static assertions for C type definitions.
+    // Assertions with core::ffi types are in crate::utils::ffi module.
     #[cfg(test)]
     const _: fn() = || {
-        use test_helper::{libc, sys};
-        let _: c_int = 0 as std::os::raw::c_int;
-        let _: c_uint = 0 as std::os::raw::c_uint;
-        let _: c_long = 0 as std::os::raw::c_long;
-        let _: c_ulong = 0 as std::os::raw::c_ulong;
-        let _: c_size_t = 0 as libc::size_t; // std::os::raw::c_size_t is unstable
-        #[cfg(not(any(
-            all(target_arch = "aarch64", target_os = "illumos"), // TODO: https://github.com/rust-lang/rust/issues/129945
-            all(target_arch = "riscv64", target_os = "android"), // TODO: https://github.com/rust-lang/rust/issues/129945
-        )))]
-        let _: c_char = 0 as std::os::raw::c_char;
-        let _: c_char = 0 as sys::c_char;
+        use test_helper::sys;
+        let _: crate::utils::ffi::c_char = 0 as sys::c_char;
     };
 }
 
@@ -227,7 +332,7 @@ mod tests_common {
     fn print_features() {
         use std::{
             fmt::Write as _,
-            io::{self, Write},
+            io::{self, Write as _},
             string::String,
         };
 
@@ -275,7 +380,10 @@ mod tests_common {
         } else {
             assert!(!detect().test(CpuInfo::HAS_LSE2));
             if let Ok(test_helper::cpuinfo::ProcCpuinfo { lse2: Some(lse2), .. }) = proc_cpuinfo {
-                assert!(!lse2);
+                // cpuinfo shows features of host, not valgrind
+                if !cfg!(valgrind) {
+                    assert!(!lse2);
+                }
             }
         }
         if detect().has_lse128() {

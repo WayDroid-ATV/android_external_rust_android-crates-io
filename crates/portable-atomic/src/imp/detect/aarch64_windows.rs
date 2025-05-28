@@ -59,16 +59,10 @@ mod tests {
     // (Unlike libc, windows-sys programmatically generates bindings from Windows
     // API metadata, so it should be enough to check compatibility with the
     // windows-sys' signatures/values.)
-    // See also tools/codegen/src/ffi.rs.
+    // See also https://github.com/taiki-e/test-helper/blob/HEAD/tools/codegen/src/ffi.rs.
     // TODO(codegen): auto-generate this test
-    #[allow(
-        clippy::cast_possible_wrap,
-        clippy::cast_sign_loss,
-        clippy::cast_possible_truncation,
-        clippy::no_effect_underscore_binding
-    )]
+    #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss, clippy::cast_possible_truncation)]
     const _: fn() = || {
-        use test_helper::windows_sys;
         let _: ffi::DWORD = 0 as windows_sys::Win32::System::Threading::PROCESSOR_FEATURE_ID;
         let _: ffi::BOOL = 0 as windows_sys::Win32::Foundation::BOOL;
         let mut _is_processor_feature_present: unsafe extern "system" fn(ffi::DWORD) -> ffi::BOOL =

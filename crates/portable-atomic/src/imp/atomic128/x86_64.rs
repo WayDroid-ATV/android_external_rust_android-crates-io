@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 /*
-128-bit atomic implementation on x86_64 using CMPXCHG16B (DWCAS).
+128-bit atomic implementation on x86_64.
+
+This architecture provides the following 128-bit atomic instructions:
+
+- CMPXCHG16B: CAS (CMPXCHG16B)
+- VMOVDQA: load/store (Intel, AMD, or Zhaoxin CPU with AVX)
 
 Note: On Miri and ThreadSanitizer which do not support inline assembly, we don't use
 this module and use intrinsics.rs instead.
@@ -11,7 +16,7 @@ Refs:
 - atomic-maybe-uninit https://github.com/taiki-e/atomic-maybe-uninit
 
 Generated asm:
-- x86_64 (+cmpxchg16b) https://godbolt.org/z/r5x9M8PdK
+- x86_64 (+cmpxchg16b) https://godbolt.org/z/rfs1jxd51
 */
 
 // TODO: use core::arch::x86_64::cmpxchg16b where available and efficient than asm
@@ -145,7 +150,7 @@ unsafe fn cmpxchg16b(dst: *mut u128, old: u128, new: u128) -> (u128, bool) {
 // baseline and is always available, but the SSE target feature is disabled for
 // use cases such as kernels and firmware that should not use vector registers.
 // So, do not use vector registers unless SSE target feature is enabled.
-// See also https://github.com/rust-lang/rust/blob/1.80.0/src/doc/rustc/src/platform-support/x86_64-unknown-none.md.
+// See also https://github.com/rust-lang/rust/blob/1.84.0/src/doc/rustc/src/platform-support/x86_64-unknown-none.md.
 #[cfg(not(any(portable_atomic_no_outline_atomics, target_env = "sgx")))]
 #[cfg(target_feature = "sse")]
 #[target_feature(enable = "avx")]
@@ -233,11 +238,7 @@ macro_rules! load_store_detect {
                 // We only use VMOVDQA when SSE is enabled. See atomic_load_vmovdqa() for more.
                 #[cfg(target_feature = "sse")]
                 {
-                    if cpuid.has_vmovdqa_atomic() {
-                        $vmovdqa
-                    } else {
-                        $cmpxchg16b
-                    }
+                    if cpuid.has_vmovdqa_atomic() { $vmovdqa } else { $cmpxchg16b }
                 }
                 #[cfg(not(target_feature = "sse"))]
                 {
@@ -249,11 +250,7 @@ macro_rules! load_store_detect {
         }
         #[cfg(any(target_feature = "cmpxchg16b", portable_atomic_target_feature = "cmpxchg16b"))]
         {
-            if cpuid.has_vmovdqa_atomic() {
-                $vmovdqa
-            } else {
-                $cmpxchg16b
-            }
+            if cpuid.has_vmovdqa_atomic() { $vmovdqa } else { $cmpxchg16b }
         }
     }};
 }
@@ -430,15 +427,11 @@ unsafe fn atomic_compare_exchange(
             }
         })
     };
-    if ok {
-        Ok(prev)
-    } else {
-        Err(prev)
-    }
+    if ok { Ok(prev) } else { Err(prev) }
 }
 
 // cmpxchg16b is always strong.
-use atomic_compare_exchange as atomic_compare_exchange_weak;
+use self::atomic_compare_exchange as atomic_compare_exchange_weak;
 
 // See cmpxchg16b() for target_feature(enable).
 #[cfg_attr(
@@ -747,7 +740,7 @@ macro_rules! select_atomic_rmw {
     ) => {
         // If cmpxchg16b is available at compile-time, we can always use cmpxchg16b_fn.
         #[cfg(any(target_feature = "cmpxchg16b", portable_atomic_target_feature = "cmpxchg16b"))]
-        use $cmpxchg16b_fn as $name;
+        use self::$cmpxchg16b_fn as $name;
         // Otherwise, we need to do run-time detection and can use cmpxchg16b_fn only if cmpxchg16b is available.
         #[cfg(not(any(
             target_feature = "cmpxchg16b",

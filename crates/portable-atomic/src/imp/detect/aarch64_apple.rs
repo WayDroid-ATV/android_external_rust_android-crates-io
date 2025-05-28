@@ -20,41 +20,39 @@ TODO: non-macOS targets doesn't always supports FEAT_LSE2, but sysctl on them on
 
 include!("common.rs");
 
-use core::ptr;
+use core::{mem, ptr};
 
-// core::ffi::c_* (except c_void) requires Rust 1.64, libc will soon require Rust 1.47
-#[allow(non_camel_case_types)]
+// libc requires Rust 1.63
 mod ffi {
-    pub(crate) use super::c_types::{c_char, c_int, c_size_t, c_void};
+    pub(crate) use crate::utils::ffi::{CStr, c_char, c_int, c_size_t, c_void};
 
-    extern "C" {
-        // https://developer.apple.com/documentation/kernel/1387446-sysctlbyname
-        // https://github.com/apple-oss-distributions/xnu/blob/5c2921b07a2480ab43ec66f5b9e41cb872bc554f/bsd/sys/sysctl.h
-        pub(crate) fn sysctlbyname(
-            name: *const c_char,
-            old_p: *mut c_void,
-            old_len_p: *mut c_size_t,
-            new_p: *mut c_void,
-            new_len: c_size_t,
-        ) -> c_int;
-    }
+    sys_fn!({
+        extern "C" {
+            // https://developer.apple.com/documentation/kernel/1387446-sysctlbyname
+            // https://github.com/apple-oss-distributions/xnu/blob/8d741a5de7ff4191bf97d57b9f54c2f6d4a15585/bsd/sys/sysctl.h
+            pub(crate) fn sysctlbyname(
+                name: *const c_char,
+                old_p: *mut c_void,
+                old_len_p: *mut c_size_t,
+                new_p: *mut c_void,
+                new_len: c_size_t,
+            ) -> c_int;
+        }
+    });
 }
 
-unsafe fn sysctlbyname32(name: &[u8]) -> Option<u32> {
-    const OUT_LEN: ffi::c_size_t = core::mem::size_of::<u32>() as ffi::c_size_t;
-
-    debug_assert_eq!(name.last(), Some(&0), "{:?}", name);
-    debug_assert_eq!(name.iter().filter(|&&v| v == 0).count(), 1, "{:?}", name);
+fn sysctlbyname32(name: &ffi::CStr) -> Option<u32> {
+    const OUT_LEN: ffi::c_size_t = mem::size_of::<u32>() as ffi::c_size_t;
 
     let mut out = 0_u32;
     let mut out_len = OUT_LEN;
     // SAFETY:
-    // - the caller must guarantee that `name` a valid C string.
+    // - `name` a valid C string.
     // - `out_len` does not exceed the size of `out`.
     // - `sysctlbyname` is thread-safe.
     let res = unsafe {
         ffi::sysctlbyname(
-            name.as_ptr().cast::<ffi::c_char>(),
+            name.as_ptr(),
             (&mut out as *mut u32).cast::<ffi::c_void>(),
             &mut out_len,
             ptr::null_mut(),
@@ -75,23 +73,18 @@ fn _detect(info: &mut CpuInfo) {
     // Query both names in case future versions of macOS remove the old name.
     // https://github.com/golang/go/commit/c15593197453b8bf90fc3a9080ba2afeaf7934ea
     // https://github.com/google/boringssl/commit/91e0b11eba517d83b910b20fe3740eeb39ecb37e
-    // SAFETY: we passed a valid C string.
-    if unsafe {
-        sysctlbyname32(b"hw.optional.arm.FEAT_LSE\0").unwrap_or(0) != 0
-            || sysctlbyname32(b"hw.optional.armv8_1_atomics\0").unwrap_or(0) != 0
-    } {
+    if sysctlbyname32(c!("hw.optional.arm.FEAT_LSE")).unwrap_or(0) != 0
+        || sysctlbyname32(c!("hw.optional.armv8_1_atomics")).unwrap_or(0) != 0
+    {
         info.set(CpuInfo::HAS_LSE);
     }
-    // SAFETY: we passed a valid C string.
-    if unsafe { sysctlbyname32(b"hw.optional.arm.FEAT_LSE2\0").unwrap_or(0) != 0 } {
+    if sysctlbyname32(c!("hw.optional.arm.FEAT_LSE2")).unwrap_or(0) != 0 {
         info.set(CpuInfo::HAS_LSE2);
     }
-    // SAFETY: we passed a valid C string.
-    if unsafe { sysctlbyname32(b"hw.optional.arm.FEAT_LSE128\0").unwrap_or(0) != 0 } {
+    if sysctlbyname32(c!("hw.optional.arm.FEAT_LSE128")).unwrap_or(0) != 0 {
         info.set(CpuInfo::HAS_LSE128);
     }
-    // SAFETY: we passed a valid C string.
-    if unsafe { sysctlbyname32(b"hw.optional.arm.FEAT_LRCPC3\0").unwrap_or(0) != 0 } {
+    if sysctlbyname32(c!("hw.optional.arm.FEAT_LRCPC3")).unwrap_or(0) != 0 {
         info.set(CpuInfo::HAS_RCPC3);
     }
 }
@@ -109,43 +102,141 @@ mod tests {
 
     #[test]
     fn test_macos() {
-        unsafe {
-            assert_eq!(sysctlbyname32(b"hw.optional.armv8_1_atomics\0"), Some(1));
-            assert_eq!(sysctlbyname32(b"hw.optional.arm.FEAT_LSE\0"), Some(1));
-            assert_eq!(sysctlbyname32(b"hw.optional.arm.FEAT_LSE2\0"), Some(1));
-            assert_eq!(sysctlbyname32(b"hw.optional.arm.FEAT_LSE128\0"), None);
-            assert_eq!(std::io::Error::last_os_error().kind(), std::io::ErrorKind::NotFound);
-            assert_eq!(sysctlbyname32(b"hw.optional.arm.FEAT_LRCPC\0"), Some(1));
-            assert_eq!(sysctlbyname32(b"hw.optional.arm.FEAT_LRCPC2\0"), Some(1));
-            assert_eq!(sysctlbyname32(b"hw.optional.arm.FEAT_LRCPC3\0"), None);
-            assert_eq!(std::io::Error::last_os_error().kind(), std::io::ErrorKind::NotFound);
-        }
+        assert_eq!(sysctlbyname32(c!("hw.optional.armv8_1_atomics")), Some(1));
+        assert_eq!(sysctlbyname32(c!("hw.optional.arm.FEAT_LSE")), Some(1));
+        assert_eq!(sysctlbyname32(c!("hw.optional.arm.FEAT_LSE2")), Some(1));
+        assert_eq!(sysctlbyname32(c!("hw.optional.arm.FEAT_LSE128")), None);
+        assert_eq!(std::io::Error::last_os_error().kind(), std::io::ErrorKind::NotFound);
+        assert_eq!(sysctlbyname32(c!("hw.optional.arm.FEAT_LRCPC")), Some(1));
+        assert_eq!(sysctlbyname32(c!("hw.optional.arm.FEAT_LRCPC2")), Some(1));
+        assert_eq!(sysctlbyname32(c!("hw.optional.arm.FEAT_LRCPC3")), None);
+        assert_eq!(std::io::Error::last_os_error().kind(), std::io::ErrorKind::NotFound);
     }
 
-    // Static assertions for FFI bindings.
-    // This checks that FFI bindings defined in this crate, FFI bindings defined
-    // in libc, and FFI bindings generated for the platform's latest header file
-    // using bindgen have compatible signatures (or the same values if constants).
-    // Since this is static assertion, we can detect problems with
-    // `cargo check --tests --target <target>` run in CI (via TESTS=1 build.sh)
-    // without actually running tests on these platforms.
-    // See also tools/codegen/src/ffi.rs.
-    // TODO(codegen): auto-generate this test
-    #[allow(
-        clippy::cast_possible_wrap,
-        clippy::cast_sign_loss,
-        clippy::no_effect_underscore_binding
-    )]
-    const _: fn() = || {
-        use test_helper::{libc, sys};
-        let mut _sysctlbyname: unsafe extern "C" fn(
-            *const ffi::c_char,
-            *mut ffi::c_void,
-            *mut ffi::c_size_t,
-            *mut ffi::c_void,
-            ffi::c_size_t,
-        ) -> ffi::c_int = ffi::sysctlbyname;
-        _sysctlbyname = libc::sysctlbyname;
-        _sysctlbyname = sys::sysctlbyname;
-    };
+    #[cfg(target_pointer_width = "64")]
+    #[test]
+    fn test_alternative() {
+        use crate::utils::ffi::*;
+        #[cfg(not(portable_atomic_no_asm))]
+        use std::arch::asm;
+        use std::mem;
+        use test_helper::sys;
+        // Call syscall using asm instead of libc.
+        // Note that macOS does not guarantee the stability of raw syscall.
+        // (And they actually changed it: https://go-review.googlesource.com/c/go/+/25495)
+        //
+        // This is currently used only for testing.
+        fn sysctlbyname32_no_libc(name: &CStr) -> Result<u32, c_int> {
+            // https://github.com/apple-oss-distributions/xnu/blob/8d741a5de7ff4191bf97d57b9f54c2f6d4a15585/bsd/kern/syscalls.master#L298
+            #[inline]
+            unsafe fn sysctl(
+                name: *const c_int,
+                name_len: c_uint,
+                old_p: *mut c_void,
+                old_len_p: *mut c_size_t,
+                new_p: *const c_void,
+                new_len: c_size_t,
+            ) -> Result<c_int, c_int> {
+                // https://github.com/apple-oss-distributions/xnu/blob/8d741a5de7ff4191bf97d57b9f54c2f6d4a15585/osfmk/mach/i386/syscall_sw.h#L158
+                #[inline]
+                const fn syscall_construct_unix(n: u64) -> u64 {
+                    const SYSCALL_CLASS_UNIX: u64 = 2;
+                    const SYSCALL_CLASS_SHIFT: u64 = 24;
+                    const SYSCALL_CLASS_MASK: u64 = 0xFF << SYSCALL_CLASS_SHIFT;
+                    const SYSCALL_NUMBER_MASK: u64 = !SYSCALL_CLASS_MASK;
+                    (SYSCALL_CLASS_UNIX << SYSCALL_CLASS_SHIFT) | (SYSCALL_NUMBER_MASK & n)
+                }
+                #[allow(clippy::cast_possible_truncation)]
+                // SAFETY: the caller must uphold the safety contract.
+                unsafe {
+                    // https://github.com/apple-oss-distributions/xnu/blob/8d741a5de7ff4191bf97d57b9f54c2f6d4a15585/bsd/kern/syscalls.master#L4
+                    let mut n = syscall_construct_unix(202);
+                    let r: i64;
+                    asm!(
+                        "svc 0",
+                        "b.cc 2f",
+                        "mov x16, x0",
+                        "mov x0, #-1",
+                        "2:",
+                        inout("x16") n,
+                        inout("x0") ptr_reg!(name) => r,
+                        inout("x1") name_len as u64 => _,
+                        in("x2") ptr_reg!(old_p),
+                        in("x3") ptr_reg!(old_len_p),
+                        in("x4") ptr_reg!(new_p),
+                        in("x5") new_len as u64,
+                        options(nostack),
+                    );
+                    if r as c_int == -1 { Err(n as c_int) } else { Ok(r as c_int) }
+                }
+            }
+            // https://github.com/apple-oss-distributions/Libc/blob/af11da5ca9d527ea2f48bb7efbd0f0f2a4ea4812/gen/FreeBSD/sysctlbyname.c
+            unsafe fn sysctlbyname(
+                name: &CStr,
+                old_p: *mut c_void,
+                old_len_p: *mut c_size_t,
+                new_p: *mut c_void,
+                new_len: c_size_t,
+            ) -> Result<c_int, c_int> {
+                let mut real_oid: [c_int; sys::CTL_MAXNAME as usize + 2] = unsafe { mem::zeroed() };
+
+                // Note that this is undocumented API.
+                // Although FreeBSD defined it in sys/sysctl.h since https://github.com/freebsd/freebsd-src/commit/382e01c8dc7f328f46c61c82a29222f432f510f7
+                let mut name2oid_oid: [c_int; 2] = [0, 3];
+
+                let mut oid_len = mem::size_of_val(&real_oid);
+                unsafe {
+                    sysctl(
+                        name2oid_oid.as_mut_ptr(),
+                        2,
+                        real_oid.as_mut_ptr().cast::<c_void>(),
+                        &mut oid_len,
+                        name.as_ptr().cast::<c_void>() as *mut c_void,
+                        name.to_bytes_with_nul().len() - 1,
+                    )?;
+                }
+                oid_len /= mem::size_of::<c_int>();
+                #[allow(clippy::cast_possible_truncation)]
+                unsafe {
+                    sysctl(real_oid.as_mut_ptr(), oid_len as u32, old_p, old_len_p, new_p, new_len)
+                }
+            }
+
+            const OUT_LEN: ffi::c_size_t = mem::size_of::<u32>() as ffi::c_size_t;
+
+            let mut out = 0_u32;
+            let mut out_len = OUT_LEN;
+            // SAFETY:
+            // - `out_len` does not exceed the size of `out`.
+            // - `sysctlbyname` is thread-safe.
+            let res = unsafe {
+                sysctlbyname(
+                    name,
+                    (&mut out as *mut u32).cast::<ffi::c_void>(),
+                    &mut out_len,
+                    ptr::null_mut(),
+                    0,
+                )?
+            };
+            debug_assert_eq!(res, 0);
+            debug_assert_eq!(out_len, OUT_LEN);
+            Ok(out)
+        }
+
+        for name in [
+            c!("hw.optional.armv8_1_atomics"),
+            c!("hw.optional.arm.FEAT_LSE"),
+            c!("hw.optional.arm.FEAT_LSE2"),
+            c!("hw.optional.arm.FEAT_LSE128"),
+            c!("hw.optional.arm.FEAT_LRCPC"),
+            c!("hw.optional.arm.FEAT_LRCPC2"),
+            c!("hw.optional.arm.FEAT_LRCPC3"),
+        ] {
+            if let Some(res) = sysctlbyname32(name) {
+                assert_eq!(res, sysctlbyname32_no_libc(name).unwrap());
+            } else {
+                assert_eq!(sysctlbyname32_no_libc(name).unwrap_err(), libc::ENOENT);
+            }
+        }
+    }
 }

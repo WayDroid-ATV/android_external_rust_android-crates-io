@@ -29,8 +29,8 @@ MSP430 as well.
 
 See also README.md of this directory.
 
-[^avr1]: https://github.com/llvm/llvm-project/blob/llvmorg-19.1.0/llvm/lib/Target/AVR/AVRExpandPseudoInsts.cpp#L1074
-[^avr2]: https://github.com/llvm/llvm-project/blob/llvmorg-19.1.0/llvm/test/CodeGen/AVR/atomics/load16.ll#L5
+[^avr1]: https://github.com/llvm/llvm-project/blob/llvmorg-20.1.0-rc1/llvm/lib/Target/AVR/AVRExpandPseudoInsts.cpp#L1074
+[^avr2]: https://github.com/llvm/llvm-project/blob/llvmorg-20.1.0-rc1/llvm/test/CodeGen/AVR/atomics/load16.ll#L5
 */
 
 // On some platforms, atomic load/store can be implemented in a more efficient
@@ -41,8 +41,11 @@ See also README.md of this directory.
 // CAS together with atomic load/store. The load/store will not be
 // called while interrupts are disabled, and since the load/store is
 // atomic, it is not affected by interrupts even if interrupts are enabled.
-#[cfg(not(any(target_arch = "avr", feature = "critical-section")))]
-use arch::atomic;
+#[cfg(not(any(
+    all(target_arch = "avr", portable_atomic_no_asm),
+    feature = "critical-section",
+)))]
+use self::arch::atomic;
 
 #[cfg(not(feature = "critical-section"))]
 #[cfg_attr(
@@ -128,13 +131,6 @@ impl<T> AtomicPtr<T> {
         Self::IS_ALWAYS_LOCK_FREE
     }
     pub(crate) const IS_ALWAYS_LOCK_FREE: bool = IS_ALWAYS_LOCK_FREE;
-
-    #[inline]
-    pub(crate) fn get_mut(&mut self) -> &mut *mut T {
-        // SAFETY: the mutable reference guarantees unique ownership.
-        // (UnsafeCell::get_mut requires Rust 1.50)
-        unsafe { &mut *self.p.get() }
-    }
 
     #[inline]
     #[cfg_attr(all(debug_assertions, not(portable_atomic_no_track_caller)), track_caller)]
@@ -275,13 +271,6 @@ macro_rules! atomic_int {
             pub(crate) const IS_ALWAYS_LOCK_FREE: bool = IS_ALWAYS_LOCK_FREE;
 
             #[inline]
-            pub(crate) fn get_mut(&mut self) -> &mut $int_type {
-                // SAFETY: the mutable reference guarantees unique ownership.
-                // (UnsafeCell::get_mut requires Rust 1.50)
-                unsafe { &mut *self.v.get() }
-            }
-
-            #[inline]
             pub(crate) const fn as_ptr(&self) -> *mut $int_type {
                 self.v.get()
             }
@@ -314,11 +303,17 @@ macro_rules! atomic_int {
             #[cfg_attr(all(debug_assertions, not(portable_atomic_no_track_caller)), track_caller)]
             pub(crate) fn load(&self, order: Ordering) -> $int_type {
                 crate::utils::assert_load_ordering(order);
-                #[cfg(not(any(target_arch = "avr", feature = "critical-section")))]
+                #[cfg(not(any(
+                    all(target_arch = "avr", portable_atomic_no_asm),
+                    feature = "critical-section",
+                )))]
                 {
                     self.as_native().load(order)
                 }
-                #[cfg(any(target_arch = "avr", feature = "critical-section"))]
+                #[cfg(any(
+                    all(target_arch = "avr", portable_atomic_no_asm),
+                    feature = "critical-section",
+                ))]
                 // SAFETY: any data races are prevented by disabling interrupts (see
                 // module-level comments) and the raw pointer is valid because we got it
                 // from a reference.
@@ -329,18 +324,27 @@ macro_rules! atomic_int {
             #[cfg_attr(all(debug_assertions, not(portable_atomic_no_track_caller)), track_caller)]
             pub(crate) fn store(&self, val: $int_type, order: Ordering) {
                 crate::utils::assert_store_ordering(order);
-                #[cfg(not(any(target_arch = "avr", feature = "critical-section")))]
+                #[cfg(not(any(
+                    all(target_arch = "avr", portable_atomic_no_asm),
+                    feature = "critical-section",
+                )))]
                 {
                     self.as_native().store(val, order);
                 }
-                #[cfg(any(target_arch = "avr", feature = "critical-section"))]
+                #[cfg(any(
+                    all(target_arch = "avr", portable_atomic_no_asm),
+                    feature = "critical-section",
+                ))]
                 // SAFETY: any data races are prevented by disabling interrupts (see
                 // module-level comments) and the raw pointer is valid because we got it
                 // from a reference.
                 with(|| unsafe { self.v.get().write(val) });
             }
 
-            #[cfg(not(any(target_arch = "avr", feature = "critical-section")))]
+            #[cfg(not(any(
+                all(target_arch = "avr", portable_atomic_no_asm),
+                feature = "critical-section",
+            )))]
             #[inline(always)]
             fn as_native(&self) -> &atomic::$atomic_type {
                 // SAFETY: $atomic_type and atomic::$atomic_type have the same layout and
@@ -855,9 +859,15 @@ macro_rules! atomic_int {
 }
 
 #[cfg(target_pointer_width = "16")]
+#[cfg(not(target_arch = "avr"))]
 atomic_int!(load_store_atomic, AtomicIsize, isize, 2);
 #[cfg(target_pointer_width = "16")]
+#[cfg(not(target_arch = "avr"))]
 atomic_int!(load_store_atomic, AtomicUsize, usize, 2);
+#[cfg(target_arch = "avr")]
+atomic_int!(all_critical_session, AtomicIsize, isize, 2);
+#[cfg(target_arch = "avr")]
+atomic_int!(all_critical_session, AtomicUsize, usize, 2);
 #[cfg(target_pointer_width = "32")]
 atomic_int!(load_store_atomic, AtomicIsize, isize, 4);
 #[cfg(target_pointer_width = "32")]
@@ -871,10 +881,22 @@ atomic_int!(load_store_atomic, AtomicIsize, isize, 16);
 #[cfg(target_pointer_width = "128")]
 atomic_int!(load_store_atomic, AtomicUsize, usize, 16);
 
+#[cfg(not(all(target_arch = "avr", portable_atomic_no_asm)))]
 atomic_int!(load_store_atomic[sub_word], AtomicI8, i8, 1);
+#[cfg(not(all(target_arch = "avr", portable_atomic_no_asm)))]
 atomic_int!(load_store_atomic[sub_word], AtomicU8, u8, 1);
+#[cfg(all(target_arch = "avr", portable_atomic_no_asm))]
+atomic_int!(all_critical_session, AtomicI8, i8, 1);
+#[cfg(all(target_arch = "avr", portable_atomic_no_asm))]
+atomic_int!(all_critical_session, AtomicU8, u8, 1);
+#[cfg(not(target_arch = "avr"))]
 atomic_int!(load_store_atomic[sub_word], AtomicI16, i16, 2);
+#[cfg(not(target_arch = "avr"))]
 atomic_int!(load_store_atomic[sub_word], AtomicU16, u16, 2);
+#[cfg(target_arch = "avr")]
+atomic_int!(all_critical_session, AtomicI16, i16, 2);
+#[cfg(target_arch = "avr")]
+atomic_int!(all_critical_session, AtomicU16, u16, 2);
 
 #[cfg(not(target_pointer_width = "16"))]
 atomic_int!(load_store_atomic, AtomicI32, i32, 4);

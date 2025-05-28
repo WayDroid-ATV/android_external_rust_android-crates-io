@@ -9,8 +9,8 @@ Run-time detection on OpenBSD by is_aarch64_feature_detected is supported on Rus
 https://github.com/rust-lang/stdarch/pull/1374
 
 Refs:
-- https://developer.arm.com/documentation/ddi0601/2024-06/AArch64-Registers
-- https://github.com/torvalds/linux/blob/v6.11/Documentation/arch/arm64/cpu-feature-registers.rst
+- https://developer.arm.com/documentation/ddi0601/2024-12/AArch64-Registers
+- https://github.com/torvalds/linux/blob/v6.13/Documentation/arch/arm64/cpu-feature-registers.rst
 - https://github.com/rust-lang/stdarch/blob/a0c30f3e3c75adcd6ee7efc94014ebcead61c507/crates/std_detect/src/detect/os/aarch64.rs
 
 Supported platforms:
@@ -20,8 +20,12 @@ Supported platforms:
   https://github.com/freebsd/freebsd-src/commit/398810619cb32abf349f8de23f29510b2ee0839b
 - NetBSD 9.0+ (through sysctl/sysctlbyname)
   https://github.com/NetBSD/src/commit/0e9d25528729f7fea53e78275d1bc5039dfe8ffb
+  sysctl/sysctlbyname returns an unsupported error if operation is not supported,
+  so we can safely use this on older versions.
 - OpenBSD 7.1+ (through sysctl)
   https://github.com/openbsd/src/commit/d335af936b9d7dd9cf655cae1ce19560c45de6c8
+  sysctl returns an unsupported error if operation is not supported,
+  so we can safely use this on older versions.
 
 For now, this module is only used on NetBSD/OpenBSD.
 
@@ -48,7 +52,7 @@ fn _detect(info: &mut CpuInfo) {
     let AA64Reg { aa64isar0, aa64isar1, aa64mmfr2 } = imp::aa64reg();
 
     // ID_AA64ISAR0_EL1, AArch64 Instruction Set Attribute Register 0
-    // https://developer.arm.com/documentation/ddi0601/2024-06/AArch64-Registers/ID-AA64ISAR0-EL1--AArch64-Instruction-Set-Attribute-Register-0
+    // https://developer.arm.com/documentation/ddi0601/2024-12/AArch64-Registers/ID-AA64ISAR0-EL1--AArch64-Instruction-Set-Attribute-Register-0
     let atomic = extract(aa64isar0, 23, 20);
     if atomic >= 0b0010 {
         info.set(CpuInfo::HAS_LSE);
@@ -57,12 +61,12 @@ fn _detect(info: &mut CpuInfo) {
         }
     }
     // ID_AA64ISAR1_EL1, AArch64 Instruction Set Attribute Register 1
-    // https://developer.arm.com/documentation/ddi0601/2024-06/AArch64-Registers/ID-AA64ISAR1-EL1--AArch64-Instruction-Set-Attribute-Register-1
+    // https://developer.arm.com/documentation/ddi0601/2024-12/AArch64-Registers/ID-AA64ISAR1-EL1--AArch64-Instruction-Set-Attribute-Register-1
     if extract(aa64isar1, 23, 20) >= 0b0011 {
         info.set(CpuInfo::HAS_RCPC3);
     }
     // ID_AA64MMFR2_EL1, AArch64 Memory Model Feature Register 2
-    // https://developer.arm.com/documentation/ddi0601/2024-06/AArch64-Registers/ID-AA64MMFR2-EL1--AArch64-Memory-Model-Feature-Register-2
+    // https://developer.arm.com/documentation/ddi0601/2024-12/AArch64-Registers/ID-AA64MMFR2-EL1--AArch64-Memory-Model-Feature-Register-2
     if extract(aa64mmfr2, 35, 32) >= 0b0001 {
         info.set(CpuInfo::HAS_LSE2);
     }
@@ -114,77 +118,76 @@ mod imp {
     // https://github.com/NetBSD/src/commit/0e9d25528729f7fea53e78275d1bc5039dfe8ffb
     // https://github.com/golang/sys/commit/ef9fd89ba245e184bdd308f7f2b4f3c551fa5b0f
 
-    use core::ptr;
+    use core::{mem, ptr};
 
     use super::AA64Reg;
 
-    // core::ffi::c_* (except c_void) requires Rust 1.64, libc will soon require Rust 1.47
+    // libc requires Rust 1.63
     #[allow(non_camel_case_types)]
     pub(super) mod ffi {
-        pub(crate) use super::super::c_types::{c_char, c_int, c_size_t, c_void};
+        pub(crate) use crate::utils::ffi::{CStr, c_char, c_int, c_size_t, c_void};
 
-        // Defined in aarch64/armreg.h.
-        // https://github.com/NetBSD/src/blob/432a1357026b10c184d8a0ddb683008a23cc7cd9/sys/arch/aarch64/include/armreg.h#L1863
-        #[derive(Clone, Copy)]
-        #[repr(C)]
-        pub(crate) struct aarch64_sysctl_cpu_id {
-            // NetBSD 9.0+
-            // https://github.com/NetBSD/src/commit/0e9d25528729f7fea53e78275d1bc5039dfe8ffb
-            pub(crate) midr: u64,
-            pub(crate) revidr: u64,
-            pub(crate) mpidr: u64,
-            pub(crate) aa64dfr0: u64,
-            pub(crate) aa64dfr1: u64,
-            pub(crate) aa64isar0: u64,
-            pub(crate) aa64isar1: u64,
-            pub(crate) aa64mmfr0: u64,
-            pub(crate) aa64mmfr1: u64,
-            pub(crate) aa64mmfr2: u64,
-            pub(crate) aa64pfr0: u64,
-            pub(crate) aa64pfr1: u64,
-            pub(crate) aa64zfr0: u64,
-            pub(crate) mvfr0: u32,
-            pub(crate) mvfr1: u32,
-            pub(crate) mvfr2: u32,
-            // NetBSD 10.0+
-            // https://github.com/NetBSD/src/commit/0c7bdc13f0e332cccec56e307f023b4888638973
-            pub(crate) pad: u32,
-            pub(crate) clidr: u64,
-            pub(crate) ctr: u64,
-        }
+        sys_struct!({
+            // Defined in machine/armreg.h.
+            // https://github.com/NetBSD/src/blob/432a1357026b10c184d8a0ddb683008a23cc7cd9/sys/arch/aarch64/include/armreg.h#L1863
+            pub(crate) struct aarch64_sysctl_cpu_id {
+                // NetBSD 9.0+
+                // https://github.com/NetBSD/src/commit/0e9d25528729f7fea53e78275d1bc5039dfe8ffb
+                pub(crate) ac_midr: u64,
+                pub(crate) ac_revidr: u64,
+                pub(crate) ac_mpidr: u64,
+                pub(crate) ac_aa64dfr0: u64,
+                pub(crate) ac_aa64dfr1: u64,
+                pub(crate) ac_aa64isar0: u64,
+                pub(crate) ac_aa64isar1: u64,
+                pub(crate) ac_aa64mmfr0: u64,
+                pub(crate) ac_aa64mmfr1: u64,
+                pub(crate) ac_aa64mmfr2: u64,
+                pub(crate) ac_aa64pfr0: u64,
+                pub(crate) ac_aa64pfr1: u64,
+                pub(crate) ac_aa64zfr0: u64,
+                pub(crate) ac_mvfr0: u32,
+                pub(crate) ac_mvfr1: u32,
+                pub(crate) ac_mvfr2: u32,
+                // NetBSD 10.0+
+                // https://github.com/NetBSD/src/commit/0c7bdc13f0e332cccec56e307f023b4888638973
+                pub(crate) ac_pad: u32,
+                pub(crate) ac_clidr: u64,
+                pub(crate) ac_ctr: u64,
+            }
+        });
 
-        extern "C" {
-            // Defined in sys/sysctl.h.
-            // https://man.netbsd.org/sysctl.3
-            // https://github.com/NetBSD/src/blob/432a1357026b10c184d8a0ddb683008a23cc7cd9/sys/sys/sysctl.h
-            pub(crate) fn sysctlbyname(
-                name: *const c_char,
-                old_p: *mut c_void,
-                old_len_p: *mut c_size_t,
-                new_p: *const c_void,
-                new_len: c_size_t,
-            ) -> c_int;
-        }
+        sys_fn!({
+            extern "C" {
+                // Defined in sys/sysctl.h.
+                // https://man.netbsd.org/sysctl.3
+                // https://github.com/NetBSD/src/blob/432a1357026b10c184d8a0ddb683008a23cc7cd9/sys/sys/sysctl.h
+                pub(crate) fn sysctlbyname(
+                    name: *const c_char,
+                    old_p: *mut c_void,
+                    old_len_p: *mut c_size_t,
+                    new_p: *const c_void,
+                    new_len: c_size_t,
+                ) -> c_int;
+            }
+        });
     }
 
-    pub(super) unsafe fn sysctl_cpu_id(name: &[u8]) -> Option<AA64Reg> {
+    pub(super) fn sysctl_cpu_id(name: &ffi::CStr) -> Option<AA64Reg> {
         const OUT_LEN: ffi::c_size_t =
-            core::mem::size_of::<ffi::aarch64_sysctl_cpu_id>() as ffi::c_size_t;
-
-        debug_assert_eq!(name.last(), Some(&0), "{:?}", name);
-        debug_assert_eq!(name.iter().filter(|&&v| v == 0).count(), 1, "{:?}", name);
+            mem::size_of::<ffi::aarch64_sysctl_cpu_id>() as ffi::c_size_t;
 
         // SAFETY: all fields of aarch64_sysctl_cpu_id are zero-able and we use
         // the result when machdep.cpuN.cpu_id sysctl was successful.
-        let mut buf: ffi::aarch64_sysctl_cpu_id = unsafe { core::mem::zeroed() };
+        let mut buf: ffi::aarch64_sysctl_cpu_id = unsafe { mem::zeroed() };
         let mut out_len = OUT_LEN;
         // SAFETY:
-        // - the caller must guarantee that `name` is ` machdep.cpuN.cpu_id` in a C string.
+        // - `name` a valid C string.
         // - `out_len` does not exceed the size of the value at `buf`.
         // - `sysctlbyname` is thread-safe.
         let res = unsafe {
             ffi::sysctlbyname(
-                name.as_ptr().cast::<ffi::c_char>(),
+                name.as_ptr(),
                 (&mut buf as *mut ffi::aarch64_sysctl_cpu_id).cast::<ffi::c_void>(),
                 &mut out_len,
                 ptr::null_mut(),
@@ -195,9 +198,9 @@ mod imp {
             return None;
         }
         Some(AA64Reg {
-            aa64isar0: buf.aa64isar0,
-            aa64isar1: buf.aa64isar1,
-            aa64mmfr2: buf.aa64mmfr2,
+            aa64isar0: buf.ac_aa64isar0,
+            aa64isar1: buf.ac_aa64isar1,
+            aa64mmfr2: buf.ac_aa64mmfr2,
         })
     }
 
@@ -205,11 +208,10 @@ mod imp {
         // Get system registers for cpu0.
         // If failed, returns default because machdep.cpuN.cpu_id sysctl is not available.
         // machdep.cpuN.cpu_id sysctl was added in NetBSD 9.0 so it is not available on older versions.
-        // SAFETY: we passed a valid name in a C string.
         // It is ok to check only cpu0, even if there are more CPUs.
         // https://github.com/NetBSD/src/commit/bd9707e06ea7d21b5c24df6dfc14cb37c2819416
         // https://github.com/golang/sys/commit/ef9fd89ba245e184bdd308f7f2b4f3c551fa5b0f
-        match unsafe { sysctl_cpu_id(b"machdep.cpu0.cpu_id\0") } {
+        match sysctl_cpu_id(c!("machdep.cpu0.cpu_id")) {
             Some(cpu_id) => cpu_id,
             None => AA64Reg { aa64isar0: 0, aa64isar1: 0, aa64mmfr2: 0 },
         }
@@ -221,44 +223,47 @@ mod imp {
     // https://github.com/openbsd/src/commit/d335af936b9d7dd9cf655cae1ce19560c45de6c8
     // https://github.com/golang/go/commit/cd54ef1f61945459486e9eea2f016d99ef1da925
 
-    use core::ptr;
+    use core::{mem, ptr};
 
     use super::AA64Reg;
 
-    // core::ffi::c_* (except c_void) requires Rust 1.64, libc will soon require Rust 1.47
-    #[allow(non_camel_case_types)]
+    // libc requires Rust 1.63
     pub(super) mod ffi {
-        pub(crate) use super::super::c_types::{c_int, c_size_t, c_uint, c_void};
+        pub(crate) use crate::utils::ffi::{c_int, c_size_t, c_uint, c_void};
 
-        // Defined in sys/sysctl.h.
-        // https://github.com/openbsd/src/blob/ed8f5e8d82ace15e4cefca2c82941b15cb1a7830/sys/sys/sysctl.h#L82
-        pub(crate) const CTL_MACHDEP: c_int = 7;
-
-        // Defined in machine/cpu.h.
-        // https://github.com/openbsd/src/blob/ed8f5e8d82ace15e4cefca2c82941b15cb1a7830/sys/arch/arm64/include/cpu.h#L25-L40
-        // OpenBSD 7.1+
-        // https://github.com/openbsd/src/commit/d335af936b9d7dd9cf655cae1ce19560c45de6c8
-        pub(crate) const CPU_ID_AA64ISAR0: c_int = 2;
-        pub(crate) const CPU_ID_AA64ISAR1: c_int = 3;
-        // OpenBSD 7.3+
-        // https://github.com/openbsd/src/commit/c7654cd65262d532212f65123ee3905ba200365c
-        // However, on OpenBSD 7.3-7.5, querying CPU_ID_AA64MMFR2 always returns 0.
-        // https://github.com/openbsd/src/commit/e8331b74e5c20302d4bd948c9db722af688ccfc1
-        pub(crate) const CPU_ID_AA64MMFR2: c_int = 7;
-
-        extern "C" {
+        sys_const!({
             // Defined in sys/sysctl.h.
-            // https://man.openbsd.org/sysctl.2
-            // https://github.com/openbsd/src/blob/ed8f5e8d82ace15e4cefca2c82941b15cb1a7830/sys/sys/sysctl.h
-            pub(crate) fn sysctl(
-                name: *const c_int,
-                name_len: c_uint,
-                old_p: *mut c_void,
-                old_len_p: *mut c_size_t,
-                new_p: *mut c_void,
-                new_len: c_size_t,
-            ) -> c_int;
-        }
+            // https://github.com/openbsd/src/blob/ed8f5e8d82ace15e4cefca2c82941b15cb1a7830/sys/sys/sysctl.h#L82
+            pub(crate) const CTL_MACHDEP: c_int = 7;
+
+            // Defined in machine/cpu.h.
+            // https://github.com/openbsd/src/blob/ed8f5e8d82ace15e4cefca2c82941b15cb1a7830/sys/arch/arm64/include/cpu.h#L25-L40
+            // OpenBSD 7.1+
+            // https://github.com/openbsd/src/commit/d335af936b9d7dd9cf655cae1ce19560c45de6c8
+            pub(crate) const CPU_ID_AA64ISAR0: c_int = 2;
+            pub(crate) const CPU_ID_AA64ISAR1: c_int = 3;
+            // OpenBSD 7.3+
+            // https://github.com/openbsd/src/commit/c7654cd65262d532212f65123ee3905ba200365c
+            // However, on OpenBSD 7.3-7.5, querying CPU_ID_AA64MMFR2 always returns 0.
+            // https://github.com/openbsd/src/commit/e8331b74e5c20302d4bd948c9db722af688ccfc1
+            pub(crate) const CPU_ID_AA64MMFR2: c_int = 7;
+        });
+
+        sys_fn!({
+            extern "C" {
+                // Defined in sys/sysctl.h.
+                // https://man.openbsd.org/sysctl.2
+                // https://github.com/openbsd/src/blob/ed8f5e8d82ace15e4cefca2c82941b15cb1a7830/sys/sys/sysctl.h
+                pub(crate) fn sysctl(
+                    name: *const c_int,
+                    name_len: c_uint,
+                    old_p: *mut c_void,
+                    old_len_p: *mut c_size_t,
+                    new_p: *mut c_void,
+                    new_len: c_size_t,
+                ) -> c_int;
+            }
+        });
     }
 
     // sysctl returns an unsupported error if operation is not supported,
@@ -271,7 +276,7 @@ mod imp {
     }
 
     fn sysctl64(mib: &[ffi::c_int]) -> Option<u64> {
-        const OUT_LEN: ffi::c_size_t = core::mem::size_of::<u64>() as ffi::c_size_t;
+        const OUT_LEN: ffi::c_size_t = mem::size_of::<u64>() as ffi::c_size_t;
         let mut out = 0_u64;
         let mut out_len = OUT_LEN;
         #[allow(clippy::cast_possible_truncation)]
@@ -309,12 +314,13 @@ mod imp {
 mod tests {
     use std::{
         process::Command,
-        string::{String, ToString},
+        string::{String, ToString as _},
     };
 
     use super::*;
 
     #[test]
+    #[cfg_attr(portable_atomic_test_outline_atomics_detect_false, ignore)]
     fn test_aa64reg() {
         let AA64Reg { aa64isar0, aa64isar1, aa64mmfr2 } = imp::aa64reg();
         std::eprintln!("aa64isar0={}", aa64isar0);
@@ -339,27 +345,35 @@ mod tests {
                 aa64mmfr2.to_string(),
             );
         }
+        let atomic = extract(aa64isar0, 23, 20);
         if detect().test(CpuInfo::HAS_LSE) {
-            let atomic = extract(aa64isar0, 23, 20);
             if detect().test(CpuInfo::HAS_LSE128) {
-                assert_eq!(atomic, 3);
+                assert_eq!(atomic, 0b0011);
             } else {
-                assert_eq!(atomic, 2);
+                assert_eq!(atomic, 0b0010);
             }
+        } else {
+            assert_eq!(atomic, 0b0000);
         }
-        if detect().test(CpuInfo::HAS_LSE2) {
-            assert_eq!(extract(aa64mmfr2, 35, 32), 1);
-        }
+        let lrcpc = extract(aa64isar1, 23, 20);
         if detect().test(CpuInfo::HAS_RCPC3) {
-            assert_eq!(extract(aa64isar1, 23, 20), 3);
+            assert_eq!(lrcpc, 0b0011);
+        } else {
+            assert!(lrcpc < 0b0011, "{}", lrcpc);
+        }
+        let at = extract(aa64mmfr2, 35, 32);
+        if detect().test(CpuInfo::HAS_LSE2) {
+            assert_eq!(at, 0b0001);
+        } else {
+            assert_eq!(at, 0b0000);
         }
     }
 
     #[allow(clippy::cast_possible_wrap)]
     #[cfg(target_os = "netbsd")]
     #[test]
-    fn test_netbsd() {
-        use c_types::*;
+    fn test_alternative() {
+        use crate::utils::ffi::*;
         use imp::ffi;
         #[cfg(not(portable_atomic_no_asm))]
         use std::arch::asm;
@@ -371,7 +385,7 @@ mod tests {
         // much as Linux does (It may actually be stable enough, though: https://lists.llvm.org/pipermail/llvm-dev/2019-June/133393.html).
         //
         // This is currently used only for testing.
-        unsafe fn sysctl_cpu_id_asm_syscall(name: &[&[u8]]) -> Result<AA64Reg, c_int> {
+        fn sysctl_cpu_id_no_libc(name: &[&[u8]]) -> Result<AA64Reg, c_int> {
             // https://github.com/golang/go/blob/4badad8d477ffd7a6b762c35bc69aed82faface7/src/syscall/asm_netbsd_arm64.s
             #[inline]
             unsafe fn sysctl(
@@ -402,11 +416,7 @@ mod tests {
                         options(nostack),
                     );
                     #[allow(clippy::cast_possible_truncation)]
-                    if r as c_int == -1 {
-                        Err(n as c_int)
-                    } else {
-                        Ok(r as c_int)
-                    }
+                    if r as c_int == -1 { Err(n as c_int) } else { Ok(r as c_int) }
                 }
             }
 
@@ -461,11 +471,11 @@ mod tests {
             }
 
             const OUT_LEN: ffi::c_size_t =
-                core::mem::size_of::<ffi::aarch64_sysctl_cpu_id>() as ffi::c_size_t;
+                mem::size_of::<ffi::aarch64_sysctl_cpu_id>() as ffi::c_size_t;
 
             let mib = name_to_mib(name)?;
 
-            let mut buf: ffi::aarch64_sysctl_cpu_id = unsafe { core::mem::zeroed() };
+            let mut buf: ffi::aarch64_sysctl_cpu_id = unsafe { mem::zeroed() };
             let mut out_len = OUT_LEN;
             #[allow(clippy::cast_possible_truncation)]
             let mib_len = mib.len() as c_uint;
@@ -480,107 +490,15 @@ mod tests {
                 )?;
             }
             Ok(AA64Reg {
-                aa64isar0: buf.aa64isar0,
-                aa64isar1: buf.aa64isar1,
-                aa64mmfr2: buf.aa64mmfr2,
+                aa64isar0: buf.ac_aa64isar0,
+                aa64isar1: buf.ac_aa64isar1,
+                aa64mmfr2: buf.ac_aa64mmfr2,
             })
         }
 
-        unsafe {
-            assert_eq!(
-                imp::sysctl_cpu_id(b"machdep.cpu0.cpu_id\0").unwrap(),
-                sysctl_cpu_id_asm_syscall(&[b"machdep", b"cpu0", b"cpu_id"]).unwrap()
-            );
-        }
-    }
-
-    // Static assertions for FFI bindings.
-    // This checks that FFI bindings defined in this crate, FFI bindings defined
-    // in libc, and FFI bindings generated for the platform's latest header file
-    // using bindgen have compatible signatures (or the same values if constants).
-    // Since this is static assertion, we can detect problems with
-    // `cargo check --tests --target <target>` run in CI (via TESTS=1 build.sh)
-    // without actually running tests on these platforms.
-    // See also tools/codegen/src/ffi.rs.
-    // TODO(codegen): auto-generate this test
-    #[cfg(target_os = "netbsd")]
-    #[allow(
-        clippy::cast_possible_wrap,
-        clippy::cast_sign_loss,
-        clippy::no_effect_underscore_binding,
-        clippy::used_underscore_binding
-    )]
-    const _: fn() = || {
-        use imp::ffi;
-        use std::mem;
-        use test_helper::{libc, sys};
-        let mut _sysctlbyname: unsafe extern "C" fn(
-            *const ffi::c_char,
-            *mut ffi::c_void,
-            *mut ffi::c_size_t,
-            *const ffi::c_void,
-            ffi::c_size_t,
-        ) -> ffi::c_int = ffi::sysctlbyname;
-        _sysctlbyname = libc::sysctlbyname;
-        _sysctlbyname = sys::sysctlbyname;
-        // libc doesn't have this
-        // static_assert!(
-        //     mem::size_of::<ffi::aarch64_sysctl_cpu_id>()
-        //         == mem::size_of::<libc::aarch64_sysctl_cpu_id>()
-        // );
-        static_assert!(
-            mem::size_of::<ffi::aarch64_sysctl_cpu_id>()
-                == mem::size_of::<sys::aarch64_sysctl_cpu_id>()
+        assert_eq!(
+            imp::sysctl_cpu_id(c!("machdep.cpu0.cpu_id")).unwrap(),
+            sysctl_cpu_id_no_libc(&[b"machdep", b"cpu0", b"cpu_id"]).unwrap()
         );
-        let ffi: ffi::aarch64_sysctl_cpu_id = unsafe { mem::zeroed() };
-        let _ = sys::aarch64_sysctl_cpu_id {
-            ac_midr: ffi.midr,
-            ac_revidr: ffi.revidr,
-            ac_mpidr: ffi.mpidr,
-            ac_aa64dfr0: ffi.aa64dfr0,
-            ac_aa64dfr1: ffi.aa64dfr1,
-            ac_aa64isar0: ffi.aa64isar0,
-            ac_aa64isar1: ffi.aa64isar1,
-            ac_aa64mmfr0: ffi.aa64mmfr0,
-            ac_aa64mmfr1: ffi.aa64mmfr1,
-            ac_aa64mmfr2: ffi.aa64mmfr2,
-            ac_aa64pfr0: ffi.aa64pfr0,
-            ac_aa64pfr1: ffi.aa64pfr1,
-            ac_aa64zfr0: ffi.aa64zfr0,
-            ac_mvfr0: ffi.mvfr0,
-            ac_mvfr1: ffi.mvfr1,
-            ac_mvfr2: ffi.mvfr2,
-            ac_pad: ffi.pad,
-            ac_clidr: ffi.clidr,
-            ac_ctr: ffi.ctr,
-        };
-    };
-    #[cfg(target_os = "openbsd")]
-    #[allow(
-        clippy::cast_possible_wrap,
-        clippy::cast_sign_loss,
-        clippy::no_effect_underscore_binding
-    )]
-    const _: fn() = || {
-        use imp::ffi;
-        use test_helper::{libc, sys};
-        let mut _sysctl: unsafe extern "C" fn(
-            *const ffi::c_int,
-            ffi::c_uint,
-            *mut ffi::c_void,
-            *mut ffi::c_size_t,
-            *mut ffi::c_void,
-            ffi::c_size_t,
-        ) -> ffi::c_int = ffi::sysctl;
-        _sysctl = libc::sysctl;
-        _sysctl = sys::sysctl;
-        static_assert!(ffi::CTL_MACHDEP == libc::CTL_MACHDEP);
-        static_assert!(ffi::CTL_MACHDEP == sys::CTL_MACHDEP as ffi::c_int);
-        // static_assert!(ffi::CPU_ID_AA64ISAR0 == libc::CPU_ID_AA64ISAR0); // libc doesn't have this
-        static_assert!(ffi::CPU_ID_AA64ISAR0 == sys::CPU_ID_AA64ISAR0 as ffi::c_int);
-        // static_assert!(ffi::CPU_ID_AA64ISAR1 == libc::CPU_ID_AA64ISAR1); // libc doesn't have this
-        static_assert!(ffi::CPU_ID_AA64ISAR1 == sys::CPU_ID_AA64ISAR1 as ffi::c_int);
-        // static_assert!(ffi::CPU_ID_AA64MMFR2 == libc::CPU_ID_AA64MMFR2); // libc doesn't have this
-        static_assert!(ffi::CPU_ID_AA64MMFR2 == sys::CPU_ID_AA64MMFR2 as ffi::c_int);
-    };
+    }
 }
