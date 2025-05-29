@@ -18,19 +18,23 @@ rust_test {
     host_supported: true,
     crate_name: "aho_corasick",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.7.20",
+    cargo_pkg_version: "1.0.0",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
+        "perf-literal",
         "std",
     ],
-    rustlibs: ["libmemchr"],
+    rustlibs: [
+        "libdoc_comment",
+        "libmemchr",
+    ],
     target: {
         windows: {
             enabled: true,
@@ -43,11 +47,12 @@ rust_library {
     host_supported: true,
     crate_name: "aho_corasick",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.7.20",
+    cargo_pkg_version: "1.0.0",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
+        "perf-literal",
         "std",
     ],
     rustlibs: ["libmemchr"],

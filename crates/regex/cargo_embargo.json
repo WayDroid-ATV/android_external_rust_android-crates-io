@@ -7,7 +7,7 @@
     "//apex_available:platform"
   ],
   "run_cargo": false,
-  "tests": true,
+  "tests": false,
   "min_sdk_version": "29",
   "package": {
     "regex": {

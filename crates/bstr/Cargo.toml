@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.60"
 name = "bstr"
-version = "1.5.0"
+version = "1.6.0"
 authors = ["Andrew Gallant <jamslam@gmail.com>"]
 exclude = ["/.github"]
 description = "A string type that is not required to be valid UTF-8."
@@ -77,12 +77,9 @@ required-features = [
 version = "2.4.0"
 default-features = false
 
-[dependencies.once_cell]
-version = "1.14.0"
-optional = true
-
 [dependencies.regex-automata]
-version = "0.1.5"
+version = "0.3.0"
+features = ["dfa-search"]
 optional = true
 default-features = false
 
@@ -113,7 +110,4 @@ std = [
     "memchr/std",
     "serde?/std",
 ]
-unicode = [
-    "dep:once_cell",
-    "dep:regex-automata",
-]
+unicode = ["dep:regex-automata"]
