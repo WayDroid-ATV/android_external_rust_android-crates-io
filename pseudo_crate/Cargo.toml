@@ -485,7 +485,7 @@ zerofrom-derive = "=0.1.6"
 zeroize = "=1.8.1"
 zeroize_derive = "=1.4.2"
 zerotrie = "=0.2.1"
-zerovec = "=0.11.1"
+zerovec = "=0.11.2"
 zerovec-derive = "=0.11.1"
 zip = "=0.6.6"
 # go/keep-sorted end
