@@ -177,7 +177,7 @@ impl ImageFormat {
             "image/x-targa" | "image/x-tga" => Some(ImageFormat::Tga),
             "image/vnd-ms.dds" => Some(ImageFormat::Dds),
             "image/bmp" => Some(ImageFormat::Bmp),
-            "image/x-icon" => Some(ImageFormat::Ico),
+            "image/x-icon" | "image/vnd.microsoft.icon" => Some(ImageFormat::Ico),
             "image/vnd.radiance" => Some(ImageFormat::Hdr),
             "image/x-exr" => Some(ImageFormat::OpenExr),
             "image/x-portable-bitmap"
@@ -880,7 +880,7 @@ impl<I: ?Sized> Clone for Pixels<'_, I> {
 /// use image::{GenericImageView, Rgb, RgbImage};
 ///
 /// let buffer = RgbImage::new(10, 10);
-/// let image: &dyn GenericImageView<Pixel=Rgb<u8>> = &buffer;
+/// let image: &dyn GenericImageView<Pixel = Rgb<u8>> = &buffer;
 /// ```
 pub trait GenericImageView {
     /// The type of pixel.
@@ -1269,6 +1269,7 @@ where
     I: Deref,
 {
     type Target = SubImageInner<I>;
+
     fn deref(&self) -> &Self::Target {
         &self.inner
     }

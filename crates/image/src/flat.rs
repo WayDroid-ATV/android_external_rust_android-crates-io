@@ -140,7 +140,7 @@ impl SampleLayout {
     ///
     /// On platforms where `usize` has the same size as `u32` this panics when the resulting stride
     /// in the `height` direction would be larger than `usize::MAX`. On other platforms
-    /// where it can surely accommodate `u8::MAX * u32::MAX, this can never happen.
+    /// where it can surely accommodate `u8::MAX * u32::MAX`, this can never happen.
     #[must_use]
     pub fn row_major_packed(channels: u8, width: u32, height: u32) -> Self {
         let height_stride = (channels as usize).checked_mul(width as usize).expect(
@@ -171,7 +171,7 @@ impl SampleLayout {
     ///
     /// On platforms where `usize` has the same size as `u32` this panics when the resulting stride
     /// in the `width` direction would be larger than `usize::MAX`. On other platforms
-    /// where it can surely accommodate `u8::MAX * u32::MAX, this can never happen.
+    /// where it can surely accommodate `u8::MAX * u32::MAX`, this can never happen.
     #[must_use]
     pub fn column_major_packed(channels: u8, width: u32, height: u32) -> Self {
         let width_stride = (channels as usize).checked_mul(height as usize).expect(
@@ -228,7 +228,7 @@ impl SampleLayout {
     /// # Explanation
     ///
     /// Note that there is a difference between `min_length` and the index of the sample
-    /// 'one-past-the-end`. This is due to strides that may be larger than the dimension below.
+    /// 'one-past-the-end'. This is due to strides that may be larger than the dimension below.
     ///
     /// ## Example with holes
     ///
@@ -282,7 +282,7 @@ impl SampleLayout {
     /// Check if a buffer of length `len` is large enough.
     #[must_use]
     pub fn fits(&self, len: usize) -> bool {
-        self.min_length().map_or(false, |min| len >= min)
+        self.min_length().is_some_and(|min| len >= min)
     }
 
     /// The extents of this array, in order of increasing strides.
@@ -747,10 +747,7 @@ impl<Buffer> FlatSamples<Buffer> {
     where
         Buffer: AsRef<[T]>,
     {
-        let min_length = match self.min_length() {
-            None => return None,
-            Some(index) => index,
-        };
+        let min_length = self.min_length()?;
 
         let slice = self.samples.as_ref();
         if slice.len() < min_length {
@@ -765,10 +762,7 @@ impl<Buffer> FlatSamples<Buffer> {
     where
         Buffer: AsMut<[T]>,
     {
-        let min_length = match self.min_length() {
-            None => return None,
-            Some(index) => index,
-        };
+        let min_length = self.min_length()?;
 
         let slice = self.samples.as_mut();
         if slice.len() < min_length {
@@ -822,7 +816,7 @@ impl<Buffer> FlatSamples<Buffer> {
     /// # Explanation
     ///
     /// Note that there is a difference between `min_length` and the index of the sample
-    /// 'one-past-the-end`. This is due to strides that may be larger than the dimension below.
+    /// 'one-past-the-end'. This is due to strides that may be larger than the dimension below.
     ///
     /// ## Example with holes
     ///
@@ -949,7 +943,7 @@ impl<'buf, Subpixel> FlatSamples<&'buf [Subpixel]> {
     /// use image::{flat::FlatSamples, GenericImage, RgbImage, Rgb};
     ///
     /// let background = Rgb([20, 20, 20]);
-    /// let bg = FlatSamples::with_monocolor(&background, 200, 200);;
+    /// let bg = FlatSamples::with_monocolor(&background, 200, 200);
     ///
     /// let mut image = RgbImage::new(200, 200);
     /// paint_something(&mut image);
@@ -992,7 +986,6 @@ impl<'buf, Subpixel> FlatSamples<&'buf [Subpixel]> {
 ///
 /// * For all indices inside bounds, the corresponding index is valid in the buffer
 /// * `P::channel_count()` agrees with `self.inner.layout.channels`
-///
 #[derive(Clone, Debug)]
 pub struct View<Buffer, P: Pixel>
 where
@@ -1015,7 +1008,6 @@ where
 /// * There is no aliasing of samples
 /// * The samples are packed, i.e. `self.inner.layout.sample_stride == 1`
 /// * `P::channel_count()` agrees with `self.inner.layout.channels`
-///
 #[derive(Clone, Debug)]
 pub struct ViewMut<Buffer, P: Pixel>
 where
@@ -1029,7 +1021,7 @@ where
 ///
 /// The biggest use case being `ImageBuffer` which expects closely packed
 /// samples in a row major matrix representation. But this error type may be
-/// resused for other import functions. A more versatile user may also try to
+/// reused for other import functions. A more versatile user may also try to
 /// correct the underlying representation depending on the error variant.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Error {

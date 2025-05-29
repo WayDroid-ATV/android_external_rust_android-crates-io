@@ -6,6 +6,8 @@
 use std::f32;
 
 use num_traits::{NumCast, ToPrimitive, Zero};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 use crate::image::{GenericImage, GenericImageView};
 use crate::traits::{Enlargeable, Pixel, Primitive};
@@ -78,7 +80,8 @@ use crate::{ImageBuffer, Rgba32FImage};
 ///     <td>1170 ms</td>
 ///   </tr>
 /// </table>
-#[derive(Clone, Copy, Debug, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum FilterType {
     /// Nearest Neighbor
     Nearest,
@@ -870,6 +873,7 @@ where
     let max = S::DEFAULT_MAX_VALUE;
     let max: f32 = NumCast::from(max).unwrap();
 
+    #[allow(clippy::redundant_guards)]
     let sum = match kernel.iter().fold(0.0, |s, &item| s + item) {
         x if x == 0.0 => 1.0,
         sum => sum,
@@ -926,6 +930,7 @@ where
 /// Resize the supplied image to the specified dimensions.
 /// ```nwidth``` and ```nheight``` are the new dimensions.
 /// ```filter``` is the sampling filter to use.
+/// This method assumes alpha pre-multiplication for images that contain non-constant alpha.
 pub fn resize<I: GenericImageView>(
     image: &I,
     nwidth: u32,
@@ -983,8 +988,9 @@ where
 
 /// Performs a Gaussian blur on the supplied image.
 /// ```sigma``` is a measure of how much to blur by.
-/// Use [crate::imageops::fast_blur()] for a faster but less
+/// Use [`crate::imageops::fast_blur()`] for a faster but less
 /// accurate version.
+/// This method assumes alpha pre-multiplication for images that contain non-constant alpha.
 pub fn blur<I: GenericImageView>(
     image: &I,
     sigma: f32,
@@ -1081,7 +1087,7 @@ mod tests {
         use std::path::Path;
         let img = crate::open(Path::new("./examples/fractal.png")).unwrap();
         let resize = img.resize(img.width(), img.height(), FilterType::Triangle);
-        assert!(img.pixels().eq(resize.pixels()))
+        assert!(img.pixels().eq(resize.pixels()));
     }
 
     #[test]

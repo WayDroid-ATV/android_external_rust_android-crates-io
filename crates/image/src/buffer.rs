@@ -801,7 +801,7 @@ where
     /// the bounds will not overflow.
     fn check_image_fits(width: u32, height: u32, len: usize) -> bool {
         let checked_len = Self::image_buffer_len(width, height);
-        checked_len.map_or(false, |min_len| min_len <= len)
+        checked_len.is_some_and(|min_len| min_len <= len)
     }
 
     fn image_buffer_len(width: u32, height: u32) -> Option<usize> {
@@ -1284,7 +1284,7 @@ impl<P: Pixel> ImageBuffer<P, Vec<P::Subpixel>> {
     ///
     /// # Panics
     ///
-    /// Panics when the resulting image is larger the the maximum size of a vector.
+    /// Panics when the resulting image is larger than the maximum size of a vector.
     pub fn from_pixel(width: u32, height: u32, pixel: P) -> ImageBuffer<P, Vec<P::Subpixel>> {
         let mut buf = ImageBuffer::new(width, height);
         for p in buf.pixels_mut() {
@@ -1299,7 +1299,7 @@ impl<P: Pixel> ImageBuffer<P, Vec<P::Subpixel>> {
     ///
     /// # Panics
     ///
-    /// Panics when the resulting image is larger the the maximum size of a vector.
+    /// Panics when the resulting image is larger than the maximum size of a vector.
     pub fn from_fn<F>(width: u32, height: u32, mut f: F) -> ImageBuffer<P, Vec<P::Subpixel>>
     where
         F: FnMut(u32, u32) -> P,
@@ -1500,7 +1500,7 @@ mod test {
     fn slice_buffer() {
         let data = [0; 9];
         let buf: ImageBuffer<Luma<u8>, _> = ImageBuffer::from_raw(3, 3, &data[..]).unwrap();
-        assert_eq!(&*buf, &data[..])
+        assert_eq!(&*buf, &data[..]);
     }
 
     macro_rules! new_buffer_zero_test {
@@ -1535,7 +1535,7 @@ mod test {
             let b = a.get_mut(3 * 10).unwrap();
             *b = 255;
         }
-        assert_eq!(a.get_pixel(0, 1)[0], 255)
+        assert_eq!(a.get_pixel(0, 1)[0], 255);
     }
 
     #[test]

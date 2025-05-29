@@ -2,15 +2,16 @@ use crate::error::DecodingError;
 use crate::{ImageError, ImageFormat};
 use num_traits::AsPrimitive;
 use std::fmt::{Display, Formatter};
+use std::mem::size_of;
 
 #[derive(Debug, Copy, Clone)]
 /// Representation of inversion matrix
 struct CbCrInverseTransform<T> {
-    pub y_coef: T,
-    pub cr_coef: T,
-    pub cb_coef: T,
-    pub g_coeff_1: T,
-    pub g_coeff_2: T,
+    y_coef: T,
+    cr_coef: T,
+    cb_coef: T,
+    g_coeff_1: T,
+    g_coeff_2: T,
 }
 
 impl CbCrInverseTransform<f32> {
@@ -162,11 +163,11 @@ pub(crate) enum YuvIntensityRange {
 
 #[derive(Debug, Copy, Clone, PartialOrd, PartialEq)]
 struct YuvChromaRange {
-    pub bias_y: u32,
-    pub bias_uv: u32,
-    pub range_y: u32,
-    pub range_uv: u32,
-    pub range: YuvIntensityRange,
+    bias_y: u32,
+    bias_uv: u32,
+    range_y: u32,
+    range_uv: u32,
+    range: YuvIntensityRange,
 }
 
 impl YuvIntensityRange {
@@ -264,7 +265,6 @@ fn qrshr<const PRECISION: i32, const BIT_DEPTH: usize>(val: i32) -> i32 {
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
 ///
-///
 pub(crate) fn yuv400_to_rgba8(
     image: YuvPlanarImage<u8>,
     rgba: &mut [u8],
@@ -284,7 +284,6 @@ pub(crate) fn yuv400_to_rgba8(
 /// * `rgba`: RGBA image layout
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
-///
 ///
 pub(crate) fn yuv400_to_rgba10(
     image: YuvPlanarImage<u16>,
@@ -306,7 +305,6 @@ pub(crate) fn yuv400_to_rgba10(
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
 ///
-///
 pub(crate) fn yuv400_to_rgba12(
     image: YuvPlanarImage<u16>,
     rgba: &mut [u16],
@@ -326,7 +324,6 @@ pub(crate) fn yuv400_to_rgba12(
 /// * `rgba`: RGBA image layout
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
-///
 ///
 #[inline]
 fn yuv400_to_rgbx_impl<
@@ -446,7 +443,6 @@ where
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
 ///
-///
 pub(crate) fn yuv420_to_rgba8(
     image: YuvPlanarImage<u8>,
     rgb: &mut [u8],
@@ -467,7 +463,6 @@ pub(crate) fn yuv420_to_rgba8(
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
 ///
-///
 pub(crate) fn yuv420_to_rgba10(
     image: YuvPlanarImage<u16>,
     rgb: &mut [u16],
@@ -487,7 +482,6 @@ pub(crate) fn yuv420_to_rgba10(
 /// * `rgb`: RGB image layout
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
-///
 ///
 pub(crate) fn yuv420_to_rgba12(
     image: YuvPlanarImage<u16>,
@@ -520,13 +514,23 @@ fn process_halved_chroma_row<
 
     let max_value = (1 << BIT_DEPTH) - 1;
 
+    // If the stride is larger than the plane size,
+    // it might contain junk data beyond the actual valid region.
+    // To avoid processing artifacts when working with odd-sized images,
+    // the buffer is reshaped to its actual size,
+    // preventing accidental use of invalid values from the trailing region.
+
+    let y_plane = &image.y_plane[0..image.width];
+    let chroma_size = (image.width + 1) / 2;
+    let u_plane = &image.u_plane[0..chroma_size];
+    let v_plane = &image.v_plane[0..chroma_size];
+    let rgba = &mut rgba[0..image.width * CHANNELS];
+
     let bias_y = range.bias_y as i32;
     let bias_uv = range.bias_uv as i32;
-    let y_iter = image.y_plane.chunks_exact(2);
+    let y_iter = y_plane.chunks_exact(2);
     let rgb_chunks = rgba.chunks_exact_mut(CHANNELS * 2);
-    for (((y_src, &u_src), &v_src), rgb_dst) in
-        y_iter.zip(image.u_plane).zip(image.v_plane).zip(rgb_chunks)
-    {
+    for (((y_src, &u_src), &v_src), rgb_dst) in y_iter.zip(u_plane).zip(v_plane).zip(rgb_chunks) {
         let y_value: i32 = (y_src[0].as_() - bias_y) * y_coef;
         let cb_value: i32 = u_src.as_() - bias_uv;
         let cr_value: i32 = v_src.as_() - bias_uv;
@@ -570,13 +574,13 @@ fn process_halved_chroma_row<
 
     // Process remainder if width is odd.
     if image.width & 1 != 0 {
-        let y_left = image.y_plane.chunks_exact(2).remainder();
+        let y_left = y_plane.chunks_exact(2).remainder();
         let rgb_chunks = rgba
             .chunks_exact_mut(CHANNELS * 2)
             .into_remainder()
             .chunks_exact_mut(CHANNELS);
-        let u_iter = image.u_plane.iter().rev();
-        let v_iter = image.v_plane.iter().rev();
+        let u_iter = u_plane.iter().rev();
+        let v_iter = v_plane.iter().rev();
 
         for (((y_src, u_src), v_src), rgb_dst) in
             y_left.iter().zip(u_iter).zip(v_iter).zip(rgb_chunks)
@@ -616,7 +620,6 @@ fn process_halved_chroma_row<
 /// * `rgb`: RGB image layout
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
-///
 ///
 #[inline]
 fn yuv420_to_rgbx<
@@ -779,7 +782,6 @@ where
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
 ///
-///
 pub(crate) fn yuv422_to_rgba8(
     image: YuvPlanarImage<u8>,
     rgb: &mut [u8],
@@ -799,7 +801,6 @@ pub(crate) fn yuv422_to_rgba8(
 /// * `rgb`: RGB image layout
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
-///
 ///
 pub(crate) fn yuv422_to_rgba10(
     image: YuvPlanarImage<u16>,
@@ -821,7 +822,6 @@ pub(crate) fn yuv422_to_rgba10(
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
 ///
-///
 pub(crate) fn yuv422_to_rgba12(
     image: YuvPlanarImage<u16>,
     rgb: &mut [u16],
@@ -841,7 +841,6 @@ pub(crate) fn yuv422_to_rgba12(
 /// * `rgb`: RGB image layout
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
-///
 ///
 fn yuv422_to_rgbx_impl<
     V: Copy + AsPrimitive<i32> + 'static + Sized,
@@ -968,7 +967,6 @@ where
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
 ///
-///
 pub(crate) fn yuv444_to_rgba8(
     image: YuvPlanarImage<u8>,
     rgba: &mut [u8],
@@ -992,7 +990,6 @@ pub(crate) fn yuv444_to_rgba8(
 /// * `rgba`: RGB image layout
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
-///
 ///
 pub(super) fn yuv444_to_rgba10(
     image: YuvPlanarImage<u16>,
@@ -1018,7 +1015,6 @@ pub(super) fn yuv444_to_rgba10(
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
 ///
-///
 pub(super) fn yuv444_to_rgba12(
     image: YuvPlanarImage<u16>,
     rgba: &mut [u16],
@@ -1042,7 +1038,6 @@ pub(super) fn yuv444_to_rgba12(
 /// * `rgba`: RGB image layout
 /// * `range`: see [YuvIntensityRange]
 /// * `matrix`: see [YuvStandardMatrix]
-///
 ///
 #[inline]
 fn yuv444_to_rgbx_impl<
@@ -1161,7 +1156,6 @@ where
 /// * `rgb`: RGB image layout
 /// * `range`: see [YuvIntensityRange]
 ///
-///
 fn gbr_to_rgba8(
     image: YuvPlanarImage<u8>,
     rgb: &mut [u8],
@@ -1179,7 +1173,6 @@ fn gbr_to_rgba8(
 /// * `image`: see [YuvPlanarImage]
 /// * `rgba`: RGBx image layout
 /// * `range`: see [YuvIntensityRange]
-///
 ///
 fn gbr_to_rgba10(
     image: YuvPlanarImage<u16>,
@@ -1199,7 +1192,6 @@ fn gbr_to_rgba10(
 /// * `rgba`: RGBx image layout
 /// * `range`: see [YuvIntensityRange]
 ///
-///
 fn gbr_to_rgba12(
     image: YuvPlanarImage<u16>,
     rgba: &mut [u16],
@@ -1217,7 +1209,6 @@ fn gbr_to_rgba12(
 /// * `image`: see [YuvPlanarImage]
 /// * `rgb`: RGB image layout
 /// * `range`: see [YuvIntensityRange]
-///
 ///
 #[inline]
 fn gbr_to_rgbx_impl<
