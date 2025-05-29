@@ -6,25 +6,35 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! The Bernoulli distribution.
+//! The Bernoulli distribution `Bernoulli(p)`.
 
-use crate::distributions::Distribution;
+use crate::distr::Distribution;
 use crate::Rng;
-use core::{fmt, u64};
+use core::fmt;
 
-#[cfg(feature = "serde1")]
-use serde::{Serialize, Deserialize};
-/// The Bernoulli distribution.
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
+/// The [Bernoulli distribution](https://en.wikipedia.org/wiki/Bernoulli_distribution) `Bernoulli(p)`.
 ///
-/// This is a special case of the Binomial distribution where `n = 1`.
+/// This distribution describes a single boolean random variable, which is true
+/// with probability `p` and false with probability `1 - p`.
+/// It is a special case of the Binomial distribution with `n = 1`.
+///
+/// # Plot
+///
+/// The following plot shows the Bernoulli distribution with `p = 0.1`,
+/// `p = 0.5`, and `p = 0.9`.
+///
+/// ![Bernoulli distribution](https://raw.githubusercontent.com/rust-random/charts/main/charts/bernoulli.svg)
 ///
 /// # Example
 ///
 /// ```rust
-/// use rand::distributions::{Bernoulli, Distribution};
+/// use rand::distr::{Bernoulli, Distribution};
 ///
 /// let d = Bernoulli::new(0.3).unwrap();
-/// let v = d.sample(&mut rand::thread_rng());
+/// let v = d.sample(&mut rand::rng());
 /// println!("{} is from a Bernoulli distribution", v);
 /// ```
 ///
@@ -34,7 +44,7 @@ use serde::{Serialize, Deserialize};
 /// so only probabilities that are multiples of 2<sup>-64</sup> can be
 /// represented.
 #[derive(Clone, Copy, Debug, PartialEq)]
-#[cfg_attr(feature = "serde1", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Bernoulli {
     /// Probability of success, relative to the maximal integer.
     p_int: u64,
@@ -65,7 +75,7 @@ const ALWAYS_TRUE: u64 = u64::MAX;
 // in `no_std` mode.
 const SCALE: f64 = 2.0 * (1u64 << 63) as f64;
 
-/// Error type returned from `Bernoulli::new`.
+/// Error type returned from [`Bernoulli::new`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BernoulliError {
     /// `p < 0` or `p > 1`.
@@ -81,7 +91,7 @@ impl fmt::Display for BernoulliError {
 }
 
 #[cfg(feature = "std")]
-impl ::std::error::Error for BernoulliError {}
+impl std::error::Error for BernoulliError {}
 
 impl Bernoulli {
     /// Construct a new `Bernoulli` with the given probability of success `p`.
@@ -126,6 +136,18 @@ impl Bernoulli {
         let p_int = ((f64::from(numerator) / f64::from(denominator)) * SCALE) as u64;
         Ok(Bernoulli { p_int })
     }
+
+    #[inline]
+    /// Returns the probability (`p`) of the distribution.
+    ///
+    /// This value may differ slightly from the input due to loss of precision.
+    pub fn p(&self) -> f64 {
+        if self.p_int == ALWAYS_TRUE {
+            1.0
+        } else {
+            (self.p_int as f64) / SCALE
+        }
+    }
 }
 
 impl Distribution<bool> for Bernoulli {
@@ -135,7 +157,7 @@ impl Distribution<bool> for Bernoulli {
         if self.p_int == ALWAYS_TRUE {
             return true;
         }
-        let v: u64 = rng.gen();
+        let v: u64 = rng.random();
         v < self.p_int
     }
 }
@@ -143,14 +165,15 @@ impl Distribution<bool> for Bernoulli {
 #[cfg(test)]
 mod test {
     use super::Bernoulli;
-    use crate::distributions::Distribution;
+    use crate::distr::Distribution;
     use crate::Rng;
 
     #[test]
-    #[cfg(feature="serde1")]
+    #[cfg(feature = "serde")]
     fn test_serializing_deserializing_bernoulli() {
         let coin_flip = Bernoulli::new(0.5).unwrap();
-        let de_coin_flip : Bernoulli = bincode::deserialize(&bincode::serialize(&coin_flip).unwrap()).unwrap();
+        let de_coin_flip: Bernoulli =
+            bincode::deserialize(&bincode::serialize(&coin_flip).unwrap()).unwrap();
 
         assert_eq!(coin_flip.p_int, de_coin_flip.p_int);
     }
@@ -205,11 +228,12 @@ mod test {
         let distr = Bernoulli::new(0.4532).unwrap();
         let mut buf = [false; 10];
         for x in &mut buf {
-            *x = rng.sample(&distr);
+            *x = rng.sample(distr);
         }
-        assert_eq!(buf, [
-            true, false, false, true, false, false, true, true, true, true
-        ]);
+        assert_eq!(
+            buf,
+            [true, false, false, true, false, false, true, true, true, true]
+        );
     }
 
     #[test]

@@ -8,8 +8,10 @@
 
 //! Math helper functions
 
-#[cfg(feature = "simd_support")] use packed_simd::*;
-
+#[cfg(feature = "simd_support")]
+use core::simd::prelude::*;
+#[cfg(feature = "simd_support")]
+use core::simd::{LaneCount, SimdElement, SupportedLaneCount};
 
 pub(crate) trait WideningMultiply<RHS = Self> {
     type Output;
@@ -31,7 +33,7 @@ macro_rules! wmul_impl {
     };
 
     // simd bulk implementation
-    ($(($ty:ident, $wide:ident),)+, $shift:expr) => {
+    ($(($ty:ident, $wide:ty),)+, $shift:expr) => {
         $(
             impl WideningMultiply for $ty {
                 type Output = ($ty, $ty);
@@ -45,7 +47,7 @@ macro_rules! wmul_impl {
                     let y: $wide = self.cast();
                     let x: $wide = x.cast();
                     let tmp = y * x;
-                    let hi: $ty = (tmp >> $shift).cast();
+                    let hi: $ty = (tmp >> Simd::splat($shift)).cast();
                     let lo: $ty = tmp.cast();
                     (hi, lo)
                 }
@@ -99,19 +101,20 @@ macro_rules! wmul_impl_large {
                 #[inline(always)]
                 fn wmul(self, b: $ty) -> Self::Output {
                     // needs wrapping multiplication
-                    const LOWER_MASK: $scalar = !0 >> $half;
-                    let mut low = (self & LOWER_MASK) * (b & LOWER_MASK);
-                    let mut t = low >> $half;
-                    low &= LOWER_MASK;
-                    t += (self >> $half) * (b & LOWER_MASK);
-                    low += (t & LOWER_MASK) << $half;
-                    let mut high = t >> $half;
-                    t = low >> $half;
-                    low &= LOWER_MASK;
-                    t += (b >> $half) * (self & LOWER_MASK);
-                    low += (t & LOWER_MASK) << $half;
-                    high += t >> $half;
-                    high += (self >> $half) * (b >> $half);
+                    let lower_mask = <$ty>::splat(!0 >> $half);
+                    let half = <$ty>::splat($half);
+                    let mut low = (self & lower_mask) * (b & lower_mask);
+                    let mut t = low >> half;
+                    low &= lower_mask;
+                    t += (self >> half) * (b & lower_mask);
+                    low += (t & lower_mask) << half;
+                    let mut high = t >> half;
+                    t = low >> half;
+                    low &= lower_mask;
+                    t += (b >> half) * (self & lower_mask);
+                    low += (t & lower_mask) << half;
+                    high += t >> half;
+                    high += (self >> half) * (b >> half);
 
                     (high, low)
                 }
@@ -144,15 +147,17 @@ wmul_impl_usize! { u64 }
 #[cfg(feature = "simd_support")]
 mod simd_wmul {
     use super::*;
-    #[cfg(target_arch = "x86")] use core::arch::x86::*;
-    #[cfg(target_arch = "x86_64")] use core::arch::x86_64::*;
+    #[cfg(target_arch = "x86")]
+    use core::arch::x86::*;
+    #[cfg(target_arch = "x86_64")]
+    use core::arch::x86_64::*;
 
     wmul_impl! {
-        (u8x2, u16x2),
         (u8x4, u16x4),
         (u8x8, u16x8),
         (u8x16, u16x16),
-        (u8x32, u16x32),,
+        (u8x32, u16x32),
+        (u8x64, Simd<u16, 64>),,
         8
     }
 
@@ -162,21 +167,21 @@ mod simd_wmul {
     wmul_impl! { (u16x8, u32x8),, 16 }
     #[cfg(not(target_feature = "avx2"))]
     wmul_impl! { (u16x16, u32x16),, 16 }
+    #[cfg(not(target_feature = "avx512bw"))]
+    wmul_impl! { (u16x32, Simd<u32, 32>),, 16 }
 
     // 16-bit lane widths allow use of the x86 `mulhi` instructions, which
     // means `wmul` can be implemented with only two instructions.
     #[allow(unused_macros)]
     macro_rules! wmul_impl_16 {
-        ($ty:ident, $intrinsic:ident, $mulhi:ident, $mullo:ident) => {
+        ($ty:ident, $mulhi:ident, $mullo:ident) => {
             impl WideningMultiply for $ty {
                 type Output = ($ty, $ty);
 
                 #[inline(always)]
                 fn wmul(self, x: $ty) -> Self::Output {
-                    let b = $intrinsic::from_bits(x);
-                    let a = $intrinsic::from_bits(self);
-                    let hi = $ty::from_bits(unsafe { $mulhi(a, b) });
-                    let lo = $ty::from_bits(unsafe { $mullo(a, b) });
+                    let hi = unsafe { $mulhi(self.into(), x.into()) }.into();
+                    let lo = unsafe { $mullo(self.into(), x.into()) }.into();
                     (hi, lo)
                 }
             }
@@ -184,23 +189,20 @@ mod simd_wmul {
     }
 
     #[cfg(target_feature = "sse2")]
-    wmul_impl_16! { u16x8, __m128i, _mm_mulhi_epu16, _mm_mullo_epi16 }
+    wmul_impl_16! { u16x8, _mm_mulhi_epu16, _mm_mullo_epi16 }
     #[cfg(target_feature = "avx2")]
-    wmul_impl_16! { u16x16, __m256i, _mm256_mulhi_epu16, _mm256_mullo_epi16 }
-    // FIXME: there are no `__m512i` types in stdsimd yet, so `wmul::<u16x32>`
-    // cannot use the same implementation.
+    wmul_impl_16! { u16x16, _mm256_mulhi_epu16, _mm256_mullo_epi16 }
+    #[cfg(target_feature = "avx512bw")]
+    wmul_impl_16! { u16x32, _mm512_mulhi_epu16, _mm512_mullo_epi16 }
 
     wmul_impl! {
         (u32x2, u64x2),
         (u32x4, u64x4),
-        (u32x8, u64x8),,
+        (u32x8, u64x8),
+        (u32x16, Simd<u64, 16>),,
         32
     }
 
-    // TODO: optimize, this seems to seriously slow things down
-    wmul_impl_large! { (u8x64,) u8, 4 }
-    wmul_impl_large! { (u16x32,) u16, 8 }
-    wmul_impl_large! { (u32x16,) u32, 16 }
     wmul_impl_large! { (u64x2, u64x4, u64x8,) u64, 32 }
 }
 
@@ -216,9 +218,7 @@ pub(crate) trait FloatSIMDUtils {
     fn all_finite(self) -> bool;
 
     type Mask;
-    fn finite_mask(self) -> Self::Mask;
     fn gt_mask(self, other: Self) -> Self::Mask;
-    fn ge_mask(self, other: Self) -> Self::Mask;
 
     // Decrease all lanes where the mask is `true` to the next lower value
     // representable by the floating-point type. At least one of the lanes
@@ -231,42 +231,37 @@ pub(crate) trait FloatSIMDUtils {
     fn cast_from_int(i: Self::UInt) -> Self;
 }
 
-/// Implement functions available in std builds but missing from core primitives
-#[cfg(not(std))]
-// False positive: We are following `std` here.
-#[allow(clippy::wrong_self_convention)]
-pub(crate) trait Float: Sized {
-    fn is_nan(self) -> bool;
-    fn is_infinite(self) -> bool;
-    fn is_finite(self) -> bool;
+#[cfg(test)]
+pub(crate) trait FloatSIMDScalarUtils: FloatSIMDUtils {
+    type Scalar;
+
+    fn replace(self, index: usize, new_value: Self::Scalar) -> Self;
+    fn extract_lane(self, index: usize) -> Self::Scalar;
 }
 
 /// Implement functions on f32/f64 to give them APIs similar to SIMD types
 pub(crate) trait FloatAsSIMD: Sized {
-    #[inline(always)]
-    fn lanes() -> usize {
-        1
-    }
+    #[cfg(test)]
+    const LEN: usize = 1;
+
     #[inline(always)]
     fn splat(scalar: Self) -> Self {
         scalar
     }
+}
+
+pub(crate) trait IntAsSIMD: Sized {
     #[inline(always)]
-    fn extract(self, index: usize) -> Self {
-        debug_assert_eq!(index, 0);
-        self
-    }
-    #[inline(always)]
-    fn replace(self, index: usize, new_value: Self) -> Self {
-        debug_assert_eq!(index, 0);
-        new_value
+    fn splat(scalar: Self) -> Self {
+        scalar
     }
 }
 
+impl IntAsSIMD for u32 {}
+impl IntAsSIMD for u64 {}
+
 pub(crate) trait BoolAsSIMD: Sized {
     fn any(self) -> bool;
-    fn all(self) -> bool;
-    fn none(self) -> bool;
 }
 
 impl BoolAsSIMD for bool {
@@ -274,38 +269,10 @@ impl BoolAsSIMD for bool {
     fn any(self) -> bool {
         self
     }
-
-    #[inline(always)]
-    fn all(self) -> bool {
-        self
-    }
-
-    #[inline(always)]
-    fn none(self) -> bool {
-        !self
-    }
 }
 
 macro_rules! scalar_float_impl {
     ($ty:ident, $uty:ident) => {
-        #[cfg(not(std))]
-        impl Float for $ty {
-            #[inline]
-            fn is_nan(self) -> bool {
-                self != self
-            }
-
-            #[inline]
-            fn is_infinite(self) -> bool {
-                self == ::core::$ty::INFINITY || self == ::core::$ty::NEG_INFINITY
-            }
-
-            #[inline]
-            fn is_finite(self) -> bool {
-                !(self.is_nan() || self.is_infinite())
-            }
-        }
-
         impl FloatSIMDUtils for $ty {
             type Mask = bool;
             type UInt = $uty;
@@ -326,18 +293,8 @@ macro_rules! scalar_float_impl {
             }
 
             #[inline(always)]
-            fn finite_mask(self) -> Self::Mask {
-                self.is_finite()
-            }
-
-            #[inline(always)]
             fn gt_mask(self, other: Self) -> Self::Mask {
                 self > other
-            }
-
-            #[inline(always)]
-            fn ge_mask(self, other: Self) -> Self::Mask {
-                self >= other
             }
 
             #[inline(always)]
@@ -352,6 +309,23 @@ macro_rules! scalar_float_impl {
             }
         }
 
+        #[cfg(test)]
+        impl FloatSIMDScalarUtils for $ty {
+            type Scalar = $ty;
+
+            #[inline]
+            fn replace(self, index: usize, new_value: Self::Scalar) -> Self {
+                debug_assert_eq!(index, 0);
+                new_value
+            }
+
+            #[inline]
+            fn extract_lane(self, index: usize) -> Self::Scalar {
+                debug_assert_eq!(index, 0);
+                self
+            }
+        }
+
         impl FloatAsSIMD for $ty {}
     };
 }
@@ -359,45 +333,34 @@ macro_rules! scalar_float_impl {
 scalar_float_impl!(f32, u32);
 scalar_float_impl!(f64, u64);
 
-
 #[cfg(feature = "simd_support")]
 macro_rules! simd_impl {
-    ($ty:ident, $f_scalar:ident, $mty:ident, $uty:ident) => {
-        impl FloatSIMDUtils for $ty {
-            type Mask = $mty;
-            type UInt = $uty;
+    ($fty:ident, $uty:ident) => {
+        impl<const LANES: usize> FloatSIMDUtils for Simd<$fty, LANES>
+        where
+            LaneCount<LANES>: SupportedLaneCount,
+        {
+            type Mask = Mask<<$fty as SimdElement>::Mask, LANES>;
+            type UInt = Simd<$uty, LANES>;
 
             #[inline(always)]
             fn all_lt(self, other: Self) -> bool {
-                self.lt(other).all()
+                self.simd_lt(other).all()
             }
 
             #[inline(always)]
             fn all_le(self, other: Self) -> bool {
-                self.le(other).all()
+                self.simd_le(other).all()
             }
 
             #[inline(always)]
             fn all_finite(self) -> bool {
-                self.finite_mask().all()
-            }
-
-            #[inline(always)]
-            fn finite_mask(self) -> Self::Mask {
-                // This can possibly be done faster by checking bit patterns
-                let neg_inf = $ty::splat(::core::$f_scalar::NEG_INFINITY);
-                let pos_inf = $ty::splat(::core::$f_scalar::INFINITY);
-                self.gt(neg_inf) & self.lt(pos_inf)
+                self.is_finite().all()
             }
 
             #[inline(always)]
             fn gt_mask(self, other: Self) -> Self::Mask {
-                self.gt(other)
-            }
-
-            #[inline(always)]
-            fn ge_mask(self, other: Self) -> Self::Mask {
-                self.ge(other)
+                self.simd_gt(other)
             }
 
             #[inline(always)]
@@ -406,10 +369,10 @@ macro_rules! simd_impl {
                 // true, and 0 for false. Adding that to the binary
                 // representation of a float means subtracting one from
                 // the binary representation, resulting in the next lower
-                // value representable by $ty. This works even when the
+                // value representable by $fty. This works even when the
                 // current value is infinity.
                 debug_assert!(mask.any(), "At least one lane must be set");
-                <$ty>::from_bits(<$uty>::from_bits(self) + <$uty>::from_bits(mask))
+                Self::from_bits(self.to_bits() + mask.to_int().cast())
             }
 
             #[inline]
@@ -417,13 +380,29 @@ macro_rules! simd_impl {
                 i.cast()
             }
         }
+
+        #[cfg(test)]
+        impl<const LANES: usize> FloatSIMDScalarUtils for Simd<$fty, LANES>
+        where
+            LaneCount<LANES>: SupportedLaneCount,
+        {
+            type Scalar = $fty;
+
+            #[inline]
+            fn replace(mut self, index: usize, new_value: Self::Scalar) -> Self {
+                self.as_mut_array()[index] = new_value;
+                self
+            }
+
+            #[inline]
+            fn extract_lane(self, index: usize) -> Self::Scalar {
+                self.as_array()[index]
+            }
+        }
     };
 }
 
-#[cfg(feature="simd_support")] simd_impl! { f32x2, f32, m32x2, u32x2 }
-#[cfg(feature="simd_support")] simd_impl! { f32x4, f32, m32x4, u32x4 }
-#[cfg(feature="simd_support")] simd_impl! { f32x8, f32, m32x8, u32x8 }
-#[cfg(feature="simd_support")] simd_impl! { f32x16, f32, m32x16, u32x16 }
-#[cfg(feature="simd_support")] simd_impl! { f64x2, f64, m64x2, u64x2 }
-#[cfg(feature="simd_support")] simd_impl! { f64x4, f64, m64x4, u64x4 }
-#[cfg(feature="simd_support")] simd_impl! { f64x8, f64, m64x8, u64x8 }
+#[cfg(feature = "simd_support")]
+simd_impl!(f32, u32);
+#[cfg(feature = "simd_support")]
+simd_impl!(f64, u64);

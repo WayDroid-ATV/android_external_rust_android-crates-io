@@ -1,8 +1,6 @@
 {
-  "module_name_overrides": {
-    "libgetrandom": "libgetrandom-0.2"
-  },
   "features": [
+    "os_rng",
     "std"
   ],
   "run_cargo": false,
