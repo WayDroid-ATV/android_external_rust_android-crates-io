@@ -11,8 +11,9 @@
 
 [package]
 edition = "2021"
+rust-version = "1.83.0"
 name = "etherparse"
-version = "0.17.0"
+version = "0.18.0"
 authors = ["Julian Schmid <info@julianschmid.name>"]
 build = false
 exclude = [

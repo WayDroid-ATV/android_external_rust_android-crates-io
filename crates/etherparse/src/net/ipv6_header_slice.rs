@@ -86,6 +86,21 @@ impl<'a> Ipv6HeaderSlice<'a> {
         unsafe { (self.slice.get_unchecked(0) << 4) | (self.slice.get_unchecked(1) >> 4) }
     }
 
+    /// Returns the [`IpEcn`] decoded from the `traffic_class` octet.
+    #[inline]
+    pub fn ecn(&self) -> IpEcn {
+        // SAFETY: Safe as value can only be at most 0b11 as it is bit-and-ed with 0b11.
+        unsafe { IpEcn::new_unchecked(self.traffic_class() & 0b0000_0011) }
+    }
+
+    /// Returns the [`IpDscp`] decoded from the `traffic_class` octet.
+    #[inline]
+    pub fn dscp(&self) -> IpDscp {
+        // SAFETY: Safe as value can not be bigger than IpDscp::MAX_U8 as it
+        //         is bit masked with IpDscp::MAX_U8 (0b0011_1111).
+        unsafe { IpDscp::new_unchecked((self.traffic_class() >> 2) & 0b0011_1111) }
+    }
+
     /// Read the "flow label" field from the slice.
     #[inline]
     pub fn flow_label(&self) -> Ipv6FlowLabel {
@@ -147,12 +162,10 @@ impl<'a> Ipv6HeaderSlice<'a> {
         unsafe { get_unchecked_16_byte_array(self.slice.as_ptr().add(8)) }
     }
 
-    /// Return the ipv6 source address as an std::net::Ipv6Addr
-    #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    /// Return the ipv6 source address as an core::net::Ipv6Addr
     #[inline]
-    pub fn source_addr(&self) -> std::net::Ipv6Addr {
-        std::net::Ipv6Addr::from(self.source())
+    pub fn source_addr(&self) -> core::net::Ipv6Addr {
+        core::net::Ipv6Addr::from(self.source())
     }
 
     /// Returns a slice containing the IPv6 destination address.
@@ -165,12 +178,10 @@ impl<'a> Ipv6HeaderSlice<'a> {
         unsafe { get_unchecked_16_byte_array(self.slice.as_ptr().add(24)) }
     }
 
-    /// Return the ipv6 destination address as an std::net::Ipv6Addr
-    #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    /// Return the ipv6 destination address as an core::net::Ipv6Addr
     #[inline]
-    pub fn destination_addr(&self) -> std::net::Ipv6Addr {
-        std::net::Ipv6Addr::from(self.destination())
+    pub fn destination_addr(&self) -> core::net::Ipv6Addr {
+        core::net::Ipv6Addr::from(self.destination())
     }
 
     /// Decode all the fields and copy the results to a Ipv6Header struct
@@ -282,23 +293,16 @@ mod test {
             assert_eq!(actual.slice(), &bytes[..]);
             assert_eq!(actual.version(), 6);
             assert_eq!(actual.traffic_class(), header.traffic_class);
+            assert_eq!(actual.ecn(), header.ecn());
+            assert_eq!(actual.dscp(), header.dscp());
             assert_eq!(actual.flow_label(), header.flow_label);
             assert_eq!(actual.payload_length(), header.payload_length);
             assert_eq!(actual.next_header(), header.next_header);
             assert_eq!(actual.hop_limit(), header.hop_limit);
             assert_eq!(actual.source(), header.source);
             assert_eq!(actual.destination(), header.destination);
-        }
-    }
-
-    #[cfg(feature = "std")]
-    proptest! {
-        #[test]
-        fn getters_std(header in ipv6_any()) {
-            let bytes = header.to_bytes();
-            let actual = Ipv6HeaderSlice::from_slice(&bytes).unwrap();
-            assert_eq!(actual.source_addr(), std::net::Ipv6Addr::from(header.source));
-            assert_eq!(actual.destination_addr(), std::net::Ipv6Addr::from(header.destination));
+            assert_eq!(actual.source_addr(), core::net::Ipv6Addr::from(header.source));
+            assert_eq!(actual.destination_addr(), core::net::Ipv6Addr::from(header.destination));
         }
     }
 

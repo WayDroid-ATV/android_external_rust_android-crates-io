@@ -20,7 +20,7 @@ use arrayvec::ArrayVec;
 ///     ..Default::default()
 /// };
 ///
-/// // depending on your usecase you might want to set the correct checksum
+/// // depending on your use case you might want to set the correct checksum
 /// header.header_checksum = header.calc_header_checksum();
 ///
 /// // header can be serialized into the "on the wire" format
@@ -35,9 +35,9 @@ use arrayvec::ArrayVec;
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Ipv4Header {
     /// Differentiated Services Code Point
-    pub dscp: Ipv4Dscp,
+    pub dscp: IpDscp,
     /// Explicit Congestion Notification
-    pub ecn: Ipv4Ecn,
+    pub ecn: IpEcn,
     /// Total length of the IPv4 header (including extension headers) and the payload after it.
     pub total_len: u16,
     /// Number used to identify packets that contain an originally fragmented packet.
@@ -379,11 +379,11 @@ impl Ipv4Header {
     /// Read an Ipv4Header from a slice and return the header & unused parts
     /// of the slice.
     ///
-    /// Note that this function DOES NOT seperate the payload based on the
+    /// Note that this function DOES NOT separate the payload based on the
     /// `total_length` field present in the IPv4 header. It just returns the
     /// left over slice after the header.
     ///
-    /// If you want to have correctly seperated payload including the IP extension
+    /// If you want to have correctly separated payload including the IP extension
     /// headers use
     ///
     /// * [`IpHeaders::from_ipv4_slice`] (decodes all the fields of the IP headers)
@@ -463,12 +463,12 @@ impl Ipv4Header {
             dscp: unsafe {
                 // Safe as only 6 bits were used to decode the
                 // dscp value
-                Ipv4Dscp::new_unchecked(dscp)
+                IpDscp::new_unchecked(dscp)
             },
             ecn: unsafe {
                 // Safe as only 2 bits were used to decode the
                 // ecn value
-                Ipv4Ecn::new_unchecked(ecn)
+                IpEcn::new_unchecked(ecn)
             },
             total_len,
             identification,
@@ -586,7 +586,7 @@ impl Ipv4Header {
         header_raw
     }
 
-    /// Write the given header with the  checksum and header length specified in the seperate arguments
+    /// Write the given header with the  checksum and header length specified in the separate arguments
     #[cfg(feature = "std")]
     fn write_ipv4_header_internal<T: std::io::Write>(
         &self,

@@ -1,6 +1,5 @@
+use core::net::Ipv4Addr;
 use core::slice::from_raw_parts;
-#[cfg(feature = "std")]
-use std::net::Ipv4Addr;
 
 use crate::*;
 
@@ -14,7 +13,7 @@ impl<'a> Ipv4HeaderSlice<'a> {
     /// Creates a slice containing an ipv4 header (including header options).
     ///
     /// If you also want to have the payload & ip extension headers correctly
-    /// seperated you can use
+    /// separated you can use
     ///
     /// * [`crate::Ipv4Slice::from_slice`] (just identifies slice ranges)
     /// * [`crate::IpHeaders::from_ipv4_slice`] (unpacks all fields)
@@ -120,23 +119,23 @@ impl<'a> Ipv4HeaderSlice<'a> {
 
     /// Read the "differentiated_services_code_point" from the slice.
     #[inline]
-    pub fn dcp(&self) -> Ipv4Dscp {
+    pub fn dcp(&self) -> IpDscp {
         // SAFETY:
         // get_unchecked: Safe as the slice length is checked to be at least
         // Ipv4Header::MIN_LEN (20) in the constructor.
-        // new_unchecked: Safe as the bitshift by 2 guarantees that the passed
+        // new_unchecked: Safe as the bit-shift by 2 guarantees that the passed
         // value is not bigger then 6 bits.
-        unsafe { Ipv4Dscp::new_unchecked(*self.slice.get_unchecked(1) >> 2) }
+        unsafe { IpDscp::new_unchecked(*self.slice.get_unchecked(1) >> 2) }
     }
 
     /// Read the "explicit_congestion_notification" from the slice.
     #[inline]
-    pub fn ecn(&self) -> Ipv4Ecn {
+    pub fn ecn(&self) -> IpEcn {
         // SAFETY:
         // get_unchecked: Safe as the slice length is checked to be at least
         // Ipv4Header::MIN_LEN (20) in the constructor.
-        // new_unchecked: Safe as value has been bitmasked to two bits.
-        unsafe { Ipv4Ecn::new_unchecked(*self.slice.get_unchecked(1) & 0b0000_0011) }
+        // new_unchecked: Safe as value has been bit-masked to two bits.
+        unsafe { IpEcn::new_unchecked(*self.slice.get_unchecked(1) & 0b0000_0011) }
     }
 
     /// Read the "total length" from the slice (total length of ip header + payload).
@@ -218,7 +217,7 @@ impl<'a> Ipv4HeaderSlice<'a> {
         unsafe { get_unchecked_be_u16(self.slice.as_ptr().add(4)) }
     }
 
-    /// Read the "dont fragment" flag from the slice.
+    /// Read the "don't fragment" flag from the slice.
     #[inline]
     pub fn dont_fragment(&self) -> bool {
         // SAFETY:
@@ -288,9 +287,7 @@ impl<'a> Ipv4HeaderSlice<'a> {
         unsafe { get_unchecked_4_byte_array(self.slice.as_ptr().add(12)) }
     }
 
-    /// Return the ipv4 source address as an std::net::Ipv4Addr
-    #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    /// Return the ipv4 source address as an core::net::Ipv4Addr
     #[inline]
     pub fn source_addr(&self) -> Ipv4Addr {
         Ipv4Addr::from(self.source())
@@ -305,9 +302,7 @@ impl<'a> Ipv4HeaderSlice<'a> {
         unsafe { get_unchecked_4_byte_array(self.slice.as_ptr().add(16)) }
     }
 
-    /// Return the ipv4 destination address as an std::net::Ipv4Addr
-    #[cfg(feature = "std")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+    /// Return the ipv4 destination address as an core::net::Ipv4Addr
     #[inline]
     pub fn destination_addr(&self) -> Ipv4Addr {
         Ipv4Addr::from(self.destination())
@@ -468,6 +463,8 @@ mod test {
     proptest! {
         #[test]
         fn getters(header in ipv4_any()) {
+            use core::net::Ipv4Addr;
+
             let buffer = header.to_bytes();
             let slice = Ipv4HeaderSlice::from_slice(&buffer).unwrap();
 
@@ -488,18 +485,6 @@ mod test {
             assert_eq!(slice.source(), header.source);
             assert_eq!(slice.destination(), header.destination);
             assert_eq!(slice.options(), &header.options[..]);
-        }
-    }
-
-    #[cfg(feature = "std")]
-    proptest! {
-        #[test]
-        fn getters_std(header in ipv4_any()) {
-            use std::net::Ipv4Addr;
-
-            let buffer = header.to_bytes();
-            let slice = Ipv4HeaderSlice::from_slice(&buffer).unwrap();
-
             assert_eq!(slice.source_addr(), Ipv4Addr::from(header.source));
             assert_eq!(slice.destination_addr(), Ipv4Addr::from(header.destination));
         }
