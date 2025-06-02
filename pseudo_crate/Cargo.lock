@@ -572,7 +572,7 @@ dependencies = [
  "x509-cert",
  "xml-rs",
  "yaml-rust",
- "yoke 0.7.5",
+ "yoke",
  "yoke-derive",
  "zerocopy 0.8.24",
  "zerocopy-derive 0.8.24",
@@ -3478,7 +3478,7 @@ checksum = "63df3227b8f369b3f7cc4003f0bdd9ca0083b871e2672811f699d69b473cc174"
 dependencies = [
  "displaydoc",
  "potential_utf",
- "yoke 0.8.0",
+ "yoke",
  "zerofrom",
  "zerovec",
 ]
@@ -3685,7 +3685,7 @@ dependencies = [
  "displaydoc",
  "either",
  "writeable",
- "yoke 0.8.0",
+ "yoke",
  "zerovec",
 ]
 
@@ -3750,7 +3750,7 @@ dependencies = [
  "stable_deref_trait",
  "tinystr",
  "writeable",
- "yoke 0.8.0",
+ "yoke",
  "zerofrom",
  "zerovec",
 ]
@@ -8794,17 +8794,6 @@ dependencies = [
 
 [[package]]
 name = "yoke"
-version = "0.7.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "120e6aef9aa629e3d4f52dc8cc43a015c7724194c97dfaf45180d2daf2b77f40"
-dependencies = [
- "serde",
- "stable_deref_trait",
- "zerofrom",
-]
-
-[[package]]
-name = "yoke"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f41bb01b8226ef4bfd589436a297c53d118f65921786300e427be8d487695cc"
@@ -8915,7 +8904,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b7a6cf4865aac8394f19ad46e37f60b929c1ba5eed798b96a32820aa9392929"
 dependencies = [
  "displaydoc",
- "yoke 0.8.0",
+ "yoke",
  "zerofrom",
 ]
 
@@ -8925,7 +8914,7 @@ version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4a05eb080e015ba39cc9e23bbe5e7fb04d5fb040350f99f34e338d5fdd294428"
 dependencies = [
- "yoke 0.8.0",
+ "yoke",
  "zerofrom",
  "zerovec-derive",
 ]
