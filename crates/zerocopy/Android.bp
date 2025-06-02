@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "zerocopy",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.24",
+    cargo_pkg_version: "0.8.25",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -52,7 +52,7 @@ rust_library_rlib {
     defaults: ["rust_baremetal_defaults"],
     crate_name: "zerocopy",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.24",
+    cargo_pkg_version: "0.8.25",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -92,7 +92,7 @@ rust_library_rlib {
     defaults: ["rust_baremetal_defaults"],
     crate_name: "zerocopy",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.24",
+    cargo_pkg_version: "0.8.25",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
