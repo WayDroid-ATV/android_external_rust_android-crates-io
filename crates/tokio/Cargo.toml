@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.70"
 name = "tokio"
-version = "1.43.1"
+version = "1.45.1"
 authors = ["Tokio Contributors <team@tokio.rs>"]
 build = false
 autolib = false
@@ -413,6 +413,10 @@ name = "process_issue_42"
 path = "tests/process_issue_42.rs"
 
 [[test]]
+name = "process_kill_after_wait"
+path = "tests/process_kill_after_wait.rs"
+
+[[test]]
 name = "process_kill_on_drop"
 path = "tests/process_kill_on_drop.rs"
 
@@ -453,12 +457,12 @@ name = "rt_panic"
 path = "tests/rt_panic.rs"
 
 [[test]]
-name = "rt_threaded"
-path = "tests/rt_threaded.rs"
+name = "rt_poll_callbacks"
+path = "tests/rt_poll_callbacks.rs"
 
 [[test]]
-name = "rt_threaded_alt"
-path = "tests/rt_threaded_alt.rs"
+name = "rt_threaded"
+path = "tests/rt_threaded.rs"
 
 [[test]]
 name = "rt_time_start_paused"
@@ -523,6 +527,10 @@ path = "tests/sync_barrier.rs"
 [[test]]
 name = "sync_broadcast"
 path = "tests/sync_broadcast.rs"
+
+[[test]]
+name = "sync_broadcast_weak"
+path = "tests/sync_broadcast_weak.rs"
 
 [[test]]
 name = "sync_errors"
@@ -611,6 +619,10 @@ path = "tests/task_local_set.rs"
 [[test]]
 name = "task_panic"
 path = "tests/task_panic.rs"
+
+[[test]]
+name = "task_trace_self"
+path = "tests/task_trace_self.rs"
 
 [[test]]
 name = "task_yield_now"
@@ -725,7 +737,7 @@ name = "unwindsafe"
 path = "tests/unwindsafe.rs"
 
 [dependencies.bytes]
-version = "1.1.0"
+version = "1.2.1"
 optional = true
 
 [dependencies.mio]
@@ -751,8 +763,11 @@ version = "0.3"
 version = "0.3.0"
 features = ["async-await"]
 
+[dev-dependencies.futures-concurrency]
+version = "7.6.3"
+
 [dev-dependencies.mockall]
-version = "0.11.1"
+version = "0.13.0"
 
 [dev-dependencies.tokio-stream]
 version = "0.1"
@@ -791,7 +806,7 @@ version = "0.5.5"
 version = "3.1.0"
 
 [target.'cfg(target_os = "freebsd")'.dev-dependencies.mio-aio]
-version = "0.9.0"
+version = "1"
 features = ["tokio"]
 
 [target."cfg(tokio_taskdump)".dependencies.backtrace]
