@@ -132,7 +132,7 @@ impl Unit {
         }
     }
 
-    /// If this unit is an "end of input" sentinel, then return the underyling
+    /// If this unit is an "end of input" sentinel, then return the underlying
     /// sentinel value that was given to [`Unit::eoi`]. Otherwise return
     /// `None`.
     pub fn as_eoi(self) -> Option<u16> {
@@ -796,6 +796,7 @@ impl ByteSet {
     }
 
     /// Return true if and only if this set is empty.
+    #[cfg_attr(feature = "perf-inline", inline(always))]
     pub(crate) fn is_empty(&self) -> bool {
         self.bits.0 == [0, 0]
     }
