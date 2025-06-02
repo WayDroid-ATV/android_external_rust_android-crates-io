@@ -451,6 +451,7 @@ dependencies = [
  "same-file",
  "scopeguard",
  "sec1",
+ "selinux",
  "selinux-sys",
  "semver",
  "serde",
@@ -6502,6 +6503,20 @@ checksum = "49db231d56a190491cb4aeda9527f1ad45345af50b0851622a7adb8c03b01c32"
 dependencies = [
  "core-foundation-sys",
  "libc 0.2.168",
+]
+
+[[package]]
+name = "selinux"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ed8a2f05a488befa851d8de2e3b55bc3889d4fac6758d120bd94098608f63fb"
+dependencies = [
+ "bitflags 2.9.0",
+ "libc 0.2.168",
+ "once_cell",
+ "parking_lot",
+ "selinux-sys",
+ "thiserror 2.0.11",
 ]
 
 [[package]]

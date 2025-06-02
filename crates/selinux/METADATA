@@ -1,0 +1,17 @@
+name: "selinux"
+description: "Flexible Mandatory Access Control for Linux"
+third_party {
+  version: "0.5.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 5
+    day: 20
+  }
+  homepage: "https://crates.io/crates/selinux"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/selinux/selinux-0.5.0.crate"
+    version: "0.5.0"
+  }
+}

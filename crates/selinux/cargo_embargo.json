@@ -1,0 +1,7 @@
+{
+  "module_name_overrides": {
+    "libselinux": "libselinux_rust"
+  },
+  "run_cargo": true,
+  "min_sdk_version": "29"
+}

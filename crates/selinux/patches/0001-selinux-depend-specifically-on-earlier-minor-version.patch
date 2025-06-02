@@ -1,0 +1,30 @@
+From 5a1a2c649c29291d1c2b2ccb3c37f33794428a62 Mon Sep 17 00:00:00 2001
+From: Eric Caruso <ejcaruso@google.com>
+Date: Wed, 21 May 2025 12:03:24 -0400
+Subject: [PATCH] selinux: depend specifically on earlier minor version of
+ selinux-sys
+
+Otherwise we pull in a version which requires 2024 edition and
+this breaks the build.
+
+Change-Id: I37c5a52dcd5af3245b02e26a1f888988f6b176b1
+---
+ crates/selinux/Cargo.toml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index c0d9d65f..84658a4c 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -57,7 +57,7 @@ version = "1"
+ version = "0.12"
+ 
+ [dependencies.selinux-sys]
+-version = "0.6"
++version = "=0.6.13"
+ 
+ [dependencies.thiserror]
+ version = "2"
+-- 
+2.49.0.1112.g889b7c5bd8-goog
+
