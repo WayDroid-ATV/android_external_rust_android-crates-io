@@ -17,7 +17,7 @@ rust_test {
     name: "flate2_test_src_lib",
     crate_name: "flate2",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.35",
+    cargo_pkg_version: "1.1.1",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -35,7 +35,7 @@ rust_test {
         "libcrc32fast",
         "liblibz_sys",
         "libquickcheck",
-        "librand-0.8",
+        "librand",
     ],
 }
 
@@ -43,7 +43,7 @@ rust_test {
     name: "flate2_test_tests_early-flush",
     crate_name: "early_flush",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.35",
+    cargo_pkg_version: "1.1.1",
     crate_root: "tests/early-flush.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -62,7 +62,7 @@ rust_test {
         "libflate2",
         "liblibz_sys",
         "libquickcheck",
-        "librand-0.8",
+        "librand",
     ],
 }
 
@@ -70,7 +70,7 @@ rust_test {
     name: "flate2_test_tests_empty-read",
     crate_name: "empty_read",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.35",
+    cargo_pkg_version: "1.1.1",
     crate_root: "tests/empty-read.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -89,7 +89,7 @@ rust_test {
         "libflate2",
         "liblibz_sys",
         "libquickcheck",
-        "librand-0.8",
+        "librand",
     ],
 }
 
@@ -97,7 +97,7 @@ rust_test {
     name: "flate2_test_tests_gunzip",
     crate_name: "gunzip",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.35",
+    cargo_pkg_version: "1.1.1",
     crate_root: "tests/gunzip.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -116,7 +116,7 @@ rust_test {
         "libflate2",
         "liblibz_sys",
         "libquickcheck",
-        "librand-0.8",
+        "librand",
     ],
     data: [
         "tests/corrupt-gz-file.bin",
@@ -131,7 +131,7 @@ rust_test {
     name: "flate2_test_tests_zero-write",
     crate_name: "zero_write",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.35",
+    cargo_pkg_version: "1.1.1",
     crate_root: "tests/zero-write.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -150,7 +150,7 @@ rust_test {
         "libflate2",
         "liblibz_sys",
         "libquickcheck",
-        "librand-0.8",
+        "librand",
     ],
 }
 
@@ -159,7 +159,7 @@ rust_library {
     host_supported: true,
     crate_name: "flate2",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.35",
+    cargo_pkg_version: "1.1.1",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
