@@ -18,7 +18,7 @@ rust_test {
     host_supported: true,
     crate_name: "crc",
     cargo_env_compat: true,
-    cargo_pkg_version: "3.2.1",
+    cargo_pkg_version: "3.3.0",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -26,10 +26,7 @@ rust_test {
         unit_test: true,
     },
     edition: "2021",
-    rustlibs: [
-        "libcrc_catalog",
-        "libcriterion",
-    ],
+    rustlibs: ["libcrc_catalog"],
 }
 
 rust_test {
@@ -37,7 +34,7 @@ rust_test {
     host_supported: true,
     crate_name: "crc",
     cargo_env_compat: true,
-    cargo_pkg_version: "3.2.1",
+    cargo_pkg_version: "3.3.0",
     crate_root: "tests/crc.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -48,7 +45,6 @@ rust_test {
     rustlibs: [
         "libcrc",
         "libcrc_catalog",
-        "libcriterion",
     ],
 }
 
@@ -57,7 +53,7 @@ rust_library {
     host_supported: true,
     crate_name: "crc",
     cargo_env_compat: true,
-    cargo_pkg_version: "3.2.1",
+    cargo_pkg_version: "3.3.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: ["libcrc_catalog"],
