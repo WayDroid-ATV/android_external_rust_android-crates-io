@@ -11,10 +11,12 @@
 
 [package]
 edition = "2018"
+rust-version = "1.61"
 name = "bytemuck_derive"
-version = "1.8.1"
+version = "1.9.3"
 authors = ["Lokathor <zefria@gmail.com>"]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
