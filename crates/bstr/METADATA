@@ -1,17 +1,17 @@
 name: "bstr"
 description: "A string type that is not required to be valid UTF-8."
 third_party {
-  version: "1.6.0"
+  version: "1.6.2"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
     month: 5
-    day: 28
+    day: 31
   }
   homepage: "https://crates.io/crates/bstr"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/bstr/bstr-1.6.0.crate"
-    version: "1.6.0"
+    value: "https://static.crates.io/crates/bstr/bstr-1.6.2.crate"
+    version: "1.6.2"
   }
 }
