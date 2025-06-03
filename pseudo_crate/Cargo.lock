@@ -320,6 +320,7 @@ dependencies = [
  "libsqlite3-sys",
  "libtest-mimic",
  "libusb1-sys",
+ "libz-rs-sys",
  "libz-sys",
  "linked-hash-map",
  "linkme",
@@ -585,6 +586,7 @@ dependencies = [
  "zerovec",
  "zerovec-derive",
  "zip",
+ "zlib-rs",
 ]
 
 [[package]]
@@ -4352,6 +4354,15 @@ dependencies = [
  "libc 0.2.168",
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "libz-rs-sys"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6489ca9bd760fe9642d7644e827b0c9add07df89857b0416ee15c1cc1a3b8c5a"
+dependencies = [
+ "zlib-rs",
 ]
 
 [[package]]
@@ -8973,6 +8984,12 @@ dependencies = [
  "time",
  "zstd",
 ]
+
+[[package]]
+name = "zlib-rs"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "868b928d7949e09af2f6086dfc1e01936064cc7a819253bce650d4e2a2d63ba8"
 
 [[package]]
 name = "zstd"

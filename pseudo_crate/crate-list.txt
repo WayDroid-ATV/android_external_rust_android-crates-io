@@ -217,6 +217,7 @@ libm
 libsqlite3-sys
 libtest-mimic
 libusb1-sys
+libz-rs-sys
 libz-sys
 linked-hash-map
 linkme
@@ -488,3 +489,4 @@ zerotrie
 zerovec
 zerovec-derive
 zip
+zlib-rs

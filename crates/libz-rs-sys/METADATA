@@ -1,0 +1,17 @@
+name: "libz-rs-sys"
+description: "A memory-safe zlib implementation written in rust"
+third_party {
+  version: "0.5.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 6
+    day: 2
+  }
+  homepage: "https://crates.io/crates/libz-rs-sys"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/libz-rs-sys/libz-rs-sys-0.5.0.crate"
+    version: "0.5.0"
+  }
+}
