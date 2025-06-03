@@ -18,7 +18,7 @@ rust_library_host {
     host_cross_supported: false,
     crate_name: "pest_generator",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.7.15",
+    cargo_pkg_version: "2.8.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
