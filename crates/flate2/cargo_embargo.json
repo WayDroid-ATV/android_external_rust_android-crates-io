@@ -4,7 +4,7 @@
     "com.android.virt"
   ],
   "features": [
-    "zlib"
+    "zlib-rs"
   ],
   "package": {
     "flate2": {
