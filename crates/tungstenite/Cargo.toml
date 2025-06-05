@@ -10,10 +10,10 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
+edition = "2021"
 rust-version = "1.63"
 name = "tungstenite"
-version = "0.24.0"
+version = "0.26.2"
 authors = [
     "Alexey Galakhov",
     "Daniel Abramov",
@@ -27,13 +27,14 @@ include = [
     "README.md",
     "CHANGELOG.md",
 ]
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
 autobenches = false
 description = "Lightweight stream-based WebSocket implementation"
 homepage = "https://github.com/snapview/tungstenite-rs"
-documentation = "https://docs.rs/tungstenite/0.24.0"
+documentation = "https://docs.rs/tungstenite/0.26.2"
 readme = "README.md"
 keywords = [
     "websocket",
@@ -49,6 +50,9 @@ repository = "https://github.com/snapview/tungstenite-rs"
 
 [package.metadata.docs.rs]
 all-features = true
+
+[profile.bench]
+lto = "thin"
 
 [lib]
 name = "tungstenite"
@@ -90,15 +94,17 @@ path = "benches/buffer.rs"
 harness = false
 
 [[bench]]
+name = "read"
+path = "benches/read.rs"
+harness = false
+
+[[bench]]
 name = "write"
 path = "benches/write.rs"
 harness = false
 
-[dependencies.byteorder]
-version = "1.3.2"
-
 [dependencies.bytes]
-version = "1.0"
+version = "1.9.0"
 
 [dependencies.data-encoding]
 version = "2"
@@ -121,7 +127,7 @@ optional = true
 package = "native-tls"
 
 [dependencies.rand]
-version = "0.8.0"
+version = "0.9.0"
 
 [dependencies.rustls]
 version = "0.23.0"
@@ -130,7 +136,7 @@ optional = true
 default-features = false
 
 [dependencies.rustls-native-certs]
-version = "0.7.0"
+version = "0.8.0"
 optional = true
 
 [dependencies.rustls-pki-types]
@@ -142,7 +148,7 @@ version = "0.10"
 optional = true
 
 [dependencies.thiserror]
-version = "1.0.23"
+version = "2.0.7"
 
 [dependencies.url]
 version = "2.1.0"
@@ -159,13 +165,13 @@ optional = true
 version = "0.5.0"
 
 [dev-dependencies.env_logger]
-version = "0.10.0"
+version = "0.11"
 
 [dev-dependencies.input_buffer]
 version = "0.5.0"
 
 [dev-dependencies.rand]
-version = "0.8.4"
+version = "0.9.0"
 
 [dev-dependencies.socket2]
 version = "0.5.5"
