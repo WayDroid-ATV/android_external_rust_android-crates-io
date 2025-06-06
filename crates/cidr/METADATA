@@ -1,0 +1,17 @@
+name: "cidr"
+description: "IP network and IP host within network types"
+third_party {
+  version: "0.3.1"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 5
+    day: 30
+  }
+  homepage: "https://crates.io/crates/cidr"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/cidr/cidr-0.3.1.crate"
+    version: "0.3.1"
+  }
+}

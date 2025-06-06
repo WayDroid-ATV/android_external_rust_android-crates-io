@@ -54,6 +54,7 @@ chunked_transfer
 ciborium
 ciborium-io
 ciborium-ll
+cidr
 clang-sys
 clap
 clap_builder

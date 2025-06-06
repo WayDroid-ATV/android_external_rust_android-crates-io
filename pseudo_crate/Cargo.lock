@@ -159,6 +159,7 @@ dependencies = [
  "ciborium",
  "ciborium-io",
  "ciborium-ll",
+ "cidr",
  "clang-sys",
  "clap 4.5.0",
  "clap_builder",
@@ -1413,6 +1414,12 @@ dependencies = [
  "ciborium-io",
  "half 2.2.1",
 ]
+
+[[package]]
+name = "cidr"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd1b64030216239a2e7c364b13cd96a2097ebf0dfe5025f2dedee14a23f2ab60"
 
 [[package]]
 name = "cipher"
