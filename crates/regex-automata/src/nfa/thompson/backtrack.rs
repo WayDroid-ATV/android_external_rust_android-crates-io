@@ -19,7 +19,7 @@ use crate::{
         empty, iter,
         prefilter::Prefilter,
         primitives::{NonMaxUsize, PatternID, SmallIndex, StateID},
-        search::{Anchored, Input, Match, MatchError, Span},
+        search::{Anchored, HalfMatch, Input, Match, MatchError, Span},
     },
 };
 
@@ -300,15 +300,6 @@ impl Builder {
         &self,
         nfa: NFA,
     ) -> Result<BoundedBacktracker, BuildError> {
-        // If the NFA has no captures, then the backtracker doesn't work since
-        // it relies on them in order to report match locations. However, in
-        // the special case of an NFA with no patterns, it is allowed, since
-        // no matches can ever be produced. And importantly, an NFA with no
-        // patterns has no capturing groups anyway, so this is necessary to
-        // permit the backtracker to work with regexes with zero patterns.
-        if !nfa.has_capture() && nfa.pattern_len() > 0 {
-            return Err(BuildError::missing_captures());
-        }
         nfa.look_set_any().available().map_err(BuildError::word)?;
         Ok(BoundedBacktracker { config: self.config.clone(), nfa })
     }
@@ -829,8 +820,11 @@ impl BoundedBacktracker {
         // bytes to the capacity in bits.
         let capacity = 8 * self.get_config().get_visited_capacity();
         let blocks = div_ceil(capacity, Visited::BLOCK_SIZE);
-        let real_capacity = blocks * Visited::BLOCK_SIZE;
-        (real_capacity / self.nfa.states().len()) - 1
+        let real_capacity = blocks.saturating_mul(Visited::BLOCK_SIZE);
+        // It's possible for `real_capacity` to be smaller than the number of
+        // NFA states for particularly large regexes, so we saturate towards
+        // zero.
+        (real_capacity / self.nfa.states().len()).saturating_sub(1)
     }
 }
 
@@ -954,8 +948,14 @@ impl BoundedBacktracker {
                 None => return Ok(None),
                 Some(pid) => pid,
             };
-            let start = slots[0].unwrap().get();
-            let end = slots[1].unwrap().get();
+            let start = match slots[0] {
+                None => return Ok(None),
+                Some(s) => s.get(),
+            };
+            let end = match slots[1] {
+                None => return Ok(None),
+                Some(s) => s.get(),
+            };
             return Ok(Some(Match::new(pid, Span { start, end })));
         }
         let ginfo = self.get_nfa().group_info();
@@ -965,8 +965,14 @@ impl BoundedBacktracker {
             None => return Ok(None),
             Some(pid) => pid,
         };
-        let start = slots[pid.as_usize() * 2].unwrap().get();
-        let end = slots[pid.as_usize() * 2 + 1].unwrap().get();
+        let start = match slots[pid.as_usize() * 2] {
+            None => return Ok(None),
+            Some(s) => s.get(),
+        };
+        let end = match slots[pid.as_usize() * 2 + 1] {
+            None => return Ok(None),
+            Some(s) => s.get(),
+        };
         Ok(Some(Match::new(pid, Span { start, end })))
     }
 
@@ -1292,12 +1298,14 @@ impl BoundedBacktracker {
     ) -> Result<Option<PatternID>, MatchError> {
         let utf8empty = self.get_nfa().has_empty() && self.get_nfa().is_utf8();
         if !utf8empty {
-            return self.try_search_slots_imp(cache, input, slots);
+            let maybe_hm = self.try_search_slots_imp(cache, input, slots)?;
+            return Ok(maybe_hm.map(|hm| hm.pattern()));
         }
         // See PikeVM::try_search_slots for why we do this.
         let min = self.get_nfa().group_info().implicit_slot_len();
         if slots.len() >= min {
-            return self.try_search_slots_imp(cache, input, slots);
+            let maybe_hm = self.try_search_slots_imp(cache, input, slots)?;
+            return Ok(maybe_hm.map(|hm| hm.pattern()));
         }
         if self.get_nfa().pattern_len() == 1 {
             let mut enough = [None, None];
@@ -1305,14 +1313,14 @@ impl BoundedBacktracker {
             // This is OK because we know `enough_slots` is strictly bigger
             // than `slots`, otherwise this special case isn't reached.
             slots.copy_from_slice(&enough[..slots.len()]);
-            return Ok(got);
+            return Ok(got.map(|hm| hm.pattern()));
         }
         let mut enough = vec![None; min];
         let got = self.try_search_slots_imp(cache, input, &mut enough)?;
         // This is OK because we know `enough_slots` is strictly bigger than
         // `slots`, otherwise this special case isn't reached.
         slots.copy_from_slice(&enough[..slots.len()]);
-        Ok(got)
+        Ok(got.map(|hm| hm.pattern()))
     }
 
     /// This is the actual implementation of `try_search_slots_imp` that
@@ -1325,30 +1333,17 @@ impl BoundedBacktracker {
         cache: &mut Cache,
         input: &Input<'_>,
         slots: &mut [Option<NonMaxUsize>],
-    ) -> Result<Option<PatternID>, MatchError> {
+    ) -> Result<Option<HalfMatch>, MatchError> {
         let utf8empty = self.get_nfa().has_empty() && self.get_nfa().is_utf8();
-        let (pid, end) = match self.search_imp(cache, input, slots)? {
+        let hm = match self.search_imp(cache, input, slots)? {
             None => return Ok(None),
-            Some(pid) if !utf8empty => return Ok(Some(pid)),
-            Some(pid) => {
-                let slot_start = pid.as_usize() * 2;
-                let slot_end = slot_start + 1;
-                // OK because we know we have a match and we know our caller
-                // provided slots are big enough (which we make true above if
-                // the caller didn't). Namely, we're only here when 'utf8empty'
-                // is true, and when that's true, we require slots for every
-                // pattern.
-                (pid, slots[slot_end].unwrap().get())
-            }
+            Some(hm) if !utf8empty => return Ok(Some(hm)),
+            Some(hm) => hm,
         };
-        empty::skip_splits_fwd(input, pid, end, |input| {
-            let pid = match self.search_imp(cache, input, slots)? {
-                None => return Ok(None),
-                Some(pid) => pid,
-            };
-            let slot_start = pid.as_usize() * 2;
-            let slot_end = slot_start + 1;
-            Ok(Some((pid, slots[slot_end].unwrap().get())))
+        empty::skip_splits_fwd(input, hm, hm.offset(), |input| {
+            Ok(self
+                .search_imp(cache, input, slots)?
+                .map(|hm| (hm, hm.offset())))
         })
     }
 
@@ -1364,7 +1359,7 @@ impl BoundedBacktracker {
         cache: &mut Cache,
         input: &Input<'_>,
         slots: &mut [Option<NonMaxUsize>],
-    ) -> Result<Option<PatternID>, MatchError> {
+    ) -> Result<Option<HalfMatch>, MatchError> {
         // Unlike in the PikeVM, we write our capturing group spans directly
         // into the caller's captures groups. So we have to make sure we're
         // starting with a blank slate first. In the PikeVM, we avoid this
@@ -1411,10 +1406,9 @@ impl BoundedBacktracker {
                     Some(ref span) => at = span.start,
                 }
             }
-            if let Some(pid) =
-                self.backtrack(cache, input, at, start_id, slots)
+            if let Some(hm) = self.backtrack(cache, input, at, start_id, slots)
             {
-                return Ok(Some(pid));
+                return Ok(Some(hm));
             }
             at += 1;
         }
@@ -1435,14 +1429,13 @@ impl BoundedBacktracker {
         at: usize,
         start_id: StateID,
         slots: &mut [Option<NonMaxUsize>],
-    ) -> Option<PatternID> {
+    ) -> Option<HalfMatch> {
         cache.stack.push(Frame::Step { sid: start_id, at });
         while let Some(frame) = cache.stack.pop() {
             match frame {
                 Frame::Step { sid, at } => {
-                    if let Some(pid) = self.step(cache, input, sid, at, slots)
-                    {
-                        return Some(pid);
+                    if let Some(hm) = self.step(cache, input, sid, at, slots) {
+                        return Some(hm);
                     }
                 }
                 Frame::RestoreCapture { slot, offset } => {
@@ -1472,7 +1465,7 @@ impl BoundedBacktracker {
         mut sid: StateID,
         mut at: usize,
         slots: &mut [Option<NonMaxUsize>],
-    ) -> Option<PatternID> {
+    ) -> Option<HalfMatch> {
         loop {
             if !cache.visited.insert(sid, at - input.start()) {
                 return None;
@@ -1555,7 +1548,7 @@ impl BoundedBacktracker {
                 }
                 State::Fail => return None,
                 State::Match { pattern_id } => {
-                    return Some(pattern_id);
+                    return Some(HalfMatch::new(pattern_id, at));
                 }
             }
         }
@@ -1890,5 +1883,26 @@ fn div_ceil(lhs: usize, rhs: usize) -> usize {
         lhs / rhs
     } else {
         (lhs / rhs) + 1
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // This is a regression test for the maximum haystack length computation.
+    // Previously, it assumed that the total capacity of the backtracker's
+    // bitset would always be greater than the number of NFA states. But there
+    // is of course no guarantee that this is true. This regression test
+    // ensures that not only does `max_haystack_len` not panic, but that it
+    // should return `0`.
+    #[cfg(feature = "syntax")]
+    #[test]
+    fn max_haystack_len_overflow() {
+        let re = BoundedBacktracker::builder()
+            .configure(BoundedBacktracker::config().visited_capacity(10))
+            .build(r"[0-9A-Za-z]{100}")
+            .unwrap();
+        assert_eq!(0, re.max_haystack_len());
     }
 }

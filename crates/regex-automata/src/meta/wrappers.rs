@@ -88,6 +88,15 @@ impl PikeVMEngine {
     }
 
     #[cfg_attr(feature = "perf-inline", inline(always))]
+    pub(crate) fn is_match(
+        &self,
+        cache: &mut PikeVMCache,
+        input: &Input<'_>,
+    ) -> bool {
+        self.0.is_match(cache.0.as_mut().unwrap(), input.clone())
+    }
+
+    #[cfg_attr(feature = "perf-inline", inline(always))]
     pub(crate) fn search_slots(
         &self,
         cache: &mut PikeVMCache,
@@ -203,12 +212,38 @@ impl BoundedBacktrackerEngine {
                 .configure(backtrack_config)
                 .build_from_nfa(nfa.clone())
                 .map_err(BuildError::nfa)?;
-            debug!("BoundedBacktracker built");
+            debug!(
+                "BoundedBacktracker built (max haystack length: {:?})",
+                engine.max_haystack_len()
+            );
             Ok(Some(BoundedBacktrackerEngine(engine)))
         }
         #[cfg(not(feature = "nfa-backtrack"))]
         {
             Ok(None)
+        }
+    }
+
+    #[cfg_attr(feature = "perf-inline", inline(always))]
+    pub(crate) fn is_match(
+        &self,
+        cache: &mut BoundedBacktrackerCache,
+        input: &Input<'_>,
+    ) -> bool {
+        #[cfg(feature = "nfa-backtrack")]
+        {
+            // OK because we only permit access to this engine when we know
+            // the haystack is short enough for the backtracker to run without
+            // reporting an error.
+            self.0
+                .try_is_match(cache.0.as_mut().unwrap(), input.clone())
+                .unwrap()
+        }
+        #[cfg(not(feature = "nfa-backtrack"))]
+        {
+            // Impossible to reach because this engine is never constructed
+            // if the requisite features aren't enabled.
+            unreachable!()
         }
     }
 
