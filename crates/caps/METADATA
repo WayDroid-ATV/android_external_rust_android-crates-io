@@ -1,0 +1,17 @@
+name: "caps"
+description: "A pure-Rust library to work with Linux capabilities"
+third_party {
+  version: "0.5.5"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 5
+    day: 30
+  }
+  homepage: "https://crates.io/crates/caps"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/caps/caps-0.5.5.crate"
+    version: "0.5.5"
+  }
+}

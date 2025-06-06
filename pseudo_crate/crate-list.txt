@@ -41,6 +41,7 @@ byteorder
 byteorder-lite
 bytes
 camino
+caps
 cargo-platform
 cargo_metadata
 cargo_toml
