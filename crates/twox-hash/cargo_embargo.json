@@ -1,7 +1,4 @@
 {
-  "module_name_overrides": {
-    "librand": "librand-0.8"
-  },
   "tests": true,
   "module_blocklist": [
     "hash_file"
