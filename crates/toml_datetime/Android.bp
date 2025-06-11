@@ -17,7 +17,7 @@ rust_library_host {
     name: "libtoml_datetime",
     crate_name: "toml_datetime",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.6.9",
+    cargo_pkg_version: "0.6.11",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: ["serde"],
