@@ -9,7 +9,7 @@ license = "Apache-2.0"
 # go/keep-sorted start
 aarch64-paging = "=0.7.0"
 acpi = "=5.2.0"
-adler2 = "=2.0.0"
+adler2 = "=2.0.1"
 ahash = "=0.8.11"
 aho-corasick = "=1.0.0"
 android_bp = "=0.3.0"
