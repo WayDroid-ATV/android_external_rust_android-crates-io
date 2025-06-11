@@ -1,17 +1,17 @@
 name: "hashbrown"
 description: "A Rust port of Google\'s SwissTable hash map"
 third_party {
-  version: "0.15.3"
+  version: "0.15.4"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 5
-    day: 27
+    month: 6
+    day: 10
   }
   homepage: "https://crates.io/crates/hashbrown"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/hashbrown/hashbrown-0.15.3.crate"
-    version: "0.15.3"
+    value: "https://static.crates.io/crates/hashbrown/hashbrown-0.15.4.crate"
+    version: "0.15.4"
   }
 }
