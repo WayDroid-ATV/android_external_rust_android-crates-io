@@ -17,7 +17,7 @@ rust_library_host {
     name: "libserde_spanned",
     crate_name: "serde_spanned",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.6.8",
+    cargo_pkg_version: "0.6.9",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: ["serde"],
