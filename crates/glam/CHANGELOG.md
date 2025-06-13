@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to
 [Semantic Versioning].
 
+## [0.30.4] - 2025-06-12
+
+### Added
+
+* Added 4x4 matrix `frustum_lh`, `frustum_rh` and `frustum_rh_gl` methods.
+
+* Added assign methods for all corresponding op trait impls (e.g. `add_assign`,
+  `div_assign`, `mul_assign`, `sub_assign` etc.)
+
+* Added by reference implementations for all op trait impls.
+
+### Changed
+
+* `bytemuck` trait implementations now use derive macros to catch potentially
+  misuse.
+
+### Fixed
+
+* Fixed unsoundness in core-simd implementation of `Vec3A` to `[f32;3]` array
+  and `Vec3A` to `Vec3` conversion.
+
+* Fixed potential unsoundness in conversion from `Vec4` to
+  `(f32, f32, f32, f32)` tuple conversion.
+
 ## [0.30.3] - 2025-05-01
 
 ### Added
@@ -1232,7 +1256,8 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 [Keep a Changelog]: https://keepachangelog.com/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[Unreleased]: https://github.com/bitshifter/glam-rs/compare/0.30.3...HEAD
+[Unreleased]: https://github.com/bitshifter/glam-rs/compare/0.30.4...HEAD
+[0.30.4]: https://github.com/bitshifter/glam-rs/compare/0.30.3...0.30.4
 [0.30.3]: https://github.com/bitshifter/glam-rs/compare/0.30.2...0.30.3
 [0.30.2]: https://github.com/bitshifter/glam-rs/compare/0.30.1...0.30.2
 [0.30.1]: https://github.com/bitshifter/glam-rs/compare/0.30.0...0.30.1

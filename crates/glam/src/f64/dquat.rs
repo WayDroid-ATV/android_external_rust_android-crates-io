@@ -8,7 +8,7 @@ use crate::{
 
 use core::fmt;
 use core::iter::{Product, Sum};
-use core::ops::{Add, Div, Mul, MulAssign, Neg, Sub};
+use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 /// Creates a quaternion from `x`, `y`, `z` and `w` values.
 ///
@@ -26,6 +26,7 @@ pub const fn dquat(x: f64, y: f64, z: f64, w: f64) -> DQuat {
 /// floating point "error creep" which can occur when successive quaternion
 /// operations are applied.
 #[derive(Clone, Copy)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(not(target_arch = "spirv"), repr(C))]
 #[cfg_attr(target_arch = "spirv", repr(simd))]
 pub struct DQuat {
@@ -437,6 +438,7 @@ impl DQuat {
     ///
     /// Will panic if `up` is not normalized when `glam_assert` is enabled.
     #[inline]
+    #[must_use]
     pub fn look_at_rh(eye: DVec3, center: DVec3, up: DVec3) -> Self {
         Self::look_to_rh(center.sub(eye).normalize(), up)
     }
@@ -823,7 +825,7 @@ impl fmt::Display for DQuat {
     }
 }
 
-impl Add<DQuat> for DQuat {
+impl Add for DQuat {
     type Output = Self;
     /// Adds two quaternions.
     ///
@@ -837,7 +839,45 @@ impl Add<DQuat> for DQuat {
     }
 }
 
-impl Sub<DQuat> for DQuat {
+impl Add<&Self> for DQuat {
+    type Output = Self;
+    #[inline]
+    fn add(self, rhs: &Self) -> Self {
+        self.add(*rhs)
+    }
+}
+
+impl Add<&DQuat> for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn add(self, rhs: &DQuat) -> DQuat {
+        (*self).add(*rhs)
+    }
+}
+
+impl Add<DQuat> for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn add(self, rhs: DQuat) -> DQuat {
+        (*self).add(rhs)
+    }
+}
+
+impl AddAssign for DQuat {
+    #[inline]
+    fn add_assign(&mut self, rhs: Self) {
+        *self = self.add(rhs);
+    }
+}
+
+impl AddAssign<&Self> for DQuat {
+    #[inline]
+    fn add_assign(&mut self, rhs: &Self) {
+        self.add_assign(*rhs);
+    }
+}
+
+impl Sub for DQuat {
     type Output = Self;
     /// Subtracts the `rhs` quaternion from `self`.
     ///
@@ -845,6 +885,44 @@ impl Sub<DQuat> for DQuat {
     #[inline]
     fn sub(self, rhs: Self) -> Self {
         Self::from_vec4(DVec4::from(self) - DVec4::from(rhs))
+    }
+}
+
+impl Sub<&Self> for DQuat {
+    type Output = Self;
+    #[inline]
+    fn sub(self, rhs: &Self) -> Self {
+        self.sub(*rhs)
+    }
+}
+
+impl Sub<&DQuat> for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn sub(self, rhs: &DQuat) -> DQuat {
+        (*self).sub(*rhs)
+    }
+}
+
+impl Sub<DQuat> for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn sub(self, rhs: DQuat) -> DQuat {
+        (*self).sub(rhs)
+    }
+}
+
+impl SubAssign for DQuat {
+    #[inline]
+    fn sub_assign(&mut self, rhs: Self) {
+        *self = self.sub(rhs);
+    }
+}
+
+impl SubAssign<&Self> for DQuat {
+    #[inline]
+    fn sub_assign(&mut self, rhs: &Self) {
+        self.sub_assign(*rhs);
     }
 }
 
@@ -859,6 +937,44 @@ impl Mul<f64> for DQuat {
     }
 }
 
+impl Mul<&f64> for DQuat {
+    type Output = Self;
+    #[inline]
+    fn mul(self, rhs: &f64) -> Self {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&f64> for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn mul(self, rhs: &f64) -> DQuat {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<f64> for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn mul(self, rhs: f64) -> DQuat {
+        (*self).mul(rhs)
+    }
+}
+
+impl MulAssign<f64> for DQuat {
+    #[inline]
+    fn mul_assign(&mut self, rhs: f64) {
+        *self = self.mul(rhs);
+    }
+}
+
+impl MulAssign<&f64> for DQuat {
+    #[inline]
+    fn mul_assign(&mut self, rhs: &f64) {
+        self.mul_assign(*rhs);
+    }
+}
+
 impl Div<f64> for DQuat {
     type Output = Self;
     /// Divides a quaternion by a scalar value.
@@ -869,7 +985,45 @@ impl Div<f64> for DQuat {
     }
 }
 
-impl Mul<DQuat> for DQuat {
+impl Div<&f64> for DQuat {
+    type Output = Self;
+    #[inline]
+    fn div(self, rhs: &f64) -> Self {
+        self.div(*rhs)
+    }
+}
+
+impl Div<&f64> for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn div(self, rhs: &f64) -> DQuat {
+        (*self).div(*rhs)
+    }
+}
+
+impl Div<f64> for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn div(self, rhs: f64) -> DQuat {
+        (*self).div(rhs)
+    }
+}
+
+impl DivAssign<f64> for DQuat {
+    #[inline]
+    fn div_assign(&mut self, rhs: f64) {
+        *self = self.div(rhs);
+    }
+}
+
+impl DivAssign<&f64> for DQuat {
+    #[inline]
+    fn div_assign(&mut self, rhs: &f64) {
+        self.div_assign(*rhs);
+    }
+}
+
+impl Mul for DQuat {
     type Output = Self;
     /// Multiplies two quaternions. If they each represent a rotation, the result will
     /// represent the combined rotation.
@@ -886,19 +1040,41 @@ impl Mul<DQuat> for DQuat {
     }
 }
 
-impl MulAssign<DQuat> for DQuat {
-    /// Multiplies two quaternions. If they each represent a rotation, the result will
-    /// represent the combined rotation.
-    ///
-    /// Note that due to floating point rounding the result may not be perfectly
-    /// normalized.
-    ///
-    /// # Panics
-    ///
-    /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+impl Mul<&Self> for DQuat {
+    type Output = Self;
+    #[inline]
+    fn mul(self, rhs: &Self) -> Self {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&DQuat> for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn mul(self, rhs: &DQuat) -> DQuat {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<DQuat> for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn mul(self, rhs: DQuat) -> DQuat {
+        (*self).mul(rhs)
+    }
+}
+
+impl MulAssign for DQuat {
     #[inline]
     fn mul_assign(&mut self, rhs: Self) {
-        *self = self.mul_quat(rhs);
+        *self = self.mul(rhs);
+    }
+}
+
+impl MulAssign<&Self> for DQuat {
+    #[inline]
+    fn mul_assign(&mut self, rhs: &Self) {
+        self.mul_assign(*rhs);
     }
 }
 
@@ -915,11 +1091,43 @@ impl Mul<DVec3> for DQuat {
     }
 }
 
+impl Mul<&DVec3> for DQuat {
+    type Output = DVec3;
+    #[inline]
+    fn mul(self, rhs: &DVec3) -> DVec3 {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&DVec3> for &DQuat {
+    type Output = DVec3;
+    #[inline]
+    fn mul(self, rhs: &DVec3) -> DVec3 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<DVec3> for &DQuat {
+    type Output = DVec3;
+    #[inline]
+    fn mul(self, rhs: DVec3) -> DVec3 {
+        (*self).mul(rhs)
+    }
+}
+
 impl Neg for DQuat {
     type Output = Self;
     #[inline]
     fn neg(self) -> Self {
         self * -1.0
+    }
+}
+
+impl Neg for &DQuat {
+    type Output = DQuat;
+    #[inline]
+    fn neg(self) -> DQuat {
+        (*self).neg()
     }
 }
 

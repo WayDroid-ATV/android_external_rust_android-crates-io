@@ -312,6 +312,11 @@ pub const fn {{ self_t | lower }}(
     {% endif %}
 )]
 {%- if self_t == "Vec3A" and is_scalar %}
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::AnyBitPattern))]
+{%- else %}
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+{%- endif %}
+{%- if self_t == "Vec3A" and is_scalar %}
 #[cfg_attr(not(target_arch = "spirv"), repr(align(16)))]
 {%- elif self_t == "Vec4" and is_scalar %}
 #[cfg_attr(
@@ -538,7 +543,7 @@ impl {{ self_t }} {
                 {% endfor %}
             ]
         {% else %}
-            unsafe { *(self as *const {{ self_t }} as *const [{{ scalar_t }}; {{ dim }}]) }
+            unsafe { *(self as *const Self as *const [{{ scalar_t }}; {{ dim }}]) }
         {% endif %}
     }
 
@@ -1535,6 +1540,8 @@ impl {{ self_t }} {
     /// Performs `is_finite` on each element of self, returning a vector mask of the results.
     ///
     /// In other words, this computes `[x.is_finite(), y.is_finite(), ...]`.
+    #[inline]
+    #[must_use]
     pub fn is_finite_mask(self) -> {{ mask_t }} {
         {% if is_scalar %}
             {{ mask_t }}::new(
@@ -2407,10 +2414,10 @@ impl {{ self_t }} {
     /// [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry
     #[inline]
     #[must_use]
-    pub fn manhattan_distance(self, other: Self) -> {{ unsigned_scalar_t }} {
+    pub fn manhattan_distance(self, rhs: Self) -> {{ unsigned_scalar_t }} {
         {% for c in components %}
             {% if not loop.first %} + {% endif %}
-            self.{{c}}.abs_diff(other.{{c}})
+            self.{{c}}.abs_diff(rhs.{{c}})
         {% endfor %}
     }
 
@@ -2421,14 +2428,14 @@ impl {{ self_t }} {
     /// [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry
     #[inline]
     #[must_use]
-    pub fn checked_manhattan_distance(self, other: Self) -> Option<{{ unsigned_scalar_t }}> {
+    pub fn checked_manhattan_distance(self, rhs: Self) -> Option<{{ unsigned_scalar_t }}> {
         {% for c in components %}
             {%- if loop.first -%}
-                let d = self.{{c}}.abs_diff(other.{{c}});
+                let d = self.{{c}}.abs_diff(rhs.{{c}});
             {%- elif loop.last -%}
-                d.checked_add(self.{{c}}.abs_diff(other.{{c}}))
+                d.checked_add(self.{{c}}.abs_diff(rhs.{{c}}))
             {%- else -%}
-                let d = d.checked_add(self.{{c}}.abs_diff(other.{{c}}))?;
+                let d = d.checked_add(self.{{c}}.abs_diff(rhs.{{c}}))?;
             {%- endif -%}
         {% endfor %}
     }
@@ -2438,11 +2445,11 @@ impl {{ self_t }} {
     /// [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance
     #[inline]
     #[must_use]
-    pub fn chebyshev_distance(self, other: Self) -> {{ unsigned_scalar_t }} {
+    pub fn chebyshev_distance(self, rhs: Self) -> {{ unsigned_scalar_t }} {
         // Note: the compiler will eventually optimize out the loop
         [
             {% for c in components %}
-                self.{{c}}.abs_diff(other.{{c}}),
+                self.{{c}}.abs_diff(rhs.{{c}}),
             {% endfor %}
         ].into_iter().max().unwrap()
     }
@@ -3098,7 +3105,7 @@ impl PartialEq for {{ self_t }} {
 }
 {% endif %}
 
-impl Div<{{ self_t }}> for {{ self_t }} {
+impl Div for {{ self_t }} {
     type Output = Self;
     #[inline]
     fn div(self, rhs: Self) -> Self {
@@ -3122,9 +3129,9 @@ impl Div<{{ self_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Div", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Div", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
 
-impl DivAssign<{{ self_t }}> for {{ self_t }} {
+impl DivAssign for {{ self_t }} {
     #[inline]
     fn div_assign(&mut self, rhs: Self) {
         {% if is_scalar %}
@@ -3145,7 +3152,7 @@ impl DivAssign<{{ self_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="DivAssign", self_t=self_t, rhs_t=self_t, self="&mut self") }}
+{{ macros::impl_ref_op_assign(imp="Div", self_t=self_t, rhs_t=self_t) }}
 
 impl Div<{{ scalar_t }}> for {{ self_t }} {
     type Output = Self;
@@ -3171,7 +3178,7 @@ impl Div<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Div", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Div", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
 
 impl DivAssign<{{ scalar_t }}> for {{ self_t }} {
     #[inline]
@@ -3194,7 +3201,7 @@ impl DivAssign<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="DivAssign", self_t=self_t, rhs_t=scalar_t, self="&mut self") }}
+{{ macros::impl_ref_op_assign(imp="Div", self_t=self_t, rhs_t=scalar_t) }}
 
 impl Div<{{ self_t }}> for {{ scalar_t }} {
     type Output = {{ self_t }};
@@ -3220,9 +3227,9 @@ impl Div<{{ self_t }}> for {{ scalar_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Div", self_t=scalar_t, rhs_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Div", self_t=scalar_t, rhs_t=self_t, output_t=self_t) }}
 
-impl Mul<{{ self_t }}> for {{ self_t }} {
+impl Mul for {{ self_t }} {
     type Output = Self;
     #[inline]
     fn mul(self, rhs: Self) -> Self {
@@ -3246,9 +3253,9 @@ impl Mul<{{ self_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Mul", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Mul", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
 
-impl MulAssign<{{ self_t }}> for {{ self_t }} {
+impl MulAssign for {{ self_t }} {
     #[inline]
     fn mul_assign(&mut self, rhs: Self) {
         {% if is_scalar %}
@@ -3269,7 +3276,7 @@ impl MulAssign<{{ self_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="MulAssign", self_t=self_t, rhs_t=self_t, self="&mut self") }}
+{{ macros::impl_ref_op_assign(imp="Mul", self_t=self_t, rhs_t=self_t) }}
 
 impl Mul<{{ scalar_t }}> for {{ self_t }} {
     type Output = Self;
@@ -3295,7 +3302,7 @@ impl Mul<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Mul", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Mul", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
 
 impl MulAssign<{{ scalar_t }}> for {{ self_t }} {
     #[inline]
@@ -3318,7 +3325,7 @@ impl MulAssign<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="MulAssign", self_t=self_t, rhs_t=scalar_t, self="&mut self") }}
+{{ macros::impl_ref_op_assign(imp="Mul", self_t=self_t, rhs_t=scalar_t) }}
 
 impl Mul<{{ self_t }}> for {{ scalar_t }} {
     type Output = {{ self_t }};
@@ -3344,9 +3351,9 @@ impl Mul<{{ self_t }}> for {{ scalar_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Mul", self_t=scalar_t, rhs_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Mul", self_t=scalar_t, rhs_t=self_t, output_t=self_t) }}
 
-impl Add<{{ self_t }}> for {{ self_t }} {
+impl Add for {{ self_t }} {
     type Output = Self;
     #[inline]
     fn add(self, rhs: Self) -> Self {
@@ -3370,9 +3377,9 @@ impl Add<{{ self_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Add", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Add", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
 
-impl AddAssign<{{ self_t }}> for {{ self_t }} {
+impl AddAssign for {{ self_t }} {
     #[inline]
     fn add_assign(&mut self, rhs: Self) {
         {% if is_scalar %}
@@ -3393,7 +3400,7 @@ impl AddAssign<{{ self_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="AddAssign", self_t=self_t, rhs_t=self_t, self="&mut self") }}
+{{ macros::impl_ref_op_assign(imp="Add", self_t=self_t, rhs_t=self_t) }}
 
 impl Add<{{ scalar_t }}> for {{ self_t }} {
     type Output = Self;
@@ -3419,7 +3426,7 @@ impl Add<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Add", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Add", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
 
 impl AddAssign<{{ scalar_t }}> for {{ self_t }} {
     #[inline]
@@ -3442,7 +3449,7 @@ impl AddAssign<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="AddAssign", self_t=self_t, rhs_t=scalar_t, self="&mut self") }}
+{{ macros::impl_ref_op_assign(imp="Add", self_t=self_t, rhs_t=scalar_t) }}
 
 impl Add<{{ self_t }}> for {{ scalar_t }} {
     type Output = {{ self_t }};
@@ -3468,9 +3475,9 @@ impl Add<{{ self_t }}> for {{ scalar_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Add", self_t=scalar_t, rhs_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Add", self_t=scalar_t, rhs_t=self_t, output_t=self_t) }}
 
-impl Sub<{{ self_t }}> for {{ self_t }} {
+impl Sub for {{ self_t }} {
     type Output = Self;
     #[inline]
     fn sub(self, rhs: Self) -> Self {
@@ -3494,11 +3501,11 @@ impl Sub<{{ self_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Sub", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Sub", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
 
-impl SubAssign<{{ self_t }}> for {{ self_t }} {
+impl SubAssign for {{ self_t }} {
     #[inline]
-    fn sub_assign(&mut self, rhs: {{ self_t }}) {
+    fn sub_assign(&mut self, rhs: Self) {
         {% if is_scalar %}
             {% for c in components %}
                 self.{{ c }}.sub_assign(rhs.{{ c }});
@@ -3517,7 +3524,7 @@ impl SubAssign<{{ self_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="SubAssign", self_t=self_t, rhs_t=self_t, self="&mut self") }}
+{{ macros::impl_ref_op_assign(imp="Sub", self_t=self_t, rhs_t=self_t) }}
 
 impl Sub<{{ scalar_t }}> for {{ self_t }} {
     type Output = Self;
@@ -3543,7 +3550,7 @@ impl Sub<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Sub", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Sub", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
 
 impl SubAssign<{{ scalar_t }}> for {{ self_t }} {
     #[inline]
@@ -3566,7 +3573,7 @@ impl SubAssign<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="SubAssign", self_t=self_t, rhs_t=scalar_t, self="&mut self") }}
+{{ macros::impl_ref_op_assign(imp="Sub", self_t=self_t, rhs_t=scalar_t) }}
 
 impl Sub<{{ self_t }}> for {{ scalar_t }} {
     type Output = {{ self_t }};
@@ -3592,9 +3599,9 @@ impl Sub<{{ self_t }}> for {{ scalar_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Sub", self_t=scalar_t, rhs_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Sub", self_t=scalar_t, rhs_t=self_t, output_t=self_t) }}
 
-impl Rem<{{ self_t }}> for {{ self_t }} {
+impl Rem for {{ self_t }} {
     type Output = Self;
     #[inline]
     fn rem(self, rhs: Self) -> Self {
@@ -3625,9 +3632,9 @@ impl Rem<{{ self_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Rem", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Rem", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
 
-impl RemAssign<{{ self_t }}> for {{ self_t }} {
+impl RemAssign for {{ self_t }} {
     #[inline]
     fn rem_assign(&mut self, rhs: Self) {
         {% if is_scalar %}
@@ -3642,7 +3649,7 @@ impl RemAssign<{{ self_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="RemAssign", self_t=self_t, rhs_t=self_t, self="&mut self") }}
+{{ macros::impl_ref_op_assign(imp="Rem", self_t=self_t, rhs_t=self_t) }}
 
 impl Rem<{{ scalar_t }}> for {{ self_t }} {
     type Output = Self;
@@ -3660,7 +3667,7 @@ impl Rem<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Rem", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Rem", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
 
 impl RemAssign<{{ scalar_t }}> for {{ self_t }} {
     #[inline]
@@ -3677,7 +3684,7 @@ impl RemAssign<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="RemAssign", self_t=self_t, rhs_t=scalar_t, self="&mut self") }}
+{{ macros::impl_ref_op_assign(imp="Rem", self_t=self_t, rhs_t=scalar_t) }}
 
 impl Rem<{{ self_t }}> for {{ scalar_t }} {
     type Output = {{ self_t }};
@@ -3695,13 +3702,13 @@ impl Rem<{{ self_t }}> for {{ scalar_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Rem", self_t=scalar_t, rhs_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_binop(imp="Rem", self_t=scalar_t, rhs_t=self_t, output_t=self_t) }}
 
 #[cfg(not(target_arch = "spirv"))]
 impl AsRef<[{{ scalar_t }}; {{ dim }}]> for {{ self_t }} {
     #[inline]
     fn as_ref(&self) -> &[{{ scalar_t }}; {{ dim }}] {
-        unsafe { &*(self as *const {{ self_t }} as *const [{{ scalar_t }}; {{ dim }}]) }
+        unsafe { &*(self as *const Self as *const [{{ scalar_t }}; {{ dim }}]) }
     }
 }
 
@@ -3709,7 +3716,7 @@ impl AsRef<[{{ scalar_t }}; {{ dim }}]> for {{ self_t }} {
 impl AsMut<[{{ scalar_t }}; {{ dim }}]> for {{ self_t }} {
     #[inline]
     fn as_mut(&mut self) -> &mut [{{ scalar_t }}; {{ dim }}] {
-        unsafe { &mut *(self as *mut {{ self_t }} as *mut [{{ scalar_t }}; {{ dim }}]) }
+        unsafe { &mut *(self as *mut Self as *mut [{{ scalar_t }}; {{ dim }}]) }
     }
 }
 
@@ -3778,14 +3785,14 @@ impl Neg for {{ self_t }} {
     }
 }
 
-{{ macros::impl_op_ref(op="Neg", self_t=self_t, output_t=self_t) }}
+{{ macros::impl_ref_unop(imp="Neg", self_t=self_t, output_t=self_t) }}
 {% endif %}
 
 {% if not is_float %}
 impl Not for {{ self_t }} {
     type Output = Self;
     #[inline]
-    fn not(self) -> Self::Output {
+    fn not(self) -> Self {
         Self {
             {% for c in components %}
                 {{ c }}: self.{{ c }}.not(),
@@ -3793,6 +3800,8 @@ impl Not for {{ self_t }} {
         }
     }
 }
+
+{{ macros::impl_ref_unop(imp="Not", self_t=self_t, output_t=self_t) }}
 
 impl BitAnd for {{ self_t }} {
     type Output = Self;
@@ -3806,6 +3815,10 @@ impl BitAnd for {{ self_t }} {
     }
 }
 
+{{ macros::impl_ref_binop(imp="BitAnd", method="bitand", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
+
+{{ macros::impl_op_assign(imp="BitAnd", self_t=self_t, rhs_t=self_t) }}
+
 impl BitOr for {{ self_t }} {
     type Output = Self;
     #[inline]
@@ -3817,6 +3830,10 @@ impl BitOr for {{ self_t }} {
         }
     }
 }
+
+{{ macros::impl_ref_binop(imp="BitOr", method="bitor", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
+
+{{ macros::impl_op_assign(imp="BitOr", self_t=self_t, rhs_t=self_t) }}
 
 impl BitXor for {{ self_t }} {
     type Output = Self;
@@ -3830,6 +3847,10 @@ impl BitXor for {{ self_t }} {
     }
 }
 
+{{ macros::impl_ref_binop(imp="BitXor", method="bitxor", self_t=self_t, rhs_t=self_t, output_t=self_t) }}
+
+{{ macros::impl_op_assign(imp="BitXor", self_t=self_t, rhs_t=self_t) }}
+
 impl BitAnd<{{ scalar_t }}> for {{ self_t }} {
     type Output = Self;
     #[inline]
@@ -3841,6 +3862,10 @@ impl BitAnd<{{ scalar_t }}> for {{ self_t }} {
         }
     }
 }
+
+{{ macros::impl_ref_binop(imp="BitAnd", method="bitand", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
+
+{{ macros::impl_op_assign(imp="BitAnd", self_t=self_t, rhs_t=scalar_t) }}
 
 impl BitOr<{{ scalar_t }}> for {{ self_t }} {
     type Output = Self;
@@ -3854,6 +3879,10 @@ impl BitOr<{{ scalar_t }}> for {{ self_t }} {
     }
 }
 
+{{ macros::impl_ref_binop(imp="BitOr", method="bitor", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
+
+{{ macros::impl_op_assign(imp="BitOr", self_t=self_t, rhs_t=scalar_t) }}
+
 impl BitXor<{{ scalar_t }}> for {{ self_t }} {
     type Output = Self;
     #[inline]
@@ -3865,6 +3894,10 @@ impl BitXor<{{ scalar_t }}> for {{ self_t }} {
         }
     }
 }
+
+{{ macros::impl_ref_binop(imp="BitXor", method="bitxor", self_t=self_t, rhs_t=scalar_t, output_t=self_t) }}
+
+{{ macros::impl_op_assign(imp="BitXor", self_t=self_t, rhs_t=scalar_t) }}
 
 {% for rhs_t in ["i8", "i16", "i32", "i64", "u8", "u16", "u32", "u64"] %}
     impl Shl<{{ rhs_t }}> for {{ self_t }} {
@@ -3879,6 +3912,10 @@ impl BitXor<{{ scalar_t }}> for {{ self_t }} {
         }
     }
 
+    {{ macros::impl_ref_binop(imp="Shl", self_t=self_t, rhs_t=rhs_t, output_t=self_t) }}
+
+    {{ macros::impl_op_assign(imp="Shl", self_t=self_t, rhs_t=rhs_t) }}
+
     impl Shr<{{ rhs_t }}> for {{ self_t }} {
         type Output = Self;
         #[inline]
@@ -3890,13 +3927,17 @@ impl BitXor<{{ scalar_t }}> for {{ self_t }} {
             }
         }
     }
+
+    {{ macros::impl_ref_binop(imp="Shr", self_t=self_t, rhs_t=rhs_t, output_t=self_t) }}
+
+    {{ macros::impl_op_assign(imp="Shr", self_t=self_t, rhs_t=rhs_t) }}
 {% endfor %}
 
-{% for rhs_t in ["crate::IVec" ~ dim, "crate::UVec" ~ dim] %}
-        impl Shl<{{ rhs_t }}> for {{ self_t }} {
+{% for rhs_t in ["IVec" ~ dim, "UVec" ~ dim] %}
+        impl Shl{% if rhs_t != self_t %}<{{ rhs_t }}>{% endif %} for {{ self_t }} {
             type Output = Self;
             #[inline]
-            fn shl(self, rhs: {{ rhs_t }}) -> Self::Output {
+            fn shl(self, rhs: {% if rhs_t != self_t %}{{ rhs_t }}{% else %}Self{% endif %}) -> Self {
                 Self {
                     {% for c in components %}
                         {{ c }}: self.{{ c }}.shl(rhs.{{ c }}),
@@ -3905,10 +3946,12 @@ impl BitXor<{{ scalar_t }}> for {{ self_t }} {
             }
         }
 
-        impl Shr<{{ rhs_t }}> for {{ self_t }} {
+        {{ macros::impl_ref_binop(imp="Shl", self_t=self_t, rhs_t=rhs_t, output_t=self_t) }}
+
+        impl Shr{% if rhs_t != self_t %}<{{ rhs_t }}>{% endif %} for {{ self_t }} {
             type Output = Self;
             #[inline]
-            fn shr(self, rhs: {{ rhs_t }}) -> Self::Output {
+            fn shr(self, rhs: {% if rhs_t != self_t %}{{ rhs_t }}{% else %}Self{% endif %}) -> Self {
                 Self {
                     {% for c in components %}
                         {{ c }}: self.{{ c }}.shr(rhs.{{ c }}),
@@ -3916,6 +3959,8 @@ impl BitXor<{{ scalar_t }}> for {{ self_t }} {
                 }
             }
         }
+
+        {{ macros::impl_ref_binop(imp="Shr", self_t=self_t, rhs_t=rhs_t, output_t=self_t) }}
 {% endfor %}
 {% endif %}
 
@@ -4047,7 +4092,7 @@ impl From<{{ self_t }}> for [{{ scalar_t }}; {{ dim }}] {
         {% elif is_coresimd %}
             {% if dim == 3 %}
                 unsafe {
-                    *(v.0.to_array().as_ptr() as *const Self)
+                    *(v.0.as_array().as_ptr() as *const Self)
                 }
             {% elif dim == 4 %}
                 v.0.to_array()
@@ -4080,39 +4125,11 @@ impl From<{{ macros::make_tuple_t(t=scalar_t, n=dim) }}> for {{ self_t }} {
 impl From<{{ self_t }}> for {{ macros::make_tuple_t(t=scalar_t, n=dim) }} {
     #[inline]
     fn from(v: {{ self_t }}) -> Self {
-        {% if is_scalar %}
-            (
-                {% for c in components %}
-                    v.{{ c }},
-                {%- endfor %}
-            )
-        {% elif is_sse2 %}
-            use core::mem::MaybeUninit;
-            use crate::Align16;
-            let mut out: MaybeUninit<Align16<Self>> = MaybeUninit::uninit();
-            unsafe {
-                _mm_store_ps(out.as_mut_ptr().cast(), v.0);
-                out.assume_init().0
-            }
-        {% elif is_wasm32 %}
-            unsafe {
-                *(&v.0 as *const v128 as *const Self)
-            }
-        {% elif is_coresimd %}
-            unsafe {
-                *(v.0.to_array().as_ptr() as *const Self)
-            }
-        {% elif is_neon %}
-            use core::mem::MaybeUninit;
-            use crate::align16::Align16;
-            let mut out: MaybeUninit<Align16<Self>> = MaybeUninit::uninit();
-            unsafe {
-                vst1q_f32(out.as_mut_ptr().cast(), v.0);
-                out.assume_init().0
-            }
-        {% else %}
-            unimplemented!()
-        {% endif %}
+        (
+            {% for c in components %}
+                v.{{ c }},
+            {%- endfor %}
+        )
     }
 }
 
@@ -4147,7 +4164,7 @@ impl From<Vec3A> for Vec3 {
             }
         {% elif is_coresimd %}
             unsafe {
-                *(v.0.to_array().as_ptr() as *const Self)
+                *(v.0.as_array().as_ptr() as *const Self)
             }
         {% elif is_neon %}
             use core::mem::MaybeUninit;

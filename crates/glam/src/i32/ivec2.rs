@@ -16,6 +16,7 @@ pub const fn ivec2(x: i32, y: i32) -> IVec2 {
 /// A 2-dimensional vector.
 #[cfg_attr(not(target_arch = "spirv"), derive(Hash))]
 #[derive(Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(feature = "cuda", repr(align(8)))]
 #[cfg_attr(not(target_arch = "spirv"), repr(C))]
 #[cfg_attr(target_arch = "spirv", repr(simd))]
@@ -416,8 +417,8 @@ impl IVec2 {
     /// [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry
     #[inline]
     #[must_use]
-    pub fn manhattan_distance(self, other: Self) -> u32 {
-        self.x.abs_diff(other.x) + self.y.abs_diff(other.y)
+    pub fn manhattan_distance(self, rhs: Self) -> u32 {
+        self.x.abs_diff(rhs.x) + self.y.abs_diff(rhs.y)
     }
 
     /// Computes the [manhattan distance] between two points.
@@ -427,9 +428,9 @@ impl IVec2 {
     /// [manhattan distance]: https://en.wikipedia.org/wiki/Taxicab_geometry
     #[inline]
     #[must_use]
-    pub fn checked_manhattan_distance(self, other: Self) -> Option<u32> {
-        let d = self.x.abs_diff(other.x);
-        d.checked_add(self.y.abs_diff(other.y))
+    pub fn checked_manhattan_distance(self, rhs: Self) -> Option<u32> {
+        let d = self.x.abs_diff(rhs.x);
+        d.checked_add(self.y.abs_diff(rhs.y))
     }
 
     /// Computes the [chebyshev distance] between two points.
@@ -437,9 +438,9 @@ impl IVec2 {
     /// [chebyshev distance]: https://en.wikipedia.org/wiki/Chebyshev_distance
     #[inline]
     #[must_use]
-    pub fn chebyshev_distance(self, other: Self) -> u32 {
+    pub fn chebyshev_distance(self, rhs: Self) -> u32 {
         // Note: the compiler will eventually optimize out the loop
-        [self.x.abs_diff(other.x), self.y.abs_diff(other.y)]
+        [self.x.abs_diff(rhs.x), self.y.abs_diff(rhs.y)]
             .into_iter()
             .max()
             .unwrap()
@@ -808,7 +809,7 @@ impl Default for IVec2 {
     }
 }
 
-impl Div<IVec2> for IVec2 {
+impl Div for IVec2 {
     type Output = Self;
     #[inline]
     fn div(self, rhs: Self) -> Self {
@@ -819,10 +820,10 @@ impl Div<IVec2> for IVec2 {
     }
 }
 
-impl Div<&IVec2> for IVec2 {
-    type Output = IVec2;
+impl Div<&Self> for IVec2 {
+    type Output = Self;
     #[inline]
-    fn div(self, rhs: &IVec2) -> IVec2 {
+    fn div(self, rhs: &Self) -> Self {
         self.div(*rhs)
     }
 }
@@ -843,7 +844,7 @@ impl Div<IVec2> for &IVec2 {
     }
 }
 
-impl DivAssign<IVec2> for IVec2 {
+impl DivAssign for IVec2 {
     #[inline]
     fn div_assign(&mut self, rhs: Self) {
         self.x.div_assign(rhs.x);
@@ -851,10 +852,10 @@ impl DivAssign<IVec2> for IVec2 {
     }
 }
 
-impl DivAssign<&IVec2> for IVec2 {
+impl DivAssign<&Self> for IVec2 {
     #[inline]
-    fn div_assign(&mut self, rhs: &IVec2) {
-        self.div_assign(*rhs)
+    fn div_assign(&mut self, rhs: &Self) {
+        self.div_assign(*rhs);
     }
 }
 
@@ -870,9 +871,9 @@ impl Div<i32> for IVec2 {
 }
 
 impl Div<&i32> for IVec2 {
-    type Output = IVec2;
+    type Output = Self;
     #[inline]
-    fn div(self, rhs: &i32) -> IVec2 {
+    fn div(self, rhs: &i32) -> Self {
         self.div(*rhs)
     }
 }
@@ -904,7 +905,7 @@ impl DivAssign<i32> for IVec2 {
 impl DivAssign<&i32> for IVec2 {
     #[inline]
     fn div_assign(&mut self, rhs: &i32) {
-        self.div_assign(*rhs)
+        self.div_assign(*rhs);
     }
 }
 
@@ -943,7 +944,7 @@ impl Div<IVec2> for &i32 {
     }
 }
 
-impl Mul<IVec2> for IVec2 {
+impl Mul for IVec2 {
     type Output = Self;
     #[inline]
     fn mul(self, rhs: Self) -> Self {
@@ -954,10 +955,10 @@ impl Mul<IVec2> for IVec2 {
     }
 }
 
-impl Mul<&IVec2> for IVec2 {
-    type Output = IVec2;
+impl Mul<&Self> for IVec2 {
+    type Output = Self;
     #[inline]
-    fn mul(self, rhs: &IVec2) -> IVec2 {
+    fn mul(self, rhs: &Self) -> Self {
         self.mul(*rhs)
     }
 }
@@ -978,7 +979,7 @@ impl Mul<IVec2> for &IVec2 {
     }
 }
 
-impl MulAssign<IVec2> for IVec2 {
+impl MulAssign for IVec2 {
     #[inline]
     fn mul_assign(&mut self, rhs: Self) {
         self.x.mul_assign(rhs.x);
@@ -986,10 +987,10 @@ impl MulAssign<IVec2> for IVec2 {
     }
 }
 
-impl MulAssign<&IVec2> for IVec2 {
+impl MulAssign<&Self> for IVec2 {
     #[inline]
-    fn mul_assign(&mut self, rhs: &IVec2) {
-        self.mul_assign(*rhs)
+    fn mul_assign(&mut self, rhs: &Self) {
+        self.mul_assign(*rhs);
     }
 }
 
@@ -1005,9 +1006,9 @@ impl Mul<i32> for IVec2 {
 }
 
 impl Mul<&i32> for IVec2 {
-    type Output = IVec2;
+    type Output = Self;
     #[inline]
-    fn mul(self, rhs: &i32) -> IVec2 {
+    fn mul(self, rhs: &i32) -> Self {
         self.mul(*rhs)
     }
 }
@@ -1039,7 +1040,7 @@ impl MulAssign<i32> for IVec2 {
 impl MulAssign<&i32> for IVec2 {
     #[inline]
     fn mul_assign(&mut self, rhs: &i32) {
-        self.mul_assign(*rhs)
+        self.mul_assign(*rhs);
     }
 }
 
@@ -1078,7 +1079,7 @@ impl Mul<IVec2> for &i32 {
     }
 }
 
-impl Add<IVec2> for IVec2 {
+impl Add for IVec2 {
     type Output = Self;
     #[inline]
     fn add(self, rhs: Self) -> Self {
@@ -1089,10 +1090,10 @@ impl Add<IVec2> for IVec2 {
     }
 }
 
-impl Add<&IVec2> for IVec2 {
-    type Output = IVec2;
+impl Add<&Self> for IVec2 {
+    type Output = Self;
     #[inline]
-    fn add(self, rhs: &IVec2) -> IVec2 {
+    fn add(self, rhs: &Self) -> Self {
         self.add(*rhs)
     }
 }
@@ -1113,7 +1114,7 @@ impl Add<IVec2> for &IVec2 {
     }
 }
 
-impl AddAssign<IVec2> for IVec2 {
+impl AddAssign for IVec2 {
     #[inline]
     fn add_assign(&mut self, rhs: Self) {
         self.x.add_assign(rhs.x);
@@ -1121,10 +1122,10 @@ impl AddAssign<IVec2> for IVec2 {
     }
 }
 
-impl AddAssign<&IVec2> for IVec2 {
+impl AddAssign<&Self> for IVec2 {
     #[inline]
-    fn add_assign(&mut self, rhs: &IVec2) {
-        self.add_assign(*rhs)
+    fn add_assign(&mut self, rhs: &Self) {
+        self.add_assign(*rhs);
     }
 }
 
@@ -1140,9 +1141,9 @@ impl Add<i32> for IVec2 {
 }
 
 impl Add<&i32> for IVec2 {
-    type Output = IVec2;
+    type Output = Self;
     #[inline]
-    fn add(self, rhs: &i32) -> IVec2 {
+    fn add(self, rhs: &i32) -> Self {
         self.add(*rhs)
     }
 }
@@ -1174,7 +1175,7 @@ impl AddAssign<i32> for IVec2 {
 impl AddAssign<&i32> for IVec2 {
     #[inline]
     fn add_assign(&mut self, rhs: &i32) {
-        self.add_assign(*rhs)
+        self.add_assign(*rhs);
     }
 }
 
@@ -1213,7 +1214,7 @@ impl Add<IVec2> for &i32 {
     }
 }
 
-impl Sub<IVec2> for IVec2 {
+impl Sub for IVec2 {
     type Output = Self;
     #[inline]
     fn sub(self, rhs: Self) -> Self {
@@ -1224,10 +1225,10 @@ impl Sub<IVec2> for IVec2 {
     }
 }
 
-impl Sub<&IVec2> for IVec2 {
-    type Output = IVec2;
+impl Sub<&Self> for IVec2 {
+    type Output = Self;
     #[inline]
-    fn sub(self, rhs: &IVec2) -> IVec2 {
+    fn sub(self, rhs: &Self) -> Self {
         self.sub(*rhs)
     }
 }
@@ -1248,18 +1249,18 @@ impl Sub<IVec2> for &IVec2 {
     }
 }
 
-impl SubAssign<IVec2> for IVec2 {
+impl SubAssign for IVec2 {
     #[inline]
-    fn sub_assign(&mut self, rhs: IVec2) {
+    fn sub_assign(&mut self, rhs: Self) {
         self.x.sub_assign(rhs.x);
         self.y.sub_assign(rhs.y);
     }
 }
 
-impl SubAssign<&IVec2> for IVec2 {
+impl SubAssign<&Self> for IVec2 {
     #[inline]
-    fn sub_assign(&mut self, rhs: &IVec2) {
-        self.sub_assign(*rhs)
+    fn sub_assign(&mut self, rhs: &Self) {
+        self.sub_assign(*rhs);
     }
 }
 
@@ -1275,9 +1276,9 @@ impl Sub<i32> for IVec2 {
 }
 
 impl Sub<&i32> for IVec2 {
-    type Output = IVec2;
+    type Output = Self;
     #[inline]
-    fn sub(self, rhs: &i32) -> IVec2 {
+    fn sub(self, rhs: &i32) -> Self {
         self.sub(*rhs)
     }
 }
@@ -1309,7 +1310,7 @@ impl SubAssign<i32> for IVec2 {
 impl SubAssign<&i32> for IVec2 {
     #[inline]
     fn sub_assign(&mut self, rhs: &i32) {
-        self.sub_assign(*rhs)
+        self.sub_assign(*rhs);
     }
 }
 
@@ -1348,7 +1349,7 @@ impl Sub<IVec2> for &i32 {
     }
 }
 
-impl Rem<IVec2> for IVec2 {
+impl Rem for IVec2 {
     type Output = Self;
     #[inline]
     fn rem(self, rhs: Self) -> Self {
@@ -1359,10 +1360,10 @@ impl Rem<IVec2> for IVec2 {
     }
 }
 
-impl Rem<&IVec2> for IVec2 {
-    type Output = IVec2;
+impl Rem<&Self> for IVec2 {
+    type Output = Self;
     #[inline]
-    fn rem(self, rhs: &IVec2) -> IVec2 {
+    fn rem(self, rhs: &Self) -> Self {
         self.rem(*rhs)
     }
 }
@@ -1383,7 +1384,7 @@ impl Rem<IVec2> for &IVec2 {
     }
 }
 
-impl RemAssign<IVec2> for IVec2 {
+impl RemAssign for IVec2 {
     #[inline]
     fn rem_assign(&mut self, rhs: Self) {
         self.x.rem_assign(rhs.x);
@@ -1391,10 +1392,10 @@ impl RemAssign<IVec2> for IVec2 {
     }
 }
 
-impl RemAssign<&IVec2> for IVec2 {
+impl RemAssign<&Self> for IVec2 {
     #[inline]
-    fn rem_assign(&mut self, rhs: &IVec2) {
-        self.rem_assign(*rhs)
+    fn rem_assign(&mut self, rhs: &Self) {
+        self.rem_assign(*rhs);
     }
 }
 
@@ -1410,9 +1411,9 @@ impl Rem<i32> for IVec2 {
 }
 
 impl Rem<&i32> for IVec2 {
-    type Output = IVec2;
+    type Output = Self;
     #[inline]
-    fn rem(self, rhs: &i32) -> IVec2 {
+    fn rem(self, rhs: &i32) -> Self {
         self.rem(*rhs)
     }
 }
@@ -1444,7 +1445,7 @@ impl RemAssign<i32> for IVec2 {
 impl RemAssign<&i32> for IVec2 {
     #[inline]
     fn rem_assign(&mut self, rhs: &i32) {
-        self.rem_assign(*rhs)
+        self.rem_assign(*rhs);
     }
 }
 
@@ -1487,7 +1488,7 @@ impl Rem<IVec2> for &i32 {
 impl AsRef<[i32; 2]> for IVec2 {
     #[inline]
     fn as_ref(&self) -> &[i32; 2] {
-        unsafe { &*(self as *const IVec2 as *const [i32; 2]) }
+        unsafe { &*(self as *const Self as *const [i32; 2]) }
     }
 }
 
@@ -1495,7 +1496,7 @@ impl AsRef<[i32; 2]> for IVec2 {
 impl AsMut<[i32; 2]> for IVec2 {
     #[inline]
     fn as_mut(&mut self) -> &mut [i32; 2] {
-        unsafe { &mut *(self as *mut IVec2 as *mut [i32; 2]) }
+        unsafe { &mut *(self as *mut Self as *mut [i32; 2]) }
     }
 }
 
@@ -1561,11 +1562,19 @@ impl Neg for &IVec2 {
 impl Not for IVec2 {
     type Output = Self;
     #[inline]
-    fn not(self) -> Self::Output {
+    fn not(self) -> Self {
         Self {
             x: self.x.not(),
             y: self.y.not(),
         }
+    }
+}
+
+impl Not for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn not(self) -> IVec2 {
+        (*self).not()
     }
 }
 
@@ -1580,6 +1589,44 @@ impl BitAnd for IVec2 {
     }
 }
 
+impl BitAnd<&Self> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn bitand(self, rhs: &Self) -> Self {
+        self.bitand(*rhs)
+    }
+}
+
+impl BitAnd<&IVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitand(self, rhs: &IVec2) -> IVec2 {
+        (*self).bitand(*rhs)
+    }
+}
+
+impl BitAnd<IVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitand(self, rhs: IVec2) -> IVec2 {
+        (*self).bitand(rhs)
+    }
+}
+
+impl BitAndAssign for IVec2 {
+    #[inline]
+    fn bitand_assign(&mut self, rhs: Self) {
+        *self = self.bitand(rhs);
+    }
+}
+
+impl BitAndAssign<&Self> for IVec2 {
+    #[inline]
+    fn bitand_assign(&mut self, rhs: &Self) {
+        self.bitand_assign(*rhs);
+    }
+}
+
 impl BitOr for IVec2 {
     type Output = Self;
     #[inline]
@@ -1588,6 +1635,44 @@ impl BitOr for IVec2 {
             x: self.x.bitor(rhs.x),
             y: self.y.bitor(rhs.y),
         }
+    }
+}
+
+impl BitOr<&Self> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn bitor(self, rhs: &Self) -> Self {
+        self.bitor(*rhs)
+    }
+}
+
+impl BitOr<&IVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitor(self, rhs: &IVec2) -> IVec2 {
+        (*self).bitor(*rhs)
+    }
+}
+
+impl BitOr<IVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitor(self, rhs: IVec2) -> IVec2 {
+        (*self).bitor(rhs)
+    }
+}
+
+impl BitOrAssign for IVec2 {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: Self) {
+        *self = self.bitor(rhs);
+    }
+}
+
+impl BitOrAssign<&Self> for IVec2 {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: &Self) {
+        self.bitor_assign(*rhs);
     }
 }
 
@@ -1602,6 +1687,44 @@ impl BitXor for IVec2 {
     }
 }
 
+impl BitXor<&Self> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn bitxor(self, rhs: &Self) -> Self {
+        self.bitxor(*rhs)
+    }
+}
+
+impl BitXor<&IVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitxor(self, rhs: &IVec2) -> IVec2 {
+        (*self).bitxor(*rhs)
+    }
+}
+
+impl BitXor<IVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitxor(self, rhs: IVec2) -> IVec2 {
+        (*self).bitxor(rhs)
+    }
+}
+
+impl BitXorAssign for IVec2 {
+    #[inline]
+    fn bitxor_assign(&mut self, rhs: Self) {
+        *self = self.bitxor(rhs);
+    }
+}
+
+impl BitXorAssign<&Self> for IVec2 {
+    #[inline]
+    fn bitxor_assign(&mut self, rhs: &Self) {
+        self.bitxor_assign(*rhs);
+    }
+}
+
 impl BitAnd<i32> for IVec2 {
     type Output = Self;
     #[inline]
@@ -1610,6 +1733,44 @@ impl BitAnd<i32> for IVec2 {
             x: self.x.bitand(rhs),
             y: self.y.bitand(rhs),
         }
+    }
+}
+
+impl BitAnd<&i32> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn bitand(self, rhs: &i32) -> Self {
+        self.bitand(*rhs)
+    }
+}
+
+impl BitAnd<&i32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitand(self, rhs: &i32) -> IVec2 {
+        (*self).bitand(*rhs)
+    }
+}
+
+impl BitAnd<i32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitand(self, rhs: i32) -> IVec2 {
+        (*self).bitand(rhs)
+    }
+}
+
+impl BitAndAssign<i32> for IVec2 {
+    #[inline]
+    fn bitand_assign(&mut self, rhs: i32) {
+        *self = self.bitand(rhs);
+    }
+}
+
+impl BitAndAssign<&i32> for IVec2 {
+    #[inline]
+    fn bitand_assign(&mut self, rhs: &i32) {
+        self.bitand_assign(*rhs);
     }
 }
 
@@ -1624,6 +1785,44 @@ impl BitOr<i32> for IVec2 {
     }
 }
 
+impl BitOr<&i32> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn bitor(self, rhs: &i32) -> Self {
+        self.bitor(*rhs)
+    }
+}
+
+impl BitOr<&i32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitor(self, rhs: &i32) -> IVec2 {
+        (*self).bitor(*rhs)
+    }
+}
+
+impl BitOr<i32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitor(self, rhs: i32) -> IVec2 {
+        (*self).bitor(rhs)
+    }
+}
+
+impl BitOrAssign<i32> for IVec2 {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: i32) {
+        *self = self.bitor(rhs);
+    }
+}
+
+impl BitOrAssign<&i32> for IVec2 {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: &i32) {
+        self.bitor_assign(*rhs);
+    }
+}
+
 impl BitXor<i32> for IVec2 {
     type Output = Self;
     #[inline]
@@ -1632,6 +1831,44 @@ impl BitXor<i32> for IVec2 {
             x: self.x.bitxor(rhs),
             y: self.y.bitxor(rhs),
         }
+    }
+}
+
+impl BitXor<&i32> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn bitxor(self, rhs: &i32) -> Self {
+        self.bitxor(*rhs)
+    }
+}
+
+impl BitXor<&i32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitxor(self, rhs: &i32) -> IVec2 {
+        (*self).bitxor(*rhs)
+    }
+}
+
+impl BitXor<i32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn bitxor(self, rhs: i32) -> IVec2 {
+        (*self).bitxor(rhs)
+    }
+}
+
+impl BitXorAssign<i32> for IVec2 {
+    #[inline]
+    fn bitxor_assign(&mut self, rhs: i32) {
+        *self = self.bitxor(rhs);
+    }
+}
+
+impl BitXorAssign<&i32> for IVec2 {
+    #[inline]
+    fn bitxor_assign(&mut self, rhs: &i32) {
+        self.bitxor_assign(*rhs);
     }
 }
 
@@ -1646,6 +1883,44 @@ impl Shl<i8> for IVec2 {
     }
 }
 
+impl Shl<&i8> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shl(self, rhs: &i8) -> Self {
+        self.shl(*rhs)
+    }
+}
+
+impl Shl<&i8> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: &i8) -> IVec2 {
+        (*self).shl(*rhs)
+    }
+}
+
+impl Shl<i8> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: i8) -> IVec2 {
+        (*self).shl(rhs)
+    }
+}
+
+impl ShlAssign<i8> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: i8) {
+        *self = self.shl(rhs);
+    }
+}
+
+impl ShlAssign<&i8> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: &i8) {
+        self.shl_assign(*rhs);
+    }
+}
+
 impl Shr<i8> for IVec2 {
     type Output = Self;
     #[inline]
@@ -1654,6 +1929,44 @@ impl Shr<i8> for IVec2 {
             x: self.x.shr(rhs),
             y: self.y.shr(rhs),
         }
+    }
+}
+
+impl Shr<&i8> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shr(self, rhs: &i8) -> Self {
+        self.shr(*rhs)
+    }
+}
+
+impl Shr<&i8> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: &i8) -> IVec2 {
+        (*self).shr(*rhs)
+    }
+}
+
+impl Shr<i8> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: i8) -> IVec2 {
+        (*self).shr(rhs)
+    }
+}
+
+impl ShrAssign<i8> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: i8) {
+        *self = self.shr(rhs);
+    }
+}
+
+impl ShrAssign<&i8> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: &i8) {
+        self.shr_assign(*rhs);
     }
 }
 
@@ -1668,6 +1981,44 @@ impl Shl<i16> for IVec2 {
     }
 }
 
+impl Shl<&i16> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shl(self, rhs: &i16) -> Self {
+        self.shl(*rhs)
+    }
+}
+
+impl Shl<&i16> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: &i16) -> IVec2 {
+        (*self).shl(*rhs)
+    }
+}
+
+impl Shl<i16> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: i16) -> IVec2 {
+        (*self).shl(rhs)
+    }
+}
+
+impl ShlAssign<i16> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: i16) {
+        *self = self.shl(rhs);
+    }
+}
+
+impl ShlAssign<&i16> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: &i16) {
+        self.shl_assign(*rhs);
+    }
+}
+
 impl Shr<i16> for IVec2 {
     type Output = Self;
     #[inline]
@@ -1676,6 +2027,44 @@ impl Shr<i16> for IVec2 {
             x: self.x.shr(rhs),
             y: self.y.shr(rhs),
         }
+    }
+}
+
+impl Shr<&i16> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shr(self, rhs: &i16) -> Self {
+        self.shr(*rhs)
+    }
+}
+
+impl Shr<&i16> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: &i16) -> IVec2 {
+        (*self).shr(*rhs)
+    }
+}
+
+impl Shr<i16> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: i16) -> IVec2 {
+        (*self).shr(rhs)
+    }
+}
+
+impl ShrAssign<i16> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: i16) {
+        *self = self.shr(rhs);
+    }
+}
+
+impl ShrAssign<&i16> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: &i16) {
+        self.shr_assign(*rhs);
     }
 }
 
@@ -1690,6 +2079,44 @@ impl Shl<i32> for IVec2 {
     }
 }
 
+impl Shl<&i32> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shl(self, rhs: &i32) -> Self {
+        self.shl(*rhs)
+    }
+}
+
+impl Shl<&i32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: &i32) -> IVec2 {
+        (*self).shl(*rhs)
+    }
+}
+
+impl Shl<i32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: i32) -> IVec2 {
+        (*self).shl(rhs)
+    }
+}
+
+impl ShlAssign<i32> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: i32) {
+        *self = self.shl(rhs);
+    }
+}
+
+impl ShlAssign<&i32> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: &i32) {
+        self.shl_assign(*rhs);
+    }
+}
+
 impl Shr<i32> for IVec2 {
     type Output = Self;
     #[inline]
@@ -1698,6 +2125,44 @@ impl Shr<i32> for IVec2 {
             x: self.x.shr(rhs),
             y: self.y.shr(rhs),
         }
+    }
+}
+
+impl Shr<&i32> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shr(self, rhs: &i32) -> Self {
+        self.shr(*rhs)
+    }
+}
+
+impl Shr<&i32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: &i32) -> IVec2 {
+        (*self).shr(*rhs)
+    }
+}
+
+impl Shr<i32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: i32) -> IVec2 {
+        (*self).shr(rhs)
+    }
+}
+
+impl ShrAssign<i32> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: i32) {
+        *self = self.shr(rhs);
+    }
+}
+
+impl ShrAssign<&i32> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: &i32) {
+        self.shr_assign(*rhs);
     }
 }
 
@@ -1712,6 +2177,44 @@ impl Shl<i64> for IVec2 {
     }
 }
 
+impl Shl<&i64> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shl(self, rhs: &i64) -> Self {
+        self.shl(*rhs)
+    }
+}
+
+impl Shl<&i64> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: &i64) -> IVec2 {
+        (*self).shl(*rhs)
+    }
+}
+
+impl Shl<i64> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: i64) -> IVec2 {
+        (*self).shl(rhs)
+    }
+}
+
+impl ShlAssign<i64> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: i64) {
+        *self = self.shl(rhs);
+    }
+}
+
+impl ShlAssign<&i64> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: &i64) {
+        self.shl_assign(*rhs);
+    }
+}
+
 impl Shr<i64> for IVec2 {
     type Output = Self;
     #[inline]
@@ -1720,6 +2223,44 @@ impl Shr<i64> for IVec2 {
             x: self.x.shr(rhs),
             y: self.y.shr(rhs),
         }
+    }
+}
+
+impl Shr<&i64> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shr(self, rhs: &i64) -> Self {
+        self.shr(*rhs)
+    }
+}
+
+impl Shr<&i64> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: &i64) -> IVec2 {
+        (*self).shr(*rhs)
+    }
+}
+
+impl Shr<i64> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: i64) -> IVec2 {
+        (*self).shr(rhs)
+    }
+}
+
+impl ShrAssign<i64> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: i64) {
+        *self = self.shr(rhs);
+    }
+}
+
+impl ShrAssign<&i64> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: &i64) {
+        self.shr_assign(*rhs);
     }
 }
 
@@ -1734,6 +2275,44 @@ impl Shl<u8> for IVec2 {
     }
 }
 
+impl Shl<&u8> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shl(self, rhs: &u8) -> Self {
+        self.shl(*rhs)
+    }
+}
+
+impl Shl<&u8> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: &u8) -> IVec2 {
+        (*self).shl(*rhs)
+    }
+}
+
+impl Shl<u8> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: u8) -> IVec2 {
+        (*self).shl(rhs)
+    }
+}
+
+impl ShlAssign<u8> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: u8) {
+        *self = self.shl(rhs);
+    }
+}
+
+impl ShlAssign<&u8> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: &u8) {
+        self.shl_assign(*rhs);
+    }
+}
+
 impl Shr<u8> for IVec2 {
     type Output = Self;
     #[inline]
@@ -1742,6 +2321,44 @@ impl Shr<u8> for IVec2 {
             x: self.x.shr(rhs),
             y: self.y.shr(rhs),
         }
+    }
+}
+
+impl Shr<&u8> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shr(self, rhs: &u8) -> Self {
+        self.shr(*rhs)
+    }
+}
+
+impl Shr<&u8> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: &u8) -> IVec2 {
+        (*self).shr(*rhs)
+    }
+}
+
+impl Shr<u8> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: u8) -> IVec2 {
+        (*self).shr(rhs)
+    }
+}
+
+impl ShrAssign<u8> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: u8) {
+        *self = self.shr(rhs);
+    }
+}
+
+impl ShrAssign<&u8> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: &u8) {
+        self.shr_assign(*rhs);
     }
 }
 
@@ -1756,6 +2373,44 @@ impl Shl<u16> for IVec2 {
     }
 }
 
+impl Shl<&u16> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shl(self, rhs: &u16) -> Self {
+        self.shl(*rhs)
+    }
+}
+
+impl Shl<&u16> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: &u16) -> IVec2 {
+        (*self).shl(*rhs)
+    }
+}
+
+impl Shl<u16> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: u16) -> IVec2 {
+        (*self).shl(rhs)
+    }
+}
+
+impl ShlAssign<u16> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: u16) {
+        *self = self.shl(rhs);
+    }
+}
+
+impl ShlAssign<&u16> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: &u16) {
+        self.shl_assign(*rhs);
+    }
+}
+
 impl Shr<u16> for IVec2 {
     type Output = Self;
     #[inline]
@@ -1764,6 +2419,44 @@ impl Shr<u16> for IVec2 {
             x: self.x.shr(rhs),
             y: self.y.shr(rhs),
         }
+    }
+}
+
+impl Shr<&u16> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shr(self, rhs: &u16) -> Self {
+        self.shr(*rhs)
+    }
+}
+
+impl Shr<&u16> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: &u16) -> IVec2 {
+        (*self).shr(*rhs)
+    }
+}
+
+impl Shr<u16> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: u16) -> IVec2 {
+        (*self).shr(rhs)
+    }
+}
+
+impl ShrAssign<u16> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: u16) {
+        *self = self.shr(rhs);
+    }
+}
+
+impl ShrAssign<&u16> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: &u16) {
+        self.shr_assign(*rhs);
     }
 }
 
@@ -1778,6 +2471,44 @@ impl Shl<u32> for IVec2 {
     }
 }
 
+impl Shl<&u32> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shl(self, rhs: &u32) -> Self {
+        self.shl(*rhs)
+    }
+}
+
+impl Shl<&u32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: &u32) -> IVec2 {
+        (*self).shl(*rhs)
+    }
+}
+
+impl Shl<u32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: u32) -> IVec2 {
+        (*self).shl(rhs)
+    }
+}
+
+impl ShlAssign<u32> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: u32) {
+        *self = self.shl(rhs);
+    }
+}
+
+impl ShlAssign<&u32> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: &u32) {
+        self.shl_assign(*rhs);
+    }
+}
+
 impl Shr<u32> for IVec2 {
     type Output = Self;
     #[inline]
@@ -1786,6 +2517,44 @@ impl Shr<u32> for IVec2 {
             x: self.x.shr(rhs),
             y: self.y.shr(rhs),
         }
+    }
+}
+
+impl Shr<&u32> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shr(self, rhs: &u32) -> Self {
+        self.shr(*rhs)
+    }
+}
+
+impl Shr<&u32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: &u32) -> IVec2 {
+        (*self).shr(*rhs)
+    }
+}
+
+impl Shr<u32> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: u32) -> IVec2 {
+        (*self).shr(rhs)
+    }
+}
+
+impl ShrAssign<u32> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: u32) {
+        *self = self.shr(rhs);
+    }
+}
+
+impl ShrAssign<&u32> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: &u32) {
+        self.shr_assign(*rhs);
     }
 }
 
@@ -1800,6 +2569,44 @@ impl Shl<u64> for IVec2 {
     }
 }
 
+impl Shl<&u64> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shl(self, rhs: &u64) -> Self {
+        self.shl(*rhs)
+    }
+}
+
+impl Shl<&u64> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: &u64) -> IVec2 {
+        (*self).shl(*rhs)
+    }
+}
+
+impl Shl<u64> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: u64) -> IVec2 {
+        (*self).shl(rhs)
+    }
+}
+
+impl ShlAssign<u64> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: u64) {
+        *self = self.shl(rhs);
+    }
+}
+
+impl ShlAssign<&u64> for IVec2 {
+    #[inline]
+    fn shl_assign(&mut self, rhs: &u64) {
+        self.shl_assign(*rhs);
+    }
+}
+
 impl Shr<u64> for IVec2 {
     type Output = Self;
     #[inline]
@@ -1811,10 +2618,48 @@ impl Shr<u64> for IVec2 {
     }
 }
 
-impl Shl<crate::IVec2> for IVec2 {
+impl Shr<&u64> for IVec2 {
     type Output = Self;
     #[inline]
-    fn shl(self, rhs: crate::IVec2) -> Self::Output {
+    fn shr(self, rhs: &u64) -> Self {
+        self.shr(*rhs)
+    }
+}
+
+impl Shr<&u64> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: &u64) -> IVec2 {
+        (*self).shr(*rhs)
+    }
+}
+
+impl Shr<u64> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: u64) -> IVec2 {
+        (*self).shr(rhs)
+    }
+}
+
+impl ShrAssign<u64> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: u64) {
+        *self = self.shr(rhs);
+    }
+}
+
+impl ShrAssign<&u64> for IVec2 {
+    #[inline]
+    fn shr_assign(&mut self, rhs: &u64) {
+        self.shr_assign(*rhs);
+    }
+}
+
+impl Shl for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shl(self, rhs: Self) -> Self {
         Self {
             x: self.x.shl(rhs.x),
             y: self.y.shl(rhs.y),
@@ -1822,10 +2667,34 @@ impl Shl<crate::IVec2> for IVec2 {
     }
 }
 
-impl Shr<crate::IVec2> for IVec2 {
+impl Shl<&Self> for IVec2 {
     type Output = Self;
     #[inline]
-    fn shr(self, rhs: crate::IVec2) -> Self::Output {
+    fn shl(self, rhs: &Self) -> Self {
+        self.shl(*rhs)
+    }
+}
+
+impl Shl<&IVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: &IVec2) -> IVec2 {
+        (*self).shl(*rhs)
+    }
+}
+
+impl Shl<IVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: IVec2) -> IVec2 {
+        (*self).shl(rhs)
+    }
+}
+
+impl Shr for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shr(self, rhs: Self) -> Self {
         Self {
             x: self.x.shr(rhs.x),
             y: self.y.shr(rhs.y),
@@ -1833,10 +2702,34 @@ impl Shr<crate::IVec2> for IVec2 {
     }
 }
 
-impl Shl<crate::UVec2> for IVec2 {
+impl Shr<&Self> for IVec2 {
     type Output = Self;
     #[inline]
-    fn shl(self, rhs: crate::UVec2) -> Self::Output {
+    fn shr(self, rhs: &Self) -> Self {
+        self.shr(*rhs)
+    }
+}
+
+impl Shr<&IVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: &IVec2) -> IVec2 {
+        (*self).shr(*rhs)
+    }
+}
+
+impl Shr<IVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: IVec2) -> IVec2 {
+        (*self).shr(rhs)
+    }
+}
+
+impl Shl<UVec2> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shl(self, rhs: UVec2) -> Self {
         Self {
             x: self.x.shl(rhs.x),
             y: self.y.shl(rhs.y),
@@ -1844,14 +2737,62 @@ impl Shl<crate::UVec2> for IVec2 {
     }
 }
 
-impl Shr<crate::UVec2> for IVec2 {
+impl Shl<&UVec2> for IVec2 {
     type Output = Self;
     #[inline]
-    fn shr(self, rhs: crate::UVec2) -> Self::Output {
+    fn shl(self, rhs: &UVec2) -> Self {
+        self.shl(*rhs)
+    }
+}
+
+impl Shl<&UVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: &UVec2) -> IVec2 {
+        (*self).shl(*rhs)
+    }
+}
+
+impl Shl<UVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shl(self, rhs: UVec2) -> IVec2 {
+        (*self).shl(rhs)
+    }
+}
+
+impl Shr<UVec2> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shr(self, rhs: UVec2) -> Self {
         Self {
             x: self.x.shr(rhs.x),
             y: self.y.shr(rhs.y),
         }
+    }
+}
+
+impl Shr<&UVec2> for IVec2 {
+    type Output = Self;
+    #[inline]
+    fn shr(self, rhs: &UVec2) -> Self {
+        self.shr(*rhs)
+    }
+}
+
+impl Shr<&UVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: &UVec2) -> IVec2 {
+        (*self).shr(*rhs)
+    }
+}
+
+impl Shr<UVec2> for &IVec2 {
+    type Output = IVec2;
+    #[inline]
+    fn shr(self, rhs: UVec2) -> IVec2 {
+        (*self).shr(rhs)
     }
 }
 

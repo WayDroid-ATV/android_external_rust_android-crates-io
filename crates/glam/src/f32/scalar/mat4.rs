@@ -47,6 +47,7 @@ pub const fn mat4(x_axis: Vec4, y_axis: Vec4, z_axis: Vec4, w_axis: Vec4) -> Mat
 /// The resulting perspective project can be use to transform 3D vectors as points with
 /// perspective correction using the [`Self::project_point3()`] convenience method.
 #[derive(Clone, Copy)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(
     any(
         not(any(feature = "scalar-math", target_arch = "spirv")),
@@ -795,6 +796,103 @@ impl Mat4 {
         Self::look_to_rh(eye, center.sub(eye).normalize(), up)
     }
 
+    /// Creates a right-handed perspective projection matrix with [-1,1] depth range.
+    ///
+    /// This is the same as the OpenGL `glFurstum` function.
+    ///
+    /// See <https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glFrustum.xml>
+    #[inline]
+    #[must_use]
+    pub fn frustum_rh_gl(
+        left: f32,
+        right: f32,
+        bottom: f32,
+        top: f32,
+        z_near: f32,
+        z_far: f32,
+    ) -> Self {
+        let inv_width = 1.0 / (right - left);
+        let inv_height = 1.0 / (top - bottom);
+        let inv_depth = 1.0 / (z_far - z_near);
+        let a = (right + left) * inv_width;
+        let b = (top + bottom) * inv_height;
+        let c = -(z_far + z_near) * inv_depth;
+        let d = -(2.0 * z_far * z_near) * inv_depth;
+        let two_z_near = 2.0 * z_near;
+        Self::from_cols(
+            Vec4::new(two_z_near * inv_width, 0.0, 0.0, 0.0),
+            Vec4::new(0.0, two_z_near * inv_height, 0.0, 0.0),
+            Vec4::new(a, b, c, -1.0),
+            Vec4::new(0.0, 0.0, d, 0.0),
+        )
+    }
+
+    /// Creates a left-handed perspective projection matrix with `[0,1]` depth range.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
+    /// enabled.
+    #[inline]
+    #[must_use]
+    pub fn frustum_lh(
+        left: f32,
+        right: f32,
+        bottom: f32,
+        top: f32,
+        z_near: f32,
+        z_far: f32,
+    ) -> Self {
+        glam_assert!(z_near > 0.0 && z_far > 0.0);
+        let inv_width = 1.0 / (right - left);
+        let inv_height = 1.0 / (top - bottom);
+        let inv_depth = 1.0 / (z_far - z_near);
+        let a = (right + left) * inv_width;
+        let b = (top + bottom) * inv_height;
+        let c = z_far * inv_depth;
+        let d = -(z_far * z_near) * inv_depth;
+        let two_z_near = 2.0 * z_near;
+        Self::from_cols(
+            Vec4::new(two_z_near * inv_width, 0.0, 0.0, 0.0),
+            Vec4::new(0.0, two_z_near * inv_height, 0.0, 0.0),
+            Vec4::new(a, b, c, 1.0),
+            Vec4::new(0.0, 0.0, d, 0.0),
+        )
+    }
+
+    /// Creates a right-handed perspective projection matrix with `[0,1]` depth range.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
+    /// enabled.
+    #[inline]
+    #[must_use]
+    pub fn frustum_rh(
+        left: f32,
+        right: f32,
+        bottom: f32,
+        top: f32,
+        z_near: f32,
+        z_far: f32,
+    ) -> Self {
+        glam_assert!(z_near > 0.0 && z_far > 0.0);
+        let inv_width = 1.0 / (right - left);
+        let inv_height = 1.0 / (top - bottom);
+        let inv_depth = 1.0 / (z_far - z_near);
+        let a = (right + left) * inv_width;
+        let b = (top + bottom) * inv_height;
+        let c = -z_far * inv_depth;
+        let d = -(z_far * z_near) * inv_depth;
+        let two_z_near = 2.0 * z_near;
+        Self::from_cols(
+            Vec4::new(two_z_near * inv_width, 0.0, 0.0, 0.0),
+            Vec4::new(0.0, two_z_near * inv_height, 0.0, 0.0),
+            Vec4::new(a, b, c, -1.0),
+            Vec4::new(0.0, 0.0, d, 0.0),
+        )
+    }
+
     /// Creates a right-handed perspective projection matrix with `[-1,1]` depth range.
     ///
     /// Useful to map the standard right-handed coordinate system into what OpenGL expects.
@@ -1160,36 +1258,21 @@ impl Mat4 {
     #[inline]
     #[must_use]
     pub fn mul_mat4(&self, rhs: &Self) -> Self {
-        Self::from_cols(
-            self.mul(rhs.x_axis),
-            self.mul(rhs.y_axis),
-            self.mul(rhs.z_axis),
-            self.mul(rhs.w_axis),
-        )
+        self.mul(rhs)
     }
 
     /// Adds two 4x4 matrices.
     #[inline]
     #[must_use]
     pub fn add_mat4(&self, rhs: &Self) -> Self {
-        Self::from_cols(
-            self.x_axis.add(rhs.x_axis),
-            self.y_axis.add(rhs.y_axis),
-            self.z_axis.add(rhs.z_axis),
-            self.w_axis.add(rhs.w_axis),
-        )
+        self.add(rhs)
     }
 
     /// Subtracts two 4x4 matrices.
     #[inline]
     #[must_use]
     pub fn sub_mat4(&self, rhs: &Self) -> Self {
-        Self::from_cols(
-            self.x_axis.sub(rhs.x_axis),
-            self.y_axis.sub(rhs.y_axis),
-            self.z_axis.sub(rhs.z_axis),
-            self.w_axis.sub(rhs.w_axis),
-        )
+        self.sub(rhs)
     }
 
     /// Multiplies a 4x4 matrix by a scalar.
@@ -1265,33 +1348,105 @@ impl Default for Mat4 {
     }
 }
 
-impl Add<Mat4> for Mat4 {
+impl Add for Mat4 {
     type Output = Self;
     #[inline]
-    fn add(self, rhs: Self) -> Self::Output {
-        self.add_mat4(&rhs)
+    fn add(self, rhs: Self) -> Self {
+        Self::from_cols(
+            self.x_axis.add(rhs.x_axis),
+            self.y_axis.add(rhs.y_axis),
+            self.z_axis.add(rhs.z_axis),
+            self.w_axis.add(rhs.w_axis),
+        )
     }
 }
 
-impl AddAssign<Mat4> for Mat4 {
+impl Add<&Self> for Mat4 {
+    type Output = Self;
+    #[inline]
+    fn add(self, rhs: &Self) -> Self {
+        self.add(*rhs)
+    }
+}
+
+impl Add<&Mat4> for &Mat4 {
+    type Output = Mat4;
+    #[inline]
+    fn add(self, rhs: &Mat4) -> Mat4 {
+        (*self).add(*rhs)
+    }
+}
+
+impl Add<Mat4> for &Mat4 {
+    type Output = Mat4;
+    #[inline]
+    fn add(self, rhs: Mat4) -> Mat4 {
+        (*self).add(rhs)
+    }
+}
+
+impl AddAssign for Mat4 {
     #[inline]
     fn add_assign(&mut self, rhs: Self) {
-        *self = self.add_mat4(&rhs);
+        *self = self.add(rhs);
     }
 }
 
-impl Sub<Mat4> for Mat4 {
+impl AddAssign<&Self> for Mat4 {
+    #[inline]
+    fn add_assign(&mut self, rhs: &Self) {
+        self.add_assign(*rhs);
+    }
+}
+
+impl Sub for Mat4 {
     type Output = Self;
     #[inline]
-    fn sub(self, rhs: Self) -> Self::Output {
-        self.sub_mat4(&rhs)
+    fn sub(self, rhs: Self) -> Self {
+        Self::from_cols(
+            self.x_axis.sub(rhs.x_axis),
+            self.y_axis.sub(rhs.y_axis),
+            self.z_axis.sub(rhs.z_axis),
+            self.w_axis.sub(rhs.w_axis),
+        )
     }
 }
 
-impl SubAssign<Mat4> for Mat4 {
+impl Sub<&Self> for Mat4 {
+    type Output = Self;
+    #[inline]
+    fn sub(self, rhs: &Self) -> Self {
+        self.sub(*rhs)
+    }
+}
+
+impl Sub<&Mat4> for &Mat4 {
+    type Output = Mat4;
+    #[inline]
+    fn sub(self, rhs: &Mat4) -> Mat4 {
+        (*self).sub(*rhs)
+    }
+}
+
+impl Sub<Mat4> for &Mat4 {
+    type Output = Mat4;
+    #[inline]
+    fn sub(self, rhs: Mat4) -> Mat4 {
+        (*self).sub(rhs)
+    }
+}
+
+impl SubAssign for Mat4 {
     #[inline]
     fn sub_assign(&mut self, rhs: Self) {
-        *self = self.sub_mat4(&rhs);
+        *self = self.sub(rhs);
+    }
+}
+
+impl SubAssign<&Self> for Mat4 {
+    #[inline]
+    fn sub_assign(&mut self, rhs: &Self) {
+        self.sub_assign(*rhs);
     }
 }
 
@@ -1308,18 +1463,62 @@ impl Neg for Mat4 {
     }
 }
 
-impl Mul<Mat4> for Mat4 {
-    type Output = Self;
+impl Neg for &Mat4 {
+    type Output = Mat4;
     #[inline]
-    fn mul(self, rhs: Self) -> Self::Output {
-        self.mul_mat4(&rhs)
+    fn neg(self) -> Mat4 {
+        (*self).neg()
     }
 }
 
-impl MulAssign<Mat4> for Mat4 {
+impl Mul for Mat4 {
+    type Output = Self;
+    #[inline]
+    fn mul(self, rhs: Self) -> Self {
+        Self::from_cols(
+            self.mul(rhs.x_axis),
+            self.mul(rhs.y_axis),
+            self.mul(rhs.z_axis),
+            self.mul(rhs.w_axis),
+        )
+    }
+}
+
+impl Mul<&Self> for Mat4 {
+    type Output = Self;
+    #[inline]
+    fn mul(self, rhs: &Self) -> Self {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&Mat4> for &Mat4 {
+    type Output = Mat4;
+    #[inline]
+    fn mul(self, rhs: &Mat4) -> Mat4 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<Mat4> for &Mat4 {
+    type Output = Mat4;
+    #[inline]
+    fn mul(self, rhs: Mat4) -> Mat4 {
+        (*self).mul(rhs)
+    }
+}
+
+impl MulAssign for Mat4 {
     #[inline]
     fn mul_assign(&mut self, rhs: Self) {
-        *self = self.mul_mat4(&rhs);
+        *self = self.mul(rhs);
+    }
+}
+
+impl MulAssign<&Self> for Mat4 {
+    #[inline]
+    fn mul_assign(&mut self, rhs: &Self) {
+        self.mul_assign(*rhs);
     }
 }
 
@@ -1331,6 +1530,30 @@ impl Mul<Vec4> for Mat4 {
     }
 }
 
+impl Mul<&Vec4> for Mat4 {
+    type Output = Vec4;
+    #[inline]
+    fn mul(self, rhs: &Vec4) -> Vec4 {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&Vec4> for &Mat4 {
+    type Output = Vec4;
+    #[inline]
+    fn mul(self, rhs: &Vec4) -> Vec4 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<Vec4> for &Mat4 {
+    type Output = Vec4;
+    #[inline]
+    fn mul(self, rhs: Vec4) -> Vec4 {
+        (*self).mul(rhs)
+    }
+}
+
 impl Mul<Mat4> for f32 {
     type Output = Mat4;
     #[inline]
@@ -1339,18 +1562,73 @@ impl Mul<Mat4> for f32 {
     }
 }
 
+impl Mul<&Mat4> for f32 {
+    type Output = Mat4;
+    #[inline]
+    fn mul(self, rhs: &Mat4) -> Mat4 {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&Mat4> for &f32 {
+    type Output = Mat4;
+    #[inline]
+    fn mul(self, rhs: &Mat4) -> Mat4 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<Mat4> for &f32 {
+    type Output = Mat4;
+    #[inline]
+    fn mul(self, rhs: Mat4) -> Mat4 {
+        (*self).mul(rhs)
+    }
+}
+
 impl Mul<f32> for Mat4 {
     type Output = Self;
     #[inline]
-    fn mul(self, rhs: f32) -> Self::Output {
+    fn mul(self, rhs: f32) -> Self {
         self.mul_scalar(rhs)
+    }
+}
+
+impl Mul<&f32> for Mat4 {
+    type Output = Self;
+    #[inline]
+    fn mul(self, rhs: &f32) -> Self {
+        self.mul(*rhs)
+    }
+}
+
+impl Mul<&f32> for &Mat4 {
+    type Output = Mat4;
+    #[inline]
+    fn mul(self, rhs: &f32) -> Mat4 {
+        (*self).mul(*rhs)
+    }
+}
+
+impl Mul<f32> for &Mat4 {
+    type Output = Mat4;
+    #[inline]
+    fn mul(self, rhs: f32) -> Mat4 {
+        (*self).mul(rhs)
     }
 }
 
 impl MulAssign<f32> for Mat4 {
     #[inline]
     fn mul_assign(&mut self, rhs: f32) {
-        *self = self.mul_scalar(rhs);
+        *self = self.mul(rhs);
+    }
+}
+
+impl MulAssign<&f32> for Mat4 {
+    #[inline]
+    fn mul_assign(&mut self, rhs: &f32) {
+        self.mul_assign(*rhs);
     }
 }
 
@@ -1362,18 +1640,73 @@ impl Div<Mat4> for f32 {
     }
 }
 
+impl Div<&Mat4> for f32 {
+    type Output = Mat4;
+    #[inline]
+    fn div(self, rhs: &Mat4) -> Mat4 {
+        self.div(*rhs)
+    }
+}
+
+impl Div<&Mat4> for &f32 {
+    type Output = Mat4;
+    #[inline]
+    fn div(self, rhs: &Mat4) -> Mat4 {
+        (*self).div(*rhs)
+    }
+}
+
+impl Div<Mat4> for &f32 {
+    type Output = Mat4;
+    #[inline]
+    fn div(self, rhs: Mat4) -> Mat4 {
+        (*self).div(rhs)
+    }
+}
+
 impl Div<f32> for Mat4 {
     type Output = Self;
     #[inline]
-    fn div(self, rhs: f32) -> Self::Output {
+    fn div(self, rhs: f32) -> Self {
         self.div_scalar(rhs)
+    }
+}
+
+impl Div<&f32> for Mat4 {
+    type Output = Self;
+    #[inline]
+    fn div(self, rhs: &f32) -> Self {
+        self.div(*rhs)
+    }
+}
+
+impl Div<&f32> for &Mat4 {
+    type Output = Mat4;
+    #[inline]
+    fn div(self, rhs: &f32) -> Mat4 {
+        (*self).div(*rhs)
+    }
+}
+
+impl Div<f32> for &Mat4 {
+    type Output = Mat4;
+    #[inline]
+    fn div(self, rhs: f32) -> Mat4 {
+        (*self).div(rhs)
     }
 }
 
 impl DivAssign<f32> for Mat4 {
     #[inline]
     fn div_assign(&mut self, rhs: f32) {
-        *self = self.div_scalar(rhs);
+        *self = self.div(rhs);
+    }
+}
+
+impl DivAssign<&f32> for Mat4 {
+    #[inline]
+    fn div_assign(&mut self, rhs: &f32) {
+        self.div_assign(*rhs);
     }
 }
 

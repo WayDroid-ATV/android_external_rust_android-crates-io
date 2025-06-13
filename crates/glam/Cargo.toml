@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.68.2"
 name = "glam"
-version = "0.30.3"
+version = "0.30.4"
 authors = ["Cameron Hart <cameron.hart@gmail.com>"]
 build = false
 autolib = false
@@ -42,7 +42,7 @@ status = "actively-developed"
 
 [features]
 bytecheck = ["rkyv/bytecheck"]
-core-simd = []
+core-simd = ["bytemuck?/nightly_portable_simd"]
 cuda = []
 debug-glam-assert = []
 default = ["std"]
@@ -222,6 +222,11 @@ default-features = false
 
 [dependencies.bytemuck]
 version = "1.9"
+features = [
+    "derive",
+    "aarch64_simd",
+    "wasm_simd",
+]
 optional = true
 default-features = false
 
