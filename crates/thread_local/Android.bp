@@ -18,13 +18,10 @@ rust_library {
     host_supported: true,
     crate_name: "thread_local",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.1.8",
+    cargo_pkg_version: "1.1.9",
     crate_root: "src/lib.rs",
     edition: "2021",
-    rustlibs: [
-        "libcfg_if",
-        "libonce_cell",
-    ],
+    rustlibs: ["libcfg_if"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -39,7 +36,7 @@ rust_test {
     host_supported: true,
     crate_name: "thread_local",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.1.8",
+    cargo_pkg_version: "1.1.9",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -50,6 +47,5 @@ rust_test {
     rustlibs: [
         "libcfg_if",
         "libcriterion",
-        "libonce_cell",
     ],
 }
