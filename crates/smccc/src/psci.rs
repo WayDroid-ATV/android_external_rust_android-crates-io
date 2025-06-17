@@ -17,11 +17,14 @@ mod calls;
 pub mod error;
 
 pub use calls::{
-    affinity_info, cpu_default_suspend, cpu_freeze, cpu_off, cpu_on, cpu_suspend, mem_protect,
-    mem_protect_check_range, migrate, migrate_info_type, migrate_info_up_cpu, node_hw_state,
-    psci_features, set_suspend_mode, stat_count, stat_residency, system_off, system_reset,
-    system_reset2, system_suspend, version,
+    affinity_info, affinity_info_32, cpu_default_suspend, cpu_default_suspend_32, cpu_freeze,
+    cpu_off, cpu_on, cpu_on_32, cpu_suspend, cpu_suspend_32, mem_protect, mem_protect_check_range,
+    mem_protect_check_range_32, migrate, migrate_32, migrate_info_type, migrate_info_up_cpu,
+    migrate_info_up_cpu_32, node_hw_state, node_hw_state_32, psci_features, set_suspend_mode,
+    stat_count, stat_count_32, stat_residency, stat_residency_32, system_off, system_reset,
+    system_reset2, system_reset2_32, system_suspend, system_suspend_32, version,
 };
+use core::fmt::{self, Debug, Display, Formatter};
 pub use error::Error;
 
 pub const PSCI_VERSION: u32 = 0x84000000;
@@ -57,6 +60,46 @@ pub const PSCI_STAT_RESIDENCY_32: u32 = 0x84000010;
 pub const PSCI_STAT_RESIDENCY_64: u32 = 0xC4000010;
 pub const PSCI_STAT_COUNT_32: u32 = 0x84000011;
 pub const PSCI_STAT_COUNT_64: u32 = 0xC4000011;
+
+/// A version of PSCI.
+#[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd)]
+pub struct Version {
+    pub major: u16,
+    pub minor: u16,
+}
+
+impl Display for Version {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}.{}", self.major, self.minor)
+    }
+}
+
+impl Debug for Version {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        Display::fmt(self, f)
+    }
+}
+
+impl TryFrom<i32> for Version {
+    type Error = Error;
+
+    fn try_from(value: i32) -> Result<Self, Error> {
+        if value < 0 {
+            Err(value.into())
+        } else {
+            Ok(Self {
+                major: (value >> 16) as u16,
+                minor: value as u16,
+            })
+        }
+    }
+}
+
+impl From<Version> for u32 {
+    fn from(version: Version) -> Self {
+        u32::from(version.major) << 16 | u32::from(version.minor)
+    }
+}
 
 /// Selects which affinity level fields are valid in the `target_affinity` parameter to
 /// `AFFINITY_INFO`.

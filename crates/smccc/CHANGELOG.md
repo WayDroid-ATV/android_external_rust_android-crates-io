@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.2.2
+
+### Bugfixes
+
+- Workaround build issue on some aarch32 targets where r7 is reserved as the frame pointer.
+
+## 0.2.1
+
+### Bugfixes
+
+- Removed `nomem` options from SMC and HVC call `asm!` blocks. The implementation of an HVC or SMC
+  call may access the program's memory, so this isn't necessarily correct.
+
+## 0.2.0
+
+### Breaking changes
+
+- Added `psci::Version` type, which is used for the return value of `psci::version`.
+
+### New features
+
+- Error types now implement `core::error::Error`.
+- Added 32-bit versions of 64-bit PSCI calls.
+- Added support for aarch32.
+
 ## 0.1.1
 
 ### Bugfixes

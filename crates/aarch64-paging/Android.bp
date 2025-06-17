@@ -38,6 +38,10 @@ rust_test {
             enabled: true,
         },
     },
+    sanitize: {
+        hwaddress: false,
+    },
+
 }
 
 rust_library_rlib {
@@ -74,6 +78,10 @@ rust_library_rlib {
             enabled: true,
         },
     },
+    sanitize: {
+        hwaddress: false,
+    },
+
 }
 
 dirgroup {
