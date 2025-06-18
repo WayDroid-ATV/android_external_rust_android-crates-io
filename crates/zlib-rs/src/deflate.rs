@@ -83,6 +83,33 @@ impl<'a> DeflateStream<'a> {
         unsafe { strm.cast::<DeflateStream>().as_mut() }
     }
 
+    /// # Safety
+    ///
+    /// Behavior is undefined if any of the following conditions are violated:
+    ///
+    /// - `strm` satisfies the conditions of [`pointer::as_ref`]
+    /// - if not `NULL`, `strm` as initialized using [`init`] or similar
+    ///
+    /// [`pointer::as_ref`]: https://doc.rust-lang.org/core/primitive.pointer.html#method.as_ref
+    #[inline(always)]
+    pub unsafe fn from_stream_ref(strm: *const z_stream) -> Option<&'a Self> {
+        {
+            // Safety: ptr points to a valid value of type z_stream (if non-null)
+            let stream = unsafe { strm.as_ref() }?;
+
+            if stream.zalloc.is_none() || stream.zfree.is_none() {
+                return None;
+            }
+
+            if stream.state.is_null() {
+                return None;
+            }
+        }
+
+        // SAFETY: DeflateStream has an equivalent layout as z_stream
+        unsafe { strm.cast::<DeflateStream>().as_ref() }
+    }
+
     fn as_z_stream_mut(&mut self) -> &mut z_stream {
         // SAFETY: a valid &mut DeflateStream is also a valid &mut z_stream
         unsafe { &mut *(self as *mut DeflateStream as *mut z_stream) }
@@ -316,7 +343,6 @@ pub fn init(stream: &mut z_stream, config: DeflateConfig) -> ReturnCode {
 
         // window
         w_size,
-        w_mask: w_size - 1,
 
         // allocated values
         window,
@@ -374,7 +400,7 @@ pub fn init(stream: &mut z_stream, config: DeflateConfig) -> ReturnCode {
         _cache_line_1: (),
         _cache_line_2: (),
         _cache_line_3: (),
-        _padding_0: 0,
+        _padding_0: [0; 16],
     };
 
     unsafe { state_allocation.as_ptr().write(state) }; // FIXME: write is stable for NonNull since 1.80.0
@@ -667,7 +693,6 @@ pub fn copy<'a>(
         static_len: source_state.static_len,
         insert: source_state.insert,
         w_size: source_state.w_size,
-        w_mask: source_state.w_mask,
         lookahead: source_state.lookahead,
         prev,
         head,
@@ -1253,7 +1278,8 @@ pub(crate) struct State<'a> {
 
     pub(crate) window: Window<'a>,
     pub(crate) w_size: usize, /* LZ77 window size (32K by default) */
-    pub(crate) w_mask: usize, /* w_size - 1 */
+
+    pub(crate) lookahead: usize, /* number of valid bytes ahead in window */
 
     _cache_line_0: (),
 
@@ -1334,15 +1360,13 @@ pub(crate) struct State<'a> {
     /// bytes at end of window left to insert
     pub(crate) insert: usize,
 
-    pub(crate) lookahead: usize, /* number of valid bytes ahead in window */
-
     ///  hash index of string to be inserted
     pub(crate) ins_h: u32,
 
     gzhead: Option<&'a mut gz_header>,
     gzindex: usize,
 
-    _padding_0: usize,
+    _padding_0: [u8; 16],
 
     _cache_line_3: (),
 
@@ -1392,6 +1416,10 @@ impl<'a> State<'a> {
     // log2(w_size)  (in the range MIN_WBITS..=MAX_WBITS)
     pub(crate) fn w_bits(&self) -> u32 {
         self.w_size.trailing_zeros()
+    }
+
+    pub(crate) fn w_mask(&self) -> usize {
+        self.w_size - 1
     }
 
     pub(crate) fn max_dist(&self) -> usize {
@@ -2407,7 +2435,6 @@ pub(crate) fn flush_block_only(stream: &mut DeflateStream, is_last: bool) {
     flush_pending(stream)
 }
 
-#[must_use]
 fn flush_bytes(stream: &mut DeflateStream, mut bytes: &[u8]) -> ControlFlow<ReturnCode> {
     let mut state = &mut stream.state;
 
@@ -2576,7 +2603,7 @@ pub fn deflate(stream: &mut DeflateStream, flush: DeflateFlush) -> ReturnCode {
                     stream.state.bit_writer.pending.extend(&bytes);
                 }
 
-                if gzhead.hcrc > 0 {
+                if gzhead.hcrc != 0 {
                     stream.adler = crc32(
                         stream.adler as u32,
                         stream.state.bit_writer.pending.pending(),
@@ -3214,6 +3241,26 @@ pub fn bound(stream: Option<&mut DeflateStream>, source_len: usize) -> usize {
     } else {
         compress_bound_help(source_len, wrap_len)
     }
+}
+
+/// # Safety
+///
+/// The `dictionary` must have enough space for the dictionary.
+pub unsafe fn get_dictionary(stream: &DeflateStream<'_>, dictionary: *mut u8) -> usize {
+    let s = &stream.state;
+    let len = Ord::min(s.strstart + s.lookahead, s.w_size);
+
+    if !dictionary.is_null() && len > 0 {
+        unsafe {
+            core::ptr::copy_nonoverlapping(
+                s.window.as_ptr().add(s.strstart + s.lookahead - len),
+                dictionary,
+                len,
+            );
+        }
+    }
+
+    len
 }
 
 #[cfg(test)]

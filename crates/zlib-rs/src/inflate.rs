@@ -1587,7 +1587,7 @@ impl State<'_> {
                             self.have += 1;
                         }
 
-                        let InflateTable::Success(root) = inflate_table(
+                        let InflateTable::Success { root, used } = inflate_table(
                             CodeType::Codes,
                             &self.lens,
                             19,
@@ -1599,6 +1599,7 @@ impl State<'_> {
                             break 'label self.bad("invalid code lengths set\0");
                         };
 
+                        self.next = used;
                         self.len_table.codes = Codes::Codes;
                         self.len_table.bits = root;
 
@@ -1685,7 +1686,7 @@ impl State<'_> {
 
                         // build code tables
 
-                        let InflateTable::Success(root) = inflate_table(
+                        let InflateTable::Success { root, used } = inflate_table(
                             CodeType::Lens,
                             &self.lens,
                             self.nlen,
@@ -1699,8 +1700,9 @@ impl State<'_> {
 
                         self.len_table.codes = Codes::Len;
                         self.len_table.bits = root;
+                        self.next = used;
 
-                        let InflateTable::Success(root) = inflate_table(
+                        let InflateTable::Success { root, used } = inflate_table(
                             CodeType::Dists,
                             &self.lens[self.nlen..],
                             self.ndist,
@@ -1714,6 +1716,7 @@ impl State<'_> {
 
                         self.dist_table.bits = root;
                         self.dist_table.codes = Codes::Dist;
+                        self.next += used;
 
                         mode = Mode::Len_;
 
@@ -1816,7 +1819,7 @@ impl State<'_> {
 
 fn inflate_fast_help(state: &mut State, start: usize) {
     #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-    if crate::cpu_features::is_enabled_avx2() {
+    if crate::cpu_features::is_enabled_avx2_and_bmi2() {
         // SAFETY: we've verified the target features
         return unsafe { inflate_fast_help_avx2(state, start) };
     }
@@ -1826,6 +1829,8 @@ fn inflate_fast_help(state: &mut State, start: usize) {
 
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 #[target_feature(enable = "avx2")]
+#[target_feature(enable = "bmi2")]
+#[target_feature(enable = "bmi1")]
 unsafe fn inflate_fast_help_avx2(state: &mut State, start: usize) {
     inflate_fast_help_impl::<{ CpuFeatures::AVX2 }>(state, start);
 }
@@ -2215,6 +2220,10 @@ pub fn reset_keep(stream: &mut InflateStream) -> ReturnCode {
     ReturnCode::Ok
 }
 
+pub fn codes_used(stream: &InflateStream) -> usize {
+    stream.state.next
+}
+
 pub unsafe fn inflate(stream: &mut InflateStream, flush: InflateFlush) -> ReturnCode {
     if stream.next_out.is_null() || (stream.next_in.is_null() && stream.avail_in != 0) {
         return ReturnCode::StreamError as _;
@@ -2594,6 +2603,33 @@ pub unsafe fn get_header<'a>(
     });
     ReturnCode::Ok
 }
+
+/// # Safety
+///
+/// The `dictionary` must have enough space for the dictionary.
+pub unsafe fn get_dictionary(stream: &InflateStream<'_>, dictionary: *mut u8) -> usize {
+    let whave = stream.state.window.have();
+    let wnext = stream.state.window.next();
+
+    if !dictionary.is_null() {
+        unsafe {
+            core::ptr::copy_nonoverlapping(
+                stream.state.window.as_ptr().add(wnext),
+                dictionary,
+                whave - wnext,
+            );
+
+            core::ptr::copy_nonoverlapping(
+                stream.state.window.as_ptr(),
+                dictionary.add(whave).sub(wnext).cast(),
+                wnext,
+            );
+        }
+    }
+
+    stream.state.window.have()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
