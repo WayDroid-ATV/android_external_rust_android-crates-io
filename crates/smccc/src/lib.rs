@@ -12,19 +12,17 @@
 //! cases that both SMC32 and SMC64 versions exist.
 
 #![no_std]
-#![deny(unsafe_op_in_unsafe_fn)]
-#![deny(clippy::undocumented_unsafe_blocks)]
 
 pub mod arch;
 pub mod error;
 pub mod psci;
 
 /// Use a Hypervisor Call (HVC).
-#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
+#[cfg(target_arch = "aarch64")]
 pub struct Hvc;
 
 /// Use a Secure Moniter Call (SMC).
-#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
+#[cfg(target_arch = "aarch64")]
 pub struct Smc;
 
 /// Functions to make an HVC or SMC call.
@@ -35,44 +33,35 @@ pub trait Call {
     fn call64(function: u32, args: [u64; 17]) -> [u64; 18];
 }
 
-#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
+#[cfg(target_arch = "aarch64")]
 impl Call for Hvc {
     fn call32(function: u32, args: [u32; 7]) -> [u32; 8] {
         hvc32(function, args)
     }
 
     fn call64(function: u32, args: [u64; 17]) -> [u64; 18] {
-        #[cfg(not(target_arch = "aarch64"))]
-        panic!("HVC64 not supported on 32-bit architecture");
-        #[cfg(target_arch = "aarch64")]
         hvc64(function, args)
     }
 }
 
-#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
+#[cfg(target_arch = "aarch64")]
 impl Call for Smc {
     fn call32(function: u32, args: [u32; 7]) -> [u32; 8] {
         smc32(function, args)
     }
 
     fn call64(function: u32, args: [u64; 17]) -> [u64; 18] {
-        #[cfg(not(target_arch = "aarch64"))]
-        panic!("SMC64 not supported on 32-bit architecture");
-        #[cfg(target_arch = "aarch64")]
         smc64(function, args)
     }
 }
 
-/// Makes an HVC32 call to the hypervisor, following the SMC Calling Convention version 1.4.
-#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
+/// Makes an HVC32 call to the hypervisor, following the SMC Calling Convention version 1.3.
+#[cfg(target_arch = "aarch64")]
 #[inline(always)]
 pub fn hvc32(function: u32, args: [u32; 7]) -> [u32; 8] {
-    // SAFETY: This shouldn't affect our memory, and we follow the calling convention so registers
-    // are saved and restored as expected.
     unsafe {
         let mut ret = [0; 8];
 
-        #[cfg(target_arch = "aarch64")]
         core::arch::asm!(
             "hvc #0",
             inout("w0") function => ret[0],
@@ -83,49 +72,20 @@ pub fn hvc32(function: u32, args: [u32; 7]) -> [u32; 8] {
             inout("w5") args[4] => ret[5],
             inout("w6") args[5] => ret[6],
             inout("w7") args[6] => ret[7],
-            options(nostack)
-        );
-        // LLVM uses r6 internally and r7 as the frame pointer and so we aren't allowed to use them
-        // as inputs or outputs here. To work around this we save and restore r6 and r7 and copy
-        // from/to a temporary register instead.
-        #[cfg(target_arch = "arm")]
-        core::arch::asm!(
-            "mov {tmp6}, r6",
-            "mov {tmp7}, r7",
-            "mov r6, {r6_value}",
-            "mov r7, {r7_value}",
-            "hvc #0",
-            "mov {r6_value}, r6",
-            "mov {r7_value}, r7",
-            "mov r6, {tmp6}",
-            "mov r7, {tmp7}",
-            r6_value = inout(reg) args[5] => ret[6],
-            tmp6 = out(reg) _,
-            r7_value = inout(reg) args[6] => ret[7],
-            tmp7 = out(reg) _,
-            inout("r0") function => ret[0],
-            inout("r1") args[0] => ret[1],
-            inout("r2") args[1] => ret[2],
-            inout("r3") args[2] => ret[3],
-            inout("r4") args[3] => ret[4],
-            inout("r5") args[4] => ret[5],
-            options(nostack)
+            options(nomem, nostack)
         );
 
         ret
     }
 }
 
-/// Makes an SMC32 call to the firmware, following the SMC Calling Convention version 1.4.
-#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
+/// Makes an SMC32 call to the firmware, following the SMC Calling Convention version 1.3.
+#[cfg(target_arch = "aarch64")]
 #[inline(always)]
 pub fn smc32(function: u32, args: [u32; 7]) -> [u32; 8] {
-    // SAFETY: This shouldn't affect our memory, and we follow the calling convention so registers
-    // are saved and restored as expected.
     unsafe {
         let mut ret = [0; 8];
 
-        #[cfg(target_arch = "aarch64")]
         core::arch::asm!(
             "smc #0",
             inout("w0") function => ret[0],
@@ -136,42 +96,17 @@ pub fn smc32(function: u32, args: [u32; 7]) -> [u32; 8] {
             inout("w5") args[4] => ret[5],
             inout("w6") args[5] => ret[6],
             inout("w7") args[6] => ret[7],
-            options(nostack)
-        );
-        #[cfg(target_arch = "arm")]
-        core::arch::asm!(
-            "mov {tmp6}, r6",
-            "mov {tmp7}, r7",
-            "mov r6, {r6_value}",
-            "mov r7, {r7_value}",
-            "smc #0",
-            "mov {r6_value}, r6",
-            "mov {r7_value}, r7",
-            "mov r6, {tmp6}",
-            "mov r7, {tmp7}",
-            r6_value = inout(reg) args[5] => ret[6],
-            tmp6 = out(reg) _,
-            r7_value = inout(reg) args[6] => ret[7],
-            tmp7 = out(reg) _,
-            inout("r0") function => ret[0],
-            inout("r1") args[0] => ret[1],
-            inout("r2") args[1] => ret[2],
-            inout("r3") args[2] => ret[3],
-            inout("r4") args[3] => ret[4],
-            inout("r5") args[4] => ret[5],
-            options(nostack)
+            options(nomem, nostack)
         );
 
         ret
     }
 }
 
-/// Makes an HVC64 call to the hypervisor, following the SMC Calling Convention version 1.4.
+/// Makes an HVC64 call to the hypervisor, following the SMC Calling Convention version 1.3.
 #[cfg(target_arch = "aarch64")]
 #[inline(always)]
 pub fn hvc64(function: u32, args: [u64; 17]) -> [u64; 18] {
-    // SAFETY: This shouldn't affect our memory, and we follow the calling convention so registers
-    // are saved and restored as expected.
     unsafe {
         let mut ret = [0; 18];
 
@@ -195,19 +130,17 @@ pub fn hvc64(function: u32, args: [u64; 17]) -> [u64; 18] {
             inout("x15") args[14] => ret[15],
             inout("x16") args[15] => ret[16],
             inout("x17") args[16] => ret[17],
-            options(nostack)
+            options(nomem, nostack)
         );
 
         ret
     }
 }
 
-/// Makes an SMC64 call to the firmware, following the SMC Calling Convention version 1.4.
+/// Makes an SMC64 call to the firmware, following the SMC Calling Convention version 1.3.
 #[cfg(target_arch = "aarch64")]
 #[inline(always)]
 pub fn smc64(function: u32, args: [u64; 17]) -> [u64; 18] {
-    // SAFETY: This shouldn't affect our memory, and we follow the calling convention so registers
-    // are saved and restored as expected.
     unsafe {
         let mut ret = [0; 18];
 
@@ -231,7 +164,7 @@ pub fn smc64(function: u32, args: [u64; 17]) -> [u64; 18] {
             inout("x15") args[14] => ret[15],
             inout("x16") args[15] => ret[16],
             inout("x17") args[16] => ret[17],
-            options(nostack)
+            options(nomem, nostack)
         );
 
         ret
