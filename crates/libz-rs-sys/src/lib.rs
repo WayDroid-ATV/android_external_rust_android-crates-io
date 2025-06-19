@@ -54,9 +54,9 @@ macro_rules! prefix {
         concat!(
             "LIBZ_RS_SYS_v",
             env!("CARGO_PKG_VERSION_MAJOR"),
-            ".",
+            "_",
             env!("CARGO_PKG_VERSION_MINOR"),
-            ".x_",
+            "_x_",
             stringify!($name)
         )
     };
@@ -83,6 +83,8 @@ macro_rules! prefix {
         concat!("LIBZ_RS_SYS_TEST_", stringify!($name))
     };
 }
+
+pub(crate) use prefix;
 
 #[cfg(all(feature = "rust-allocator", feature = "c-allocator"))]
 const _: () =
@@ -900,8 +902,11 @@ pub unsafe extern "C-unwind" fn inflateResetKeep(strm: *mut z_stream) -> c_int {
 /// - `buf` is `NULL`
 /// - `buf` and `len` satisfy the requirements of [`core::slice::from_raw_parts`]
 #[cfg_attr(feature = "export-symbols", export_name = prefix!(inflateCodesUsed))]
-pub unsafe extern "C-unwind" fn inflateCodesUsed(_strm: *mut z_stream) -> c_ulong {
-    todo!()
+pub unsafe extern "C-unwind" fn inflateCodesUsed(strm: *mut z_stream) -> c_ulong {
+    match InflateStream::from_stream_mut(strm) {
+        Some(stream) => zlib_rs::inflate::codes_used(stream) as c_ulong,
+        None => c_ulong::MAX,
+    }
 }
 
 /// Compresses as much data as possible, and stops when the input buffer becomes empty or the output buffer becomes full.
@@ -1778,6 +1783,89 @@ pub const extern "C" fn zlibCompileFlags() -> c_ulong {
     set_bit!(26, false);
 
     flags
+}
+
+/// Returns the sliding dictionary being maintained by inflate.  
+///
+/// `dictLength` is set to the number of bytes in the dictionary, and that many bytes are copied
+/// to `dictionary`. `dictionary` must have enough space, where `32768` bytes is
+/// always enough.  If [`inflateGetDictionary`] is called with `dictionary` equal to
+/// `NULL`, then only the dictionary length is returned, and nothing is copied.
+/// Similarly, if `dictLength` is `NULL`, then it is not set.
+///
+/// # Returns
+///
+/// * [`Z_OK`] if success
+/// * [`Z_STREAM_ERROR`] if the stream state is inconsistent
+///
+/// # Safety
+///
+/// - `dictionary` must `NULL` or writable for the dictionary length (`32768` is always enough)
+/// - `dictLength` must `NULL` or satisfy the requirements of [`pointer::as_mut`]
+///
+/// [`pointer::as_mut`]: https://doc.rust-lang.org/core/primitive.pointer.html#method.as_mut
+#[cfg_attr(feature = "export-symbols", export_name = prefix!(inflateGetDictionary))]
+pub unsafe extern "C-unwind" fn inflateGetDictionary(
+    strm: *const z_stream,
+    dictionary: *mut c_uchar,
+    dictLength: *mut c_uint,
+) -> c_int {
+    let Some(stream) = InflateStream::from_stream_ref(strm) else {
+        return ReturnCode::StreamError as c_int;
+    };
+
+    let whave = zlib_rs::inflate::get_dictionary(stream, dictionary);
+
+    if let Some(dictLength) = unsafe { dictLength.as_mut() } {
+        *dictLength = whave as c_uint;
+    }
+
+    ReturnCode::Ok as _
+}
+
+/// Returns the sliding dictionary being maintained by deflate.  
+///
+/// `dictLength` is set to the number of bytes in the dictionary, and that many bytes are copied
+/// to `dictionary`. `dictionary` must have enough space, where `32768` bytes is
+/// always enough.  If [`deflateGetDictionary`] is called with `dictionary` equal to
+/// `NULL`, then only the dictionary length is returned, and nothing is copied.
+/// Similarly, if `dictLength` is `NULL`, then it is not set.
+///
+/// [`deflateGetDictionary`] may return a length less than the window size, even
+/// when more than the window size in input has been provided. It may return up
+/// to 258 bytes less in that case, due to how zlib's implementation of deflate
+/// manages the sliding window and lookahead for matches, where matches can be
+/// up to 258 bytes long. If the application needs the last window-size bytes of
+/// input, then that would need to be saved by the application outside of zlib.
+///
+/// # Returns
+///
+/// * [`Z_OK`] if success
+/// * [`Z_STREAM_ERROR`] if the stream state is inconsistent
+///
+/// # Safety
+///
+/// - `dictionary` must `NULL` or writable for the dictionary length (`32768` is always enough)
+/// - `dictLength` must `NULL` or satisfy the requirements of [`pointer::as_mut`]
+///
+/// [`pointer::as_mut`]: https://doc.rust-lang.org/core/primitive.pointer.html#method.as_mut
+#[cfg_attr(feature = "export-symbols", export_name = prefix!(deflateGetDictionary))]
+pub unsafe extern "C-unwind" fn deflateGetDictionary(
+    strm: *const z_stream,
+    dictionary: *mut c_uchar,
+    dictLength: *mut c_uint,
+) -> c_int {
+    let Some(stream) = DeflateStream::from_stream_ref(strm) else {
+        return ReturnCode::StreamError as c_int;
+    };
+
+    let len = zlib_rs::deflate::get_dictionary(stream, dictionary);
+
+    if let Some(dictLength) = unsafe { dictLength.as_mut() } {
+        *dictLength = len as c_uint;
+    }
+
+    ReturnCode::Ok as _
 }
 
 /// # Safety
