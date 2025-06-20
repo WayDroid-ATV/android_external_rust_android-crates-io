@@ -1,9 +1,17 @@
-pub use crate::arch::c_char_def as c_char;
-use crate::prelude::*;
+pub use core::ffi::c_void;
+
 pub type size_t = usize;
 pub type ssize_t = isize;
 
 pub type off_t = i64;
+
+cfg_if! {
+    if #[cfg(any(target_arch = "aarch64", target_arch = "arm"))] {
+        pub type c_char = u8;
+    } else if #[cfg(target_arch = "x86_64")] {
+        pub type c_char = i8;
+    }
+}
 
 pub type c_schar = i8;
 pub type c_uchar = u8;
