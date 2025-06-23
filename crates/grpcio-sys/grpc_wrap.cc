@@ -48,6 +48,7 @@
 #include <grpc/support/thd_id.h>
 
 #ifdef GRPC_SYS_SECURE
+#include <grpc/credentials.h>
 #include <grpc/grpc_security.h>
 #endif
 
