@@ -12,9 +12,10 @@
 [package]
 edition = "2018"
 name = "gdbstub_arch"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Daniel Prilik <danielprilik@gmail.com>"]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
