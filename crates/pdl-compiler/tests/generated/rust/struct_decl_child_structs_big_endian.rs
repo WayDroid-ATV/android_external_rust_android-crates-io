@@ -123,7 +123,7 @@ impl Packet for Foo {
                 maximum_size: 0xff,
             });
         }
-        buf.put_u8(self.payload.len() as u8);
+        buf.put_u8((self.payload.len()) as u8);
         buf.put_slice(&self.payload);
         Ok(())
     }
@@ -177,18 +177,6 @@ pub struct Bar {
     pub x: u8,
     pub b: Enum16,
 }
-impl TryFrom<&Foo> for Bar {
-    type Error = DecodeError;
-    fn try_from(parent: &Foo) -> Result<Bar, Self::Error> {
-        Bar::decode_partial(&parent)
-    }
-}
-impl TryFrom<Foo> for Bar {
-    type Error = DecodeError;
-    fn try_from(parent: Foo) -> Result<Bar, Self::Error> {
-        (&parent).try_into()
-    }
-}
 impl TryFrom<&Bar> for Foo {
     type Error = EncodeError;
     fn try_from(packet: &Bar) -> Result<Foo, Self::Error> {
@@ -205,6 +193,18 @@ impl TryFrom<Bar> for Foo {
     type Error = EncodeError;
     fn try_from(packet: Bar) -> Result<Foo, Self::Error> {
         (&packet).try_into()
+    }
+}
+impl TryFrom<&Foo> for Bar {
+    type Error = DecodeError;
+    fn try_from(parent: &Foo) -> Result<Bar, Self::Error> {
+        Bar::decode_partial(&parent)
+    }
+}
+impl TryFrom<Foo> for Bar {
+    type Error = DecodeError;
+    fn try_from(parent: Foo) -> Result<Bar, Self::Error> {
+        (&parent).try_into()
     }
 }
 impl Bar {
@@ -261,7 +261,7 @@ impl Packet for Bar {
                 maximum_size: 0xff,
             });
         }
-        buf.put_u8(1 as u8);
+        buf.put_u8((1) as u8);
         self.encode_partial(buf)?;
         Ok(())
     }
@@ -276,18 +276,6 @@ impl Packet for Bar {
 pub struct Baz {
     pub y: u16,
     pub a: u8,
-}
-impl TryFrom<&Foo> for Baz {
-    type Error = DecodeError;
-    fn try_from(parent: &Foo) -> Result<Baz, Self::Error> {
-        Baz::decode_partial(&parent)
-    }
-}
-impl TryFrom<Foo> for Baz {
-    type Error = DecodeError;
-    fn try_from(parent: Foo) -> Result<Baz, Self::Error> {
-        (&parent).try_into()
-    }
 }
 impl TryFrom<&Baz> for Foo {
     type Error = EncodeError;
@@ -305,6 +293,18 @@ impl TryFrom<Baz> for Foo {
     type Error = EncodeError;
     fn try_from(packet: Baz) -> Result<Foo, Self::Error> {
         (&packet).try_into()
+    }
+}
+impl TryFrom<&Foo> for Baz {
+    type Error = DecodeError;
+    fn try_from(parent: &Foo) -> Result<Baz, Self::Error> {
+        Baz::decode_partial(&parent)
+    }
+}
+impl TryFrom<Foo> for Baz {
+    type Error = DecodeError;
+    fn try_from(parent: Foo) -> Result<Baz, Self::Error> {
+        (&parent).try_into()
     }
 }
 impl Baz {
@@ -361,7 +361,7 @@ impl Packet for Baz {
                 maximum_size: 0xff,
             });
         }
-        buf.put_u8(2 as u8);
+        buf.put_u8((2) as u8);
         self.encode_partial(buf)?;
         Ok(())
     }

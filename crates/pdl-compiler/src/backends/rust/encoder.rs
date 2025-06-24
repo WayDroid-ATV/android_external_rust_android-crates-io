@@ -138,7 +138,7 @@ impl Encoder {
             _ => todo!("{:?}", decl),
         });
 
-        match schema.decl_size(decl.key) {
+        match schema.total_size(decl.key) {
             analyzer::Size::Static(s) => self.packet_size.constant += s / 8,
             _ => self.packet_size.variable.push(quote! { self.#id.encoded_len() }),
         }
@@ -341,7 +341,7 @@ impl Encoder {
                     .iter_fields(decl)
                     .find(|field| match &field.desc {
                         ast::FieldDesc::Payload { .. } => field_id == "_payload_",
-                        ast::FieldDesc::Body { .. } => field_id == "_body_",
+                        ast::FieldDesc::Body => field_id == "_body_",
                         _ => field.id() == Some(field_id),
                     })
                     .unwrap();
@@ -362,7 +362,7 @@ impl Encoder {
                         let payload_size = &self.payload_size;
                         quote! { (#payload_size + #size_modifier) }
                     }
-                    (ast::FieldDesc::Payload { .. } | ast::FieldDesc::Body { .. }, _) => {
+                    (ast::FieldDesc::Payload { .. } | ast::FieldDesc::Body, _) => {
                         let payload_size = &self.payload_size;
                         quote! { #payload_size }
                     }
@@ -401,7 +401,7 @@ impl Encoder {
                 });
 
                 self.bit_fields.push(BitField {
-                    value: quote!(#array_size as #field_type),
+                    value: quote!((#array_size) as #field_type),
                     field_type,
                     shift,
                 });
@@ -567,7 +567,7 @@ impl Encoder {
 
         let element_width = match &width {
             Some(width) => Some(*width),
-            None => schema.decl_size(decl.unwrap().key).static_(),
+            None => schema.total_size(decl.unwrap().key).static_(),
         };
 
         let array_size = match element_width {
@@ -639,7 +639,7 @@ impl Encoder {
             ast::FieldDesc::Typedef { id, type_id } => {
                 self.encode_typedef_field(scope, schema, id, type_id)
             }
-            ast::FieldDesc::Payload { .. } | ast::FieldDesc::Body { .. } => {
+            ast::FieldDesc::Payload { .. } | ast::FieldDesc::Body => {
                 self.tokens.extend(payload.clone());
                 self.packet_size += &self.payload_size
             }

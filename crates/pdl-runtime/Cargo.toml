@@ -12,13 +12,14 @@
 [package]
 edition = "2021"
 name = "pdl-runtime"
-version = "0.3.2"
+version = "0.3.3"
 authors = [
     "Henri Chataing <henrichataing@google.com>",
     "David de Jesus Duarte <licorne@google.com>",
     "Martin Geisler <mgeisler@google.com>",
 ]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -41,7 +42,7 @@ name = "pdl_runtime"
 path = "src/lib.rs"
 
 [dependencies.bytes]
-version = "1.4.0"
+version = "1.7.2"
 
 [dependencies.thiserror]
-version = "1.0.47"
+version = "1.0.49"

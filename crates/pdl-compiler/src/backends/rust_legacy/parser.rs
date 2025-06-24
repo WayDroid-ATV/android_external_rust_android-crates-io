@@ -82,7 +82,7 @@ impl<'a> FieldParser<'a> {
             ast::FieldDesc::Payload { size_modifier, .. } => {
                 self.add_payload_field(size_modifier.as_deref())
             }
-            ast::FieldDesc::Body { .. } => self.add_payload_field(None),
+            ast::FieldDesc::Body => self.add_payload_field(None),
             _ => todo!("{field:?}"),
         }
     }
@@ -296,9 +296,7 @@ impl<'a> FieldParser<'a> {
     fn payload_field_offset_from_end(&self) -> Option<usize> {
         let decl = self.scope.typedef[self.packet_name];
         let mut fields = decl.fields();
-        fields.find(|f| {
-            matches!(f.desc, ast::FieldDesc::Body { .. } | ast::FieldDesc::Payload { .. })
-        })?;
+        fields.find(|f| matches!(f.desc, ast::FieldDesc::Body | ast::FieldDesc::Payload { .. }))?;
 
         let mut offset = 0;
         for field in fields {
@@ -534,7 +532,7 @@ impl<'a> FieldParser<'a> {
         let id = id.to_ident();
         let type_id = type_id.to_ident();
 
-        self.code.push(match self.schema.decl_size(decl.key) {
+        self.code.push(match self.schema.total_size(decl.key) {
             analyzer::Size::Unknown | analyzer::Size::Dynamic => quote! {
                 let #id = #type_id::parse_inner(&mut #span)?;
             },

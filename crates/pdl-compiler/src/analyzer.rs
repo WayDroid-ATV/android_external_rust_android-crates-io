@@ -21,7 +21,7 @@ use std::collections::HashMap;
 use crate::ast::*;
 
 /// Field and declaration size information.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[allow(unused)]
 pub enum Size {
     /// Constant size in bits.
@@ -168,6 +168,7 @@ pub struct Scope<'d> {
 #[derive(Debug)]
 pub struct Schema {
     decl_size: HashMap<DeclKey, Size>,
+    parent_size: HashMap<DeclKey, Size>,
     field_size: HashMap<FieldKey, Size>,
     padded_size: HashMap<FieldKey, Option<usize>>,
     payload_size: HashMap<DeclKey, Size>,
@@ -342,11 +343,12 @@ impl Schema {
                 };
             }
 
-            let mut size = decl
+            let parent_size = decl
                 .parent_id()
                 .and_then(|parent_id| scope.get(parent_id))
-                .map(|key| schema.decl_size(*key))
+                .map(|key| schema.decl_size(*key) + schema.parent_size(*key))
                 .unwrap_or(Size::Static(0));
+            let mut decl_size = Size::Static(0);
             let mut payload_size = Size::Static(0);
 
             for field in decl.fields() {
@@ -356,9 +358,9 @@ impl Schema {
                 // Sum the size of the non payload fields to get the
                 // declaration size. Lookup the payload field size.
                 match &field.desc {
-                    FieldDesc::Payload { .. } | FieldDesc::Body { .. } => payload_size = field_size,
+                    FieldDesc::Payload { .. } | FieldDesc::Body => payload_size = field_size,
                     _ => {
-                        size = size
+                        decl_size = decl_size
                             + match schema.padded_size.get(&field.key).unwrap() {
                                 Some(padding) => Size::Static(*padding),
                                 None => field_size,
@@ -368,9 +370,9 @@ impl Schema {
             }
 
             // Save the declaration size.
-            let (size, payload_size) = match &decl.desc {
+            let (decl_size, payload_size) = match &decl.desc {
                 DeclDesc::Packet { .. } | DeclDesc::Struct { .. } | DeclDesc::Group { .. } => {
-                    (size, payload_size)
+                    (decl_size, payload_size)
                 }
                 DeclDesc::Enum { width, .. }
                 | DeclDesc::Checksum { width, .. }
@@ -381,7 +383,8 @@ impl Schema {
                 DeclDesc::Test { .. } => (Size::Static(0), Size::Static(0)),
             };
 
-            schema.decl_size.insert(decl.key, size);
+            schema.parent_size.insert(decl.key, parent_size);
+            schema.decl_size.insert(decl.key, decl_size);
             schema.payload_size.insert(decl.key, payload_size);
         }
 
@@ -464,6 +467,7 @@ impl Schema {
             decl_size: Default::default(),
             padded_size: Default::default(),
             payload_size: Default::default(),
+            parent_size: Default::default(),
         };
 
         for decl in &file.declarations {
@@ -474,23 +478,27 @@ impl Schema {
     }
 
     pub fn field_size(&self, key: FieldKey) -> Size {
-        *self.field_size.get(&key).unwrap()
+        self.field_size[&key]
     }
 
     pub fn decl_size(&self, key: DeclKey) -> Size {
-        *self.decl_size.get(&key).unwrap()
+        self.decl_size[&key]
+    }
+
+    pub fn parent_size(&self, key: DeclKey) -> Size {
+        self.parent_size[&key]
     }
 
     pub fn padded_size(&self, key: FieldKey) -> Option<usize> {
-        *self.padded_size.get(&key).unwrap()
+        self.padded_size[&key]
     }
 
     pub fn payload_size(&self, key: DeclKey) -> Size {
-        *self.payload_size.get(&key).unwrap()
+        self.payload_size[&key]
     }
 
     pub fn total_size(&self, key: DeclKey) -> Size {
-        self.decl_size(key) + self.payload_size(key)
+        self.decl_size(key) + self.parent_size(key) + self.payload_size(key)
     }
 }
 
@@ -1234,7 +1242,7 @@ fn check_size_fields(file: &File) -> Result<(), Diagnostics> {
                 FieldDesc::Size { field_id, .. } => {
                     match decl.fields().find(|field| match &field.desc {
                         FieldDesc::Payload { .. } => field_id == "_payload_",
-                        FieldDesc::Body { .. } => field_id == "_body_",
+                        FieldDesc::Body => field_id == "_body_",
                         _ => field.id() == Some(field_id),
                     }) {
                         None => diagnostics.push(
@@ -1250,7 +1258,7 @@ fn check_size_fields(file: &File) -> Result<(), Diagnostics> {
                                     "hint: expected payload, body, or array identifier".to_owned(),
                                 ]),
                         ),
-                        Some(Field { desc: FieldDesc::Body { .. }, .. })
+                        Some(Field { desc: FieldDesc::Body, .. })
                         | Some(Field { desc: FieldDesc::Payload { .. }, .. })
                         | Some(Field { desc: FieldDesc::Array { .. }, .. }) => (),
                         Some(Field { loc, .. }) => diagnostics.push(
@@ -1399,7 +1407,7 @@ fn check_payload_fields(file: &File) -> Result<(), Diagnostics> {
         let mut payload: Option<&Field> = None;
         for field in decl.fields() {
             match &field.desc {
-                FieldDesc::Payload { .. } | FieldDesc::Body { .. } => {
+                FieldDesc::Payload { .. } | FieldDesc::Body => {
                     if let Some(prev) = payload {
                         diagnostics.push(
                             Diagnostic::error()
@@ -1621,7 +1629,7 @@ fn check_field_offsets(file: &File, scope: &Scope, schema: &Schema) -> Result<()
                         Some(Decl { desc: DeclDesc::Enum { .. }, .. })
                     ) => {}
                 FieldDesc::Payload { .. }
-                | FieldDesc::Body { .. }
+                | FieldDesc::Body
                 | FieldDesc::Typedef { .. }
                 | FieldDesc::Array { .. }
                 | FieldDesc::Padding { .. }
@@ -3258,6 +3266,7 @@ mod test {
     #[derive(Debug, PartialEq, Eq)]
     struct Annotations {
         size: Size,
+        parent_size: Size,
         payload_size: Size,
         fields: Vec<Size>,
     }
@@ -3271,6 +3280,7 @@ mod test {
             .iter()
             .map(|decl| Annotations {
                 size: schema.decl_size(decl.key),
+                parent_size: schema.parent_size(decl.key),
                 payload_size: schema.payload_size(decl.key),
                 fields: decl.fields().map(|field| schema.field_size(field.key)).collect(),
             })
@@ -3296,9 +3306,15 @@ mod test {
         "#
             ),
             eq(vec![
-                Annotations { size: Static(6), payload_size: Static(0), fields: vec![] },
+                Annotations {
+                    size: Static(6),
+                    parent_size: Static(0),
+                    payload_size: Static(0),
+                    fields: vec![]
+                },
                 Annotations {
                     size: Static(40),
+                    parent_size: Static(0),
                     payload_size: Dynamic,
                     fields: vec![
                         Static(14),
@@ -3331,9 +3347,15 @@ mod test {
         "#
             ),
             eq(vec![
-                Annotations { size: Static(32), payload_size: Static(0), fields: vec![Static(32)] },
+                Annotations {
+                    size: Static(32),
+                    parent_size: Static(0),
+                    payload_size: Static(0),
+                    fields: vec![Static(32)]
+                },
                 Annotations {
                     size: Static(48),
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(16), Static(32)]
                 },
@@ -3358,11 +3380,13 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(8), Dynamic]
                 },
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(16), Dynamic]
                 },
@@ -3384,9 +3408,15 @@ mod test {
         "#
             ),
             eq(vec![
-                Annotations { size: Unknown, payload_size: Static(0), fields: vec![Unknown] },
                 Annotations {
                     size: Unknown,
+                    parent_size: Static(0),
+                    payload_size: Static(0),
+                    fields: vec![Unknown]
+                },
+                Annotations {
+                    size: Unknown,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(16), Unknown]
                 },
@@ -3408,8 +3438,18 @@ mod test {
         "#
             ),
             eq(vec![
-                Annotations { size: Static(8), payload_size: Static(0), fields: vec![] },
-                Annotations { size: Static(64), payload_size: Static(0), fields: vec![Static(64)] },
+                Annotations {
+                    size: Static(8),
+                    parent_size: Static(0),
+                    payload_size: Static(0),
+                    fields: vec![]
+                },
+                Annotations {
+                    size: Static(64),
+                    parent_size: Static(0),
+                    payload_size: Static(0),
+                    fields: vec![Static(64)]
+                },
             ])
         );
 
@@ -3427,10 +3467,16 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(8), Dynamic]
                 },
-                Annotations { size: Dynamic, payload_size: Static(0), fields: vec![Dynamic] },
+                Annotations {
+                    size: Dynamic,
+                    parent_size: Static(0),
+                    payload_size: Static(0),
+                    fields: vec![Dynamic]
+                },
             ])
         );
 
@@ -3449,11 +3495,13 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Static(8),
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(7), Static(1)]
                 },
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(8), Dynamic]
                 },
@@ -3475,11 +3523,13 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(8), Dynamic]
                 },
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(8), Dynamic]
                 },
@@ -3501,11 +3551,13 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Static(8),
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(7), Static(1)]
                 },
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(8), Dynamic]
                 },
@@ -3527,11 +3579,13 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(8), Dynamic]
                 },
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(8), Dynamic]
                 },
@@ -3552,10 +3606,16 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Static(8),
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(7), Static(1)]
                 },
-                Annotations { size: Unknown, payload_size: Static(0), fields: vec![Unknown] },
+                Annotations {
+                    size: Unknown,
+                    parent_size: Static(0),
+                    payload_size: Static(0),
+                    fields: vec![Unknown]
+                },
             ])
         );
 
@@ -3573,10 +3633,16 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(8), Dynamic]
                 },
-                Annotations { size: Unknown, payload_size: Static(0), fields: vec![Unknown] },
+                Annotations {
+                    size: Unknown,
+                    parent_size: Static(0),
+                    payload_size: Static(0),
+                    fields: vec![Unknown]
+                },
             ])
         );
 
@@ -3598,11 +3664,13 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Static(40), Dynamic]
                 },
                 Annotations {
                     size: Static(1024),
+                    parent_size: Static(0),
                     payload_size: Static(0),
                     fields: vec![Unknown, Static(0)]
                 },
@@ -3625,6 +3693,7 @@ mod test {
             ),
             eq(vec![Annotations {
                 size: Static(8),
+                parent_size: Static(0),
                 payload_size: Dynamic,
                 fields: vec![Static(8), Dynamic]
             },])
@@ -3643,6 +3712,7 @@ mod test {
             ),
             eq(vec![Annotations {
                 size: Static(8),
+                parent_size: Static(0),
                 payload_size: Unknown,
                 fields: vec![Static(8), Unknown]
             },])
@@ -3664,6 +3734,7 @@ mod test {
             ),
             eq(vec![Annotations {
                 size: Static(8),
+                parent_size: Static(0),
                 payload_size: Dynamic,
                 fields: vec![Static(8), Dynamic]
             },])
@@ -3682,6 +3753,7 @@ mod test {
             ),
             eq(vec![Annotations {
                 size: Static(8),
+                parent_size: Static(0),
                 payload_size: Unknown,
                 fields: vec![Static(8), Unknown]
             },])
@@ -3708,10 +3780,16 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Static(8),
+                    parent_size: Static(0),
                     payload_size: Unknown,
                     fields: vec![Static(2), Static(6), Unknown]
                 },
-                Annotations { size: Static(16), payload_size: Static(0), fields: vec![Static(8)] },
+                Annotations {
+                    size: Static(8),
+                    parent_size: Static(8),
+                    payload_size: Static(0),
+                    fields: vec![Static(8)]
+                },
             ])
         );
 
@@ -3734,10 +3812,16 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Dynamic,
+                    parent_size: Static(0),
                     payload_size: Dynamic,
                     fields: vec![Static(8), Dynamic, Static(8), Dynamic]
                 },
-                Annotations { size: Dynamic, payload_size: Static(0), fields: vec![Static(8)] },
+                Annotations {
+                    size: Static(8),
+                    parent_size: Dynamic,
+                    payload_size: Static(0),
+                    fields: vec![Static(8)]
+                },
             ])
         );
 
@@ -3759,10 +3843,16 @@ mod test {
             eq(vec![
                 Annotations {
                     size: Unknown,
+                    parent_size: Static(0),
                     payload_size: Dynamic,
                     fields: vec![Static(8), Unknown, Dynamic]
                 },
-                Annotations { size: Unknown, payload_size: Static(0), fields: vec![Static(8)] },
+                Annotations {
+                    size: Static(8),
+                    parent_size: Unknown,
+                    payload_size: Static(0),
+                    fields: vec![Static(8)]
+                },
             ])
         );
     }

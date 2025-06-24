@@ -67,7 +67,7 @@ impl<'a> FieldSerializer<'a> {
             ast::FieldDesc::Typedef { id, type_id } => {
                 self.add_typedef_field(id, type_id);
             }
-            ast::FieldDesc::Payload { .. } | ast::FieldDesc::Body { .. } => {
+            ast::FieldDesc::Payload { .. } | ast::FieldDesc::Body => {
                 self.add_payload_field();
             }
             // Padding field handled in serialization of associated array field.
@@ -223,7 +223,7 @@ impl<'a> FieldSerializer<'a> {
                     .iter_fields(decl)
                     .find(|field| match &field.desc {
                         ast::FieldDesc::Payload { .. } => field_id == "_payload_",
-                        ast::FieldDesc::Body { .. } => field_id == "_body_",
+                        ast::FieldDesc::Body => field_id == "_body_",
                         _ => field.id() == Some(field_id),
                     })
                     .unwrap();
@@ -249,7 +249,7 @@ impl<'a> FieldSerializer<'a> {
                             quote! { (self.payload.len() + #size_modifier) }
                         }
                     }
-                    (ast::FieldDesc::Payload { .. } | ast::FieldDesc::Body { .. }, _) => {
+                    (ast::FieldDesc::Payload { .. } | ast::FieldDesc::Body, _) => {
                         if let ast::DeclDesc::Packet { .. } = &decl.desc {
                             quote! { self.child.get_total_size() }
                         } else {
@@ -411,7 +411,7 @@ impl<'a> FieldSerializer<'a> {
             let padding_octets = padding_size / 8;
             let element_width = match &width {
                 Some(width) => Some(*width),
-                None => self.schema.decl_size(decl.unwrap().key).static_(),
+                None => self.schema.total_size(decl.unwrap().key).static_(),
             };
 
             let array_size = match element_width {
