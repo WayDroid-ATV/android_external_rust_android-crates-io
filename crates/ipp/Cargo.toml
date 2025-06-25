@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "ipp"
-version = "5.2.0"
+version = "5.3.0"
 authors = ["Dmitry Pankratov <dmitry@pankratov.net>"]
 build = false
 autolib = false
@@ -32,6 +32,47 @@ keywords = [
 ]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/ancwrd1/ipp.rs"
+
+[features]
+async = [
+    "futures-util",
+    "futures-executor",
+]
+async-client = [
+    "async",
+    "reqwest",
+    "tokio-util",
+    "base64",
+]
+async-client-rustls = [
+    "async-client",
+    "reqwest/rustls-tls-native-roots",
+]
+async-client-tls = [
+    "async-client",
+    "reqwest/native-tls",
+]
+client = [
+    "ureq",
+    "base64",
+]
+client-rustls = [
+    "client",
+    "rustls-native-certs",
+    "ureq/rustls",
+    "once_cell",
+]
+client-tls = [
+    "client",
+    "rustls-native-certs",
+    "ureq/native-tls",
+    "once_cell",
+]
+default = ["async-client-tls"]
+serde = [
+    "dep:serde",
+    "bytes/serde",
+]
 
 [lib]
 name = "ipp"
@@ -66,10 +107,6 @@ version = "1"
 [dependencies.log]
 version = "0.4"
 
-[dependencies.native-tls]
-version = "0.2"
-optional = true
-
 [dependencies.num-traits]
 version = "0.2"
 
@@ -80,17 +117,6 @@ optional = true
 [dependencies.reqwest]
 version = "0.12"
 features = ["stream"]
-optional = true
-default-features = false
-
-[dependencies.rustls]
-version = "0.23"
-features = [
-    "ring",
-    "log",
-    "tls12",
-    "std",
-]
 optional = true
 default-features = false
 
@@ -115,7 +141,7 @@ features = [
 optional = true
 
 [dependencies.ureq]
-version = "2"
+version = "3"
 optional = true
 default-features = false
 
@@ -124,47 +150,4 @@ version = "1"
 features = [
     "macros",
     "rt-multi-thread",
-]
-
-[features]
-async = [
-    "futures-util",
-    "futures-executor",
-]
-async-client = [
-    "async",
-    "reqwest",
-    "tokio-util",
-    "base64",
-]
-async-client-rustls = [
-    "async-client",
-    "rustls",
-    "reqwest/rustls-tls-native-roots",
-]
-async-client-tls = [
-    "async-client",
-    "native-tls",
-    "reqwest/native-tls",
-]
-client = [
-    "ureq",
-    "base64",
-]
-client-rustls = [
-    "client",
-    "rustls",
-    "rustls-native-certs",
-    "once_cell",
-    "ureq/tls",
-]
-client-tls = [
-    "client",
-    "native-tls",
-    "ureq/native-tls",
-]
-default = ["async-client-tls"]
-serde = [
-    "dep:serde",
-    "bytes/serde",
 ]
