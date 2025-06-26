@@ -13,7 +13,7 @@
 edition = "2018"
 rust-version = "1.66.1"
 name = "rtnetlink"
-version = "0.16.0"
+version = "0.17.0"
 authors = ["Corentin Henry <corentinhenry@gmail.com>"]
 build = false
 autolib = false
@@ -67,6 +67,10 @@ path = "examples/add_netns_async.rs"
 [[example]]
 name = "add_route"
 path = "examples/add_route.rs"
+
+[[example]]
+name = "add_route_mpls"
+path = "examples/add_route_mpls.rs"
 
 [[example]]
 name = "add_route_pref_src"
@@ -210,7 +214,7 @@ version = "0.4.8"
 version = "0.7"
 
 [dependencies.netlink-packet-route]
-version = "0.22"
+version = "0.24"
 
 [dependencies.netlink-packet-utils]
 version = "0.5"

@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "netlink-packet-route"
-version = "0.22.0"
+version = "0.24.0"
 authors = ["Corentin Henry <corentinhenry@gmail.com>"]
 build = false
 autolib = false

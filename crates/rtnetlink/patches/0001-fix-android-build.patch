@@ -1,0 +1,57 @@
+From ce972f603f63a9b3bc16c713ee6b9c8d0c81c6f1 Mon Sep 17 00:00:00 2001
+From: Nabil Wadih <nwadih@google.com>
+Date: Mon, 9 Jun 2025 16:54:00 +0000
+Subject: [PATCH] fix android build
+
+---
+ src/route/builder.rs | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/src/route/builder.rs b/src/route/builder.rs
+index 42a5301..1705ccd 100644
+--- a/src/route/builder.rs
++++ b/src/route/builder.rs
+@@ -61,6 +61,7 @@ impl<T> RouteMessageBuilder<T> {
+     }
+ 
+     /// Sets the output MPLS encapsulation labels.
++    #[cfg(not(target_os = "android"))]
+     pub fn output_mpls(mut self, labels: Vec<MplsLabel>) -> Self {
+         if labels.is_empty() {
+             return self;
+@@ -442,6 +443,7 @@ impl Default for RouteMessageBuilder<IpAddr> {
+     }
+ }
+ 
++#[cfg(not(target_os = "android"))]
+ impl RouteMessageBuilder<MplsLabel> {
+     /// Create default RouteMessage with header set to:
+     ///  * route: [RouteHeader::RT_TABLE_MAIN]
+@@ -458,6 +460,7 @@ impl RouteMessageBuilder<MplsLabel> {
+         builder
+     }
+ 
++    #[cfg(not(target_os = "android"))]
+     /// Sets the destination MPLS label.
+     pub fn label(mut self, label: MplsLabel) -> Self {
+         self.message.header.address_family = AddressFamily::Mpls;
+@@ -476,7 +479,7 @@ impl RouteMessageBuilder<MplsLabel> {
+         self
+     }
+ }
+-
++#[cfg(not(target_os = "android"))]
+ impl Default for RouteMessageBuilder<MplsLabel> {
+     fn default() -> Self {
+         Self::new()
+@@ -523,6 +526,7 @@ impl RouteNextHopBuilder {
+     }
+ 
+     /// Sets the nexthop MPLS encapsulation labels.
++    #[cfg(not(target_os = "android"))]
+     pub fn mpls(mut self, labels: Vec<MplsLabel>) -> Self {
+         if labels.is_empty() {
+             return self;
+-- 
+2.50.0.714.g196bf9f422-goog
+
