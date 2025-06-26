@@ -4,5 +4,13 @@
     "tags"
   ],
   "tests": true,
-  "min_sdk_version": "29"
+  "min_sdk_version": "29",
+  "package": {
+    "serde_cbor": {
+      "extra_srcs": [
+        "tests/crash.cbor",
+        "tests/kietaub.cbor"
+      ]
+    }
+  }
 }

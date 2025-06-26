@@ -20,6 +20,12 @@ rust_library {
     cargo_env_compat: true,
     cargo_pkg_version: "0.4.0",
     crate_root: "src/lib.rs",
+    srcs: [
+        "src/html/benchmark_report.html.tt",
+        "src/html/index.html.tt",
+        "src/html/report_link.html.tt",
+        "src/html/summary_report.html.tt",
+    ],
     edition: "2018",
     features: [
         "cargo_bench_support",

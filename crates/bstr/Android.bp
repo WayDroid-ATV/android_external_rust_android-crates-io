@@ -20,6 +20,16 @@ rust_library {
     cargo_env_compat: true,
     cargo_pkg_version: "1.6.2",
     crate_root: "src/lib.rs",
+    srcs: [
+        "src/unicode/fsm/grapheme_break_fwd.littleendian.dfa",
+        "src/unicode/fsm/grapheme_break_rev.littleendian.dfa",
+        "src/unicode/fsm/regional_indicator_rev.littleendian.dfa",
+        "src/unicode/fsm/sentence_break_fwd.littleendian.dfa",
+        "src/unicode/fsm/simple_word_fwd.littleendian.dfa",
+        "src/unicode/fsm/whitespace_anchored_fwd.littleendian.dfa",
+        "src/unicode/fsm/whitespace_anchored_rev.littleendian.dfa",
+        "src/unicode/fsm/word_break_fwd.littleendian.dfa",
+    ],
     edition: "2021",
     features: [
         "alloc",

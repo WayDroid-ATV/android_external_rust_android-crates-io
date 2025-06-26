@@ -3,7 +3,13 @@
   "min_sdk_version": "29",
   "package": {
     "android_logger": {
-      "host_supported": false
+      "host_supported": false,
+      "add_toplevel_block": "cargo_embargo_toplevel.bp.fragment",
+      "add_module_block": "cargo_embargo_targets.bp.fragment",
+      "dep_blocklist": [
+        "libandroid_log_sys",
+        "libenv_filer"
+      ]
     }
   },
   "run_cargo": false

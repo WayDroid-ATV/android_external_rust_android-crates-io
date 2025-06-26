@@ -12,5 +12,12 @@
   "recovery_available": true,
   "run_cargo": false,
   "tests": true,
-  "vendor_ramdisk_available": true
+  "vendor_ramdisk_available": true,
+  "package": {
+    "rustc-demangle": {
+      "extra_srcs": [
+        "src/v0-large-test-symbols/early-recursion-limit"
+      ]
+    } 
+  }
 }

@@ -1,3 +1,4 @@
+srcs: [":android_logger_srcs"],
 target: {
     android: {
         cfgs: ["default_log_impl"],

@@ -1,5 +1,12 @@
 {
   "tests": true,
   "run_cargo": false,
-  "min_sdk_version": "29"
+  "min_sdk_version": "29",
+  "package": {
+    "zlib-rs": {
+      "extra_srcs": [
+        "src/deflate/test-data/inflate_buf_error.dat"
+      ]
+    }
+  }
 }

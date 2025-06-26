@@ -30,6 +30,7 @@ rust_library {
     recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    srcs: [":android_logger_srcs"],
     target: {
         android: {
             cfgs: ["default_log_impl"],
@@ -45,6 +46,7 @@ rust_library {
             enabled: true,
         },
     },
+
 }
 
 rust_library {
@@ -68,6 +70,7 @@ rust_library {
     recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    srcs: [":android_logger_srcs"],
     target: {
         android: {
             cfgs: ["default_log_impl"],
@@ -83,6 +86,7 @@ rust_library {
             enabled: true,
         },
     },
+
 }
 
 rust_library {
@@ -106,6 +110,7 @@ rust_library {
     recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    srcs: [":android_logger_srcs"],
     target: {
         android: {
             cfgs: ["default_log_impl"],
@@ -121,6 +126,7 @@ rust_library {
             enabled: true,
         },
     },
+
 }
 
 rust_library_rlib {

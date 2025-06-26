@@ -1,0 +1,14 @@
+target: {
+    host: {
+        rustlibs: [
+            "libenv_filter",
+            "liblog_rust",
+        ],
+    },
+    android: {
+        rustlibs: [
+            "liblog_rust",
+            "libandroid_log_sys",
+        ],
+    },
+}

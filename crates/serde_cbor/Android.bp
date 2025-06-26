@@ -20,6 +20,10 @@ rust_library {
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.2",
     crate_root: "src/lib.rs",
+    srcs: [
+        "tests/crash.cbor",
+        "tests/kietaub.cbor",
+    ],
     edition: "2018",
     features: [
         "default",
@@ -46,6 +50,10 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/bennofs.rs",
+    srcs: [
+        "tests/crash.cbor",
+        "tests/kietaub.cbor",
+    ],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -72,6 +80,10 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/canonical.rs",
+    srcs: [
+        "tests/crash.cbor",
+        "tests/kietaub.cbor",
+    ],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -98,6 +110,10 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/de.rs",
+    srcs: [
+        "tests/crash.cbor",
+        "tests/kietaub.cbor",
+    ],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -124,6 +140,10 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/enum.rs",
+    srcs: [
+        "tests/crash.cbor",
+        "tests/kietaub.cbor",
+    ],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -150,6 +170,10 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/ser.rs",
+    srcs: [
+        "tests/crash.cbor",
+        "tests/kietaub.cbor",
+    ],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -176,6 +200,10 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/std_types.rs",
+    srcs: [
+        "tests/crash.cbor",
+        "tests/kietaub.cbor",
+    ],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -202,6 +230,10 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/tags.rs",
+    srcs: [
+        "tests/crash.cbor",
+        "tests/kietaub.cbor",
+    ],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -228,6 +260,10 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/value.rs",
+    srcs: [
+        "tests/crash.cbor",
+        "tests/kietaub.cbor",
+    ],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
