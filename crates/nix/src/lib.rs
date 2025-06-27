@@ -376,7 +376,7 @@ where
     F: FnOnce(*const libc::c_char) -> T,
 {
     match path {
-        Some(path) => path.with_nix_path(|p_str| f(p_str.as_ptr())),
+        Some(path) => path.with_nix_path(|p_str| f(p_str.as_ptr() as *const libc::c_char)),
         None => Ok(f(ptr::null())),
     }
 }

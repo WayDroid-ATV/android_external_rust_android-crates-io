@@ -119,7 +119,7 @@ pub fn mount<
                 crate::with_opt_nix_path(data, |d| unsafe {
                     libc::mount(
                         s,
-                        t.as_ptr(),
+                        t.as_ptr() as *const libc::c_char,
                         ty,
                         flags.bits(),
                         d as *const libc::c_void,
@@ -135,7 +135,7 @@ pub fn mount<
 /// Unmount the file system mounted at `target`.
 pub fn umount<P: ?Sized + NixPath>(target: &P) -> Result<()> {
     let res =
-        target.with_nix_path(|cstr| unsafe { libc::umount(cstr.as_ptr()) })?;
+        target.with_nix_path(|cstr| unsafe { libc::umount(cstr.as_ptr() as *const libc::c_char) })?;
 
     Errno::result(res).map(drop)
 }
@@ -145,7 +145,7 @@ pub fn umount<P: ?Sized + NixPath>(target: &P) -> Result<()> {
 /// See also [`umount`](https://man7.org/linux/man-pages/man2/umount.2.html)
 pub fn umount2<P: ?Sized + NixPath>(target: &P, flags: MntFlags) -> Result<()> {
     let res = target.with_nix_path(|cstr| unsafe {
-        libc::umount2(cstr.as_ptr(), flags.bits())
+        libc::umount2(cstr.as_ptr() as *const libc::c_char, flags.bits())
     })?;
 
     Errno::result(res).map(drop)

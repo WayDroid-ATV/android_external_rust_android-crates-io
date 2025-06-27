@@ -253,7 +253,7 @@ pub fn fstatat<P: ?Sized + NixPath>(
     let res = pathname.with_nix_path(|cstr| unsafe {
         libc::fstatat(
             dirfd,
-            cstr.as_ptr(),
+            cstr.as_ptr() as *const libc::c_char,
             dst.as_mut_ptr(),
             f.bits() as libc::c_int,
         )

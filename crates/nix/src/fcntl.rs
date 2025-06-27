@@ -223,7 +223,7 @@ pub fn open<P: ?Sized + NixPath>(
     mode: Mode,
 ) -> Result<RawFd> {
     let fd = path.with_nix_path(|cstr| unsafe {
-        libc::open(cstr.as_ptr(), oflag.bits(), mode.bits() as c_uint)
+        libc::open(cstr.as_ptr() as *const libc::c_char, oflag.bits(), mode.bits() as c_uint)
     })?;
 
     Errno::result(fd)
@@ -247,7 +247,7 @@ pub fn openat<P: ?Sized + NixPath>(
     mode: Mode,
 ) -> Result<RawFd> {
     let fd = path.with_nix_path(|cstr| unsafe {
-        libc::openat(at_rawfd(dirfd), cstr.as_ptr(), oflag.bits(), mode.bits() as c_uint)
+        libc::openat(at_rawfd(dirfd), cstr.as_ptr() as *const libc::c_char, oflag.bits(), mode.bits() as c_uint)
     })?;
     Errno::result(fd)
 }
@@ -384,9 +384,9 @@ pub fn renameat<P1: ?Sized + NixPath, P2: ?Sized + NixPath>(
         new_path.with_nix_path(|new_cstr| unsafe {
             libc::renameat(
                 at_rawfd(old_dirfd),
-                old_cstr.as_ptr(),
+                old_cstr.as_ptr() as *const libc::c_char,
                 at_rawfd(new_dirfd),
-                new_cstr.as_ptr(),
+                new_cstr.as_ptr() as *const libc::c_char,
             )
         })
     })??;
@@ -461,12 +461,12 @@ fn readlink_maybe_at<P: ?Sized + NixPath>(
             #[cfg(not(target_os = "redox"))]
             Some(dirfd) => libc::readlinkat(
                 dirfd,
-                cstr.as_ptr(),
+                cstr.as_ptr() as *const libc::c_char,
                 v.as_mut_ptr().cast(),
                 v.capacity() as size_t,
             ),
             None => libc::readlink(
-                cstr.as_ptr(),
+                cstr.as_ptr() as *const libc::c_char,
                 v.as_mut_ptr().cast(),
                 v.capacity() as size_t,
             ),
