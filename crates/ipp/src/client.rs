@@ -20,7 +20,7 @@ fn ipp_uri_to_string(uri: &Uri) -> String {
             if authority.port_u16().is_some() {
                 authority.to_string()
             } else {
-                format!("{}:{}", authority, default_port)
+                format!("{authority}:{default_port}")
             }
         }
         None => return uri.to_string(),
@@ -28,7 +28,7 @@ fn ipp_uri_to_string(uri: &Uri) -> String {
 
     let path_and_query = uri.path_and_query().map(|p| p.as_str()).unwrap_or_default();
 
-    format!("{}://{}{}", scheme, authority, path_and_query)
+    format!("{scheme}://{authority}{path_and_query}")
 }
 
 /// Builder to create IPP client
@@ -209,13 +209,8 @@ pub mod non_blocking {
 #[cfg(feature = "client")]
 pub mod blocking {
     use http::Uri;
-    use once_cell::sync::Lazy;
-    use rustls_native_certs::load_native_certs;
     use std::sync::Arc;
-    use ureq::{
-        tls::{RootCerts, TlsConfig, TlsProvider},
-        Agent, SendBody,
-    };
+    use ureq::{Agent, SendBody};
 
     use crate::{error::IppError, parser::IppParser, reader::IppReader, request::IppRequestResponse};
 
@@ -257,6 +252,10 @@ pub mod blocking {
 
             #[cfg(any(feature = "client-tls", feature = "client-rustls"))]
             {
+                use once_cell::sync::Lazy;
+                use rustls_native_certs::load_native_certs;
+                use ureq::tls::{RootCerts, TlsConfig, TlsProvider};
+
                 let mut tls_config = TlsConfig::builder();
                 if self.0.ignore_tls_errors {
                     tls_config = tls_config.disable_verification(true);

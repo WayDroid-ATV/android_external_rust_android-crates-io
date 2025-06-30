@@ -1,17 +1,17 @@
 name: "ipp"
 description: "Asynchronous IPP print protocol implementation"
 third_party {
-  version: "5.3.0"
+  version: "5.3.1"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
     month: 6
-    day: 23
+    day: 30
   }
   homepage: "https://crates.io/crates/ipp"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/ipp/ipp-5.3.0.crate"
-    version: "5.3.0"
+    value: "https://static.crates.io/crates/ipp/ipp-5.3.1.crate"
+    version: "5.3.1"
   }
 }

@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "ipp"
-version = "5.3.0"
+version = "5.3.1"
 authors = ["Dmitry Pankratov <dmitry@pankratov.net>"]
 build = false
 autolib = false
