@@ -52,6 +52,7 @@
 #include <grpc/grpc_security.h>
 #endif
 
+#include <stdio.h>
 #include <string.h>
 
 #ifdef GPR_WINDOWS
@@ -66,6 +67,19 @@
 #ifndef GPR_CALLTYPE
 #define GPR_CALLTYPE
 #endif
+
+#define GPR_ASSERT(x)                           \
+  do {                                          \
+    if (__builtin_expect(!(x), 0)) {            \
+      assertion_failed(__FILE__, __LINE__, #x); \
+    }                                           \
+  } while (0)
+
+static void __attribute__((noreturn)) assertion_failed(
+    const char* filename, int line, const char* message) {
+  fprintf(stderr, "%s:%d: ASSERTION FAILED: %s", filename, line, message);
+  abort();
+}
 
 grpc_byte_buffer* string_to_byte_buffer(const char* buffer, size_t len) {
   grpc_slice slice = grpc_slice_from_copied_buffer(buffer, len);
