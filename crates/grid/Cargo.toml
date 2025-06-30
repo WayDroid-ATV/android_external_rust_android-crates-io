@@ -11,9 +11,9 @@
 
 [package]
 edition = "2018"
-rust-version = "1.51"
+rust-version = "1.59"
 name = "grid"
-version = "0.17.0"
+version = "0.18.0"
 authors = ["Armin Becher <armin.becher@gmai.com>"]
 build = false
 autolib = false
