@@ -1,17 +1,17 @@
 name: "regex"
 description: "An implementation of regular expressions for Rust. This implementation uses finite automata and guarantees linear time matching on all inputs."
 third_party {
-  version: "1.9.1"
+  version: "1.9.6"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
     month: 6
-    day: 2
+    day: 30
   }
   homepage: "https://crates.io/crates/regex"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/regex/regex-1.9.1.crate"
-    version: "1.9.1"
+    value: "https://static.crates.io/crates/regex/regex-1.9.6.crate"
+    version: "1.9.6"
   }
 }
