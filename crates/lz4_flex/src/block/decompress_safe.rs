@@ -182,7 +182,7 @@ pub(crate) fn decompress_internal<const USE_DICT: bool, S: Sink>(
             if literal_length > input.len() - input_pos {
                 return Err(DecompressError::LiteralOutOfBounds);
             }
-            #[cfg(not(feature = "unchecked-decode"))]
+            // could be skipped with unchecked-decode
             if literal_length > output.capacity() - output.pos() {
                 return Err(DecompressError::OutputTooSmall {
                     expected: output.pos() + literal_length,
@@ -215,7 +215,7 @@ pub(crate) fn decompress_internal<const USE_DICT: bool, S: Sink>(
             match_length += read_integer(input, &mut input_pos)? as usize;
         }
 
-        #[cfg(not(feature = "unchecked-decode"))]
+        // could be skipped with unchecked-decode
         if output.pos() + match_length > output.capacity() {
             return Err(DecompressError::OutputTooSmall {
                 expected: output.pos() + match_length,
@@ -329,7 +329,7 @@ pub fn decompress_into_with_dict(
 }
 
 /// Decompress all bytes of `input` into a new vec. The first 4 bytes are the uncompressed size in
-/// litte endian. Can be used in conjunction with `compress_prepend_size`
+/// little endian. Can be used in conjunction with `compress_prepend_size`
 #[inline]
 pub fn decompress_size_prepended(input: &[u8]) -> Result<Vec<u8>, DecompressError> {
     let (uncompressed_size, input) = super::uncompressed_size(input)?;

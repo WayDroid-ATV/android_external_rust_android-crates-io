@@ -311,9 +311,7 @@ impl<W: io::Write> FrameEncoder<W> {
         self.w.write_all(&block_info_buffer[..])?;
         self.w.write_all(block_data)?;
         if self.frame_info.block_checksums {
-            let mut block_hasher = XxHash32::with_seed(0);
-            block_hasher.write(block_data);
-            let block_checksum = block_hasher.finish() as u32;
+            let block_checksum = XxHash32::oneshot(0, block_data);
             self.w.write_all(&block_checksum.to_le_bytes())?;
         }
 
@@ -447,6 +445,8 @@ impl<W: fmt::Debug + io::Write> fmt::Debug for FrameEncoder<W> {
             .field("is_frame_open", &self.is_frame_open)
             .field("content_hasher", &self.content_hasher)
             .field("content_len", &self.content_len)
+            .field("compression_table", &"{ ... }")
+            .field("data_to_frame_written", &self.data_to_frame_written)
             .field("dst", &"[...]")
             .field("src", &"[...]")
             .field("src_start", &self.src_start)

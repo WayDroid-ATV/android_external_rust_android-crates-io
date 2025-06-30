@@ -11,13 +11,15 @@
 
 [package]
 edition = "2021"
+rust-version = "1.81"
 name = "lz4_flex"
-version = "0.11.3"
+version = "0.11.5"
 authors = [
     "Pascal Seitz <pascal.seitz@gmail.com>",
     "Arthur Silva <arthurprs@gmail.com>",
     "ticki <Ticki@users.noreply.github.com>",
 ]
+build = false
 include = [
     "src/*.rs",
     "src/frame/**/*",
@@ -25,6 +27,11 @@ include = [
     "README.md",
     "LICENSE",
 ]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Fastest LZ4 implementation in Rust, no unsafe by default."
 homepage = "https://github.com/pseitz/lz4_flex"
 readme = "README.md"
@@ -45,25 +52,39 @@ rustdoc-args = [
     "docsrs",
 ]
 
-[profile.bench]
-opt-level = 3
-lto = true
-codegen-units = 1
+[features]
+checked-decode = []
+default = [
+    "std",
+    "safe-encode",
+    "safe-decode",
+    "frame",
+    "checked-decode",
+]
+frame = [
+    "std",
+    "dep:twox-hash",
+]
+nightly = []
+safe-decode = []
+safe-encode = []
+std = []
 
-[profile.release]
-opt-level = 3
-codegen-units = 1
-panic = "unwind"
-
-[[bench]]
-name = "crit_bench"
-path = "benches/crit_bench.rs"
-harness = false
+[lib]
+name = "lz4_flex"
+path = "src/lib.rs"
 
 [dependencies.twox-hash]
-version = "1.6.3"
+version = "2.0.0"
+features = ["xxhash32"]
 optional = true
 default-features = false
+
+[dev-dependencies.binggan]
+version = "0.12.0"
+
+[dev-dependencies.jemallocator]
+version = "0.5.4"
 
 [dev-dependencies.lz4-compress]
 version = "0.1.1"
@@ -83,18 +104,12 @@ version = "1.0.91"
 [dev-dependencies.snap]
 version = "1.1.0"
 
-[features]
-default = [
-    "std",
-    "safe-encode",
-    "safe-decode",
-    "frame",
-]
-frame = [
-    "std",
-    "dep:twox-hash",
-]
-nightly = []
-safe-decode = []
-safe-encode = []
-std = []
+[profile.bench]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.release]
+opt-level = 3
+codegen-units = 1
+panic = "unwind"

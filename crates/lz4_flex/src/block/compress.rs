@@ -1,7 +1,7 @@
 //! The compression algorithm.
 //!
 //! We make use of hash tables to find duplicates. This gives a reasonable compression ratio with a
-//! high performance. It has fixed memory usage, which contrary to other approachs, makes it less
+//! high performance. It has fixed memory usage, which contrary to other approaches, makes it less
 //! memory hungry.
 
 use crate::block::hashtable::HashTable;
@@ -590,7 +590,6 @@ fn copy_literals_wild(output: &mut impl Sink, input: &[u8], input_start: usize, 
 /// `get_maximum_output_size`.
 ///
 /// Returns the number of bytes written (compressed) into `output`.
-
 #[inline]
 pub(crate) fn compress_into_sink_with_dict<const USE_DICT: bool>(
     input: &[u8],
@@ -627,7 +626,7 @@ fn init_dict<T: HashTable>(dict: &mut T, dict_data: &mut &[u8]) {
 /// Can be used to preallocate capacity on the output vector
 #[inline]
 pub const fn get_maximum_output_size(input_len: usize) -> usize {
-    16 + 4 + (input_len * 110 / 100) as usize
+    16 + 4 + (input_len * 110 / 100)
 }
 
 /// Compress all bytes of `input` into `output`.
@@ -929,7 +928,7 @@ mod tests {
         // and no literal, so a block of 12 bytes can be compressed.
         let aaas: &[u8] = b"aaaaaaaaaaaaaaa";
 
-        // uncompressible
+        // incompressible
         let out = compress(&aaas[..12]);
         assert_gt!(out.len(), 12);
         // compressible
@@ -940,12 +939,12 @@ mod tests {
         let out = compress(&aaas[..15]);
         assert_le!(out.len(), 15);
 
-        // dict uncompressible
+        // dict incompressible
         let out = compress_with_dict(&aaas[..11], aaas);
         assert_gt!(out.len(), 11);
         // compressible
         let out = compress_with_dict(&aaas[..12], aaas);
-        // According to the spec this _could_ compres, but it doesn't in this lib
+        // According to the spec this _could_ compress, but it doesn't in this lib
         // as it aborts compression for any input len < LZ4_MIN_LENGTH
         assert_gt!(out.len(), 12);
         let out = compress_with_dict(&aaas[..13], aaas);

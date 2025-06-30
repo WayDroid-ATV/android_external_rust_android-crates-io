@@ -14,9 +14,9 @@
 //! permits streaming compression or decompression.
 //!
 //! The second way is through the
-//! [`decompress_size_prepended`](fn.decompress_size_prepended.html)
+//! [`decompress_size_prepended`](block/fn.decompress_size_prepended.html)
 //! and
-//! [`compress_prepend_size`](fn.compress_prepend_size.html)
+//! [`compress_prepend_size`](block/fn.compress_prepend_size.html)
 //! functions. These functions provide access to the lz4 block format, and
 //! don't support a streaming interface directly. You should only use these types
 //! if you know you specifically need the lz4 block format.
@@ -72,7 +72,7 @@
 #![deny(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![cfg_attr(nightly, feature(optimize_attribute))]
+#![cfg_attr(feature = "nightly", feature(optimize_attribute))]
 
 #[cfg_attr(test, macro_use)]
 extern crate alloc;

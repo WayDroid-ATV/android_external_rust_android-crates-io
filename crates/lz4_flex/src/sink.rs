@@ -3,7 +3,7 @@ use alloc::vec::Vec;
 
 use crate::fastcpy::slice_copy;
 
-/// Returns a Sink implementation appropriate for outputing up to `required_capacity`
+/// Returns a Sink implementation appropriate for outputting up to `required_capacity`
 /// bytes at `vec[offset..offset+required_capacity]`.
 /// It can be either a `SliceSink` (pre-filling the vec with zeroes if necessary)
 /// when the `safe-decode` feature is enabled, or `VecSink` otherwise.
@@ -15,14 +15,14 @@ pub fn vec_sink_for_compression(
     offset: usize,
     pos: usize,
     required_capacity: usize,
-) -> SliceSink {
+) -> SliceSink<'_> {
     {
         vec.resize(offset + required_capacity, 0);
         SliceSink::new(&mut vec[offset..], pos)
     }
 }
 
-/// Returns a Sink implementation appropriate for outputing up to `required_capacity`
+/// Returns a Sink implementation appropriate for outputting up to `required_capacity`
 /// bytes at `vec[offset..offset+required_capacity]`.
 /// It can be either a `SliceSink` (pre-filling the vec with zeroes if necessary)
 /// when the `safe-decode` feature is enabled, or `VecSink` otherwise.
@@ -34,7 +34,7 @@ pub fn vec_sink_for_decompression(
     offset: usize,
     pos: usize,
     required_capacity: usize,
-) -> SliceSink {
+) -> SliceSink<'_> {
     {
         vec.resize(offset + required_capacity, 0);
         SliceSink::new(&mut vec[offset..], pos)
@@ -111,7 +111,7 @@ impl<'a> SliceSink<'a> {
     }
 }
 
-impl<'a> Sink for SliceSink<'a> {
+impl Sink for SliceSink<'_> {
     /// Returns a raw ptr to the first unfilled byte of the Sink. Analogous to `[pos..].as_ptr()`.
     #[inline]
     #[cfg(not(all(feature = "safe-encode", feature = "safe-decode")))]
@@ -187,7 +187,7 @@ impl<'a> Sink for SliceSink<'a> {
 
     #[inline]
     #[cfg(feature = "safe-decode")]
-    #[cfg_attr(nightly, optimize(size))] // to avoid loop unrolling
+    #[cfg_attr(feature = "nightly", optimize(size))] // to avoid loop unrolling
     fn extend_from_within_overlapping(&mut self, start: usize, num_bytes: usize) {
         let offset = self.pos - start;
         for i in start + offset..start + offset + num_bytes {
@@ -321,9 +321,7 @@ mod tests {
     fn test_sink_slice() {
         use crate::sink::Sink;
         use crate::sink::SliceSink;
-        use alloc::vec::Vec;
-        let mut data = Vec::new();
-        data.resize(5, 0);
+        let mut data = vec![0; 5];
         let sink = SliceSink::new(&mut data, 1);
         assert_eq!(sink.pos(), 1);
         assert_eq!(sink.capacity(), 5);

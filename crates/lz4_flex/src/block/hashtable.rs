@@ -12,7 +12,7 @@ use alloc::boxed::Box;
 ///
 /// Every four bytes is assigned an entry. When this number is lower, fewer entries exists, and
 /// thus collisions are more likely, hurting the compression ratio.
-
+///
 /// hashes and right shifts to a maximum value of 16bit, 65535
 /// The right shift is done in order to not exceed, the hashtables capacity
 #[inline]
@@ -62,7 +62,7 @@ impl HashTable4KU16 {
     #[inline]
     pub fn new() -> Self {
         // This generates more efficient assembly in contrast to Box::new(slice), because of an
-        // optmized call alloc_zeroed, vs. alloc + memset
+        // optimized call alloc_zeroed, vs. alloc + memset
         // try_into is optimized away
         let dict = alloc::vec![0; HASHTABLE_SIZE_4K]
             .into_boxed_slice()

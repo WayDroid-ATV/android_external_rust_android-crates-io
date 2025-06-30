@@ -18,10 +18,11 @@ rust_library {
     host_supported: true,
     crate_name: "lz4_flex",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.11.3",
+    cargo_pkg_version: "0.11.5",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
+        "checked-decode",
         "default",
         "frame",
         "safe-decode",

@@ -1,5 +1,5 @@
 ![Rust](https://github.com/PSeitz/lz4_flex/workflows/Rust/badge.svg)
-[![Docs](https://docs.rs/lz4_flex/badge.svg)](https://docs.rs/crate/lz4_flex/)
+[![Docs](https://img.shields.io/docsrs/lz4_flex)](https://docs.rs/lz4_flex)
 [![Crates.io](https://img.shields.io/crates/v/lz4_flex.svg)](https://crates.io/crates/lz4_flex)
 
 # lz4_flex
@@ -42,7 +42,7 @@ AMD Ryzen 7 5900HX, rustc 1.69.0 (84c898d65 2023-04-16), Manjaro, CPU Boost Disa
 - 32-bit support
 
 ## Usage: 
-Compression and decompression uses no usafe via the default feature flags "safe-encode" and "safe-decode". If you need more performance you can disable them (e.g. with no-default-features).
+Compression and decompression uses no unsafe via the default feature flags "safe-encode" and "safe-decode". If you need more performance you can disable them (e.g. with no-default-features).
 
 Safe:
 ```
@@ -55,7 +55,7 @@ lz4_flex = { version = "0.11", default-features = false }
 ```
 
 ### Block Format
-The block format is only valid for smaller data chunks as as block is de/compressed in memory.
+The block format is only valid for smaller data chunks as block is de/compressed in memory.
 For larger data use the frame format, which consists of multiple blocks.
 
 ```rust
@@ -110,7 +110,7 @@ Tested on AMD Ryzen 7 5900HX, rustc 1.69.0 (84c898d65 2023-04-16), Manjaro, CPU 
 This fuzz target generates corrupted data for the decompressor. 
 `cargo +nightly fuzz run fuzz_decomp_corrupt_block` and `cargo +nightly fuzz run fuzz_decomp_corrupt_frame`
 
-This fuzz target asserts that a compression and decompression rountrip returns the original input.
+This fuzz target asserts that a compression and decompression roundtrip returns the original input.
 `cargo +nightly fuzz run fuzz_roundtrip` and `cargo +nightly fuzz run fuzz_roundtrip_frame`
 
 This fuzz target asserts compression with cpp and decompression with lz4_flex returns the original input.
