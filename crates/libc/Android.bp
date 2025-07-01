@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "libc",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.168",
+    cargo_pkg_version: "0.2.171",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -30,6 +30,7 @@ rust_library {
         "freebsd11",
         "libc_const_extern_fn",
     ],
+    proc_macros: ["librustversion"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

@@ -1,0 +1,46 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index e816e902e..200a414cc 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -184,3 +184,6 @@ path = "tests/const_fn.rs"
+ [dependencies.rustc-std-workspace-core]
+ version = "1.0.0"
+ optional = true
++
++[dependencies.rustversion]
++version = "1.0"
+diff --git a/src/primitives.rs b/src/primitives.rs
+index 668d3340d..ddf1ed5a0 100644
+--- a/src/primitives.rs
++++ b/src/primitives.rs
+@@ -38,12 +38,29 @@ cfg_if! {
+             target_arch = "powerpc",
+             target_arch = "powerpc64",
+             target_arch = "riscv32",
+-            target_arch = "riscv64",
+             target_arch = "s390x",
+             target_arch = "xtensa",
+         )
+     ))] {
+         pub type c_char = u8;
++    } else if #[cfg(all(
++        not(windows),
++        not(any(
++            target_os = "macos",
++            target_os = "ios",
++            target_os = "tvos",
++            target_os = "watchos",
++            target_os = "visionos",
++        )),
++        not(target_os = "vita"),
++        any(
++            target_arch = "riscv64",
++        )
++    ))] {
++        #[rustversion::since(1.85)]
++        pub type c_char = u8;
++        #[rustversion::before(1.85)]
++        pub type c_char = i8;
+     } else {
+         // On every other target, c_char is signed.
+         pub type c_char = i8;
