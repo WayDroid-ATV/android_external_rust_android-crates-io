@@ -166,45 +166,6 @@ impl U16Or24 {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct IdDeltaOrLength(i32);
-
-impl ReadArgs for IdDeltaOrLength {
-    type Args = Offset32;
-}
-
-impl ComputeSize for IdDeltaOrLength {
-    fn compute_size(entry_id_string_data_offset: &Offset32) -> Result<usize, ReadError> {
-        // This field is either a u16 or an int24 depending on whether or not string data
-        // is present. See: <https://w3c.github.io/IFT/Overview.html#mapping-entry-entryiddelta>
-        Ok(if entry_id_string_data_offset.is_null() {
-            3
-        } else {
-            2
-        })
-    }
-}
-
-impl FontReadWithArgs<'_> for IdDeltaOrLength {
-    fn read_with_args(
-        data: FontData<'_>,
-        entry_id_string_data_offset: &Self::Args,
-    ) -> Result<Self, ReadError> {
-        if entry_id_string_data_offset.is_null() {
-            data.read_at::<Int24>(0).map(|v| Self(i32::from(v)))
-        } else {
-            data.read_at::<u16>(0).map(|v| Self(v as i32))
-        }
-    }
-}
-
-impl IdDeltaOrLength {
-    #[inline]
-    pub fn into_inner(self) -> i32 {
-        self.0
-    }
-}
-
 impl<'a> PatchMapFormat1<'a> {
     pub fn gid_to_entry_iter(&'a self) -> impl Iterator<Item = (GlyphId, u16)> + 'a {
         GidToEntryIter {
@@ -222,11 +183,6 @@ impl<'a> PatchMapFormat1<'a> {
         self.max_entry_index() as u32 + 1
     }
 
-    pub fn uri_template_as_string(&self) -> Result<&str, ReadError> {
-        str::from_utf8(self.uri_template())
-            .map_err(|_| ReadError::MalformedData("Invalid UTF8 encoding for uri template."))
-    }
-
     pub fn is_entry_applied(&self, entry_index: u16) -> bool {
         let byte_index = entry_index / 8;
         let bit_mask = 1 << (entry_index % 8);
@@ -234,13 +190,6 @@ impl<'a> PatchMapFormat1<'a> {
             .get(byte_index as usize)
             .map(|byte| byte & bit_mask != 0)
             .unwrap_or(false)
-    }
-}
-
-impl PatchMapFormat2<'_> {
-    pub fn uri_template_as_string(&self) -> Result<&str, ReadError> {
-        str::from_utf8(self.uri_template())
-            .map_err(|_| ReadError::MalformedData("Invalid UTF8 encoding for uri template."))
     }
 }
 
@@ -393,7 +342,7 @@ mod tests {
     // - Test enforced minimum entry count of > 0.
     // - Test where entryIndex is a u16.
     // - Invalid table (too short).
-    // - Invalid UTF8 sequence in uri template.
+    // - Invalid UTF8 sequence in url template.
     // - Compat ID is to short.
     // - invalid entry map array (too short)
     // - feature map with short entry indices.
@@ -464,6 +413,71 @@ mod tests {
     }
 
     #[test]
+    fn format_1_get_charstrings_offset() {
+        // No offsets
+        let data = test_data::simple_format1();
+        let table = Ift::read(FontData::new(&data)).unwrap();
+        let Ift::Format1(map) = table else {
+            panic!("Not format 1.");
+        };
+
+        assert_eq!(map.cff_charstrings_offset(), None);
+        assert_eq!(map.cff2_charstrings_offset(), None);
+
+        // One offset
+        let data = test_data::simple_format1_with_one_charstrings_offset();
+        let table = Ift::read(FontData::new(&data)).unwrap();
+        let Ift::Format1(map) = table else {
+            panic!("Not format 1.");
+        };
+
+        assert_eq!(map.cff_charstrings_offset(), Some(456));
+        assert_eq!(map.cff2_charstrings_offset(), None);
+
+        // Two offsets
+        let data = test_data::simple_format1_with_two_charstrings_offsets();
+        let table = Ift::read(FontData::new(&data)).unwrap();
+        let Ift::Format1(map) = table else {
+            panic!("Not format 1.");
+        };
+
+        assert_eq!(map.cff_charstrings_offset(), Some(456));
+        assert_eq!(map.cff2_charstrings_offset(), Some(789));
+    }
+
+    #[test]
+    fn format_2_get_charstrings_offset() {
+        // No offsets
+        let data = test_data::codepoints_only_format2();
+        let table = Ift::read(FontData::new(&data)).unwrap();
+        let Ift::Format2(map) = table else {
+            panic!("Not format 2.");
+        };
+        assert_eq!(map.cff_charstrings_offset(), None);
+        assert_eq!(map.cff2_charstrings_offset(), None);
+
+        // One offset
+        let data = test_data::format2_with_one_charstrings_offset();
+        let table = Ift::read(FontData::new(&data)).unwrap();
+        let Ift::Format2(map) = table else {
+            panic!("Not format 2.");
+        };
+
+        assert_eq!(map.cff_charstrings_offset(), Some(456));
+        assert_eq!(map.cff2_charstrings_offset(), None);
+
+        // Two offsets
+        let data = test_data::format2_with_two_charstrings_offset();
+        let table = Ift::read(FontData::new(&data)).unwrap();
+        let Ift::Format2(map) = table else {
+            panic!("Not format 2.");
+        };
+
+        assert_eq!(map.cff_charstrings_offset(), Some(456));
+        assert_eq!(map.cff2_charstrings_offset(), Some(789));
+    }
+
+    #[test]
     fn compatibility_id() {
         let data = test_data::simple_format1();
         let table = Ift::read(FontData::new(&data)).unwrap();
@@ -487,17 +501,6 @@ mod tests {
         assert!(!map.is_entry_applied(0));
         assert!(map.is_entry_applied(1));
         assert!(!map.is_entry_applied(2));
-    }
-
-    #[test]
-    fn uri_template_as_string() {
-        let data = test_data::simple_format1();
-        let table = Ift::read(FontData::new(&data)).unwrap();
-        let Ift::Format1(map) = table else {
-            panic!("Not format 1.");
-        };
-
-        assert_eq!(Ok("ABCDEFɤ"), map.uri_template_as_string());
     }
 
     #[test]
@@ -642,7 +645,7 @@ mod tests {
     #[test]
     fn glyph_keyed_glyph_data_for_one_table_gids_truncated() {
         let builder = test_data::glyf_u16_glyph_patches();
-        let len = builder.offset_for("table_count") as usize;
+        let len = builder.offset_for("table_count");
         let data = &builder.as_slice()[..len];
 
         let Err(err) = GlyphPatches::read(FontData::new(data), GlyphKeyedFlags::NONE) else {
@@ -654,7 +657,7 @@ mod tests {
     #[test]
     fn glyph_keyed_glyph_data_for_one_table_data_truncated() {
         let builder = test_data::glyf_u16_glyph_patches();
-        let len = builder.offset_for("gid_8_and_9_data") as usize;
+        let len = builder.offset_for("gid_8_and_9_data");
         let data = &builder.as_slice()[..len];
 
         let table = GlyphPatches::read(FontData::new(data), GlyphKeyedFlags::NONE).unwrap();
@@ -675,7 +678,7 @@ mod tests {
     #[test]
     fn glyph_keyed_glyph_data_for_one_table_offset_array_truncated() {
         let builder = test_data::glyf_u16_glyph_patches();
-        let len = builder.offset_for("gid_9_offset") as usize;
+        let len = builder.offset_for("gid_9_offset");
         let data = &builder.as_slice()[..len];
 
         let Err(err) = GlyphPatches::read(FontData::new(data), GlyphKeyedFlags::NONE) else {

@@ -255,7 +255,11 @@ impl<'a> CollectionRef<'a> {
             .ok_or(ReadError::InvalidCollectionIndex(index))?
             .get() as usize;
         let table_dir_data = self.data.slice(offset..).ok_or(ReadError::OutOfBounds)?;
-        FontRef::with_table_directory(self.data, TableDirectory::read(table_dir_data)?)
+        FontRef::with_table_directory(
+            self.data,
+            TableDirectory::read(table_dir_data)?,
+            Some(index),
+        )
     }
 
     /// Returns an iterator over the fonts in the collection.
@@ -265,14 +269,41 @@ impl<'a> CollectionRef<'a> {
     }
 }
 
+impl TableDirectory<'_> {
+    fn is_sorted(&self) -> bool {
+        let mut last_tag = Tag::new(&[0u8; 4]);
+
+        for tag in self.table_records().iter().map(|rec| rec.tag()) {
+            if tag <= last_tag {
+                return false;
+            }
+
+            last_tag = tag;
+        }
+
+        true
+    }
+}
+
 /// Reference to an in-memory font.
 ///
 /// This is a simple implementation of the [`TableProvider`] trait backed
 /// by a borrowed slice containing font data.
 #[derive(Clone)]
 pub struct FontRef<'a> {
-    pub data: FontData<'a>,
+    data: FontData<'a>,
     pub table_directory: TableDirectory<'a>,
+    /// The index of this font in a TrueType collection
+    ttc_index: u32,
+    /// Whether this font is a member of a TrueType collection.
+    ///
+    /// We use a bool rather than an Option to avoid bloating the struct
+    /// size.
+    in_ttc: bool,
+    // Whether the table directory is sorted and thus we can use binary search for
+    // finding table records. In principle, fonts are required to have a sorted
+    // table directory, but certain fonts don't seem to follow that requirement.
+    table_directory_sorted: bool,
 }
 
 impl<'a> FontRef<'a> {
@@ -286,7 +317,7 @@ impl<'a> FontRef<'a> {
     /// [table directory]: https://github.com/googlefonts/fontations/pull/549
     pub fn new(data: &'a [u8]) -> Result<Self, ReadError> {
         let data = FontData::new(data);
-        Self::with_table_directory(data, TableDirectory::read(data)?)
+        Self::with_table_directory(data, TableDirectory::read(data)?, None)
     }
 
     /// Creates a new reference to an in-memory font at the specified index
@@ -314,12 +345,40 @@ impl<'a> FontRef<'a> {
         }
     }
 
+    /// Returns the underlying font data.
+    ///
+    /// This is the base from which tables are loaded, meaning that for
+    /// TrueType collection files, this will be the entire font file data.
+    pub fn data(&self) -> FontData<'a> {
+        self.data
+    }
+
+    /// If the font is in a TrueType collection (ttc) file, returns the index
+    /// of the font in that collection.
+    pub fn ttc_index(&self) -> Option<u32> {
+        self.in_ttc.then_some(self.ttc_index)
+    }
+
+    /// Returns the associated table directory.
+    pub fn table_directory(&self) -> &TableDirectory<'a> {
+        &self.table_directory
+    }
+
     /// Returns the data for the table with the specified tag, if present.
     pub fn table_data(&self, tag: Tag) -> Option<FontData<'a>> {
-        self.table_directory
-            .table_records()
-            .binary_search_by(|rec| rec.tag.get().cmp(&tag))
-            .ok()
+        let entry = if self.table_directory_sorted {
+            self.table_directory
+                .table_records()
+                .binary_search_by(|rec| rec.tag.get().cmp(&tag))
+                .ok()
+        } else {
+            self.table_directory
+                .table_records()
+                .iter()
+                .position(|rec| rec.tag.get().eq(&tag))
+        };
+
+        entry
             .and_then(|idx| self.table_directory.table_records().get(idx))
             .and_then(|record| {
                 let start = Offset32::new(record.offset()).non_null()?;
@@ -328,16 +387,35 @@ impl<'a> FontRef<'a> {
             })
     }
 
+    /// Returns an iterator over all of the available fonts in
+    /// the given font data.
+    pub fn fonts(
+        data: &'a [u8],
+    ) -> impl Iterator<Item = Result<FontRef<'a>, ReadError>> + 'a + Clone {
+        let count = match FileRef::new(data) {
+            Ok(FileRef::Font(_)) => 1,
+            Ok(FileRef::Collection(ttc)) => ttc.len(),
+            _ => 0,
+        };
+        (0..count).map(|idx| FontRef::from_index(data, idx))
+    }
+
     fn with_table_directory(
         data: FontData<'a>,
         table_directory: TableDirectory<'a>,
+        ttc_index: Option<u32>,
     ) -> Result<Self, ReadError> {
         if [TT_SFNT_VERSION, CFF_SFNT_VERSION, TRUE_SFNT_VERSION]
             .contains(&table_directory.sfnt_version())
         {
+            let table_directory_sorted = table_directory.is_sorted();
+
             Ok(FontRef {
                 data,
                 table_directory,
+                ttc_index: ttc_index.unwrap_or_default(),
+                in_ttc: ttc_index.is_some(),
+                table_directory_sorted,
             })
         } else {
             Err(ReadError::InvalidSfnt(table_directory.sfnt_version()))
@@ -353,9 +431,10 @@ impl<'a> TableProvider<'a> for FontRef<'a> {
 
 #[cfg(test)]
 mod tests {
-    use font_test_data::{ttc::TTC, AHEM};
+    use font_test_data::{be_buffer, bebuffer::BeBuffer, ttc::TTC, AHEM};
+    use types::{Tag, TT_SFNT_VERSION};
 
-    use crate::FileRef;
+    use crate::{FileRef, FontRef};
 
     #[test]
     fn file_ref_non_collection() {
@@ -369,5 +448,76 @@ mod tests {
         };
         assert_eq!(2, collection.len());
         assert!(!collection.is_empty());
+    }
+
+    #[test]
+    fn font_ref_fonts_iter() {
+        assert_eq!(FontRef::fonts(AHEM).count(), 1);
+        assert_eq!(FontRef::fonts(TTC).count(), 2);
+        assert_eq!(FontRef::fonts(b"NOT_A_FONT").count(), 0);
+    }
+
+    #[test]
+    fn ttc_index() {
+        for (idx, font) in FontRef::fonts(TTC).map(|font| font.unwrap()).enumerate() {
+            assert_eq!(font.ttc_index(), Some(idx as u32));
+        }
+        assert!(FontRef::new(AHEM).unwrap().ttc_index().is_none());
+    }
+
+    #[test]
+    fn unsorted_table_directory() {
+        let cff2_data = font_test_data::cff2::EXAMPLE;
+        let post_data = font_test_data::post::SIMPLE;
+        let gdef_data = [
+            font_test_data::gdef::GDEF_HEADER,
+            font_test_data::gdef::GLYPHCLASSDEF_TABLE,
+        ]
+        .concat();
+        let gpos_data = font_test_data::gpos::SINGLEPOSFORMAT1;
+
+        let font_data = be_buffer! {
+            TT_SFNT_VERSION,
+            4u16,    // num tables
+            64u16,   // search range
+            2u16,    // entry selector
+            0u16,    // range shift
+
+            (Tag::new(b"post")),
+            0u32,    // checksum
+            76u32,   // offset
+            (post_data.len() as u32),
+
+            (Tag::new(b"GPOS")),
+            0u32,    // checksum
+            108u32,  // offset
+            (gpos_data.len() as u32),
+
+            (Tag::new(b"GDEF")),
+            0u32,    // checksum
+            128u32,  // offset
+            (gdef_data.len() as u32),
+
+            (Tag::new(b"CFF2")),
+            0u32,    // checksum
+            160u32,  // offset
+            (cff2_data.len() as u32)
+        };
+
+        let mut full_font = font_data.to_vec();
+
+        full_font.extend_from_slice(post_data);
+        full_font.extend_from_slice(gpos_data);
+        full_font.extend_from_slice(&gdef_data);
+        full_font.extend_from_slice(cff2_data);
+
+        let font = FontRef::new(&full_font).unwrap();
+
+        assert!(!font.table_directory_sorted);
+
+        assert!(font.table_data(Tag::new(b"CFF2")).is_some());
+        assert!(font.table_data(Tag::new(b"GDEF")).is_some());
+        assert!(font.table_data(Tag::new(b"GPOS")).is_some());
+        assert!(font.table_data(Tag::new(b"post")).is_some());
     }
 }

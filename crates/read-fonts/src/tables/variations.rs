@@ -610,6 +610,7 @@ impl<'a> TupleVariationHeaderIter<'a> {
 impl<'a> Iterator for TupleVariationHeaderIter<'a> {
     type Item = Result<TupleVariationHeader<'a>, ReadError>;
 
+    #[inline(always)]
     fn next(&mut self) -> Option<Self::Item> {
         if self.current == self.n_headers {
             return None;
@@ -664,10 +665,18 @@ where
         &self,
         coords: &'a [F2Dot14],
     ) -> impl Iterator<Item = (TupleVariation<'a, T>, Fixed)> + 'a {
-        self.tuples().filter_map(|tuple| {
-            let scaler = tuple.compute_scalar(coords)?;
-            Some((tuple, scaler))
-        })
+        ActiveTupleVariationIter {
+            coords,
+            parent: self.clone(),
+            header_iter: TupleVariationHeaderIter::new(
+                self.header_data,
+                self.tuple_count.count() as usize,
+                self.axis_count,
+            ),
+            serialized_data: self.serialized_data,
+            data_offset: 0,
+            _marker: std::marker::PhantomData,
+        }
     }
 
     pub(crate) fn tuple_count(&self) -> usize {
@@ -688,7 +697,7 @@ impl<'a, T> TupleVariationIter<'a, T>
 where
     T: TupleDelta,
 {
-    #[inline(never)]
+    #[inline(always)]
     fn next_tuple(&mut self) -> Option<TupleVariation<'a, T>> {
         if self.parent.tuple_count() == self.current {
             return None;
@@ -717,8 +726,57 @@ where
 {
     type Item = TupleVariation<'a, T>;
 
+    #[inline(always)]
     fn next(&mut self) -> Option<Self::Item> {
         self.next_tuple()
+    }
+}
+
+/// An iterator over the active [`TupleVariation`]s for a specific glyph
+/// for a given set of coordinates.
+struct ActiveTupleVariationIter<'a, T> {
+    coords: &'a [F2Dot14],
+    parent: TupleVariationData<'a, T>,
+    header_iter: TupleVariationHeaderIter<'a>,
+    serialized_data: FontData<'a>,
+    data_offset: usize,
+    _marker: std::marker::PhantomData<fn() -> T>,
+}
+
+impl<'a, T> Iterator for ActiveTupleVariationIter<'a, T>
+where
+    T: TupleDelta,
+{
+    type Item = (TupleVariation<'a, T>, Fixed);
+
+    #[inline(always)]
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            let header = self.header_iter.next()?.ok()?;
+            let data_len = header.variation_data_size() as usize;
+            let data_start = self.data_offset;
+            let data_end = data_start.checked_add(data_len)?;
+            self.data_offset = data_end;
+            if let Some(scalar) = compute_scalar(
+                &header,
+                self.parent.axis_count as usize,
+                &self.parent.shared_tuples,
+                self.coords,
+            ) {
+                let var_data = self.serialized_data.slice(data_start..data_end)?;
+                return Some((
+                    TupleVariation {
+                        axis_count: self.parent.axis_count,
+                        header,
+                        shared_tuples: self.parent.shared_tuples.clone(),
+                        serialized_data: var_data,
+                        shared_point_numbers: self.parent.shared_point_numbers.clone(),
+                        _marker: std::marker::PhantomData,
+                    },
+                    scalar,
+                ));
+            }
+        }
     }
 }
 
@@ -785,46 +843,12 @@ where
     /// Returns `None` if this tuple is not applicable at the provided
     /// coordinates (e.g. if the resulting scalar is zero).
     pub fn compute_scalar(&self, coords: &[F2Dot14]) -> Option<Fixed> {
-        const ZERO: Fixed = Fixed::ZERO;
-        let mut scalar = Fixed::ONE;
-        let peak = self.peak();
-        if peak.len() != self.axis_count as usize {
-            return None;
-        }
-        let intermediate = self.header.intermediate_tuples();
-        for (i, peak) in peak
-            .values
-            .iter()
-            .enumerate()
-            .filter(|(_, peak)| peak.get() != F2Dot14::ZERO)
-        {
-            let peak = peak.get().to_fixed();
-            let coord = coords.get(i).copied().unwrap_or_default().to_fixed();
-            if peak == coord {
-                continue;
-            }
-            if coord == ZERO {
-                return None;
-            }
-            if let Some((inter_start, inter_end)) = &intermediate {
-                let start = inter_start.get(i).unwrap_or_default().to_fixed();
-                let end = inter_end.get(i).unwrap_or_default().to_fixed();
-                if coord <= start || coord >= end {
-                    return None;
-                }
-                if coord < peak {
-                    scalar = scalar.mul_div(coord - start, peak - start);
-                } else {
-                    scalar = scalar.mul_div(end - coord, end - peak);
-                }
-            } else {
-                if coord < peak.min(ZERO) || coord > peak.max(ZERO) {
-                    return None;
-                }
-                scalar = scalar.mul_div(coord, peak);
-            }
-        }
-        (scalar != Fixed::ZERO).then_some(scalar)
+        compute_scalar(
+            &self.header,
+            self.axis_count as usize,
+            &self.shared_tuples,
+            coords,
+        )
     }
 
     /// Compute the floating point scalar for this tuple at the given location
@@ -1100,6 +1124,74 @@ fn read_sparse_deltas(
     Ok(())
 }
 
+/// Compute the fixed point scalar for this tuple at the given location in
+/// variation space.
+///
+/// The `coords` slice must be of lesser or equal length to the number of
+/// axes. If it is less, missing (trailing) axes will be assumed to have
+/// zero values.
+///
+/// Returns `None` if this tuple is not applicable at the provided
+/// coordinates (e.g. if the resulting scalar is zero).
+#[inline(always)]
+fn compute_scalar<'a>(
+    header: &TupleVariationHeader,
+    axis_count: usize,
+    shared_tuples: &Option<ComputedArray<'a, Tuple<'a>>>,
+    coords: &[F2Dot14],
+) -> Option<Fixed> {
+    let mut scalar = Fixed::ONE;
+    let tuple_idx = header.tuple_index();
+    let peak = if let Some(shared_index) = tuple_idx.tuple_records_index() {
+        shared_tuples.as_ref()?.get(shared_index as usize).ok()?
+    } else {
+        header.peak_tuple()?
+    };
+    if peak.len() != axis_count {
+        return None;
+    }
+    let intermediate = header.intermediate_tuples();
+    for (i, peak) in peak
+        .values
+        .iter()
+        .enumerate()
+        .filter(|(_, peak)| peak.get() != F2Dot14::ZERO)
+    {
+        let coord = coords.get(i).copied().unwrap_or_default();
+        if coord == F2Dot14::ZERO {
+            return None;
+        }
+        let peak = peak.get();
+        if peak == coord {
+            continue;
+        }
+        if let Some((inter_start, inter_end)) = &intermediate {
+            let start = inter_start.get(i).unwrap_or_default();
+            let end = inter_end.get(i).unwrap_or_default();
+            if coord <= start || coord >= end {
+                return None;
+            }
+            let coord = coord.to_fixed();
+            let peak = peak.to_fixed();
+            if coord < peak {
+                let start = start.to_fixed();
+                scalar = scalar.mul_div(coord - start, peak - start);
+            } else {
+                let end = end.to_fixed();
+                scalar = scalar.mul_div(end - coord, end - peak);
+            }
+        } else {
+            if coord < peak.min(F2Dot14::ZERO) || coord > peak.max(F2Dot14::ZERO) {
+                return None;
+            }
+            let coord = coord.to_fixed();
+            let peak = peak.to_fixed();
+            scalar = scalar.mul_div(coord, peak);
+        }
+    }
+    (scalar != Fixed::ZERO).then_some(scalar)
+}
+
 #[derive(Clone, Debug)]
 enum TupleDeltaValues<'a> {
     // Point deltas have separate runs for x and y coordinates.
@@ -1340,20 +1432,21 @@ impl FloatItemDeltaTarget for F2Dot14 {
     }
 }
 
-impl VariationRegion<'_> {
+impl<'a> VariationRegion<'a> {
     /// Computes a scalar value for this region and the specified
     /// normalized variation coordinates.
     pub fn compute_scalar(&self, coords: &[F2Dot14]) -> Fixed {
         const ZERO: Fixed = Fixed::ZERO;
         let mut scalar = Fixed::ONE;
-        for (i, axis_coords) in self.region_axes().iter().enumerate() {
-            let coord = coords.get(i).map(|coord| coord.to_fixed()).unwrap_or(ZERO);
+        for (i, peak, axis_coords) in self.active_region_axes() {
+            let peak = peak.to_fixed();
             let start = axis_coords.start_coord.get().to_fixed();
             let end = axis_coords.end_coord.get().to_fixed();
-            let peak = axis_coords.peak_coord.get().to_fixed();
-            if start > peak || peak > end || peak == ZERO || start < ZERO && end > ZERO {
+            if start > peak || peak > end || start < ZERO && end > ZERO {
                 continue;
-            } else if coord < start || coord > end {
+            }
+            let coord = coords.get(i).map(|coord| coord.to_fixed()).unwrap_or(ZERO);
+            if coord < start || coord > end {
                 return ZERO;
             } else if coord == peak {
                 continue;
@@ -1370,14 +1463,15 @@ impl VariationRegion<'_> {
     /// specified normalized variation coordinates.
     pub fn compute_scalar_f32(&self, coords: &[F2Dot14]) -> f32 {
         let mut scalar = 1.0;
-        for (i, axis_coords) in self.region_axes().iter().enumerate() {
-            let coord = coords.get(i).map(|coord| coord.to_f32()).unwrap_or(0.0);
+        for (i, peak, axis_coords) in self.active_region_axes() {
+            let peak = peak.to_f32();
             let start = axis_coords.start_coord.get().to_f32();
             let end = axis_coords.end_coord.get().to_f32();
-            let peak = axis_coords.peak_coord.get().to_f32();
-            if start > peak || peak > end || peak == 0.0 || start < 0.0 && end > 0.0 {
+            if start > peak || peak > end || start < 0.0 && end > 0.0 {
                 continue;
-            } else if coord < start || coord > end {
+            }
+            let coord = coords.get(i).map(|coord| coord.to_f32()).unwrap_or(0.0);
+            if coord < start || coord > end {
                 return 0.0;
             } else if coord == peak {
                 continue;
@@ -1388,6 +1482,22 @@ impl VariationRegion<'_> {
             }
         }
         scalar
+    }
+
+    fn active_region_axes(
+        &self,
+    ) -> impl Iterator<Item = (usize, F2Dot14, &'a RegionAxisCoordinates)> {
+        self.region_axes()
+            .iter()
+            .enumerate()
+            .filter_map(|(i, axis_coords)| {
+                let peak = axis_coords.peak_coord();
+                if peak != F2Dot14::ZERO {
+                    Some((i, peak, axis_coords))
+                } else {
+                    None
+                }
+            })
     }
 }
 

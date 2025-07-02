@@ -194,7 +194,9 @@ impl<'a> Outlines<'a> {
         hint: bool,
         pen: &mut impl OutlinePen,
     ) -> Result<(), Error> {
-        let charstring_data = self.top_dict.charstrings.get(glyph_id.to_u32() as usize)?;
+        let cff_data = self.offset_data.as_bytes();
+        let charstrings = self.top_dict.charstrings.clone();
+        let charstring_data = charstrings.get(glyph_id.to_u32() as usize)?;
         let subrs = subfont.subrs(self)?;
         let blend_state = subfont.blend_state(self, coords)?;
         let mut pen_sink = PenSink::new(pen);
@@ -204,10 +206,12 @@ impl<'a> Outlines<'a> {
             let mut hinting_adapter =
                 HintingSink::new(&subfont.hint_state, &mut simplifying_adapter);
             charstring::evaluate(
-                charstring_data,
+                cff_data,
+                charstrings,
                 self.global_subrs.clone(),
                 subrs,
                 blend_state,
+                charstring_data,
                 &mut hinting_adapter,
             )?;
             hinting_adapter.finish();
@@ -215,10 +219,12 @@ impl<'a> Outlines<'a> {
             let mut scaling_adapter =
                 ScalingSink26Dot6::new(&mut simplifying_adapter, subfont.scale);
             charstring::evaluate(
-                charstring_data,
+                cff_data,
+                charstrings,
                 self.global_subrs.clone(),
                 subrs,
                 blend_state,
+                charstring_data,
                 &mut scaling_adapter,
             )?;
         }
@@ -317,7 +323,7 @@ impl PrivateDict {
                 BlueValues(values) => dict.hint_params.blues = values,
                 FamilyBlues(values) => dict.hint_params.family_blues = values,
                 OtherBlues(values) => dict.hint_params.other_blues = values,
-                FamilyOtherBlues(values) => dict.hint_params.family_blues = values,
+                FamilyOtherBlues(values) => dict.hint_params.family_other_blues = values,
                 BlueScale(value) => dict.hint_params.blue_scale = value,
                 BlueShift(value) => dict.hint_params.blue_shift = value,
                 BlueFuzz(value) => dict.hint_params.blue_fuzz = value,
@@ -621,6 +627,7 @@ mod tests {
         prelude::{LocationRef, Size},
         MetadataProvider,
     };
+    use dict::Blues;
     use font_test_data::bebuffer::BeBuffer;
     use raw::tables::cff2::Cff2;
     use read_fonts::FontRef;
@@ -849,5 +856,43 @@ mod tests {
                 );
             }
         }
+    }
+
+    // We were overwriting family_other_blues with family_blues.
+    #[test]
+    fn capture_family_other_blues() {
+        let private_dict_data = &font_test_data::cff2::EXAMPLE[0x4f..=0xc0];
+        let store =
+            ItemVariationStore::read(FontData::new(&font_test_data::cff2::EXAMPLE[18..])).unwrap();
+        let coords = &[F2Dot14::from_f32(0.0)];
+        let blend_state = BlendState::new(store, coords, 0).unwrap();
+        let private_dict = PrivateDict::new(
+            FontData::new(private_dict_data),
+            0..private_dict_data.len(),
+            Some(blend_state),
+        )
+        .unwrap();
+        assert_eq!(
+            private_dict.hint_params.family_other_blues,
+            Blues::new([-249.0, -239.0].map(Fixed::from_f64).into_iter())
+        )
+    }
+
+    #[test]
+    fn implied_seac() {
+        let font = FontRef::new(font_test_data::CHARSTRING_PATH_OPS).unwrap();
+        let glyphs = font.outline_glyphs();
+        let gid = GlyphId::new(3);
+        assert_eq!(font.glyph_names().get(gid).unwrap(), "Scaron");
+        let glyph = glyphs.get(gid).unwrap();
+        let mut pen = SvgPen::new();
+        glyph
+            .draw((Size::unscaled(), LocationRef::default()), &mut pen)
+            .unwrap();
+        // This triggers the seac behavior in the endchar operator which
+        // loads an accent character followed by a base character. Ensure
+        // that we have a path to represent each by checking for two closepath
+        // commands.
+        assert_eq!(pen.to_string().chars().filter(|ch| *ch == 'Z').count(), 2);
     }
 }
