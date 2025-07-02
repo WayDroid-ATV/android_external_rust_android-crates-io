@@ -213,18 +213,25 @@ use crate::error::Error;
 use crate::version::Version;
 use proc_macro::TokenStream;
 
-#[cfg(all(not(host_os = "windows"), not(soong)))]
+#[cfg(all(not(host_os = "windows"), not(soong), not(trusty)))]
 const RUSTVERSION: Version = include!(concat!(env!("OUT_DIR"), "/version.expr"));
 
 #[cfg(all(host_os = "windows", not(soong)))]
 const RUSTVERSION: Version = include!(concat!(env!("OUT_DIR"), "\\version.expr"));
 
-#[cfg(not(soong))]
+#[cfg(all(not(soong), not(trusty)))]
 fn rust_version() -> Version { RUSTVERSION }
 
-#[cfg(soong)]
+#[cfg(any(soong, trusty))]
 fn rust_version() -> Version {
-    let v: Vec<&str> = option_env!("ANDROID_RUST_VERSION").unwrap().split('.').collect();
+    let version_str = {
+        #[cfg(soong)]
+        { option_env!("ANDROID_RUST_VERSION") }
+        #[cfg(trusty)]
+        { option_env!("TRUSTY_BUILD_RUST_VERSION") }
+    };
+
+    let v: Vec<&str> = version_str.unwrap().split('.').collect();
     Version {
         minor: v[1].parse().unwrap(),
         patch: v[2].parse().unwrap(),

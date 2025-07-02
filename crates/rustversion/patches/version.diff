@@ -1,5 +1,5 @@
 diff --git a/src/expand.rs b/src/expand.rs
-index 813ba85d..3d4e3148 100644
+index 813ba85d7..3d4e31485 100644
 --- a/src/expand.rs
 +++ b/src/expand.rs
 @@ -23,7 +23,7 @@ fn try_cfg(introducer: &str, args: TokenStream, input: TokenStream) -> Result<To
@@ -21,27 +21,34 @@ index 813ba85d..3d4e3148 100644
      }
  
 diff --git a/src/lib.rs b/src/lib.rs
-index 2b4c4d79..bb0e376d 100644
+index 96e70c0b5..866153b82 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -213,12 +213,25 @@ use crate::error::Error;
+@@ -213,12 +213,32 @@ use crate::error::Error;
  use crate::version::Version;
  use proc_macro::TokenStream;
  
 -#[cfg(not(host_os = "windows"))]
-+#[cfg(all(not(host_os = "windows"), not(soong)))]
++#[cfg(all(not(host_os = "windows"), not(soong), not(trusty)))]
  const RUSTVERSION: Version = include!(concat!(env!("OUT_DIR"), "/version.expr"));
  
 -#[cfg(host_os = "windows")]
 +#[cfg(all(host_os = "windows", not(soong)))]
  const RUSTVERSION: Version = include!(concat!(env!("OUT_DIR"), "\\version.expr"));
  
-+#[cfg(not(soong))]
++#[cfg(all(not(soong), not(trusty)))]
 +fn rust_version() -> Version { RUSTVERSION }
 +
-+#[cfg(soong)]
++#[cfg(any(soong, trusty))]
 +fn rust_version() -> Version {
-+    let v: Vec<&str> = option_env!("ANDROID_RUST_VERSION").unwrap().split('.').collect();
++    let version_str = {
++        #[cfg(soong)]
++        { option_env!("ANDROID_RUST_VERSION") }
++        #[cfg(trusty)]
++        { option_env!("TRUSTY_BUILD_RUST_VERSION") }
++    };
++
++    let v: Vec<&str> = version_str.unwrap().split('.').collect();
 +    Version {
 +        minor: v[1].parse().unwrap(),
 +        patch: v[2].parse().unwrap(),
@@ -52,7 +59,7 @@ index 2b4c4d79..bb0e376d 100644
  #[proc_macro_attribute]
  pub fn stable(args: TokenStream, input: TokenStream) -> TokenStream {
      expand::cfg("stable", args, input)
-@@ -274,7 +287,7 @@ pub fn cfg(input: TokenStream) -> TokenStream {
+@@ -274,7 +294,7 @@ pub fn cfg(input: TokenStream) -> TokenStream {
          let ref mut args = iter::new(input);
          let expr = expr::parse(args)?;
          token::parse_end(args)?;
