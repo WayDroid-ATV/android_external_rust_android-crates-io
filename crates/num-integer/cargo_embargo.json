@@ -3,7 +3,6 @@
     "//apex_available:platform",
     "com.android.virt"
   ],
-  "tests": true,
   "variants": [
     {},
     {

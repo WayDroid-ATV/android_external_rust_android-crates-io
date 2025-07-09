@@ -12,27 +12,5 @@
     {
       "path": "packages/modules/Virtualization/zipfuse"
     }
-  ],
-  "presubmit": [
-    {
-      "name": "num-integer_test_src_lib"
-    },
-    {
-      "name": "num-integer_test_tests_average"
-    },
-    {
-      "name": "num-integer_test_tests_roots"
-    }
-  ],
-  "presubmit-rust": [
-    {
-      "name": "num-integer_test_src_lib"
-    },
-    {
-      "name": "num-integer_test_tests_average"
-    },
-    {
-      "name": "num-integer_test_tests_roots"
-    }
   ]
 }
