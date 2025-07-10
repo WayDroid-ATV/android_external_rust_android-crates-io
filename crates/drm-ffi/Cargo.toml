@@ -33,7 +33,7 @@ path = "src/lib.rs"
 version = "0.8.0"
 
 [dependencies.rustix]
-version = "0.38.22"
+version = "1.0.7"
 
 [features]
 use_bindgen = ["drm-sys/use_bindgen"]

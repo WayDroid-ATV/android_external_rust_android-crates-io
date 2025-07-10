@@ -1,0 +1,108 @@
+From a26f1448f8cd79f4b25ac6992b3c39cdd9665aef Mon Sep 17 00:00:00 2001
+From: Gurchetan Singh <gurchetansingh@google.com>
+Date: Mon, 30 Jun 2025 11:24:05 -0700
+Subject: [PATCH] rustix: fixes for Android musl build
+
+Android doesn't only have a bionic toolchain, but musl
+toolchain for components built on the build workstation.
+---
+ src/backend/libc/c.rs           |  6 ++++--
+ src/backend/libc/fs/syscalls.rs |  6 ++++--
+ src/fs/statx.rs                 | 32 ++++++++++++++++++++++++++++++++
+ 3 files changed, 40 insertions(+), 4 deletions(-)
+
+diff --git a/src/backend/libc/c.rs b/src/backend/libc/c.rs
+index fe08db64..567fb7e0 100644
+--- a/src/backend/libc/c.rs
++++ b/src/backend/libc/c.rs
+@@ -489,7 +489,8 @@ pub(super) use readwrite_pv64v2::{preadv64v2 as preadv2, pwritev64v2 as pwritev2
+ #[cfg(feature = "fs")]
+ #[cfg(all(
+     linux_like,
+-    not(any(target_os = "android", target_os = "emscripten", target_env = "gnu"))
++    linux_raw_dep,
++    not(any(target_os = "emscripten", target_env = "gnu"))
+ ))]
+ mod statx_flags {
+     pub(crate) use linux_raw_sys::general::{
+@@ -507,7 +508,8 @@ mod statx_flags {
+ #[cfg(feature = "fs")]
+ #[cfg(all(
+     linux_like,
+-    not(any(target_os = "android", target_os = "emscripten", target_env = "gnu"))
++    linux_raw_dep,
++    not(any(target_os = "emscripten", target_env = "gnu"))
+ ))]
+ pub(crate) use statx_flags::*;
+ 
+diff --git a/src/backend/libc/fs/syscalls.rs b/src/backend/libc/fs/syscalls.rs
+index 59b816d4..09e589bb 100644
+--- a/src/backend/libc/fs/syscalls.rs
++++ b/src/backend/libc/fs/syscalls.rs
+@@ -2053,9 +2053,11 @@ pub(crate) fn statx(
+     // doesn't represent all the known flags.
+     //
+     // [it's deprecated]: https://patchwork.kernel.org/project/linux-fsdevel/patch/20200505095915.11275-7-mszeredi@redhat.com/
+-    #[cfg(not(target_env = "musl"))]
++    #[cfg(all(not(linux_raw_dep), not(target_env = "musl")))]
+     const STATX__RESERVED: u32 = c::STATX__RESERVED as u32;
+-    #[cfg(target_env = "musl")]
++    #[cfg(all(not(linux_raw_dep), target_env = "musl"))]
++    const STATX__RESERVED: u32 = 0x80000000;
++    #[cfg(all(linux_raw_dep, target_env = "musl"))]
+     const STATX__RESERVED: u32 = linux_raw_sys::general::STATX__RESERVED;
+     if (mask.bits() & STATX__RESERVED) == STATX__RESERVED {
+         return Err(io::Errno::INVAL);
+diff --git a/src/fs/statx.rs b/src/fs/statx.rs
+index f1d995ec..dfaa19a2 100644
+--- a/src/fs/statx.rs
++++ b/src/fs/statx.rs
+@@ -3,6 +3,7 @@
+ use crate::fd::AsFd;
+ use crate::fs::AtFlags;
+ use crate::{backend, io, path};
++#[cfg(any(linux_raw_dep, not(target_env = "musl")))]
+ use backend::c;
+ use bitflags::bitflags;
+ 
+@@ -62,6 +63,37 @@ pub struct StatxTimestamp {
+     pub(crate) __reserved: i32,
+ }
+ 
++// These are the actual values for the constants, needed for the fallback implementation.
++#[cfg(all(not(linux_raw_dep), target_env = "musl"))]
++mod c {
++    pub const STATX_TYPE: u32 = 0x00000001;
++    pub const STATX_MODE: u32 = 0x00000002;
++    pub const STATX_NLINK: u32 = 0x00000004;
++    pub const STATX_UID: u32 = 0x00000008;
++    pub const STATX_GID: u32 = 0x00000010;
++    pub const STATX_ATIME: u32 = 0x00000020;
++    pub const STATX_MTIME: u32 = 0x00000040;
++    pub const STATX_CTIME: u32 = 0x00000080;
++    pub const STATX_INO: u32 = 0x00000100;
++    pub const STATX_SIZE: u32 = 0x00000200;
++    pub const STATX_BLOCKS: u32 = 0x00000400;
++    pub const STATX_BASIC_STATS: u32 = 0x000007ff;
++    pub const STATX_BTIME: u32 = 0x00000800;
++    pub const STATX_MNT_ID: u32 = 0x00001000;
++    pub const STATX_DIOALIGN: u32 = 0x00002000; // Deprecated, but here for completeness
++    pub const STATX_ALL: u32 = 0x00000fff; // Note: Doesn't include newer flags
++
++    pub const STATX_ATTR_COMPRESSED: u64 = 0x00000004;
++    pub const STATX_ATTR_IMMUTABLE: u64 = 0x00000010;
++    pub const STATX_ATTR_APPEND: u64 = 0x00000020;
++    pub const STATX_ATTR_NODUMP: u64 = 0x00000040;
++    pub const STATX_ATTR_ENCRYPTED: u64 = 0x00000800;
++    pub const STATX_ATTR_AUTOMOUNT: u64 = 0x00001000;
++    pub const STATX_ATTR_MOUNT_ROOT: u64 = 0x00020000;
++    pub const STATX_ATTR_VERITY: u64 = 0x00100000;
++    pub const STATX_ATTR_DAX: u64 = 0x00200000;
++}
++
+ bitflags! {
+     /// `STATX_*` constants for use with [`statx`].
+     ///
+-- 
+2.50.0.727.gbf7dc18ff4-goog
+

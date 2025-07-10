@@ -5,6 +5,7 @@ pub mod inotify;
 #[cfg(not(any(
     target_os = "espidf",
     target_os = "haiku",
+    target_os = "horizon",
     target_os = "redox",
     target_os = "vita",
     target_os = "wasi"
@@ -15,9 +16,12 @@ pub(crate) mod syscalls;
 pub(crate) mod types;
 
 // TODO: Fix linux-raw-sys to define ioctl codes for sparc.
-#[cfg(all(feature = "linux-raw-sys", any(target_arch = "sparc", target_arch = "sparc64")))]
-pub(crate) const EXT4_IOC_RESIZE_FS: crate::ioctl::RawOpcode = 0x8008_6610;
+#[cfg(all(linux_raw_dep, any(target_arch = "sparc", target_arch = "sparc64")))]
+pub(crate) const EXT4_IOC_RESIZE_FS: crate::ioctl::Opcode = 0x8008_6610;
 
-#[cfg(all(feature = "linux-raw-sys", not(any(target_arch = "sparc", target_arch = "sparc64"))))]
-pub(crate) const EXT4_IOC_RESIZE_FS: crate::ioctl::RawOpcode =
-    linux_raw_sys::ioctl::EXT4_IOC_RESIZE_FS as crate::ioctl::RawOpcode;
+#[cfg(all(
+    linux_raw_dep,
+    not(any(target_arch = "sparc", target_arch = "sparc64"))
+))]
+pub(crate) const EXT4_IOC_RESIZE_FS: crate::ioctl::Opcode =
+    linux_raw_sys::ioctl::EXT4_IOC_RESIZE_FS as crate::ioctl::Opcode;

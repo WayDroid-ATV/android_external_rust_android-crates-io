@@ -9,13 +9,19 @@
     "event"
   ],
   "min_sdk_version": "30",
+  "extra_cfg": [
+    "rustix_no_linux_raw"
+  ],
   "cfg_blocklist": [
     "linux_like",
     "linux_kernel"
   ],
   "package": {
     "rustix": {
-      "add_module_block": "cargo_embargo_target_cfgs.bp.fragment"
+      "add_module_block": "cargo_embargo_target_cfgs.bp.fragment",
+      "dep_blocklist": [
+        "liblinux_raw_sys"
+      ]
     }
   }
 }

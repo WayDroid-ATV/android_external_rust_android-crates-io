@@ -1,5 +1,5 @@
 use std::env::var;
-use std::io::Write;
+use std::io::Write as _;
 
 /// The directory for inline asm.
 const ASM_PATH: &str = "src/backend/linux_raw/arch";
@@ -12,6 +12,7 @@ fn main() {
     // Gather target information.
     let arch = var("CARGO_CFG_TARGET_ARCH").unwrap();
     let env = var("CARGO_CFG_TARGET_ENV").unwrap();
+    let abi = var("CARGO_CFG_TARGET_ABI");
     let inline_asm_name = format!("{}/{}.rs", ASM_PATH, arch);
     let inline_asm_name_present = std::fs::metadata(inline_asm_name).is_ok();
     let os = var("CARGO_CFG_TARGET_OS").unwrap();
@@ -33,6 +34,10 @@ fn main() {
     // Check for `RUSTFLAGS=--cfg=rustix_use_libc`. This allows end users to
     // enable the libc backend even if rustix is depended on transitively.
     let cfg_use_libc = var("CARGO_CFG_RUSTIX_USE_LIBC").is_ok();
+
+    // Check for `RUSTFLAGS=--cfg=rustix_no_linux_raw`. This allows Linux users to
+    // enable the libc backend without the linux raw dependency.
+    let cfg_no_linux_raw = var("CARGO_CFG_RUSTIX_NO_LINUX_RAW").is_ok();
 
     // Check for `--features=rustc-dep-of-std`.
     let rustc_dep_of_std = var("CARGO_FEATURE_RUSTC_DEP_OF_STD").is_ok();
@@ -70,6 +75,7 @@ fn main() {
         use_feature_or_nothing("core_ffi_c");
         use_feature_or_nothing("alloc_c_string");
         use_feature_or_nothing("alloc_ffi");
+        use_feature_or_nothing("error_in_core");
     }
 
     // Feature needed for testing.
@@ -80,6 +86,7 @@ fn main() {
     // WASI support can utilize wasi_ext if present.
     if os == "wasi" {
         use_feature_or_nothing("wasi_ext");
+        use_feature_or_nothing("wasip2");
     }
 
     // If the libc backend is requested, or if we're not on a platform for
@@ -94,12 +101,21 @@ fn main() {
         || !inline_asm_name_present
         || is_unsupported_abi
         || miri
-        || ((arch == "powerpc64" || arch.starts_with("mips")) && !rustix_use_experimental_asm);
+        || ((arch == "powerpc"
+            || arch == "powerpc64"
+            || arch == "s390x"
+            || arch.starts_with("mips"))
+            && !rustix_use_experimental_asm);
     if libc {
+        if os != "android" && os == "linux" && !cfg_no_linux_raw {
+            use_feature("linux_raw_dep");
+        }
+
         // Use the libc backend.
         use_feature("libc");
     } else {
         // Use the linux_raw backend.
+        use_feature("linux_raw_dep");
         use_feature("linux_raw");
         if rustix_use_experimental_asm {
             use_feature("asm_experimental_arch");
@@ -121,7 +137,7 @@ fn main() {
     if netbsdlike {
         use_feature("netbsdlike");
     }
-    let apple = os == "macos" || os == "ios" || os == "tvos" || os == "watchos";
+    let apple = os == "macos" || os == "ios" || os == "tvos" || os == "visionos" || os == "watchos";
     if apple {
         use_feature("apple");
     }
@@ -145,16 +161,18 @@ fn main() {
     // These platforms have a 32-bit `time_t`.
     if libc
         && (arch == "arm"
+            || arch == "powerpc"
             || arch == "mips"
             || arch == "sparc"
             || arch == "x86"
-            || (arch == "wasm32" && os == "emscripten"))
+            || (arch == "aarch64" && os == "linux" && abi == Ok("ilp32".to_string())))
         && (apple
             || os == "android"
-            || os == "emscripten"
+            || (os == "freebsd" && arch == "x86")
             || os == "haiku"
             || env == "gnu"
-            || (env == "musl" && arch == "x86"))
+            || (env == "musl" && arch == "x86")
+            || (arch == "aarch64" && os == "linux" && abi == Ok("ilp32".to_string())))
     {
         use_feature("fix_y2038");
     }
@@ -201,7 +219,6 @@ fn has_feature(feature: &str) -> bool {
 fn can_compile<T: AsRef<str>>(test: T) -> bool {
     use std::process::Stdio;
 
-    let out_dir = var("OUT_DIR").unwrap();
     let rustc = var("RUSTC").unwrap();
     let target = var("TARGET").unwrap();
 
@@ -225,8 +242,9 @@ fn can_compile<T: AsRef<str>>(test: T) -> bool {
         .arg("--emit=metadata") // Do as little as possible but still parse.
         .arg("--target")
         .arg(target)
-        .arg("--out-dir")
-        .arg(out_dir); // Put the output somewhere inconsequential.
+        .arg("-o")
+        .arg("-")
+        .stdout(Stdio::null()); // We don't care about the output (only whether it builds or not)
 
     // If Cargo wants to set RUSTFLAGS, use that.
     if let Ok(rustflags) = var("CARGO_ENCODED_RUSTFLAGS") {
