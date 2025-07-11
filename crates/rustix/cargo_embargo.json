@@ -5,6 +5,9 @@
     "use-libc-auxv",
     "use-libc",
     "mm",
+    "net",
+    "param",
+    "pipe",
     "fs",
     "event"
   ],
