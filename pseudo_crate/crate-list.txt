@@ -134,6 +134,7 @@ foreign-types-shared
 form_urlencoded
 fragile
 fs-err
+funty
 futures
 futures-channel
 futures-core
@@ -326,6 +327,7 @@ ptr_meta_derive
 quiche
 quickcheck
 quote
+radium
 rand
 rand_chacha
 rand_core
@@ -395,6 +397,7 @@ syn-mid
 sync_wrapper
 synstructure
 taffy
+tap
 tar
 tempfile
 termcolor
