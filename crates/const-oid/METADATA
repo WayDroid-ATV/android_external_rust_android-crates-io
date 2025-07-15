@@ -1,17 +1,17 @@
 name: "const-oid"
 description: "Const-friendly implementation of the ISO/IEC Object Identifier (OID) standard as defined in ITU X.660, with support for BER/DER encoding/decoding as well as heapless no_std (i.e. embedded) support"
 third_party {
-  version: "0.9.6"
+  version: "0.10.1"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2023
-    month: 12
+    year: 2025
+    month: 7
     day: 15
   }
   homepage: "https://crates.io/crates/const-oid"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/const-oid/const-oid-0.9.6.crate"
-    version: "0.9.6"
+    value: "https://static.crates.io/crates/const-oid/const-oid-0.10.1.crate"
+    version: "0.10.1"
   }
 }
