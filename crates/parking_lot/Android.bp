@@ -21,7 +21,10 @@ rust_library {
     cargo_pkg_version: "0.12.4",
     crate_root: "src/lib.rs",
     edition: "2021",
-    features: ["default"],
+    features: [
+        "arc_lock",
+        "default",
+    ],
     rustlibs: [
         "liblock_api",
         "libparking_lot_core",
@@ -48,7 +51,10 @@ rust_test {
         unit_test: true,
     },
     edition: "2021",
-    features: ["default"],
+    features: [
+        "arc_lock",
+        "default",
+    ],
     rustlibs: [
         "libbincode",
         "liblock_api",
@@ -70,7 +76,10 @@ rust_test {
         unit_test: true,
     },
     edition: "2021",
-    features: ["default"],
+    features: [
+        "arc_lock",
+        "default",
+    ],
     rustlibs: [
         "libbincode",
         "liblock_api",
@@ -93,7 +102,10 @@ rust_test {
         unit_test: true,
     },
     edition: "2021",
-    features: ["default"],
+    features: [
+        "arc_lock",
+        "default",
+    ],
     rustlibs: [
         "libbincode",
         "liblock_api",
