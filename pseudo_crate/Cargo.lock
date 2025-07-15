@@ -138,6 +138,7 @@ dependencies = [
  "bit_field",
  "bitflags 2.9.1",
  "bitreader",
+ "bitvec",
  "bstr",
  "buddy_system_allocator",
  "bytemuck",
@@ -576,6 +577,7 @@ dependencies = [
  "which",
  "winnow 0.6.26",
  "writeable",
+ "wyz",
  "x509-cert",
  "xml-rs",
  "yaml-rust",
@@ -1129,6 +1131,18 @@ name = "bitstream-io"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6099cdc01846bc367c4e7dd630dc5966dccf36b652fae7a74e17b640411a91b2"
+
+[[package]]
+name = "bitvec"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1bc2832c24239b0141d5674bb9174f9d68a8b5b3f2753311927c172ca46f7e9c"
+dependencies = [
+ "funty",
+ "radium",
+ "tap",
+ "wyz",
+]
 
 [[package]]
 name = "block-buffer"
@@ -8811,6 +8825,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea2f10b9bb0928dfb1b42b65e1f9e36f7f54dbdf08457afefb38afcdec4fa2bb"
 dependencies = [
  "either",
+]
+
+[[package]]
+name = "wyz"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
+dependencies = [
+ "tap",
 ]
 
 [[package]]

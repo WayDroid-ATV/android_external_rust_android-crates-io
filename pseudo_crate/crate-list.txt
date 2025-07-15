@@ -33,6 +33,7 @@ bindgen-cli
 bit_field
 bitflags
 bitreader
+bitvec
 bstr
 buddy_system_allocator
 bytemuck
@@ -479,6 +480,7 @@ webpki
 which
 winnow
 writeable
+wyz
 x509-cert
 xml-rs
 yaml-rust
