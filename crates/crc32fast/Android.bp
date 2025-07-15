@@ -18,14 +18,14 @@ rust_test {
     host_supported: true,
     crate_name: "crc32fast",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.4.2",
+    cargo_pkg_version: "1.5.0",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2015",
+    edition: "2021",
     features: [
         "default",
         "std",
@@ -43,9 +43,9 @@ rust_library {
     host_supported: true,
     crate_name: "crc32fast",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.4.2",
+    cargo_pkg_version: "1.5.0",
     crate_root: "src/lib.rs",
-    edition: "2015",
+    edition: "2021",
     features: [
         "default",
         "std",
