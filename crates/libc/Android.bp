@@ -30,7 +30,6 @@ rust_library {
         "freebsd11",
         "libc_const_extern_fn",
     ],
-    proc_macros: ["librustversion"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

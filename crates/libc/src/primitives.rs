@@ -38,29 +38,12 @@ cfg_if! {
             target_arch = "powerpc",
             target_arch = "powerpc64",
             target_arch = "riscv32",
+            target_arch = "riscv64",
             target_arch = "s390x",
             target_arch = "xtensa",
         )
     ))] {
         pub type c_char = u8;
-    } else if #[cfg(all(
-        not(windows),
-        not(any(
-            target_os = "macos",
-            target_os = "ios",
-            target_os = "tvos",
-            target_os = "watchos",
-            target_os = "visionos",
-        )),
-        not(target_os = "vita"),
-        any(
-            target_arch = "riscv64",
-        )
-    ))] {
-        #[rustversion::since(1.85)]
-        pub type c_char = u8;
-        #[rustversion::before(1.85)]
-        pub type c_char = i8;
     } else {
         // On every other target, c_char is signed.
         pub type c_char = i8;

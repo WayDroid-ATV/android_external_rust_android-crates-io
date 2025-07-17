@@ -16,7 +16,6 @@ MODULE_RUSTFLAGS += \
 	-A unknown-lints \
 
 MODULE_LIBRARY_DEPS := \
-	$(call FIND_CRATE,rustversion) \
 	trusty/user/base/lib/libcompiler_builtins-rust \
 	trusty/user/base/lib/libcore-rust
 
