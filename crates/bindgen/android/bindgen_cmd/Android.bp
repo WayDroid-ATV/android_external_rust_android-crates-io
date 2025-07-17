@@ -13,15 +13,8 @@ rust_library_host {
     crate_name: "bindgen_cmd",
     srcs: ["src/lib.rs"],
     edition: "2018",
-    features: [
-        "clap",
-        "runtime",
-        "which",
-        "which-rustfmt",
-    ],
     rustlibs: [
         "libbindgen",
-        "libbindgen_cli",
         "libclap",
         "libenv_logger",
     ],

@@ -10,12 +10,13 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
-rust-version = "1.64.0"
+edition = "2021"
+rust-version = "1.70.0"
 name = "bindgen-cli"
-version = "0.69.5"
+version = "0.72.0"
 authors = ["The rust-bindgen project contributors"]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -42,24 +43,35 @@ dist = true
 [package.metadata.release]
 release = true
 
+[features]
+__testing_only_extra_assertions = ["bindgen/__testing_only_extra_assertions"]
+__testing_only_libclang_16 = ["bindgen/__testing_only_libclang_16"]
+__testing_only_libclang_9 = ["bindgen/__testing_only_libclang_9"]
+default = [
+    "logging",
+    "runtime",
+]
+logging = [
+    "bindgen/logging",
+    "dep:env_logger",
+    "dep:log",
+]
+prettyplease = ["bindgen/prettyplease"]
+runtime = ["bindgen/runtime"]
+static = ["bindgen/static"]
+
 [[bin]]
 name = "bindgen"
 path = "main.rs"
 
 [dependencies.bindgen]
-version = "=0.69.5"
+version = "0.72.0"
 features = [
     "__cli",
     "experimental",
+    "prettyplease",
 ]
 default-features = false
-
-[dependencies.clap]
-version = "4"
-features = ["derive"]
-
-[dependencies.clap_complete]
-version = "4"
 
 [dependencies.env_logger]
 version = "0.10.0"
@@ -69,23 +81,44 @@ optional = true
 version = "0.4"
 optional = true
 
+[dependencies.proc-macro2]
+version = "1.0.80"
+
 [dependencies.shlex]
 version = "1"
 
-[features]
-__testing_only_extra_assertions = ["bindgen/__testing_only_extra_assertions"]
-__testing_only_libclang_16 = ["bindgen/__testing_only_libclang_16"]
-__testing_only_libclang_9 = ["bindgen/__testing_only_libclang_9"]
-default = [
-    "logging",
-    "runtime",
-    "which-rustfmt",
-]
-logging = [
-    "bindgen/logging",
-    "dep:env_logger",
-    "dep:log",
-]
-runtime = ["bindgen/runtime"]
-static = ["bindgen/static"]
-which-rustfmt = ["bindgen/which-rustfmt"]
+[lints.clippy]
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+default_trait_access = "allow"
+enum_glob_use = "allow"
+ignored_unit_patterns = "allow"
+implicit_hasher = "allow"
+items_after_statements = "allow"
+match_same_arms = "allow"
+maybe_infinite_iter = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+redundant_closure_for_method_calls = "allow"
+return_self_not_must_use = "allow"
+similar_names = "allow"
+struct_excessive_bools = "allow"
+struct_field_names = "allow"
+too_many_lines = "allow"
+trivially_copy_pass_by_ref = "allow"
+unnecessary_wraps = "allow"
+unreadable_literal = "allow"
+unused_self = "allow"
+used_underscore_binding = "allow"
+wildcard_imports = "allow"
+
+[lints.clippy.pedantic]
+level = "warn"
+priority = -1
+
+[lints.rust]
+unused_qualifications = "warn"

@@ -2,8 +2,7 @@
   "features": [
     "__cli",
     "experimental",
-    "runtime",
-    "which-rustfmt"
+    "runtime"
   ],
   "package": {
     "bindgen": {

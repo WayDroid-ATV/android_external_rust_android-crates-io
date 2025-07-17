@@ -34,6 +34,7 @@ rust_library_host {
     edition: "2021",
     features: [
         "clang_10_0",
+        "clang_11_0",
         "clang_3_5",
         "clang_3_6",
         "clang_3_7",

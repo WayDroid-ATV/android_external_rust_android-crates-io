@@ -23,7 +23,6 @@
 //! on the the builder before it is used.
 
 use bindgen;
-use bindgen_cli;
 use std::env;
 
 /// Takes in a function describing adjustments to make to a builder
@@ -34,7 +33,7 @@ use std::env;
 pub fn build<C: FnOnce(bindgen::Builder) -> bindgen::Builder>(configure: C) {
     env_logger::init();
 
-    match bindgen_cli::builder_from_flags(env::args()) {
+    match bindgen::builder_from_flags(env::args()) {
         Ok((builder, output, _)) => {
             configure(builder)
                 .generate()

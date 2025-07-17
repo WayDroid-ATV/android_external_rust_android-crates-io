@@ -18,37 +18,20 @@ rust_binary_host {
     host_cross_supported: false,
     crate_name: "bindgen",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.69.5",
+    cargo_pkg_version: "0.72.0",
     crate_root: "main.rs",
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "logging",
         "runtime",
-        "which-rustfmt",
     ],
     rustlibs: [
         "libbindgen",
-        "libclap",
-        "libclap_complete",
         "libenv_logger",
         "liblog_rust",
+        "libproc_macro2",
         "libshlex",
-    ],
-    compile_multilib: "first",
-}
-
-rust_library_host {
-    name: "libbindgen_cli",
-    host_cross_supported: false,
-    crate_name: "bindgen_cli",
-    srcs: ["options.rs"],
-    edition: "2018",
-    rustlibs: [
-        "libbindgen",
-        "libclap",
-        "libclap_complete",
-        "libenv_logger",
     ],
     compile_multilib: "first",
 }

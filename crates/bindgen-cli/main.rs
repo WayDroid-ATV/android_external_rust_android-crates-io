@@ -1,14 +1,6 @@
-extern crate bindgen;
-extern crate clap;
-#[cfg(feature = "logging")]
-extern crate env_logger;
-#[cfg(feature = "logging")]
-extern crate log;
-
 use std::env;
 
-mod options;
-use crate::options::builder_from_flags;
+use bindgen::builder_from_flags;
 
 #[cfg(feature = "logging")]
 fn clang_version_check() {
@@ -43,34 +35,39 @@ pub fn main() {
 
             std::panic::set_hook(Box::new(move |info| {
                 if verbose {
-                    print_verbose_err()
+                    print_verbose_err();
                 }
-                println!("{}", info);
+                eprintln!("{info}");
             }));
 
-            let bindings =
-                builder.generate().expect("Unable to generate bindings");
+            let bindings = match builder.generate() {
+                Ok(bindings) => bindings,
+                Err(err) => {
+                    eprintln!("Unable to generate bindings: {err}");
+                    std::process::exit(1)
+                }
+            };
 
             let _ = std::panic::take_hook();
 
             bindings.write(output).expect("Unable to write output");
         }
         Err(error) => {
-            println!("{}", error);
+            eprintln!("{error}");
             std::process::exit(1);
         }
     };
 }
 
 fn print_verbose_err() {
-    println!("Bindgen unexpectedly panicked");
-    println!(
+    eprintln!("Bindgen unexpectedly panicked");
+    eprintln!(
         "This may be caused by one of the known-unsupported \
          things (https://rust-lang.github.io/rust-bindgen/cpp.html), \
          please modify the bindgen flags to work around it as \
          described in https://rust-lang.github.io/rust-bindgen/cpp.html"
     );
-    println!(
+    eprintln!(
         "Otherwise, please file an issue at \
          https://github.com/rust-lang/rust-bindgen/issues/new"
     );
