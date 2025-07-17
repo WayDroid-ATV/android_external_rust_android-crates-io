@@ -17,7 +17,7 @@ pub type IflagsType = libc::c_longlong;
 /// Resolve an interface into an interface number.
 pub fn if_nametoindex<P: ?Sized + NixPath>(name: &P) -> Result<c_uint> {
     let if_index = name
-        .with_nix_path(|name| unsafe { libc::if_nametoindex(name.as_ptr() as *const libc::c_char) })?;
+        .with_nix_path(|name| unsafe { libc::if_nametoindex(name.as_ptr()) })?;
 
     if if_index == 0 {
         Err(Error::last())

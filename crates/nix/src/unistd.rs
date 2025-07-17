@@ -3611,7 +3611,7 @@ impl Group {
         // at `grp`.
         unsafe {
             Group::from_anything(|grp, cbuf, cap, res| {
-                libc::getgrnam_r(name.as_ptr() as *const libc::c_char, grp, cbuf, cap, res)
+                libc::getgrnam_r(name.as_ptr(), grp, cbuf, cap, res)
             })
         }
     }
