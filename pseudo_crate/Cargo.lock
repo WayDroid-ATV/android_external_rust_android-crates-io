@@ -111,7 +111,7 @@ dependencies = [
  "android_bp",
  "android_log-sys",
  "android_logger 0.15.0",
- "anes 0.2.0",
+ "anes 0.2.1",
  "annotate-snippets",
  "anstyle",
  "anyhow",
@@ -657,9 +657,9 @@ checksum = "4b46cbb362ab8752921c97e041f5e366ee6297bd428a31275b9fcf1e380f7299"
 
 [[package]]
 name = "anes"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "735d4f398ca57cfa2880225c2bf81c3b9af3be5bb22e44ae70118dad38713e84"
+checksum = "dc43e46599f3d77fcf2f2ca89e4d962910b0c19c44e7b58679cbbdfd1820a662"
 
 [[package]]
 name = "annotate-snippets"

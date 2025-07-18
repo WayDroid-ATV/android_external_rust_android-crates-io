@@ -10,17 +10,23 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
+edition = "2024"
 name = "anes"
-version = "0.2.0"
+version = "0.2.1"
 authors = [
     "Robert Vojta <rvojta@me.com>",
     "Andrew Walbran <qwandor@google.com>",
 ]
+build = false
 exclude = [
     "target",
     "Cargo.lock",
 ]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "ANSI Escape Sequences provider & parser"
 documentation = "https://docs.rs/anes/"
 readme = "README.md"
@@ -37,35 +43,64 @@ categories = [
 ]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/qwandor/anes-rs"
+resolver = "2"
 
 [package.metadata.docs.rs]
 all-features = true
 
-[lib]
-bench = false
-
-[[example]]
-name = "parser"
-required-features = ["parser"]
-
-[[bench]]
-name = "bench_main"
-harness = false
-required-features = ["parser"]
-
-[dependencies.bitflags]
-version = "2.4.1"
-optional = true
-
-[dev-dependencies.criterion]
-version = "0.5.1"
-
-[dev-dependencies.libc]
-version = "0.2.150"
+[badges.maintenance]
+status = "passively-maintained"
 
 [features]
 default = []
 parser = ["bitflags"]
 
-[badges.maintenance]
-status = "actively-developed"
+[lib]
+name = "anes"
+path = "src/lib.rs"
+bench = false
+
+[[example]]
+name = "execute"
+path = "examples/execute.rs"
+
+[[example]]
+name = "parser"
+path = "examples/parser.rs"
+required-features = ["parser"]
+
+[[example]]
+name = "queue"
+path = "examples/queue.rs"
+
+[[example]]
+name = "sequence"
+path = "examples/sequence.rs"
+
+[[example]]
+name = "stdout"
+path = "examples/stdout.rs"
+
+[[example]]
+name = "string"
+path = "examples/string.rs"
+
+[[test]]
+name = "tests"
+path = "tests/tests.rs"
+
+[[bench]]
+name = "bench_main"
+path = "benches/bench_main.rs"
+harness = false
+required-features = ["parser"]
+
+[dependencies.bitflags]
+version = "2.9.1"
+optional = true
+
+[dev-dependencies.criterion]
+version = "0.6.0"
+
+[dev-dependencies.libc]
+version = "0.2.174"

@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, Criterion};
+use criterion::{Criterion, black_box, criterion_group};
 
 use anes::parser::Parser;
 
@@ -12,7 +12,7 @@ pub fn parser(c: &mut Criterion) {
 
         b.iter(|| {
             parser.advance(black_box(input), black_box(true));
-            while let Some(_) = parser.next() {}
+            for _ in parser.by_ref() {}
         })
     });
 }
