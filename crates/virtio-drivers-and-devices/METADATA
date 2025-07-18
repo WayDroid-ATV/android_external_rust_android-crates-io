@@ -1,17 +1,17 @@
 name: "virtio-drivers-and-devices"
 description: "VirtIO guest drivers and devices. Fork of rcore-os/virtio-drivers."
 third_party {
-  version: "0.2.2"
+  version: "0.2.3"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 5
-    day: 7
+    month: 7
+    day: 18
   }
   homepage: "https://crates.io/crates/virtio-drivers-and-devices"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/virtio-drivers-and-devices/virtio-drivers-and-devices-0.2.2.crate"
-    version: "0.2.2"
+    value: "https://static.crates.io/crates/virtio-drivers-and-devices/virtio-drivers-and-devices-0.2.3.crate"
+    version: "0.2.3"
   }
 }
