@@ -339,6 +339,12 @@ pub struct ProgressBarMeterData {
     pub end_x: f32,
     // @@protoc_insertion_point(field:designcompose.definition.plugin.ProgressBarMeterData.end_y)
     pub end_y: f32,
+    // @@protoc_insertion_point(field:designcompose.definition.plugin.ProgressBarMeterData.start_x)
+    pub start_x: f32,
+    // @@protoc_insertion_point(field:designcompose.definition.plugin.ProgressBarMeterData.start_y)
+    pub start_y: f32,
+    // @@protoc_insertion_point(field:designcompose.definition.plugin.ProgressBarMeterData.draggable)
+    pub draggable: bool,
     // special fields
     // @@protoc_insertion_point(special_field:designcompose.definition.plugin.ProgressBarMeterData.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -384,6 +390,15 @@ impl ::protobuf::Message for ProgressBarMeterData {
                 53 => {
                     self.end_y = is.read_float()?;
                 },
+                61 => {
+                    self.start_x = is.read_float()?;
+                },
+                69 => {
+                    self.start_y = is.read_float()?;
+                },
+                72 => {
+                    self.draggable = is.read_bool()?;
+                },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
                 },
@@ -414,6 +429,15 @@ impl ::protobuf::Message for ProgressBarMeterData {
         if self.end_y != 0. {
             my_size += 1 + 4;
         }
+        if self.start_x != 0. {
+            my_size += 1 + 4;
+        }
+        if self.start_y != 0. {
+            my_size += 1 + 4;
+        }
+        if self.draggable != false {
+            my_size += 1 + 1;
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
         my_size
@@ -438,6 +462,15 @@ impl ::protobuf::Message for ProgressBarMeterData {
         if self.end_y != 0. {
             os.write_float(6, self.end_y)?;
         }
+        if self.start_x != 0. {
+            os.write_float(7, self.start_x)?;
+        }
+        if self.start_y != 0. {
+            os.write_float(8, self.start_y)?;
+        }
+        if self.draggable != false {
+            os.write_bool(9, self.draggable)?;
+        }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -461,6 +494,9 @@ impl ::protobuf::Message for ProgressBarMeterData {
         self.vertical = false;
         self.end_x = 0.;
         self.end_y = 0.;
+        self.start_x = 0.;
+        self.start_y = 0.;
+        self.draggable = false;
         self.special_fields.clear();
     }
 
@@ -472,6 +508,9 @@ impl ::protobuf::Message for ProgressBarMeterData {
             vertical: false,
             end_x: 0.,
             end_y: 0.,
+            start_x: 0.,
+            start_y: 0.,
+            draggable: false,
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
@@ -498,6 +537,8 @@ pub struct ProgressMarkerMeterData {
     pub start_y: f32,
     // @@protoc_insertion_point(field:designcompose.definition.plugin.ProgressMarkerMeterData.end_y)
     pub end_y: f32,
+    // @@protoc_insertion_point(field:designcompose.definition.plugin.ProgressMarkerMeterData.draggable)
+    pub draggable: bool,
     // special fields
     // @@protoc_insertion_point(special_field:designcompose.definition.plugin.ProgressMarkerMeterData.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -549,6 +590,9 @@ impl ::protobuf::Message for ProgressMarkerMeterData {
                 69 => {
                     self.end_y = is.read_float()?;
                 },
+                72 => {
+                    self.draggable = is.read_bool()?;
+                },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
                 },
@@ -585,6 +629,9 @@ impl ::protobuf::Message for ProgressMarkerMeterData {
         if self.end_y != 0. {
             my_size += 1 + 4;
         }
+        if self.draggable != false {
+            my_size += 1 + 1;
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
         my_size
@@ -615,6 +662,9 @@ impl ::protobuf::Message for ProgressMarkerMeterData {
         if self.end_y != 0. {
             os.write_float(8, self.end_y)?;
         }
+        if self.draggable != false {
+            os.write_bool(9, self.draggable)?;
+        }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -640,6 +690,7 @@ impl ::protobuf::Message for ProgressMarkerMeterData {
         self.end_x = 0.;
         self.start_y = 0.;
         self.end_y = 0.;
+        self.draggable = false;
         self.special_fields.clear();
     }
 
@@ -653,6 +704,7 @@ impl ::protobuf::Message for ProgressMarkerMeterData {
             end_x: 0.,
             start_y: 0.,
             end_y: 0.,
+            draggable: false,
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance

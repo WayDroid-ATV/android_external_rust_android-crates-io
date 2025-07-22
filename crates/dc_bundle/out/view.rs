@@ -37,7 +37,7 @@ pub struct View {
     // @@protoc_insertion_point(field:designcompose.definition.view.View.name)
     pub name: ::std::string::String,
     // @@protoc_insertion_point(field:designcompose.definition.view.View.component_info)
-    pub component_info: ::protobuf::MessageField<super::component::ComponentInfo>,
+    pub component_info: ::protobuf::MessageField<ComponentInfo>,
     // @@protoc_insertion_point(field:designcompose.definition.view.View.reactions)
     pub reactions: ::std::vec::Vec<super::reaction::Reaction>,
     // @@protoc_insertion_point(field:designcompose.definition.view.View.frame_extras)
@@ -914,5 +914,269 @@ pub mod view_data {
             };
             &instance
         }
+    }
+}
+
+#[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:designcompose.definition.view.ComponentOverrides)
+pub struct ComponentOverrides {
+    // message fields
+    // @@protoc_insertion_point(field:designcompose.definition.view.ComponentOverrides.style)
+    pub style: ::protobuf::MessageField<super::view_style::ViewStyle>,
+    // @@protoc_insertion_point(field:designcompose.definition.view.ComponentOverrides.view_data)
+    pub view_data: ::protobuf::MessageField<ViewData>,
+    // special fields
+    // @@protoc_insertion_point(special_field:designcompose.definition.view.ComponentOverrides.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ComponentOverrides {
+    fn default() -> &'a ComponentOverrides {
+        <ComponentOverrides as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ComponentOverrides {
+    pub fn new() -> ComponentOverrides {
+        ::std::default::Default::default()
+    }
+}
+
+impl ::protobuf::Message for ComponentOverrides {
+    const NAME: &'static str = "ComponentOverrides";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.style)?;
+                },
+                42 => {
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.view_data)?;
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.style.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        }
+        if let Some(v) = self.view_data.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.style.as_ref() {
+            ::protobuf::rt::write_message_field_with_cached_size(1, v, os)?;
+        }
+        if let Some(v) = self.view_data.as_ref() {
+            ::protobuf::rt::write_message_field_with_cached_size(5, v, os)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ComponentOverrides {
+        ComponentOverrides::new()
+    }
+
+    fn clear(&mut self) {
+        self.style.clear();
+        self.view_data.clear();
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ComponentOverrides {
+        static instance: ComponentOverrides = ComponentOverrides {
+            style: ::protobuf::MessageField::none(),
+            view_data: ::protobuf::MessageField::none(),
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+#[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:designcompose.definition.view.ComponentInfo)
+pub struct ComponentInfo {
+    // message fields
+    // @@protoc_insertion_point(field:designcompose.definition.view.ComponentInfo.id)
+    pub id: ::std::string::String,
+    // @@protoc_insertion_point(field:designcompose.definition.view.ComponentInfo.name)
+    pub name: ::std::string::String,
+    // @@protoc_insertion_point(field:designcompose.definition.view.ComponentInfo.component_set_name)
+    pub component_set_name: ::std::string::String,
+    // @@protoc_insertion_point(field:designcompose.definition.view.ComponentInfo.overrides)
+    pub overrides: ::protobuf::MessageField<ComponentOverrides>,
+    // @@protoc_insertion_point(field:designcompose.definition.view.ComponentInfo.overrides_table)
+    pub overrides_table: ::std::collections::HashMap<::std::string::String, ComponentOverrides>,
+    // special fields
+    // @@protoc_insertion_point(special_field:designcompose.definition.view.ComponentInfo.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ComponentInfo {
+    fn default() -> &'a ComponentInfo {
+        <ComponentInfo as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ComponentInfo {
+    pub fn new() -> ComponentInfo {
+        ::std::default::Default::default()
+    }
+}
+
+impl ::protobuf::Message for ComponentInfo {
+    const NAME: &'static str = "ComponentInfo";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.id = is.read_string()?;
+                },
+                18 => {
+                    self.name = is.read_string()?;
+                },
+                26 => {
+                    self.component_set_name = is.read_string()?;
+                },
+                34 => {
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.overrides)?;
+                },
+                42 => {
+                    let len = is.read_raw_varint32()?;
+                    let old_limit = is.push_limit(len as u64)?;
+                    let mut key = ::std::default::Default::default();
+                    let mut value = ::std::default::Default::default();
+                    while let Some(tag) = is.read_raw_tag_or_eof()? {
+                        match tag {
+                            10 => key = is.read_string()?,
+                            18 => value = is.read_message()?,
+                            _ => ::protobuf::rt::skip_field_for_tag(tag, is)?,
+                        };
+                    }
+                    is.pop_limit(old_limit);
+                    self.overrides_table.insert(key, value);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if !self.id.is_empty() {
+            my_size += ::protobuf::rt::string_size(1, &self.id);
+        }
+        if !self.name.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.name);
+        }
+        if !self.component_set_name.is_empty() {
+            my_size += ::protobuf::rt::string_size(3, &self.component_set_name);
+        }
+        if let Some(v) = self.overrides.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        }
+        for (k, v) in &self.overrides_table {
+            let mut entry_size = 0;
+            entry_size += ::protobuf::rt::string_size(1, &k);
+            let len = v.compute_size();
+            entry_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(entry_size) + entry_size
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if !self.id.is_empty() {
+            os.write_string(1, &self.id)?;
+        }
+        if !self.name.is_empty() {
+            os.write_string(2, &self.name)?;
+        }
+        if !self.component_set_name.is_empty() {
+            os.write_string(3, &self.component_set_name)?;
+        }
+        if let Some(v) = self.overrides.as_ref() {
+            ::protobuf::rt::write_message_field_with_cached_size(4, v, os)?;
+        }
+        for (k, v) in &self.overrides_table {
+            let mut entry_size = 0;
+            entry_size += ::protobuf::rt::string_size(1, &k);
+            let len = v.cached_size() as u64;
+            entry_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+            os.write_raw_varint32(42)?; // Tag.
+            os.write_raw_varint32(entry_size as u32)?;
+            os.write_string(1, &k)?;
+            ::protobuf::rt::write_message_field_with_cached_size(2, v, os)?;
+        };
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ComponentInfo {
+        ComponentInfo::new()
+    }
+
+    fn clear(&mut self) {
+        self.id.clear();
+        self.name.clear();
+        self.component_set_name.clear();
+        self.overrides.clear();
+        self.overrides_table.clear();
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ComponentInfo {
+        static instance: ::protobuf::rt::Lazy<ComponentInfo> = ::protobuf::rt::Lazy::new();
+        instance.get(ComponentInfo::new)
     }
 }

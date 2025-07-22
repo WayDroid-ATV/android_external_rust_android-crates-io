@@ -1,17 +1,17 @@
 name: "dc_layout"
 description: "Figma node layout library for Android"
 third_party {
-  version: "0.34.2"
+  version: "0.37.2"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 5
-    day: 9
+    month: 7
+    day: 18
   }
   homepage: "https://crates.io/crates/dc_layout"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/dc_layout/dc_layout-0.34.2.crate"
-    version: "0.34.2"
+    value: "https://static.crates.io/crates/dc_layout/dc_layout-0.37.2.crate"
+    version: "0.37.2"
   }
 }

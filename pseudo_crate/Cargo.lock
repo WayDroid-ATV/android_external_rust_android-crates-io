@@ -1982,9 +1982,9 @@ checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 
 [[package]]
 name = "dc_bundle"
-version = "0.34.2"
+version = "0.37.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbe10818dde1e93d98eec4a88e1265f1bea9c3f87c57a5acdc4d76754972a9d2"
+checksum = "0355e64b741c6c0855e57778deee442658108d366f2d5d85984aa6f32d5375b5"
 dependencies = [
  "log",
  "protobuf 3.2.0",
@@ -1996,9 +1996,9 @@ dependencies = [
 
 [[package]]
 name = "dc_layout"
-version = "0.34.2"
+version = "0.37.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b8be64ccb6386b6cb07347047f56c943ae1c708632f58b4798f947b094d6419"
+checksum = "645d909a766cdd69239efa80fb348f236a6cfb88de934500ebe73f5cdda98c1c"
 dependencies = [
  "android_logger 0.13.3",
  "dc_bundle",

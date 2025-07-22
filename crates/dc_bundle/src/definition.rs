@@ -28,7 +28,7 @@ pub mod layout;
 pub mod modifier;
 pub mod view;
 
-pub static CURRENT_VERSION: u32 = 27;
+pub static CURRENT_VERSION: u32 = 28;
 
 impl DesignComposeDefinitionHeader {
     pub fn current(

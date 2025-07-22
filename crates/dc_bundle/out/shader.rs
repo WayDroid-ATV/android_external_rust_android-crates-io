@@ -557,6 +557,104 @@ impl ShaderUniformValue {
             shader_uniform_value::ImageRef::new()
         }
     }
+
+    // .designcompose.definition.element.ShaderUniformValue.ImageBytes image_bytes_value = 7;
+
+    pub fn image_bytes_value(&self) -> &shader_uniform_value::ImageBytes {
+        match self.value_type {
+            ::std::option::Option::Some(shader_uniform_value::Value_type::ImageBytesValue(ref v)) => v,
+            _ => <shader_uniform_value::ImageBytes as ::protobuf::Message>::default_instance(),
+        }
+    }
+
+    pub fn clear_image_bytes_value(&mut self) {
+        self.value_type = ::std::option::Option::None;
+    }
+
+    pub fn has_image_bytes_value(&self) -> bool {
+        match self.value_type {
+            ::std::option::Option::Some(shader_uniform_value::Value_type::ImageBytesValue(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_image_bytes_value(&mut self, v: shader_uniform_value::ImageBytes) {
+        self.value_type = ::std::option::Option::Some(shader_uniform_value::Value_type::ImageBytesValue(v))
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_image_bytes_value(&mut self) -> &mut shader_uniform_value::ImageBytes {
+        if let ::std::option::Option::Some(shader_uniform_value::Value_type::ImageBytesValue(_)) = self.value_type {
+        } else {
+            self.value_type = ::std::option::Option::Some(shader_uniform_value::Value_type::ImageBytesValue(shader_uniform_value::ImageBytes::new()));
+        }
+        match self.value_type {
+            ::std::option::Option::Some(shader_uniform_value::Value_type::ImageBytesValue(ref mut v)) => v,
+            _ => panic!(),
+        }
+    }
+
+    // Take field
+    pub fn take_image_bytes_value(&mut self) -> shader_uniform_value::ImageBytes {
+        if self.has_image_bytes_value() {
+            match self.value_type.take() {
+                ::std::option::Option::Some(shader_uniform_value::Value_type::ImageBytesValue(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            shader_uniform_value::ImageBytes::new()
+        }
+    }
+
+    // .designcompose.definition.element.ShaderUniformValue.ImageResource image_resource_value = 8;
+
+    pub fn image_resource_value(&self) -> &shader_uniform_value::ImageResource {
+        match self.value_type {
+            ::std::option::Option::Some(shader_uniform_value::Value_type::ImageResourceValue(ref v)) => v,
+            _ => <shader_uniform_value::ImageResource as ::protobuf::Message>::default_instance(),
+        }
+    }
+
+    pub fn clear_image_resource_value(&mut self) {
+        self.value_type = ::std::option::Option::None;
+    }
+
+    pub fn has_image_resource_value(&self) -> bool {
+        match self.value_type {
+            ::std::option::Option::Some(shader_uniform_value::Value_type::ImageResourceValue(..)) => true,
+            _ => false,
+        }
+    }
+
+    // Param is passed by value, moved
+    pub fn set_image_resource_value(&mut self, v: shader_uniform_value::ImageResource) {
+        self.value_type = ::std::option::Option::Some(shader_uniform_value::Value_type::ImageResourceValue(v))
+    }
+
+    // Mutable pointer to the field.
+    pub fn mut_image_resource_value(&mut self) -> &mut shader_uniform_value::ImageResource {
+        if let ::std::option::Option::Some(shader_uniform_value::Value_type::ImageResourceValue(_)) = self.value_type {
+        } else {
+            self.value_type = ::std::option::Option::Some(shader_uniform_value::Value_type::ImageResourceValue(shader_uniform_value::ImageResource::new()));
+        }
+        match self.value_type {
+            ::std::option::Option::Some(shader_uniform_value::Value_type::ImageResourceValue(ref mut v)) => v,
+            _ => panic!(),
+        }
+    }
+
+    // Take field
+    pub fn take_image_resource_value(&mut self) -> shader_uniform_value::ImageResource {
+        if self.has_image_resource_value() {
+            match self.value_type.take() {
+                ::std::option::Option::Some(shader_uniform_value::Value_type::ImageResourceValue(v)) => v,
+                _ => panic!(),
+            }
+        } else {
+            shader_uniform_value::ImageResource::new()
+        }
+    }
 }
 
 impl ::protobuf::Message for ShaderUniformValue {
@@ -586,6 +684,12 @@ impl ::protobuf::Message for ShaderUniformValue {
                 },
                 50 => {
                     self.value_type = ::std::option::Option::Some(shader_uniform_value::Value_type::ImageRefValue(is.read_message()?));
+                },
+                58 => {
+                    self.value_type = ::std::option::Option::Some(shader_uniform_value::Value_type::ImageBytesValue(is.read_message()?));
+                },
+                66 => {
+                    self.value_type = ::std::option::Option::Some(shader_uniform_value::Value_type::ImageResourceValue(is.read_message()?));
                 },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
@@ -623,6 +727,14 @@ impl ::protobuf::Message for ShaderUniformValue {
                     let len = v.compute_size();
                     my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
                 },
+                &shader_uniform_value::Value_type::ImageBytesValue(ref v) => {
+                    let len = v.compute_size();
+                    my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+                },
+                &shader_uniform_value::Value_type::ImageResourceValue(ref v) => {
+                    let len = v.compute_size();
+                    my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+                },
             };
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
@@ -651,6 +763,12 @@ impl ::protobuf::Message for ShaderUniformValue {
                 &shader_uniform_value::Value_type::ImageRefValue(ref v) => {
                     ::protobuf::rt::write_message_field_with_cached_size(6, v, os)?;
                 },
+                &shader_uniform_value::Value_type::ImageBytesValue(ref v) => {
+                    ::protobuf::rt::write_message_field_with_cached_size(7, v, os)?;
+                },
+                &shader_uniform_value::Value_type::ImageResourceValue(ref v) => {
+                    ::protobuf::rt::write_message_field_with_cached_size(8, v, os)?;
+                },
             };
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
@@ -670,6 +788,8 @@ impl ::protobuf::Message for ShaderUniformValue {
     }
 
     fn clear(&mut self) {
+        self.value_type = ::std::option::Option::None;
+        self.value_type = ::std::option::Option::None;
         self.value_type = ::std::option::Option::None;
         self.value_type = ::std::option::Option::None;
         self.value_type = ::std::option::Option::None;
@@ -707,6 +827,10 @@ pub mod shader_uniform_value {
         IntVecValue(IntVec),
         // @@protoc_insertion_point(oneof_field:designcompose.definition.element.ShaderUniformValue.image_ref_value)
         ImageRefValue(ImageRef),
+        // @@protoc_insertion_point(oneof_field:designcompose.definition.element.ShaderUniformValue.image_bytes_value)
+        ImageBytesValue(ImageBytes),
+        // @@protoc_insertion_point(oneof_field:designcompose.definition.element.ShaderUniformValue.image_resource_value)
+        ImageResourceValue(ImageResource),
     }
 
     impl ::protobuf::Oneof for Value_type {
@@ -995,6 +1119,186 @@ pub mod shader_uniform_value {
             static instance: ImageRef = ImageRef {
                 key: ::std::string::String::new(),
                 res_name: ::std::option::Option::None,
+                special_fields: ::protobuf::SpecialFields::new(),
+            };
+            &instance
+        }
+    }
+
+    #[derive(PartialEq,Clone,Default,Debug)]
+    // @@protoc_insertion_point(message:designcompose.definition.element.ShaderUniformValue.ImageBytes)
+    pub struct ImageBytes {
+        // message fields
+        // @@protoc_insertion_point(field:designcompose.definition.element.ShaderUniformValue.ImageBytes.data)
+        pub data: ::std::vec::Vec<u8>,
+        // special fields
+        // @@protoc_insertion_point(special_field:designcompose.definition.element.ShaderUniformValue.ImageBytes.special_fields)
+        pub special_fields: ::protobuf::SpecialFields,
+    }
+
+    impl<'a> ::std::default::Default for &'a ImageBytes {
+        fn default() -> &'a ImageBytes {
+            <ImageBytes as ::protobuf::Message>::default_instance()
+        }
+    }
+
+    impl ImageBytes {
+        pub fn new() -> ImageBytes {
+            ::std::default::Default::default()
+        }
+    }
+
+    impl ::protobuf::Message for ImageBytes {
+        const NAME: &'static str = "ImageBytes";
+
+        fn is_initialized(&self) -> bool {
+            true
+        }
+
+        fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+            while let Some(tag) = is.read_raw_tag_or_eof()? {
+                match tag {
+                    10 => {
+                        self.data = is.read_bytes()?;
+                    },
+                    tag => {
+                        ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                    },
+                };
+            }
+            ::std::result::Result::Ok(())
+        }
+
+        // Compute sizes of nested messages
+        #[allow(unused_variables)]
+        fn compute_size(&self) -> u64 {
+            let mut my_size = 0;
+            if !self.data.is_empty() {
+                my_size += ::protobuf::rt::bytes_size(1, &self.data);
+            }
+            my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+            self.special_fields.cached_size().set(my_size as u32);
+            my_size
+        }
+
+        fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+            if !self.data.is_empty() {
+                os.write_bytes(1, &self.data)?;
+            }
+            os.write_unknown_fields(self.special_fields.unknown_fields())?;
+            ::std::result::Result::Ok(())
+        }
+
+        fn special_fields(&self) -> &::protobuf::SpecialFields {
+            &self.special_fields
+        }
+
+        fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+            &mut self.special_fields
+        }
+
+        fn new() -> ImageBytes {
+            ImageBytes::new()
+        }
+
+        fn clear(&mut self) {
+            self.data.clear();
+            self.special_fields.clear();
+        }
+
+        fn default_instance() -> &'static ImageBytes {
+            static instance: ImageBytes = ImageBytes {
+                data: ::std::vec::Vec::new(),
+                special_fields: ::protobuf::SpecialFields::new(),
+            };
+            &instance
+        }
+    }
+
+    #[derive(PartialEq,Clone,Default,Debug)]
+    // @@protoc_insertion_point(message:designcompose.definition.element.ShaderUniformValue.ImageResource)
+    pub struct ImageResource {
+        // message fields
+        // @@protoc_insertion_point(field:designcompose.definition.element.ShaderUniformValue.ImageResource.resource_id)
+        pub resource_id: u32,
+        // special fields
+        // @@protoc_insertion_point(special_field:designcompose.definition.element.ShaderUniformValue.ImageResource.special_fields)
+        pub special_fields: ::protobuf::SpecialFields,
+    }
+
+    impl<'a> ::std::default::Default for &'a ImageResource {
+        fn default() -> &'a ImageResource {
+            <ImageResource as ::protobuf::Message>::default_instance()
+        }
+    }
+
+    impl ImageResource {
+        pub fn new() -> ImageResource {
+            ::std::default::Default::default()
+        }
+    }
+
+    impl ::protobuf::Message for ImageResource {
+        const NAME: &'static str = "ImageResource";
+
+        fn is_initialized(&self) -> bool {
+            true
+        }
+
+        fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+            while let Some(tag) = is.read_raw_tag_or_eof()? {
+                match tag {
+                    8 => {
+                        self.resource_id = is.read_uint32()?;
+                    },
+                    tag => {
+                        ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                    },
+                };
+            }
+            ::std::result::Result::Ok(())
+        }
+
+        // Compute sizes of nested messages
+        #[allow(unused_variables)]
+        fn compute_size(&self) -> u64 {
+            let mut my_size = 0;
+            if self.resource_id != 0 {
+                my_size += ::protobuf::rt::uint32_size(1, self.resource_id);
+            }
+            my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+            self.special_fields.cached_size().set(my_size as u32);
+            my_size
+        }
+
+        fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+            if self.resource_id != 0 {
+                os.write_uint32(1, self.resource_id)?;
+            }
+            os.write_unknown_fields(self.special_fields.unknown_fields())?;
+            ::std::result::Result::Ok(())
+        }
+
+        fn special_fields(&self) -> &::protobuf::SpecialFields {
+            &self.special_fields
+        }
+
+        fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+            &mut self.special_fields
+        }
+
+        fn new() -> ImageResource {
+            ImageResource::new()
+        }
+
+        fn clear(&mut self) {
+            self.resource_id = 0;
+            self.special_fields.clear();
+        }
+
+        fn default_instance() -> &'static ImageResource {
+            static instance: ImageResource = ImageResource {
+                resource_id: 0,
                 special_fields: ::protobuf::SpecialFields::new(),
             };
             &instance

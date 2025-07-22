@@ -31,7 +31,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "dc_bundle"
-version = "0.34.2"
+version = "0.37.2"
 dependencies = [
  "log",
  "protobuf",

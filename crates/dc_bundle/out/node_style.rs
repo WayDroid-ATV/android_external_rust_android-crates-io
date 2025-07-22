@@ -32,6 +32,8 @@ pub struct NodeStyle {
     // message fields
     // @@protoc_insertion_point(field:designcompose.definition.view.NodeStyle.text_color)
     pub text_color: ::protobuf::MessageField<super::background::Background>,
+    // @@protoc_insertion_point(field:designcompose.definition.view.NodeStyle.font_color)
+    pub font_color: ::protobuf::MessageField<super::background::Background>,
     // @@protoc_insertion_point(field:designcompose.definition.view.NodeStyle.font_size)
     pub font_size: ::protobuf::MessageField<super::variable::NumOrVar>,
     // @@protoc_insertion_point(field:designcompose.definition.view.NodeStyle.font_family)
@@ -116,6 +118,8 @@ pub struct NodeStyle {
     pub hyperlink: ::protobuf::MessageField<super::font::Hyperlink>,
     // @@protoc_insertion_point(field:designcompose.definition.view.NodeStyle.shader_data)
     pub shader_data: ::protobuf::MessageField<super::shader::ShaderData>,
+    // @@protoc_insertion_point(field:designcompose.definition.view.NodeStyle.scalable_data)
+    pub scalable_data: ::protobuf::MessageField<super::scalable::ScalableUIData>,
     // special fields
     // @@protoc_insertion_point(special_field:designcompose.definition.view.NodeStyle.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -145,6 +149,9 @@ impl ::protobuf::Message for NodeStyle {
             match tag {
                 10 => {
                     ::protobuf::rt::read_singular_message_into_field(is, &mut self.text_color)?;
+                },
+                362 => {
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.font_color)?;
                 },
                 18 => {
                     ::protobuf::rt::read_singular_message_into_field(is, &mut self.font_size)?;
@@ -272,6 +279,9 @@ impl ::protobuf::Message for NodeStyle {
                 346 => {
                     ::protobuf::rt::read_singular_message_into_field(is, &mut self.shader_data)?;
                 },
+                354 => {
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.scalable_data)?;
+                },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
                 },
@@ -287,6 +297,10 @@ impl ::protobuf::Message for NodeStyle {
         if let Some(v) = self.text_color.as_ref() {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        }
+        if let Some(v) = self.font_color.as_ref() {
+            let len = v.compute_size();
+            my_size += 2 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
         }
         if let Some(v) = self.font_size.as_ref() {
             let len = v.compute_size();
@@ -432,6 +446,10 @@ impl ::protobuf::Message for NodeStyle {
             let len = v.compute_size();
             my_size += 2 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
         }
+        if let Some(v) = self.scalable_data.as_ref() {
+            let len = v.compute_size();
+            my_size += 2 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
         my_size
@@ -440,6 +458,9 @@ impl ::protobuf::Message for NodeStyle {
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
         if let Some(v) = self.text_color.as_ref() {
             ::protobuf::rt::write_message_field_with_cached_size(1, v, os)?;
+        }
+        if let Some(v) = self.font_color.as_ref() {
+            ::protobuf::rt::write_message_field_with_cached_size(45, v, os)?;
         }
         if let Some(v) = self.font_size.as_ref() {
             ::protobuf::rt::write_message_field_with_cached_size(2, v, os)?;
@@ -567,6 +588,9 @@ impl ::protobuf::Message for NodeStyle {
         if let Some(v) = self.shader_data.as_ref() {
             ::protobuf::rt::write_message_field_with_cached_size(43, v, os)?;
         }
+        if let Some(v) = self.scalable_data.as_ref() {
+            ::protobuf::rt::write_message_field_with_cached_size(44, v, os)?;
+        }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -585,6 +609,7 @@ impl ::protobuf::Message for NodeStyle {
 
     fn clear(&mut self) {
         self.text_color.clear();
+        self.font_color.clear();
         self.font_size.clear();
         self.font_family = ::std::option::Option::None;
         self.font_weight.clear();
@@ -627,12 +652,14 @@ impl ::protobuf::Message for NodeStyle {
         self.meter_data.clear();
         self.hyperlink.clear();
         self.shader_data.clear();
+        self.scalable_data.clear();
         self.special_fields.clear();
     }
 
     fn default_instance() -> &'static NodeStyle {
         static instance: NodeStyle = NodeStyle {
             text_color: ::protobuf::MessageField::none(),
+            font_color: ::protobuf::MessageField::none(),
             font_size: ::protobuf::MessageField::none(),
             font_family: ::std::option::Option::None,
             font_weight: ::protobuf::MessageField::none(),
@@ -675,6 +702,7 @@ impl ::protobuf::Message for NodeStyle {
             meter_data: ::protobuf::MessageField::none(),
             hyperlink: ::protobuf::MessageField::none(),
             shader_data: ::protobuf::MessageField::none(),
+            scalable_data: ::protobuf::MessageField::none(),
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
