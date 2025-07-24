@@ -96,6 +96,7 @@ dc_layout
 debug_tree
 der
 der_derive
+derive-where
 derive_arbitrary
 diplomat
 diplomat-runtime
