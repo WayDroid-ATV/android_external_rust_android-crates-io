@@ -119,6 +119,7 @@ epoll
 equivalent
 errno
 etherparse
+evdev
 fallible-iterator
 fallible-streaming-iterator
 fastrand
