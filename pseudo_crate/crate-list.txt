@@ -409,6 +409,7 @@ textdistance
 textwrap
 thiserror
 thiserror-impl
+thread-priority
 thread_local
 threadpool
 tikv-jemalloc-sys
