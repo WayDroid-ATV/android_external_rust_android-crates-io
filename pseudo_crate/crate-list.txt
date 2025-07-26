@@ -216,6 +216,7 @@ lazy_static
 lazycell
 libbpf-rs
 libbpf-sys
+libbz2-rs-sys
 libc
 libfuzzer-sys
 libloading

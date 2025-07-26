@@ -319,6 +319,7 @@ dependencies = [
  "lazycell",
  "libbpf-rs",
  "libbpf-sys",
+ "libbz2-rs-sys",
  "libc 0.2.171",
  "libfuzzer-sys",
  "libloading 0.8.8",
@@ -4306,6 +4307,15 @@ dependencies = [
  "cc",
  "nix 0.29.0",
  "pkg-config",
+]
+
+[[package]]
+name = "libbz2-rs-sys"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "775bf80d5878ab7c2b1080b5351a48b2f737d9f6f8b383574eebcc22be0dfccb"
+dependencies = [
+ "libc 0.2.171",
 ]
 
 [[package]]

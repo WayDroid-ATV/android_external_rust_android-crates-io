@@ -1,0 +1,17 @@
+name: "libbz2-rs-sys"
+description: "a drop-in compatible rust bzip2 implementation"
+third_party {
+  version: "0.2.1"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 7
+    day: 15
+  }
+  homepage: "https://crates.io/crates/libbz2-rs-sys"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/libbz2-rs-sys/libbz2-rs-sys-0.2.1.crate"
+    version: "0.2.1"
+  }
+}
