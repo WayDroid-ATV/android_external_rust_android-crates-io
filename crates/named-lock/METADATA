@@ -1,17 +1,17 @@
 name: "named-lock"
 description: "Cross-platform implementation of cross-process named locks"
 third_party {
-  version: "0.3.0"
+  version: "0.4.1"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2023
-    month: 4
-    day: 19
+    year: 2025
+    month: 7
+    day: 31
   }
   homepage: "https://crates.io/crates/named-lock"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/named-lock/named-lock-0.3.0.crate"
-    version: "0.3.0"
+    value: "https://static.crates.io/crates/named-lock/named-lock-0.4.1.crate"
+    version: "0.4.1"
   }
 }
