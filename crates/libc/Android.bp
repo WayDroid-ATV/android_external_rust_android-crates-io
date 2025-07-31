@@ -45,6 +45,39 @@ rust_library {
     },
 }
 
+rust_library_rlib {
+    name: "liblibc_nostd",
+    defaults: ["rust_baremetal_defaults"],
+    crate_name: "libc",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.2.171",
+    crate_root: "src/lib.rs",
+    edition: "2021",
+    cfgs: [
+        "freebsd11",
+        "libc_const_extern_fn",
+    ],
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    prefer_rlib: true,
+    no_stdlibs: true,
+    stdlibs: [
+        "libcompiler_builtins.rust_sysroot",
+        "libcore.rust_sysroot",
+    ],
+    product_available: true,
+    recovery_available: true,
+    vendor_available: true,
+    min_sdk_version: "29",
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+}
+
 dirgroup {
     name: "trusty_dirgroup_external_rust_crates_libc",
     visibility: ["//trusty/vendor/google/aosp/scripts"],

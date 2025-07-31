@@ -26,6 +26,20 @@
       "generate_androidbp": false,
       "generate_rulesmk": true,
       "run_cargo": false
+    },
+    {
+      "features": [],
+      "tests": false,
+      "module_name_overrides": {
+        "liblibc": "liblibc_nostd"
+      },
+      "package": {
+        "libc": {
+          "host_supported": false,
+          "no_std": true,
+          "force_rlib": true
+        }
+      }
     }
   ]
 }
