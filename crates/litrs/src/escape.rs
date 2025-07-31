@@ -1,8 +1,25 @@
 use crate::{ParseError, err::{perr, ParseErrorKind::*}, parse::{hex_digit_value, check_suffix}};
 
 
-/// Must start with `\`
-pub(crate) fn unescape<E: Escapee>(input: &str, offset: usize) -> Result<(E, usize), ParseError> {
+/// Must start with `\`. Returns the unscaped value as `E` and the number of
+/// input bytes the escape is long.
+///
+/// `unicode` and `byte_escapes` specify which types of escapes are
+/// supported. [Quote escapes] are always unescaped, [Unicode escapes] only if
+/// `unicode` is true. If `byte_escapes` is false, [ASCII escapes] are
+/// used, if it's true, [Byte escapes] are (the only difference being that the
+/// latter supports \xHH escapes > 0x7f).
+///
+/// [Quote escapes]: https://doc.rust-lang.org/reference/tokens.html#quote-escapes
+/// [Unicode escapes]: https://doc.rust-lang.org/reference/tokens.html#unicode-escapes
+/// [Ascii escapes]: https://doc.rust-lang.org/reference/tokens.html#ascii-escapes
+/// [Byte escapes]: https://doc.rust-lang.org/reference/tokens.html#byte-escapes
+pub(crate) fn unescape<E: Escapee>(
+    input: &str,
+    offset: usize,
+    unicode: bool,
+    byte_escapes: bool,
+) -> Result<(E, usize), ParseError> {
     let first = input.as_bytes().get(1)
         .ok_or(perr(offset, UnterminatedEscape))?;
     let out = match first {
@@ -26,7 +43,7 @@ pub(crate) fn unescape<E: Escapee>(input: &str, offset: usize) -> Result<(E, usi
                 .ok_or(perr(offset..offset + 4, InvalidXEscape))?;
             let value = second + 16 * first;
 
-            if E::SUPPORTS_UNICODE && value > 0x7F {
+            if !byte_escapes && value > 0x7F {
                 return Err(perr(offset..offset + 4, NonAsciiXEscape));
             }
 
@@ -35,7 +52,7 @@ pub(crate) fn unescape<E: Escapee>(input: &str, offset: usize) -> Result<(E, usi
 
         // Unicode escape
         b'u' => {
-            if !E::SUPPORTS_UNICODE {
+            if !unicode {
                 return Err(perr(offset..offset + 2, UnicodeEscapeInByteLiteral));
             }
 
@@ -69,7 +86,7 @@ pub(crate) fn unescape<E: Escapee>(input: &str, offset: usize) -> Result<(E, usi
             }
 
             let c = std::char::from_u32(v)
-                .ok_or(perr(offset..closing_pos + 1, InvalidUnicodeEscapeChar))?;
+                .ok_or(perr(offset..offset + closing_pos + 1, InvalidUnicodeEscapeChar))?;
 
             (E::from_char(c), closing_pos + 1)
         }
@@ -80,14 +97,14 @@ pub(crate) fn unescape<E: Escapee>(input: &str, offset: usize) -> Result<(E, usi
     Ok(out)
 }
 
-pub(crate) trait Escapee: Into<char> {
-    const SUPPORTS_UNICODE: bool;
+pub(crate) trait Escapee: Sized {
+    type Container: EscapeeContainer<Self>;
     fn from_byte(b: u8) -> Self;
     fn from_char(c: char) -> Self;
 }
 
 impl Escapee for u8 {
-    const SUPPORTS_UNICODE: bool = false;
+    type Container = Vec<u8>;
     fn from_byte(b: u8) -> Self {
         b
     }
@@ -97,7 +114,7 @@ impl Escapee for u8 {
 }
 
 impl Escapee for char {
-    const SUPPORTS_UNICODE: bool = true;
+    type Container = String;
     fn from_byte(b: u8) -> Self {
         b.into()
     }
@@ -106,10 +123,32 @@ impl Escapee for char {
     }
 }
 
+pub(crate) trait EscapeeContainer<E: Escapee> {
+    fn new() -> Self;
+    fn is_empty(&self) -> bool;
+    fn push(&mut self, v: E);
+    fn push_str(&mut self, s: &str);
+}
+
+impl EscapeeContainer<u8> for Vec<u8> {
+    fn new() -> Self { Self::new() }
+    fn is_empty(&self) -> bool { self.is_empty() }
+    fn push(&mut self, v: u8) { self.push(v); }
+    fn push_str(&mut self, s: &str) { self.extend_from_slice(s.as_bytes()); }
+}
+
+impl EscapeeContainer<char> for String {
+    fn new() -> Self { Self::new() }
+    fn is_empty(&self) -> bool { self.is_empty() }
+    fn push(&mut self, v: char) { self.push(v); }
+    fn push_str(&mut self, s: &str) { self.push_str(s); }
+}
+
+
 /// Checks whether the character is skipped after a string continue start
 /// (unescaped backlash followed by `\n`).
 fn is_string_continue_skipable_whitespace(b: u8) -> bool {
-    b == b' ' || b == b'\t' || b == b'\n' || b == b'\r'
+    b == b' ' || b == b'\t' || b == b'\n'
 }
 
 /// Unescapes a whole string or byte string.
@@ -117,11 +156,13 @@ fn is_string_continue_skipable_whitespace(b: u8) -> bool {
 pub(crate) fn unescape_string<E: Escapee>(
     input: &str,
     offset: usize,
-) -> Result<(Option<String>, usize), ParseError> {
+    unicode: bool,
+    byte_escapes: bool,
+) -> Result<(Option<E::Container>, usize), ParseError> {
     let mut closing_quote_pos = None;
     let mut i = offset;
     let mut end_last_escape = offset;
-    let mut value = String::new();
+    let mut value = <E::Container>::new();
     while i < input.len() {
         match input.as_bytes()[i] {
             // Handle "string continue".
@@ -137,28 +178,19 @@ pub(crate) fn unescape_string<E: Escapee>(
                 end_last_escape = i;
             }
             b'\\' => {
-                let (c, len) = unescape::<E>(&input[i..input.len() - 1], i)?;
+                let rest = &input[i..input.len() - 1];
+                let (c, len) = unescape::<E>(rest, i, unicode, byte_escapes)?;
                 value.push_str(&input[end_last_escape..i]);
-                value.push(c.into());
+                value.push(c);
                 i += len;
                 end_last_escape = i;
             }
-            b'\r' => {
-                if input.as_bytes().get(i + 1) == Some(&b'\n') {
-                    value.push_str(&input[end_last_escape..i]);
-                    value.push('\n');
-                    i += 2;
-                    end_last_escape = i;
-                } else {
-                    return Err(perr(i, IsolatedCr))
-                }
-            }
+            b'\r' => return Err(perr(i, CarriageReturn)),
             b'"' => {
                 closing_quote_pos = Some(i);
                 break;
             },
-            b if !E::SUPPORTS_UNICODE && !b.is_ascii()
-                => return Err(perr(i, NonAsciiInByteLiteral)),
+            b if !unicode && !b.is_ascii() => return Err(perr(i, NonAsciiInByteLiteral)),
             _ => i += 1,
         }
     }
@@ -184,14 +216,14 @@ pub(crate) fn unescape_string<E: Escapee>(
     Ok((value, start_suffix))
 }
 
-/// Reads and checks a raw (byte) string literal, converting `\r\n` sequences to
-/// just `\n` sequences. Returns an optional new string (if the input contained
-/// any `\r\n`) and the number of hashes used by the literal.
+/// Reads and checks a raw (byte) string literal. Returns the number of hashes
+/// and the index when the suffix starts.
 #[inline(never)]
 pub(crate) fn scan_raw_string<E: Escapee>(
     input: &str,
     offset: usize,
-) -> Result<(Option<String>, u32, usize), ParseError> {
+    unicode: bool,
+) -> Result<(u32, usize), ParseError> {
     // Raw string literal
     let num_hashes = input[offset..].bytes().position(|b| b != b'#')
         .ok_or(perr(None, InvalidLiteral))?;
@@ -204,8 +236,6 @@ pub(crate) fn scan_raw_string<E: Escapee>(
 
     let mut closing_quote_pos = None;
     let mut i = start_inner;
-    let mut end_last_escape = start_inner;
-    let mut value = String::new();
     while i < input.len() {
         let b = input.as_bytes()[i];
         if b == b'"' && input[i + 1..].starts_with(hashes) {
@@ -213,25 +243,14 @@ pub(crate) fn scan_raw_string<E: Escapee>(
             break;
         }
 
+        // CR are just always disallowed in all (raw) strings. Rust performs
+        // a normalization of CR LF to just LF in a pass prior to lexing. But
+        // in lexing, it's disallowed.
         if b == b'\r' {
-            // Convert `\r\n` into `\n`. This is currently not well documented
-            // in the Rust reference, but is done even for raw strings. That's
-            // because rustc simply converts all line endings when reading
-            // source files.
-            if input.as_bytes().get(i + 1) == Some(&b'\n') {
-                value.push_str(&input[end_last_escape..i]);
-                value.push('\n');
-                i += 2;
-                end_last_escape = i;
-                continue;
-            } else if E::SUPPORTS_UNICODE {
-                // If no \n follows the \r and we are scanning a raw string
-                // (not raw byte string), we error.
-                return Err(perr(i, IsolatedCr))
-            }
+            return Err(perr(i, CarriageReturn));
         }
 
-        if !E::SUPPORTS_UNICODE {
+        if !unicode {
             if !b.is_ascii() {
                 return Err(perr(i, NonAsciiInByteLiteral));
             }
@@ -246,17 +265,5 @@ pub(crate) fn scan_raw_string<E: Escapee>(
     let suffix = &input[start_suffix..];
     check_suffix(suffix).map_err(|kind| perr(start_suffix, kind))?;
 
-    // `value` is only empty if there was no \r\n in the input string (with the
-    // special case of the input being empty). This means the string value
-    // equals the input, so we store `None`.
-    let value = if value.is_empty() {
-        None
-    } else {
-        // There was an \r\n in the string, so we need to push the remaining
-        // unescaped part of the string still.
-        value.push_str(&input[end_last_escape..closing_quote_pos]);
-        Some(value)
-    };
-
-    Ok((value, num_hashes as u32, start_suffix))
+    Ok((num_hashes as u32, start_suffix))
 }
