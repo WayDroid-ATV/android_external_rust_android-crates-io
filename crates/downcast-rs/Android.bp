@@ -27,7 +27,6 @@ rust_test {
     },
     edition: "2021",
     features: [
-        "default",
         "std",
         "sync",
     ],
@@ -47,7 +46,6 @@ rust_test {
     },
     edition: "2021",
     features: [
-        "default",
         "std",
         "sync",
     ],
@@ -68,7 +66,6 @@ rust_test {
     },
     edition: "2021",
     features: [
-        "default",
         "std",
         "sync",
     ],
@@ -84,13 +81,38 @@ rust_library {
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
-        "default",
         "std",
         "sync",
     ],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
+    ],
+    product_available: true,
+    recovery_available: true,
+    vendor_available: true,
+    min_sdk_version: "29",
+}
+
+rust_library_rlib {
+    name: "libdowncast_rs_nostd",
+    defaults: ["rust_baremetal_defaults"],
+    crate_name: "downcast_rs",
+    cargo_env_compat: true,
+    cargo_pkg_version: "2.0.1",
+    crate_root: "src/lib.rs",
+    edition: "2021",
+    features: ["sync"],
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    prefer_rlib: true,
+    no_stdlibs: true,
+    stdlibs: [
+        "liballoc.rust_sysroot",
+        "libcompiler_builtins.rust_sysroot",
+        "libcore.rust_sysroot",
     ],
     product_available: true,
     recovery_available: true,
