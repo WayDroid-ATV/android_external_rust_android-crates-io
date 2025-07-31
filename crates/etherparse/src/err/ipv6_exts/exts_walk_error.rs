@@ -23,15 +23,13 @@ impl core::fmt::Display for ExtsWalkError {
             ExtsWalkError::HopByHopNotAtStart =>
                 write!(f, "IPv6 extensions hop-by-hop is not located directly after the IPv6 header (required by IPv6)."),
             ExtsWalkError::ExtNotReferenced{ missing_ext } =>
-                write!(f, "IPv6 extensions '{:?}' is defined but is not referenced by any of the 'next_header' of the other extension headers or the IPv6 header.", missing_ext),
+                write!(f, "IPv6 extensions '{missing_ext:?}' is defined but is not referenced by any of the 'next_header' of the other extension headers or the IPv6 header."),
         }
     }
 }
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl std::error::Error for ExtsWalkError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl core::error::Error for ExtsWalkError {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         None
     }
 }

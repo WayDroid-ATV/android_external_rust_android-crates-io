@@ -17,10 +17,8 @@ pub enum TcpOptionReadError {
     UnknownId(u8),
 }
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl std::error::Error for TcpOptionReadError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl core::error::Error for TcpOptionReadError {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         None
     }
 }
@@ -34,17 +32,13 @@ impl core::fmt::Display for TcpOptionReadError {
                 expected_len,
                 actual_len,
             } => {
-                write!(f, "TcpOptionReadError: Not enough memory left in slice to read option of kind {} (expected at least {} bytes, only {} bytes available).", option_id, expected_len, actual_len)
+                write!(f, "TcpOptionReadError: Not enough memory left in slice to read option of kind {option_id} (expected at least {expected_len} bytes, only {actual_len} bytes available).")
             }
             UnexpectedSize { option_id, size } => {
-                write!(f, "TcpOptionReadError: Length value of the option of kind {} had unexpected value {}.", option_id, size)
+                write!(f, "TcpOptionReadError: Length value of the option of kind {option_id} had unexpected value {size}.")
             }
             UnknownId(id) => {
-                write!(
-                    f,
-                    "TcpOptionReadError: Unknown tcp option kind value {}.",
-                    id
-                )
+                write!(f, "TcpOptionReadError: Unknown tcp option kind value {id}.")
             }
         }
     }
@@ -91,7 +85,7 @@ mod test {
             arg_u8_1 in any::<u8>(),
             arg_usize in any::<usize>()
         ) {
-            use std::error::Error;
+            use core::error::Error;
             use crate::TcpOptionReadError::*;
 
             assert!(UnexpectedEndOfSlice{ option_id: arg_u8_0, expected_len: arg_u8_1, actual_len: arg_usize}.source().is_none());

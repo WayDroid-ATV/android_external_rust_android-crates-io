@@ -112,10 +112,8 @@ impl core::fmt::Display for FromSliceError {
     }
 }
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl std::error::Error for FromSliceError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl core::error::Error for FromSliceError {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         use FromSliceError::*;
         match self {
             Len(err) => Some(err),
@@ -331,9 +329,9 @@ mod tests {
     use crate::{ArpHardwareId, LenSource};
 
     use super::{FromSliceError::*, *};
+    use core::error::Error;
     use core::hash::{Hash, Hasher};
     use std::collections::hash_map::DefaultHasher;
-    use std::error::Error;
     use std::format;
 
     #[test]

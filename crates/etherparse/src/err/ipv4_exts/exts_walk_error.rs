@@ -21,17 +21,14 @@ impl core::fmt::Display for ExtsWalkError {
         match self {
             ExtNotReferenced{ missing_ext } => write!(
                 f,
-                "IPv4 extensions '{:?}' is defined but is not referenced by the 'protocol' the IPv4 header.",
-                missing_ext
+                "IPv4 extensions '{missing_ext:?}' is defined but is not referenced by the 'protocol' the IPv4 header."
             ),
         }
     }
 }
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl std::error::Error for ExtsWalkError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl core::error::Error for ExtsWalkError {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         use ExtsWalkError::*;
         match self {
             ExtNotReferenced { missing_ext: _ } => None,

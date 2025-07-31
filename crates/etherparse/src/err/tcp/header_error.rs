@@ -12,17 +12,14 @@ impl core::fmt::Display for HeaderError {
         match self {
             DataOffsetTooSmall{ data_offset } => write!(
                 f,
-                "TCP Header Error: 'data offset' too small ({}). The 'data offset' must be at least 5 so the data is not overlapping with the TCP header itself.",
-                data_offset
+                "TCP Header Error: 'data offset' too small ({data_offset}). The 'data offset' must be at least 5 so the data is not overlapping with the TCP header itself."
             ),
         }
     }
 }
 
-#[cfg(feature = "std")]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
-impl std::error::Error for HeaderError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl core::error::Error for HeaderError {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         None
     }
 }
