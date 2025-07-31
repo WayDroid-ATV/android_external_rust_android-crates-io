@@ -32,7 +32,6 @@ pub mod kw {
     custom_keyword!(detailed_message);
     custom_keyword!(serialize);
     custom_keyword!(to_string);
-    custom_keyword!(transparent);
     custom_keyword!(disabled);
     custom_keyword!(default);
     custom_keyword!(default_with);
@@ -63,7 +62,7 @@ pub enum EnumMeta {
         kw: kw::parse_err_fn,
         path: Path,
     },
-    ConstIntoStr(kw::const_into_str),
+    ConstIntoStr(kw::const_into_str)
 }
 
 impl Parse for EnumMeta {
@@ -112,7 +111,7 @@ impl Parse for EnumMeta {
 }
 
 pub enum EnumDiscriminantsMeta {
-    Derive { _kw: kw::derive, paths: Vec<Path> },
+    Derive { kw: kw::derive, paths: Vec<Path> },
     Name { kw: kw::name, name: Ident },
     Vis { kw: kw::vis, vis: Visibility },
     Other { path: Path, nested: TokenStream },
@@ -121,12 +120,12 @@ pub enum EnumDiscriminantsMeta {
 impl Parse for EnumDiscriminantsMeta {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         if input.peek(kw::derive) {
-            let _kw = input.parse()?;
+            let kw = input.parse()?;
             let content;
             parenthesized!(content in input);
             let paths = content.parse_terminated(Path::parse, Token![,])?;
             Ok(EnumDiscriminantsMeta::Derive {
-                _kw,
+                kw,
                 paths: paths.into_iter().collect(),
             })
         } else if input.peek(kw::name) {
@@ -179,7 +178,7 @@ pub enum VariantMeta {
         value: LitStr,
     },
     Serialize {
-        _kw: kw::serialize,
+        kw: kw::serialize,
         value: LitStr,
     },
     Documentation {
@@ -189,7 +188,6 @@ pub enum VariantMeta {
         kw: kw::to_string,
         value: LitStr,
     },
-    Transparent(kw::transparent),
     Disabled(kw::disabled),
     Default(kw::default),
     DefaultWith {
@@ -201,7 +199,7 @@ pub enum VariantMeta {
         value: bool,
     },
     Props {
-        _kw: kw::props,
+        kw: kw::props,
         props: Vec<(LitStr, Lit)>,
     },
 }
@@ -220,17 +218,15 @@ impl Parse for VariantMeta {
             let value = input.parse()?;
             Ok(VariantMeta::DetailedMessage { kw, value })
         } else if lookahead.peek(kw::serialize) {
-            let _kw = input.parse()?;
+            let kw = input.parse()?;
             let _: Token![=] = input.parse()?;
             let value = input.parse()?;
-            Ok(VariantMeta::Serialize { _kw, value })
+            Ok(VariantMeta::Serialize { kw, value })
         } else if lookahead.peek(kw::to_string) {
             let kw = input.parse()?;
             let _: Token![=] = input.parse()?;
             let value = input.parse()?;
             Ok(VariantMeta::ToString { kw, value })
-        } else if lookahead.peek(kw::transparent) {
-            Ok(VariantMeta::Transparent(input.parse()?))
         } else if lookahead.peek(kw::disabled) {
             Ok(VariantMeta::Disabled(input.parse()?))
         } else if lookahead.peek(kw::default) {
@@ -250,12 +246,12 @@ impl Parse for VariantMeta {
             };
             Ok(VariantMeta::AsciiCaseInsensitive { kw, value })
         } else if lookahead.peek(kw::props) {
-            let _kw = input.parse()?;
+            let kw = input.parse()?;
             let content;
             parenthesized!(content in input);
             let props = content.parse_terminated(Prop::parse, Token![,])?;
             Ok(VariantMeta::Props {
-                _kw,
+                kw,
                 props: props
                     .into_iter()
                     .map(|Prop(k, v)| (LitStr::new(&k.to_string(), k.span()), v))

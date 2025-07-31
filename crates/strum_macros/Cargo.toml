@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.66.1"
 name = "strum_macros"
-version = "0.27.1"
+version = "0.27.0"
 authors = ["Peter Glotfelty <peter.glotfelty@microsoft.com>"]
 description = "Helpful macros for working with enums and strings"
 homepage = "https://github.com/Peternator7/strum"
