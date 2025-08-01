@@ -95,6 +95,7 @@ impl BVec4A {
     #[inline]
     #[must_use]
     pub fn test(&self, index: usize) -> bool {
+        assert!(index < 4, "index out of bounds");
         self.0.test(index)
     }
 

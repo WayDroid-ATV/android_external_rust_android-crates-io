@@ -19,7 +19,10 @@ pub const fn i64vec3(x: i64, y: i64, z: i64) -> I64Vec3 {
 /// A 3-dimensional vector.
 #[cfg_attr(not(target_arch = "spirv"), derive(Hash))]
 #[derive(Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    all(feature = "bytemuck", not(target_arch = "spirv")),
+    derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
 #[cfg_attr(not(target_arch = "spirv"), repr(C))]
 #[cfg_attr(target_arch = "spirv", repr(simd))]
 pub struct I64Vec3 {
@@ -111,7 +114,7 @@ impl I64Vec3 {
         Self::new(a[0], a[1], a[2])
     }
 
-    /// `[x, y, z]`
+    /// Converts `self` to `[x, y, z]`
     #[inline]
     #[must_use]
     pub const fn to_array(&self) -> [i64; 3] {

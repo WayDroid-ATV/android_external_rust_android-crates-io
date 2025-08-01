@@ -208,7 +208,7 @@
     {% if self_t != vec3_t %}
         {{ vec3_t }},
     {% endif %}
-    {% if self_t == "Vec4" %}
+    {% if self_t == "Vec3" or self_t == "Vec4" %}
         {{ vec3a_t }},
     {% endif %}
     {% if dim > 2 and self_t != vec4_t %}
@@ -312,9 +312,9 @@ pub const fn {{ self_t | lower }}(
     {% endif %}
 )]
 {%- if self_t == "Vec3A" and is_scalar %}
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::AnyBitPattern))]
+#[cfg_attr(all(feature = "bytemuck", not(target_arch = "spirv")), derive(bytemuck::AnyBitPattern))]
 {%- else %}
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(all(feature = "bytemuck", not(target_arch = "spirv")), derive(bytemuck::Pod, bytemuck::Zeroable))]
 {%- endif %}
 {%- if self_t == "Vec3A" and is_scalar %}
 #[cfg_attr(not(target_arch = "spirv"), repr(align(16)))]
@@ -532,7 +532,7 @@ impl {{ self_t }} {
         )
     }
 
-    /// `[{{ components | join(sep=", ") }}]`
+    /// Converts `self` to `[{{ components | join(sep=", ") }}]`
     #[inline]
     #[must_use]
     pub const fn to_array(&self) -> [{{ scalar_t }}; {{ dim }}] {
@@ -648,6 +648,21 @@ impl {{ self_t }} {
     }
 {% endif %}
 
+{% if self_t == "Vec3A" %}
+    // Converts `self` to a `Vec3`.
+    #[inline]
+    #[must_use]
+    pub fn to_vec3(self) -> Vec3 {
+        Vec3::from(self)
+    }
+{% elif self_t == "Vec3" %}
+    // Converts `self` to a `Vec3A`.
+    #[inline]
+    #[must_use]
+    pub fn to_vec3a(self) -> Vec3A {
+        Vec3A::from(self)
+    }
+{% endif %}
 
 {% for c in components %}
     /// Creates a {{ dim }}D vector from `self` with the given value of `{{ c }}`.
@@ -1719,7 +1734,7 @@ impl {{ self_t }} {
     ///
     /// See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
     ///
-    /// Panics
+    /// # Panics
     ///
     /// Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.
     #[inline]

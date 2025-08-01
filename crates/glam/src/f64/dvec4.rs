@@ -17,7 +17,10 @@ pub const fn dvec4(x: f64, y: f64, z: f64, w: f64) -> DVec4 {
 
 /// A 4-dimensional vector.
 #[derive(Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    all(feature = "bytemuck", not(target_arch = "spirv")),
+    derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
 #[cfg_attr(feature = "cuda", repr(align(16)))]
 #[cfg_attr(not(target_arch = "spirv"), repr(C))]
 #[cfg_attr(target_arch = "spirv", repr(simd))]
@@ -146,7 +149,7 @@ impl DVec4 {
         Self::new(a[0], a[1], a[2], a[3])
     }
 
-    /// `[x, y, z, w]`
+    /// Converts `self` to `[x, y, z, w]`
     #[inline]
     #[must_use]
     pub const fn to_array(&self) -> [f64; 4] {
@@ -636,7 +639,7 @@ impl DVec4 {
     ///
     /// See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
     ///
-    /// Panics
+    /// # Panics
     ///
     /// Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.
     #[inline]

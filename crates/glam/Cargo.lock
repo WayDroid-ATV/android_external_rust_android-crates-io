@@ -264,7 +264,7 @@ checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
 
 [[package]]
 name = "glam"
-version = "0.30.4"
+version = "0.30.5"
 dependencies = [
  "approx",
  "bytemuck",

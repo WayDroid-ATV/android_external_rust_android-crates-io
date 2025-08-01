@@ -15,7 +15,10 @@ pub const fn dvec3(x: f64, y: f64, z: f64) -> DVec3 {
 
 /// A 3-dimensional vector.
 #[derive(Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    all(feature = "bytemuck", not(target_arch = "spirv")),
+    derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
 #[cfg_attr(not(target_arch = "spirv"), repr(C))]
 #[cfg_attr(target_arch = "spirv", repr(simd))]
 pub struct DVec3 {
@@ -127,7 +130,7 @@ impl DVec3 {
         Self::new(a[0], a[1], a[2])
     }
 
-    /// `[x, y, z]`
+    /// Converts `self` to `[x, y, z]`
     #[inline]
     #[must_use]
     pub const fn to_array(&self) -> [f64; 3] {
@@ -583,7 +586,7 @@ impl DVec3 {
     ///
     /// See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
     ///
-    /// Panics
+    /// # Panics
     ///
     /// Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.
     #[inline]

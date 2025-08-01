@@ -1,6 +1,6 @@
 // Generated from vec.rs.tera template. Edit the template, not the generated file.
 
-use crate::{f32::math, BVec3, BVec3A, FloatExt, Quat, Vec2, Vec4};
+use crate::{f32::math, BVec3, BVec3A, FloatExt, Quat, Vec2, Vec3A, Vec4};
 
 use core::fmt;
 use core::iter::{Product, Sum};
@@ -15,7 +15,10 @@ pub const fn vec3(x: f32, y: f32, z: f32) -> Vec3 {
 
 /// A 3-dimensional vector.
 #[derive(Clone, Copy, PartialEq)]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    all(feature = "bytemuck", not(target_arch = "spirv")),
+    derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
 #[cfg_attr(not(target_arch = "spirv"), repr(C))]
 #[cfg_attr(target_arch = "spirv", repr(simd))]
 pub struct Vec3 {
@@ -127,7 +130,7 @@ impl Vec3 {
         Self::new(a[0], a[1], a[2])
     }
 
-    /// `[x, y, z]`
+    /// Converts `self` to `[x, y, z]`
     #[inline]
     #[must_use]
     pub const fn to_array(&self) -> [f32; 3] {
@@ -183,6 +186,13 @@ impl Vec3 {
     pub fn truncate(self) -> Vec2 {
         use crate::swizzles::Vec3Swizzles;
         self.xy()
+    }
+
+    // Converts `self` to a `Vec3A`.
+    #[inline]
+    #[must_use]
+    pub fn to_vec3a(self) -> Vec3A {
+        Vec3A::from(self)
     }
 
     /// Creates a 3D vector from `self` with the given value of `x`.
@@ -583,7 +593,7 @@ impl Vec3 {
     ///
     /// See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
     ///
-    /// Panics
+    /// # Panics
     ///
     /// Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.
     #[inline]

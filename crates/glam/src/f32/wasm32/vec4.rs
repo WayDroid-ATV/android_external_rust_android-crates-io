@@ -21,7 +21,10 @@ pub const fn vec4(x: f32, y: f32, z: f32, w: f32) -> Vec4 {
 ///
 /// This type is 16 byte aligned.
 #[derive(Clone, Copy)]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    all(feature = "bytemuck", not(target_arch = "spirv")),
+    derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
 #[repr(transparent)]
 pub struct Vec4(pub(crate) v128);
 
@@ -130,7 +133,7 @@ impl Vec4 {
         Self::new(a[0], a[1], a[2], a[3])
     }
 
-    /// `[x, y, z, w]`
+    /// Converts `self` to `[x, y, z, w]`
     #[inline]
     #[must_use]
     pub const fn to_array(&self) -> [f32; 4] {
@@ -572,7 +575,7 @@ impl Vec4 {
     ///
     /// See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
     ///
-    /// Panics
+    /// # Panics
     ///
     /// Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.
     #[inline]

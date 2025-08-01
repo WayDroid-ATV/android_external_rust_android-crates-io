@@ -30,6 +30,8 @@ macro_rules! impl_bvec4_tests {
                 $mask::new(true, true, true, true),
                 $masknew(true, true, true, true)
             );
+
+            assert_eq!($mask::default(), $mask::FALSE);
         });
 
         glam_test!(test_mask_from_array_bool, {
@@ -467,6 +469,8 @@ macro_rules! impl_bvec4_tests {
             assert_eq!(b.test(1), true);
             assert_eq!(b.test(2), false);
             assert_eq!(b.test(3), true);
+
+            should_panic!({ a.test(4) });
         });
 
         glam_test!(test_mask_set, {
@@ -489,6 +493,11 @@ macro_rules! impl_bvec4_tests {
             assert_eq!(b.test(2), false);
             b.set(3, true);
             assert_eq!(b.test(3), true);
+
+            should_panic!({
+                let mut a = $mask::FALSE;
+                a.set(4, true)
+            });
         });
 
         glam_test!(test_mask_hash, {
@@ -2008,14 +2017,21 @@ macro_rules! impl_vec4_shift_op_test {
                                     for z2 in $t_min..$t_max {
                                         for w2 in $t_min..$t_max {
                                             let lhs = $vec4::new(x1, y1, z1, w1);
-                                            assert_eq!(
-                                                lhs << $rhs::new(x2, y2, z2, w2),
-                                                $vec4::new(x1 << x2, y1 << y2, z1 << z2, w1 << w2)
-                                            );
-                                            assert_eq!(
-                                                lhs >> $rhs::new(x2, y2, z2, w2),
-                                                $vec4::new(x1 >> x2, y1 >> y2, z1 >> z2, w1 >> w2)
-                                            );
+                                            let rhs = $rhs::new(x2, y2, z2, w2);
+
+                                            let shl =
+                                                $vec4::new(x1 << x2, y1 << y2, z1 << z2, w1 << w2);
+                                            assert_eq!(lhs << rhs, shl);
+                                            assert_eq!(&lhs << rhs, shl);
+                                            assert_eq!(lhs << &rhs, shl);
+                                            assert_eq!(&lhs << &rhs, shl);
+
+                                            let shr =
+                                                $vec4::new(x1 >> x2, y1 >> y2, z1 >> z2, w1 >> w2);
+                                            assert_eq!(lhs >> rhs, shr);
+                                            assert_eq!(&lhs >> rhs, shr);
+                                            assert_eq!(lhs >> &rhs, shr);
+                                            assert_eq!(&lhs >> &rhs, shr);
                                         }
                                     }
                                 }
@@ -3969,6 +3985,62 @@ mod i64vec4 {
         }
     });
 
+    glam_test!(test_wrapping_add, {
+        assert_eq!(
+            I64Vec4::new(i64::MAX, 5, i64::MIN, 0).wrapping_add(I64Vec4::new(1, 3, i64::MAX, 0)),
+            I64Vec4::new(i64::MIN, 8, -1, 0),
+        );
+    });
+
+    glam_test!(test_wrapping_sub, {
+        assert_eq!(
+            I64Vec4::new(i64::MAX, 5, i64::MIN, 0).wrapping_sub(I64Vec4::new(1, 3, i64::MAX, 0)),
+            I64Vec4::new(9223372036854775806, 2, 1, 0)
+        );
+    });
+
+    glam_test!(test_wrapping_mul, {
+        assert_eq!(
+            I64Vec4::new(i64::MAX, 5, i64::MIN, 0).wrapping_mul(I64Vec4::new(3, 3, 5, 1)),
+            I64Vec4::new(9223372036854775805, 15, -9223372036854775808, 0)
+        );
+    });
+
+    glam_test!(test_wrapping_div, {
+        assert_eq!(
+            I64Vec4::new(i64::MAX, 5, i64::MIN, 0).wrapping_div(I64Vec4::new(3, 3, 5, 1)),
+            I64Vec4::new(3074457345618258602, 1, -1844674407370955161, 0)
+        );
+    });
+
+    glam_test!(test_saturating_add, {
+        assert_eq!(
+            I64Vec4::new(i64::MAX, i64::MIN, 0, 0).saturating_add(I64Vec4::new(1, -1, 2, 3)),
+            I64Vec4::new(i64::MAX, i64::MIN, 2, 3)
+        );
+    });
+
+    glam_test!(test_saturating_sub, {
+        assert_eq!(
+            I64Vec4::new(i64::MIN, i64::MAX, 0, 0).saturating_sub(I64Vec4::new(1, -1, 2, 3)),
+            I64Vec4::new(i64::MIN, i64::MAX, -2, -3)
+        );
+    });
+
+    glam_test!(test_saturating_mul, {
+        assert_eq!(
+            I64Vec4::new(i64::MAX, i64::MIN, 0, 0).saturating_mul(I64Vec4::new(2, 2, 0, 0)),
+            I64Vec4::new(i64::MAX, i64::MIN, 0, 0)
+        );
+    });
+
+    glam_test!(test_saturating_div, {
+        assert_eq!(
+            I64Vec4::new(i64::MAX, i64::MIN, 0, 0).saturating_div(I64Vec4::new(2, 2, 3, 4)),
+            I64Vec4::new(4611686018427387903, -4611686018427387904, 0, 0)
+        );
+    });
+
     glam_test!(test_checked_add_unsigned, {
         assert_eq!(I64Vec4::MAX.checked_add_unsigned(U64Vec4::ONE), None);
         assert_eq!(
@@ -4097,6 +4169,72 @@ mod u64vec4 {
         assert_eq!(
             U64Vec4::new(1, 2, 3, 4),
             U64Vec4::try_from(USizeVec4::new(1, 2, 3, 4)).unwrap()
+        );
+    });
+
+    glam_test!(test_wrapping_add, {
+        assert_eq!(
+            U64Vec4::new(u64::MAX, 5, u64::MAX, 0).wrapping_add(U64Vec4::new(1, 3, u64::MAX, 0)),
+            U64Vec4::new(0, 8, u64::MAX.wrapping_add(u64::MAX), 0),
+        );
+    });
+
+    glam_test!(test_wrapping_sub, {
+        assert_eq!(
+            U64Vec4::new(u64::MAX, 5, u64::MAX - 1, 0).wrapping_sub(U64Vec4::new(
+                1,
+                3,
+                u64::MAX,
+                0
+            )),
+            U64Vec4::new(
+                u64::MAX.wrapping_sub(1),
+                2,
+                (u64::MAX - 1).wrapping_sub(u64::MAX),
+                0
+            )
+        );
+    });
+
+    glam_test!(test_wrapping_mul, {
+        assert_eq!(
+            U64Vec4::new(u64::MAX, 5, u64::MAX, 0).wrapping_mul(U64Vec4::new(3, 3, 5, 1)),
+            U64Vec4::new(u64::MAX.wrapping_mul(3), 15, u64::MAX.wrapping_mul(5), 0)
+        );
+    });
+
+    glam_test!(test_wrapping_div, {
+        assert_eq!(
+            U64Vec4::new(u64::MAX, 5, u64::MAX, 0).wrapping_div(U64Vec4::new(3, 3, 5, 1)),
+            U64Vec4::new(u64::MAX.wrapping_div(3), 1, u64::MAX.wrapping_div(5), 0)
+        );
+    });
+
+    glam_test!(test_saturating_add, {
+        assert_eq!(
+            U64Vec4::new(u64::MAX, u64::MAX, 0, 0).saturating_add(U64Vec4::new(1, u64::MAX, 2, 3)),
+            U64Vec4::new(u64::MAX, u64::MAX, 2, 3)
+        );
+    });
+
+    glam_test!(test_saturating_sub, {
+        assert_eq!(
+            U64Vec4::new(0, u64::MAX, 0, 0).saturating_sub(U64Vec4::new(1, 1, 2, 3)),
+            U64Vec4::new(0, u64::MAX.saturating_sub(1), 0, 0)
+        );
+    });
+
+    glam_test!(test_saturating_mul, {
+        assert_eq!(
+            U64Vec4::new(u64::MAX, u64::MAX, 0, 0).saturating_mul(U64Vec4::new(2, u64::MAX, 0, 0)),
+            U64Vec4::new(u64::MAX, u64::MAX, 0, 0)
+        );
+    });
+
+    glam_test!(test_saturating_div, {
+        assert_eq!(
+            U64Vec4::new(u64::MAX, u64::MAX, 0, 0).saturating_div(U64Vec4::new(2, u64::MAX, 3, 4)),
+            U64Vec4::new(u64::MAX.saturating_div(2), 1, 0, 0)
         );
     });
 

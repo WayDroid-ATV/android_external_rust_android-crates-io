@@ -26,7 +26,10 @@ pub const fn vec3a(x: f32, y: f32, z: f32) -> Vec3A {
 ///
 /// This type is 16 byte aligned.
 #[derive(Clone, Copy)]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    all(feature = "bytemuck", not(target_arch = "spirv")),
+    derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
 #[repr(transparent)]
 pub struct Vec3A(pub(crate) f32x4);
 
@@ -129,7 +132,7 @@ impl Vec3A {
         Self::new(a[0], a[1], a[2])
     }
 
-    /// `[x, y, z]`
+    /// Converts `self` to `[x, y, z]`
     #[inline]
     #[must_use]
     pub const fn to_array(&self) -> [f32; 3] {
@@ -182,6 +185,13 @@ impl Vec3A {
     pub fn truncate(self) -> Vec2 {
         use crate::swizzles::Vec3Swizzles;
         self.xy()
+    }
+
+    // Converts `self` to a `Vec3`.
+    #[inline]
+    #[must_use]
+    pub fn to_vec3(self) -> Vec3 {
+        Vec3::from(self)
     }
 
     /// Creates a 3D vector from `self` with the given value of `x`.
@@ -569,7 +579,7 @@ impl Vec3A {
     ///
     /// See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
     ///
-    /// Panics
+    /// # Panics
     ///
     /// Will panic if the resulting normalized vector is not finite when `glam_assert` is enabled.
     #[inline]
