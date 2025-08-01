@@ -1,7 +1,6 @@
 //! Filled curve plots
 
 use std::borrow::Cow;
-use std::iter::IntoIterator;
 
 use crate::data::Matrix;
 use crate::traits::{self, Data, Set};
@@ -27,9 +26,6 @@ impl Default for Properties {
 }
 
 impl Script for Properties {
-    // Allow clippy::format_push_string even with older versions of rust (<1.62) which
-    // don't have it defined.
-    #[allow(clippy::all)]
     fn script(&self) -> String {
         let mut script = if let Some(axes) = self.axes {
             format!("axes {} ", axes.display())
@@ -136,7 +132,7 @@ where
         let (x_factor, y_factor) =
             crate::scale_factor(&self.axes, props.axes.unwrap_or(crate::Axes::BottomXLeftY));
 
-        let data = Matrix::new(izip!(x, y1, y2), (x_factor, y_factor, y_factor));
+        let data = Matrix::new(itertools::izip!(x, y1, y2), (x_factor, y_factor, y_factor));
         self.plots.push(Plot::new(data, &props));
         self
     }

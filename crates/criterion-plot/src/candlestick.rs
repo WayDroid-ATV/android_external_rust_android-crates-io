@@ -1,7 +1,6 @@
 //! "Candlestick" plots
 
 use std::borrow::Cow;
-use std::iter::IntoIterator;
 
 use crate::data::Matrix;
 use crate::traits::{self, Data, Set};
@@ -27,9 +26,6 @@ impl Default for Properties {
 }
 
 impl Script for Properties {
-    // Allow clippy::format_push_string even with older versions of rust (<1.62) which
-    // don't have it defined.
-    #[allow(clippy::all)]
     fn script(&self) -> String {
         let mut script = String::from("with candlesticks ");
 
@@ -144,7 +140,7 @@ where
         } = candlesticks;
 
         let data = Matrix::new(
-            izip!(x, box_min, whisker_min, whisker_high, box_high),
+            itertools::izip!(x, box_min, whisker_min, whisker_high, box_high),
             (x_factor, y_factor, y_factor, y_factor, y_factor),
         );
         self.plots

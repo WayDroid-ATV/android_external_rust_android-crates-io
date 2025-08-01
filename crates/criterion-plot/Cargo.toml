@@ -10,13 +10,19 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
+edition = "2021"
 name = "criterion-plot"
-version = "0.5.0"
+version = "0.6.0"
 authors = [
     "Jorge Aparicio <japaricious@gmail.com>",
     "Brook Heisler <brookheisler@gmail.com>",
 ]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Criterion's plotting library"
 readme = "README.md"
 keywords = [
@@ -25,14 +31,21 @@ keywords = [
     "criterion",
 ]
 categories = ["visualization"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/bheisler/criterion.rs"
+
+[badges.maintenance]
+status = "looking-for-maintainer"
+
+[lib]
+name = "criterion_plot"
+path = "src/lib.rs"
 
 [dependencies.cast]
 version = "0.3"
 
 [dependencies.itertools]
-version = "0.10"
+version = "0.13"
 
 [dev-dependencies.itertools-num]
 version = "0.1"
@@ -44,13 +57,3 @@ default-features = false
 
 [dev-dependencies.rand]
 version = "0.8"
-
-[badges.appveyor]
-id = "4255ads9ctpupcl2"
-repository = "bheisler/criterion.rs"
-
-[badges.maintenance]
-status = "looking-for-maintainer"
-
-[badges.travis-ci]
-repository = "bheisler/criterion.rs"

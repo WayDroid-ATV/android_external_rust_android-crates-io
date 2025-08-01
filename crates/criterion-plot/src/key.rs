@@ -48,9 +48,6 @@ impl Properties {
 }
 
 impl Script for Properties {
-    // Allow clippy::format_push_string even with older versions of rust (<1.62) which
-    // don't have it defined.
-    #[allow(clippy::all)]
     fn script(&self) -> String {
         let mut script = if self.hidden {
             return String::from("set key off\n");
@@ -195,7 +192,7 @@ pub enum Order {
 // TODO XY position
 #[derive(Clone, Copy)]
 pub enum Position {
-    /// Inside the area surrounded by the four (BottomX, TopX, LeftY and RightY) axes
+    /// Inside the area surrounded by the four (Bottom X, Top X, Left Y and Right Y) axes
     Inside(Vertical, Horizontal),
     /// Outside of that area
     Outside(Vertical, Horizontal),

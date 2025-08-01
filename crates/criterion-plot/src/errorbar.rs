@@ -1,7 +1,6 @@
 //! Error bar plots
 
 use std::borrow::Cow;
-use std::iter::IntoIterator;
 
 use crate::data::Matrix;
 use crate::traits::{self, Data, Set};
@@ -36,9 +35,6 @@ impl ErrorBarDefault<Style> for Properties {
 }
 
 impl Script for Properties {
-    // Allow clippy::format_push_string even with older versions of rust (<1.62) which
-    // don't have it defined.
-    #[allow(clippy::all)]
     fn script(&self) -> String {
         let mut script = format!("with {} ", self.style.display());
 
@@ -263,7 +259,7 @@ where
             } => (x, y, y_low, y_high, y_factor),
         };
         let data = Matrix::new(
-            izip!(x, y, length, height),
+            itertools::izip!(x, y, length, height),
             (x_factor, y_factor, e_factor, e_factor),
         );
         self.plots.push(Plot::new(

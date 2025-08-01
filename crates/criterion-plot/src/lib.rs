@@ -69,7 +69,7 @@
 //! ```
 //!
 //! - error bars (based on
-//! [Julia plotting tutorial](https://plot.ly/julia/error-bars/#Colored-and-Styled-Error-Bars))
+//!   [Julia plotting tutorial](https://plot.ly/julia/error-bars/#Colored-and-Styled-Error-Bars))
 //!
 //! ![Plot](error_bar.svg)
 //!
@@ -149,7 +149,7 @@
 //! ```
 //!
 //! - Candlesticks (based on
-//! [`candlesticks.dem`](http://gnuplot.sourceforge.net/demo/candlesticks.html))
+//!   [`candlesticks.dem`](http://gnuplot.sourceforge.net/demo/candlesticks.html))
 //!
 //! ![Plot](candlesticks.svg)
 //!
@@ -285,7 +285,7 @@
 //! #   }));
 //! ```
 //! - Filled curves (based on
-//! [`transparent.dem`](http://gnuplot.sourceforge.net/demo/transparent.html))
+//!   [`transparent.dem`](http://gnuplot.sourceforge.net/demo/transparent.html))
 //!
 //! ![Plot](filled_curve.svg)
 //!
@@ -361,19 +361,13 @@
 //!     }));
 //! ```
 
-#![deny(missing_docs)]
+#![deny(clippy::doc_markdown, missing_docs)]
 #![deny(warnings)]
 #![deny(bare_trait_objects)]
 // This lint has lots of false positives ATM, see
 // https://github.com/Manishearth/rust-clippy/issues/761
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::new_without_default))]
-// False positives with images
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::doc_markdown))]
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::many_single_char_names))]
-
-extern crate cast;
-#[macro_use]
-extern crate itertools;
+#![allow(clippy::new_without_default)]
+#![allow(clippy::many_single_char_names)]
 
 use std::borrow::Cow;
 use std::fmt;
@@ -438,9 +432,6 @@ impl Figure {
         }
     }
 
-    // Allow clippy::format_push_string even with older versions of rust (<1.62) which
-    // don't have it defined.
-    #[allow(clippy::all)]
     fn script(&self) -> Vec<u8> {
         let mut s = String::new();
 
@@ -939,7 +930,7 @@ pub enum VersionError {
     Error(String),
     /// The `gnuplot` command returned invalid utf-8
     OutputError,
-    /// The `gnuplot` command returned an unparseable string
+    /// The `gnuplot` command returned an unparsable string
     ParseError(String),
 }
 impl fmt::Display for VersionError {
@@ -952,7 +943,7 @@ impl fmt::Display for VersionError {
             VersionError::OutputError => write!(f, "`gnuplot --version` returned invalid utf-8"),
             VersionError::ParseError(msg) => write!(
                 f,
-                "`gnuplot --version` returned an unparseable version string: {}",
+                "`gnuplot --version` returned an unparsable version string: {}",
                 msg
             ),
         }
@@ -998,9 +989,32 @@ pub fn version() -> Result<Version, VersionError> {
         return Err(VersionError::Error(error));
     }
 
-    let output = String::from_utf8(command_output.stdout).map_err(|_| VersionError::OutputError)?;
+    parse_version_utf8(&command_output.stdout).or_else(|utf8_err| {
+        // gnuplot can emit UTF-16 on some systems/configurations (e.g. some Windows machines).
+        // If we failed to parse as UTF-8, try again as UTF-16 to account for this.
+        // If UTF-16 parsing also fails, return the original error we got for UTF-8 to avoid confusing matters more.
+        parse_version_utf16(&command_output.stdout).map_err(|_| utf8_err)
+    })
+}
 
-    parse_version(&output).map_err(|_| VersionError::ParseError(output.clone()))
+fn parse_version_utf8(output_bytes: &[u8]) -> Result<Version, VersionError> {
+    let output = str::from_utf8(output_bytes).map_err(|_| VersionError::OutputError)?;
+    parse_version(output).map_err(|_| VersionError::ParseError(output.to_owned()))
+}
+
+fn parse_version_utf16(output_bytes: &[u8]) -> Result<Version, VersionError> {
+    if output_bytes.len() % 2 != 0 {
+        // Not an even number of bytes, so cannot be UTF-16.
+        return Err(VersionError::OutputError);
+    }
+
+    let output_as_u16: Vec<u16> = output_bytes
+        .chunks_exact(2)
+        .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
+        .collect();
+
+    let output = String::from_utf16(&output_as_u16).map_err(|_| VersionError::OutputError)?;
+    parse_version(&output).map_err(|_| VersionError::ParseError(output.to_owned()))
 }
 
 fn parse_version(version_str: &str) -> Result<Version, Option<ParseIntError>> {
@@ -1062,7 +1076,7 @@ mod test {
     #[test]
     fn test_parse_version_on_valid_string() {
         let string = "gnuplot 5.0 patchlevel 7";
-        let version = super::parse_version(&string).unwrap();
+        let version = super::parse_version(string).unwrap();
         assert_eq!(5, version.major);
         assert_eq!(0, version.minor);
         assert_eq!("7", &version.patch);
@@ -1071,7 +1085,7 @@ mod test {
     #[test]
     fn test_parse_gentoo_version() {
         let string = "gnuplot 5.2 patchlevel 5a (Gentoo revision r0)";
-        let version = super::parse_version(&string).unwrap();
+        let version = super::parse_version(string).unwrap();
         assert_eq!(5, version.major);
         assert_eq!(2, version.minor);
         assert_eq!("5a", &version.patch);
