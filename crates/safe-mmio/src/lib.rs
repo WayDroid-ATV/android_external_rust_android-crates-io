@@ -60,7 +60,7 @@ impl<T: ?Sized> UniqueMmioPointer<'_, T> {
     ///
     /// If `T` contains any fields wrapped in [`ReadOnly`], [`WriteOnly`] or [`ReadWrite`] then they
     /// must indeed be safe to perform MMIO reads or writes on.
-    pub unsafe fn new(regs: NonNull<T>) -> Self {
+    pub const unsafe fn new(regs: NonNull<T>) -> Self {
         Self(SharedMmioPointer {
             regs,
             phantom: PhantomData,
@@ -75,7 +75,7 @@ impl<T: ?Sized> UniqueMmioPointer<'_, T> {
     ///
     /// `regs` must be a properly aligned and valid pointer to some MMIO address space of type T,
     /// within the allocation that `self` points to.
-    pub unsafe fn child<U>(&mut self, regs: NonNull<U>) -> UniqueMmioPointer<U> {
+    pub const unsafe fn child<U: ?Sized>(&mut self, regs: NonNull<U>) -> UniqueMmioPointer<U> {
         UniqueMmioPointer(SharedMmioPointer {
             regs,
             phantom: PhantomData,
@@ -83,13 +83,44 @@ impl<T: ?Sized> UniqueMmioPointer<'_, T> {
     }
 
     /// Returns a raw mut pointer to the MMIO registers.
-    pub fn ptr_mut(&mut self) -> *mut T {
+    pub const fn ptr_mut(&mut self) -> *mut T {
         self.0.regs.as_ptr()
     }
 
     /// Returns a `NonNull<T>` pointer to the MMIO registers.
-    pub fn ptr_nonnull(&mut self) -> NonNull<T> {
+    pub const fn ptr_nonnull(&mut self) -> NonNull<T> {
         self.0.regs
+    }
+
+    /// Returns a new `UniqueMmioPointer` with a lifetime no greater than this one.
+    pub const fn reborrow(&mut self) -> UniqueMmioPointer<T> {
+        let ptr = self.ptr_nonnull();
+        // SAFETY: `ptr` must be properly aligned and valid and within our allocation because it is
+        // exactly our allocation.
+        unsafe { self.child(ptr) }
+    }
+}
+
+impl<'a, T: ?Sized> UniqueMmioPointer<'a, T> {
+    /// Creates a new `UniqueMmioPointer` with the same lifetime as this one, but not tied to the
+    /// lifetime this one is borrowed for.
+    ///
+    /// This is used internally by the [`split_fields!`] macro and shouldn't be called directly.
+    ///
+    /// # Safety
+    ///
+    /// `regs` must be a properly aligned and valid pointer to some MMIO address space of type T,
+    /// within the allocation that `self` points to. `split_child` must not be called for the same
+    /// child field more than once, and the original `UniqueMmioPointer` must not be used after
+    /// `split_child` has been called for one or more of its fields.
+    pub const unsafe fn split_child<U: ?Sized>(
+        &mut self,
+        regs: NonNull<U>,
+    ) -> UniqueMmioPointer<'a, U> {
+        UniqueMmioPointer(SharedMmioPointer {
+            regs,
+            phantom: PhantomData,
+        })
     }
 }
 
@@ -144,7 +175,7 @@ impl<T: Immutable + IntoBytes> UniqueMmioPointer<'_, WriteOnly<T>> {
     }
 }
 
-impl<T> UniqueMmioPointer<'_, [T]> {
+impl<'a, T> UniqueMmioPointer<'a, [T]> {
     /// Returns a `UniqueMmioPointer` to an element of this slice, or `None` if the index is out of
     /// bounds.
     ///
@@ -159,8 +190,8 @@ impl<T> UniqueMmioPointer<'_, [T]> {
     /// let mut element = slice.get(1).unwrap();
     /// element.write(42);
     /// ```
-    pub fn get(&mut self, index: usize) -> Option<UniqueMmioPointer<T>> {
-        if index >= self.len() {
+    pub const fn get(&mut self, index: usize) -> Option<UniqueMmioPointer<T>> {
+        if index >= self.0.len() {
             return None;
         }
         // SAFETY: self.ptr_mut() is guaranteed to return a pointer that is valid for MMIO and
@@ -170,9 +201,41 @@ impl<T> UniqueMmioPointer<'_, [T]> {
         // and within the allocation of self.regs.
         Some(unsafe { self.child(regs) })
     }
+
+    /// Returns a `UniqueMmioPointer` to an element of this slice, or `None` if the index is out of
+    /// bounds.
+    ///
+    /// Unlike [`UniqueMmioPointer::get`] this takes ownership of the original pointer. This is
+    /// useful when you want to store the resulting pointer without keeping the original pointer
+    /// around.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use safe_mmio::{UniqueMmioPointer, fields::ReadWrite};
+    ///
+    /// let mut slice: UniqueMmioPointer<[ReadWrite<u32>]>;
+    /// # let mut fake = [ReadWrite(1), ReadWrite(2), ReadWrite(3)];
+    /// # slice = UniqueMmioPointer::from(fake.as_mut_slice());
+    /// let mut element = slice.take(1).unwrap();
+    /// element.write(42);
+    /// // `slice` can no longer be used at this point.
+    /// ```
+    pub const fn take(mut self, index: usize) -> Option<UniqueMmioPointer<'a, T>> {
+        if index >= self.0.len() {
+            return None;
+        }
+        // SAFETY: self.ptr_mut() is guaranteed to return a pointer that is valid for MMIO and
+        // unique, as promised by the caller of `UniqueMmioPointer::new`.
+        let regs = NonNull::new(unsafe { &raw mut (*self.ptr_mut())[index] }).unwrap();
+        // SAFETY: We created regs from the raw slice in self.regs, so it must also be valid, unique
+        // and within the allocation of self.regs. `self` is dropped immediately after this and we
+        // don't split out any other children.
+        Some(unsafe { self.split_child(regs) })
+    }
 }
 
-impl<T, const LEN: usize> UniqueMmioPointer<'_, [T; LEN]> {
+impl<'a, T, const LEN: usize> UniqueMmioPointer<'a, [T; LEN]> {
     /// Splits a `UniqueMmioPointer` to an array into an array of `UniqueMmioPointer`s.
     pub fn split(&mut self) -> [UniqueMmioPointer<T>; LEN] {
         array::from_fn(|i| {
@@ -183,6 +246,14 @@ impl<T, const LEN: usize> UniqueMmioPointer<'_, [T; LEN]> {
                 phantom: PhantomData,
             })
         })
+    }
+
+    /// Converts this array pointer to an equivalent slice pointer.
+    pub const fn as_mut_slice(&mut self) -> UniqueMmioPointer<[T]> {
+        let regs = NonNull::new(self.ptr_mut()).unwrap();
+        // SAFETY: We created regs from the raw array in self.regs, so it must also be valid, unique
+        // and within the allocation of self.regs.
+        unsafe { self.child(regs) }
     }
 
     /// Returns a `UniqueMmioPointer` to an element of this array, or `None` if the index is out of
@@ -198,8 +269,9 @@ impl<T, const LEN: usize> UniqueMmioPointer<'_, [T; LEN]> {
     /// # slice = UniqueMmioPointer::from(&mut fake);
     /// let mut element = slice.get(1).unwrap();
     /// element.write(42);
+    /// slice.get(2).unwrap().write(100);
     /// ```
-    pub fn get(&mut self, index: usize) -> Option<UniqueMmioPointer<T>> {
+    pub const fn get(&mut self, index: usize) -> Option<UniqueMmioPointer<T>> {
         if index >= LEN {
             return None;
         }
@@ -209,6 +281,79 @@ impl<T, const LEN: usize> UniqueMmioPointer<'_, [T; LEN]> {
         // SAFETY: We created regs from the raw array in self.regs, so it must also be valid, unique
         // and within the allocation of self.regs.
         Some(unsafe { self.child(regs) })
+    }
+
+    /// Returns a `UniqueMmioPointer` to an element of this array, or `None` if the index is out of
+    /// bounds.
+    ///
+    /// Unlike [`UniqueMmioPointer::get`] this takes ownership of the original pointer. This is
+    /// useful when you want to store the resulting pointer without keeping the original pointer
+    /// around.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use safe_mmio::{UniqueMmioPointer, fields::ReadWrite};
+    ///
+    /// let mut array: UniqueMmioPointer<[ReadWrite<u32>; 3]>;
+    /// # let mut fake = [ReadWrite(1), ReadWrite(2), ReadWrite(3)];
+    /// # array = UniqueMmioPointer::from(&mut fake);
+    /// let mut element = array.take(1).unwrap();
+    /// element.write(42);
+    /// // `array` can no longer be used at this point.
+    /// ```
+    pub const fn take(mut self, index: usize) -> Option<UniqueMmioPointer<'a, T>> {
+        if index >= LEN {
+            return None;
+        }
+        // SAFETY: self.ptr_mut() is guaranteed to return a pointer that is valid for MMIO and
+        // unique, as promised by the caller of `UniqueMmioPointer::new`.
+        let regs = NonNull::new(unsafe { &raw mut (*self.ptr_mut())[index] }).unwrap();
+        // SAFETY: We created regs from the raw array in self.regs, so it must also be valid, unique
+        // and within the allocation of self.regs. `self` is dropped immediately after this and we
+        // don't split out any other children.
+        Some(unsafe { self.split_child(regs) })
+    }
+}
+
+impl<'a, T, const LEN: usize> From<UniqueMmioPointer<'a, [T; LEN]>> for UniqueMmioPointer<'a, [T]> {
+    fn from(mut value: UniqueMmioPointer<'a, [T; LEN]>) -> Self {
+        let regs = NonNull::new(value.ptr_mut()).unwrap();
+        // SAFETY: regs comes from a UniqueMmioPointer so already satisfies all the safety
+        // requirements.
+        unsafe { UniqueMmioPointer::new(regs) }
+    }
+}
+
+impl<'a, T> From<UniqueMmioPointer<'a, T>> for UniqueMmioPointer<'a, [T; 1]> {
+    fn from(mut value: UniqueMmioPointer<'a, T>) -> Self {
+        let regs = NonNull::new(value.ptr_mut()).unwrap().cast();
+        // SAFETY: regs comes from a UniqueMmioPointer so already satisfies all the safety
+        // requirements.
+        unsafe { UniqueMmioPointer::new(regs) }
+    }
+}
+
+impl<'a, T> From<UniqueMmioPointer<'a, T>> for UniqueMmioPointer<'a, [T]> {
+    fn from(mut value: UniqueMmioPointer<'a, T>) -> Self {
+        let array: *mut [T; 1] = value.ptr_mut().cast();
+        let regs = NonNull::new(array).unwrap();
+        // SAFETY: regs comes from a UniqueMmioPointer so already satisfies all the safety
+        // requirements.
+        unsafe { UniqueMmioPointer::new(regs) }
+    }
+}
+
+impl<'a, T, const LEN: usize> From<UniqueMmioPointer<'a, [T; LEN]>>
+    for [UniqueMmioPointer<'a, T>; LEN]
+{
+    fn from(mut value: UniqueMmioPointer<'a, [T; LEN]>) -> Self {
+        array::from_fn(|i| {
+            let item_pointer = value.split()[i].ptr_mut();
+            // SAFETY: `split_child` is called only once on each item and the original
+            // `UniqueMmioPointer` is consumed by this function.
+            unsafe { value.split_child(core::ptr::NonNull::new(item_pointer).unwrap()) }
+        })
     }
 }
 
@@ -258,14 +403,13 @@ impl<T: ?Sized> Eq for SharedMmioPointer<'_, T> {}
 
 impl<T: ?Sized> Clone for SharedMmioPointer<'_, T> {
     fn clone(&self) -> Self {
-        Self {
-            regs: self.regs.clone(),
-            phantom: self.phantom.clone(),
-        }
+        *self
     }
 }
 
-impl<T: ?Sized> SharedMmioPointer<'_, T> {
+impl<T: ?Sized> Copy for SharedMmioPointer<'_, T> {}
+
+impl<'a, T: ?Sized> SharedMmioPointer<'a, T> {
     /// Creates a new `SharedMmioPointer` with the same lifetime as this one.
     ///
     /// This is used internally by the [`field_shared!`] macro and shouldn't be called directly.
@@ -274,7 +418,7 @@ impl<T: ?Sized> SharedMmioPointer<'_, T> {
     ///
     /// `regs` must be a properly aligned and valid pointer to some MMIO address space of type T,
     /// within the allocation that `self` points to.
-    pub unsafe fn child<U>(&self, regs: NonNull<U>) -> SharedMmioPointer<U> {
+    pub const unsafe fn child<U: ?Sized>(&self, regs: NonNull<U>) -> SharedMmioPointer<'a, U> {
         SharedMmioPointer {
             regs,
             phantom: PhantomData,
@@ -282,7 +426,7 @@ impl<T: ?Sized> SharedMmioPointer<'_, T> {
     }
 
     /// Returns a raw const pointer to the MMIO registers.
-    pub fn ptr(&self) -> *const T {
+    pub const fn ptr(&self) -> *const T {
         self.regs.as_ptr()
     }
 }
@@ -327,10 +471,10 @@ impl<T: FromBytes + IntoBytes> SharedMmioPointer<'_, ReadPureWrite<T>> {
     }
 }
 
-impl<T> SharedMmioPointer<'_, [T]> {
+impl<'a, T> SharedMmioPointer<'a, [T]> {
     /// Returns a `SharedMmioPointer` to an element of this slice, or `None` if the index is out of
     /// bounds.
-    pub fn get(&self, index: usize) -> Option<SharedMmioPointer<T>> {
+    pub const fn get(&self, index: usize) -> Option<SharedMmioPointer<'a, T>> {
         if index >= self.len() {
             return None;
         }
@@ -352,9 +496,9 @@ impl<T> SharedMmioPointer<'_, [T]> {
     }
 }
 
-impl<T, const LEN: usize> SharedMmioPointer<'_, [T; LEN]> {
+impl<'a, T, const LEN: usize> SharedMmioPointer<'a, [T; LEN]> {
     /// Splits a `SharedMmioPointer` to an array into an array of `SharedMmioPointer`s.
-    pub fn split(&self) -> [SharedMmioPointer<T>; LEN] {
+    pub fn split(&self) -> [SharedMmioPointer<'a, T>; LEN] {
         array::from_fn(|i| SharedMmioPointer {
             // SAFETY: self.regs is always unique and valid for MMIO access. We make sure the
             // pointers we split it into don't overlap, so the same applies to each of them.
@@ -363,9 +507,17 @@ impl<T, const LEN: usize> SharedMmioPointer<'_, [T; LEN]> {
         })
     }
 
+    /// Converts this array pointer to an equivalent slice pointer.
+    pub const fn as_slice(&self) -> SharedMmioPointer<'a, [T]> {
+        let regs = NonNull::new(self.regs.as_ptr()).unwrap();
+        // SAFETY: We created regs from the raw array in self.regs, so it must also be valid, unique
+        // and within the allocation of self.regs.
+        unsafe { self.child(regs) }
+    }
+
     /// Returns a `SharedMmioPointer` to an element of this array, or `None` if the index is out of
     /// bounds.
-    pub fn get(&self, index: usize) -> Option<SharedMmioPointer<T>> {
+    pub const fn get(&self, index: usize) -> Option<SharedMmioPointer<'a, T>> {
         if index >= LEN {
             return None;
         }
@@ -374,6 +526,37 @@ impl<T, const LEN: usize> SharedMmioPointer<'_, [T; LEN]> {
         // SAFETY: We created regs from the raw array in self.regs, so it must also be valid, unique
         // and within the allocation of self.regs.
         Some(unsafe { self.child(regs) })
+    }
+}
+
+impl<'a, T, const LEN: usize> From<SharedMmioPointer<'a, [T; LEN]>> for SharedMmioPointer<'a, [T]> {
+    fn from(value: SharedMmioPointer<'a, [T; LEN]>) -> Self {
+        let regs = NonNull::new(value.regs.as_ptr()).unwrap();
+        SharedMmioPointer {
+            regs,
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<'a, T> From<SharedMmioPointer<'a, T>> for SharedMmioPointer<'a, [T; 1]> {
+    fn from(value: SharedMmioPointer<'a, T>) -> Self {
+        let regs = NonNull::new(value.regs.as_ptr()).unwrap().cast();
+        SharedMmioPointer {
+            regs,
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<'a, T> From<SharedMmioPointer<'a, T>> for SharedMmioPointer<'a, [T]> {
+    fn from(value: SharedMmioPointer<'a, T>) -> Self {
+        let array: *mut [T; 1] = value.regs.as_ptr().cast();
+        let regs = NonNull::new(array).unwrap();
+        SharedMmioPointer {
+            regs,
+            phantom: PhantomData,
+        }
     }
 }
 
@@ -391,6 +574,33 @@ macro_rules! field {
                 core::ptr::NonNull::new(&raw mut (*mmio_pointer.ptr_mut()).$field).unwrap();
             mmio_pointer.child(child_pointer)
         }
+    }};
+}
+
+/// Gets `UniqueMmioPointer`s to several fields of a type wrapped in a `UniqueMmioPointer`.
+///
+/// # Safety
+///
+/// The same field name must not be passed more than once.
+#[macro_export]
+macro_rules! split_fields {
+    ($mmio_pointer:expr, $( $field:ident ),+) => {{
+        // Make sure $mmio_pointer is the right type, and take ownership of it.
+        let mut mmio_pointer: $crate::UniqueMmioPointer<_> = $mmio_pointer;
+        let pointer = mmio_pointer.ptr_mut();
+        let ret = (
+            $(
+                // SAFETY: ptr_mut is guaranteed to return a valid pointer for MMIO, so the pointer
+                // to the field must also be valid. MmioPointer::child gives it the same lifetime as
+                // the original pointer, and the caller of `split_fields!` promised not to pass the
+                // same field more than once.
+                {
+                    let child_pointer = core::ptr::NonNull::new(&raw mut (*pointer).$field).unwrap();
+                    mmio_pointer.split_child(child_pointer)
+                }
+            ),+
+        );
+        ret
     }};
 }
 
@@ -418,6 +628,7 @@ mod tests {
 
     #[test]
     fn fields() {
+        #[repr(C)]
         struct Foo {
             a: ReadWrite<u32>,
             b: ReadOnly<u32>,
@@ -448,6 +659,7 @@ mod tests {
 
     #[test]
     fn shared_fields() {
+        #[repr(C)]
         struct Foo {
             a: ReadPureWrite<u32>,
             b: ReadPure<u32>,
@@ -469,6 +681,7 @@ mod tests {
 
     #[test]
     fn shared_from_unique() {
+        #[repr(C)]
         struct Foo {
             a: ReadPureWrite<u32>,
             b: ReadPure<u32>,
@@ -489,6 +702,7 @@ mod tests {
 
     #[test]
     fn restricted_fields() {
+        #[repr(C)]
         struct Foo {
             r: ReadOnly<u32>,
             w: WriteOnly<u32>,
@@ -576,5 +790,95 @@ mod tests {
         assert_eq!(second.read(), 2);
 
         assert!(shared.get(3).is_none());
+
+        // Test that lifetime of pointer returned from `get` isn't tied to the lifetime of the slice
+        // pointer.
+        let second = {
+            let shared_copy = shared;
+            shared_copy.get(1).unwrap()
+        };
+        assert_eq!(second.read(), 2);
+    }
+
+    #[test]
+    fn array_field() {
+        #[repr(C)]
+        struct Regs {
+            a: [ReadPureWrite<u32>; 4],
+        }
+
+        let mut foo = Regs {
+            a: [const { ReadPureWrite(0) }; 4],
+        };
+        let mut owned: UniqueMmioPointer<Regs> = UniqueMmioPointer::from(&mut foo);
+
+        field!(owned, a).get(0).unwrap().write(42);
+        assert_eq!(field_shared!(owned, a).get(0).unwrap().read(), 42);
+    }
+
+    #[test]
+    fn slice_field() {
+        #[repr(transparent)]
+        struct Regs {
+            s: [ReadPureWrite<u32>],
+        }
+
+        impl Regs {
+            fn from_slice<'a>(slice: &'a mut [ReadPureWrite<u32>]) -> &'a mut Self {
+                let regs_ptr: *mut Self = slice as *mut [ReadPureWrite<u32>] as *mut Self;
+                // SAFETY: `Regs` is repr(transparent) so a reference to its field has the same
+                // metadata as a reference to `Regs``.
+                unsafe { &mut *regs_ptr }
+            }
+        }
+
+        let mut foo: [ReadPureWrite<u32>; 1] = [ReadPureWrite(0)];
+        let regs_mut = Regs::from_slice(foo.as_mut_slice());
+        let mut owned: UniqueMmioPointer<Regs> = UniqueMmioPointer::from(regs_mut);
+
+        field!(owned, s).get(0).unwrap().write(42);
+        assert_eq!(field_shared!(owned, s).get(0).unwrap().read(), 42);
+    }
+
+    #[test]
+    fn multiple_fields() {
+        #[repr(C)]
+        struct Regs {
+            first: ReadPureWrite<u32>,
+            second: ReadPureWrite<u32>,
+            third: ReadPureWrite<u32>,
+        }
+
+        let mut foo = Regs {
+            first: ReadPureWrite(1),
+            second: ReadPureWrite(2),
+            third: ReadPureWrite(3),
+        };
+        let mut owned: UniqueMmioPointer<Regs> = UniqueMmioPointer::from(&mut foo);
+
+        // SAFETY: We don't pass the same field name more than once.
+        let (first, second) = unsafe { split_fields!(owned.reborrow(), first, second) };
+
+        assert_eq!(first.read(), 1);
+        assert_eq!(second.read(), 2);
+
+        drop(first);
+        drop(second);
+
+        assert_eq!(field!(owned, first).read(), 1);
+    }
+
+    #[test]
+    fn split_array() {
+        let mut foo = [ReadWrite(1), ReadWrite(2), ReadWrite(3)];
+
+        let mut parts: [UniqueMmioPointer<ReadWrite<i32>>; 3] = {
+            let owned = UniqueMmioPointer::from(&mut foo);
+
+            owned.into()
+        };
+
+        assert_eq!(parts[0].read(), 1);
+        assert_eq!(parts[1].read(), 2);
     }
 }

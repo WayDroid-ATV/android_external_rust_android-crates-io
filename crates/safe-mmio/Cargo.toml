@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "safe-mmio"
-version = "0.2.1"
+version = "0.2.5"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 build = false
 autolib = false
@@ -35,5 +35,5 @@ name = "safe_mmio"
 path = "src/lib.rs"
 
 [dependencies.zerocopy]
-version = "0.8.23"
+version = "0.8.24"
 features = ["derive"]
