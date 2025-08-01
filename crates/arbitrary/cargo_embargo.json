@@ -2,9 +2,6 @@
   "features": [
     "derive"
   ],
-  "apex_available": [
-    "com.android.uwb"
-  ],
   "min_sdk_version": "Tiramisu",
   "package": {
     "arbitrary": {

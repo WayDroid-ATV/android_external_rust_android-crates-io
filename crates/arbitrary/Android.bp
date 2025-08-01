@@ -26,7 +26,10 @@ rust_library_rlib {
         "derive_arbitrary",
     ],
     proc_macros: ["libderive_arbitrary"],
-    apex_available: ["com.android.uwb"],
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
     product_available: true,
     vendor_available: true,
     min_sdk_version: "Tiramisu",
