@@ -1,4 +1,13 @@
 {
+  "features": [
+    "default",
+    "export-symbols"
+  ],
+  "package": {
+    "libbz2-rs-sys": {
+      "exported_c_header_dir": ["include"]
+    }
+  },
   "run_cargo": false,
   "min_sdk_version": "29"
 }

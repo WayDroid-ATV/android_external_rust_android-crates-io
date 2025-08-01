@@ -45,6 +45,11 @@ testing-prefix = ["export-symbols"]
 [lib]
 name = "libbz2_rs_sys"
 path = "src/lib.rs"
+crate-type = [
+    "lib",
+    "staticlib",
+    "cdylib",
+]
 
 [dependencies.libc]
 version = "0.2"
