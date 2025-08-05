@@ -10,11 +10,17 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
+edition = "2024"
 name = "smccc"
-version = "0.1.1"
+version = "0.2.2"
 authors = ["Andrew Walbran <qwandor@google.com>"]
-description = "Functions and constants for the Arm SMC Calling Convention (SMCCC) 1.4 and Arm Power State Coordination Interface (PSCI) 1.1 on aarch64."
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Functions and constants for the Arm SMC Calling Convention (SMCCC) 1.4 and Arm Power State Coordination Interface (PSCI) 1.1 on aarch32 and aarch64."
 readme = "README.md"
 keywords = [
     "arm",
@@ -34,4 +40,10 @@ repository = "https://github.com/google/smccc"
 [package.metadata.docs.rs]
 default-target = "aarch64-unknown-none"
 
-[dependencies]
+[lib]
+name = "smccc"
+path = "src/lib.rs"
+
+[dependencies.thiserror]
+version = "2.0.12"
+default-features = false
