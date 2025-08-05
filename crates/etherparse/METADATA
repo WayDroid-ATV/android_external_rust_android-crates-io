@@ -1,17 +1,17 @@
 name: "etherparse"
 description: "A library for parsing & writing a bunch of packet based protocols (EthernetII, IPv4, IPv6, UDP, TCP ...)."
 third_party {
-  version: "0.18.2"
+  version: "0.19.0"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 7
-    day: 31
+    month: 8
+    day: 4
   }
   homepage: "https://crates.io/crates/etherparse"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/etherparse/etherparse-0.18.2.crate"
-    version: "0.18.2"
+    value: "https://static.crates.io/crates/etherparse/etherparse-0.19.0.crate"
+    version: "0.19.0"
   }
 }
