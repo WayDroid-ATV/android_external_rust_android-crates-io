@@ -440,7 +440,7 @@ dependencies = [
  "rand_xorshift",
  "rayon",
  "rayon-core",
- "read-fonts 0.31.1",
+ "read-fonts",
  "regex",
  "regex-automata 0.3.9",
  "regex-syntax",
@@ -6194,16 +6194,6 @@ dependencies = [
 
 [[package]]
 name = "read-fonts"
-version = "0.30.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "192735ef611aac958468e670cb98432c925426f3cb71521fda202130f7388d91"
-dependencies = [
- "bytemuck",
- "font-types",
-]
-
-[[package]]
-name = "read-fonts"
 version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a76192a41e824262f0e86922b0ab6dc770c4600f3b2a9373fe33439727a918d5"
@@ -6932,12 +6922,12 @@ checksum = "56199f7ddabf13fe5074ce809e7d3f42b42ae711800501b5b16ea82ad029c39d"
 
 [[package]]
 name = "skrifa"
-version = "0.32.0"
+version = "0.33.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6d632b5a73f566303dbeabd344dc3e716fd4ddc9a70d6fc8ea8e6f06617da97"
+checksum = "cb886d448c2a43b337448919c17947d33dd9f98defd37cf333d63cdfe5fff6ef"
 dependencies = [
  "bytemuck",
- "read-fonts 0.30.1",
+ "read-fonts",
 ]
 
 [[package]]
