@@ -10,10 +10,10 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
-rust-version = "1.54"
+edition = "2021"
+rust-version = "1.56"
 name = "litrs"
-version = "0.4.2"
+version = "0.5.1"
 authors = ["Lukas Kalbertodt <lukas.kalbertodt@gmail.com>"]
 build = false
 exclude = [".github"]
@@ -27,7 +27,7 @@ Parse and inspect Rust literals (i.e. tokens in the Rust programming language
 representing fixed values). Particularly useful for proc macros, but can also
 be used outside of a proc-macro context.
 """
-documentation = "https://docs.rs/litrs/"
+documentation = "https://docs.rs/litrs"
 readme = "README.md"
 keywords = [
     "literal",
@@ -41,19 +41,21 @@ categories = [
     "parser-implementations",
     "development-tools::build-utils",
 ]
-license = "MIT/Apache-2.0"
-repository = "https://github.com/LukasKalbertodt/litrs/"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/LukasKalbertodt/litrs"
+
+[package.metadata.docs.rs]
+features = ["proc-macro2"]
 
 [features]
 check_suffix = ["unicode-xid"]
-default = ["proc-macro2"]
 
 [lib]
 name = "litrs"
 path = "src/lib.rs"
 
 [dependencies.proc-macro2]
-version = "1"
+version = "1.0.63"
 optional = true
 
 [dependencies.unicode-xid]

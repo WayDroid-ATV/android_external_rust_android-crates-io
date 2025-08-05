@@ -1,10 +1,10 @@
 use std::{fmt, ops::Range};
 
 use crate::{
-    Buffer, ParseError,
     err::{perr, ParseErrorKind::*},
     escape::{scan_raw_string, unescape_string},
     parse::first_byte_or_empty,
+    Buffer, ParseError,
 };
 
 
@@ -24,7 +24,7 @@ pub struct StringLit<B: Buffer> {
 
     /// The number of hash signs in case of a raw string literal, or `None` if
     /// it's not a raw string literal.
-    num_hashes: Option<u32>,
+    num_hashes: Option<u8>,
 
     /// Start index of the suffix or `raw.len()` if there is no suffix.
     start_suffix: usize,
@@ -46,17 +46,21 @@ impl<B: Buffer> StringLit<B> {
     /// Returns the string value this literal represents (where all escapes have
     /// been turned into their respective values).
     pub fn value(&self) -> &str {
-        self.value.as_deref().unwrap_or(&self.raw[self.inner_range()])
+        self.value
+            .as_deref()
+            .unwrap_or(&self.raw[self.inner_range()])
     }
 
     /// Like `value` but returns a potentially owned version of the value.
     ///
-    /// The return value is either `Cow<'static, str>` if `B = String`, or
+    /// The return value is either `String` if `B = String`, or
     /// `Cow<'a, str>` if `B = &'a str`.
     pub fn into_value(self) -> B::Cow {
         let inner_range = self.inner_range();
         let Self { raw, value, .. } = self;
-        value.map(B::Cow::from).unwrap_or_else(|| raw.cut(inner_range).into_cow())
+        value
+            .map(B::Cow::from)
+            .unwrap_or_else(|| raw.cut(inner_range).into_cow())
     }
 
     /// The optional suffix. Returns `""` if the suffix is empty/does not exist.
@@ -110,12 +114,12 @@ impl<B: Buffer> fmt::Display for StringLit<B> {
 
 /// Precondition: input has to start with either `"` or `r`.
 #[inline(never)]
-pub(crate) fn parse_impl(input: &str) -> Result<(Option<String>, Option<u32>, usize), ParseError> {
+pub(crate) fn parse_impl(input: &str) -> Result<(Option<String>, Option<u8>, usize), ParseError> {
     if input.starts_with('r') {
-        scan_raw_string::<char>(&input, 1, true)
+        scan_raw_string(input, 1, true, true)
             .map(|(hashes, start_suffix)| (None, Some(hashes), start_suffix))
     } else {
-        unescape_string::<char>(&input, 1, true, false)
+        unescape_string::<String>(input, 1, true, false, true)
             .map(|(v, start_suffix)| (v, None, start_suffix))
     }
 }

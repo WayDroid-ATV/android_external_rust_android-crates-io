@@ -64,8 +64,8 @@
 //!
 //! All of the `From` and `TryFrom` conversions also work for reference to
 //! `proc_macro` types. Additionally, if the crate feature `proc-macro2` is
-//! enabled (which it is by default), all these `From` and `TryFrom` impls also
-//! exist for the corresponding `proc_macro2` types.
+//! enabled, all these `From` and `TryFrom` impls also exist for the
+//! corresponding `proc_macro2` types.
 //!
 //! **Note**: `true` and `false` are `Ident`s when passed to your proc macro.
 //! The `TryFrom<TokenTree>` impls check for those two special idents and
@@ -124,6 +124,7 @@
 //!     Literal::String(lit) => { /* ... */ }
 //!     Literal::Byte(lit) => { /* ... */ }
 //!     Literal::ByteString(lit) => { /* ... */ }
+//!     Literal::CString(lit) => { /* ... */ }
 //! }
 //! ```
 //!
@@ -131,8 +132,8 @@
 //!
 //! # Crate features
 //!
-//! - `proc-macro2` (**default**): adds the dependency `proc_macro2`, a bunch of
-//!   `From` and `TryFrom` impls, and [`InvalidToken::to_compile_error2`].
+//! - `proc-macro2`: adds the dependency `proc_macro2`, a bunch of `From` and
+//!   `TryFrom` impls, and [`InvalidToken::to_compile_error2`].
 //! - `check_suffix`: if enabled, `parse` functions will exactly verify that the
 //!   literal suffix is valid. Adds the dependency `unicode-xid`. If disabled,
 //!   only an approximate check (only in ASCII range) is done. If you are
@@ -158,6 +159,7 @@ mod bool;
 mod byte;
 mod bytestr;
 mod char;
+mod cstr;
 mod err;
 mod escape;
 mod float;
@@ -167,16 +169,21 @@ mod parse;
 mod string;
 
 
-use std::{borrow::{Borrow, Cow}, fmt, ops::{Deref, Range}};
+use std::{
+    borrow::{Borrow, Cow},
+    fmt,
+    ops::{Deref, Range},
+};
 
 pub use self::{
     bool::BoolLit,
     byte::ByteLit,
     bytestr::ByteStringLit,
     char::CharLit,
+    cstr::CStringLit,
     err::{InvalidToken, ParseError},
     float::{FloatLit, FloatType},
-    integer::{FromIntegerLiteral, IntegerLit, IntegerBase, IntegerType},
+    integer::{FromIntegerLiteral, IntegerBase, IntegerLit, IntegerType},
     string::StringLit,
 };
 
@@ -203,6 +210,7 @@ pub enum Literal<B: Buffer> {
     String(StringLit<B>),
     Byte(ByteLit<B>),
     ByteString(ByteStringLit<B>),
+    CString(CStringLit<B>),
 }
 
 impl<B: Buffer> Literal<B> {
@@ -257,6 +265,25 @@ impl<B: Buffer> Literal<B> {
             Literal::String(l) => l.suffix(),
             Literal::Byte(l) => l.suffix(),
             Literal::ByteString(l) => l.suffix(),
+            Literal::CString(l) => l.suffix(),
+        }
+    }
+
+    /// Returns the raw input that was passed to `parse`.
+    ///
+    /// This can be used to compare literals with different `Buffer` types.
+    /// Note: this does not necessarily point to the same string buffer, in
+    /// particular, bool literals just return a `&'static str`.
+    pub fn raw_input(&self) -> &str {
+        match self {
+            Literal::Bool(l) => l.as_str(),
+            Literal::Integer(l) => l.raw_input(),
+            Literal::Float(l) => l.raw_input(),
+            Literal::Char(l) => l.raw_input(),
+            Literal::String(l) => l.raw_input(),
+            Literal::Byte(l) => l.raw_input(),
+            Literal::ByteString(l) => l.raw_input(),
+            Literal::CString(l) => l.raw_input(),
         }
     }
 }
@@ -273,6 +300,7 @@ impl Literal<&str> {
             Literal::String(l) => Literal::String(l.into_owned()),
             Literal::Byte(l) => Literal::Byte(l.to_owned()),
             Literal::ByteString(l) => Literal::ByteString(l.into_owned()),
+            Literal::CString(l) => Literal::CString(l.into_owned()),
         }
     }
 }
@@ -287,6 +315,7 @@ impl<B: Buffer> fmt::Display for Literal<B> {
             Literal::String(l) => l.fmt(f),
             Literal::Byte(l) => l.fmt(f),
             Literal::ByteString(l) => l.fmt(f),
+            Literal::CString(l) => l.fmt(f),
         }
     }
 }
@@ -303,13 +332,13 @@ impl<B: Buffer> fmt::Display for Literal<B> {
 /// `litrs` only guarantees that this trait is implemented for `String` and
 /// `for<'a> &'a str`.
 pub trait Buffer: sealed::Sealed + Deref<Target = str> {
-    /// This is `Cow<'static, str>` for `String`, and `Cow<'a, str>` for `&'a str`.
+    /// This is `String` for `String`, and `Cow<'a, str>` for `&'a str`.
     type Cow: From<String> + AsRef<str> + Borrow<str> + Deref<Target = str>;
 
     #[doc(hidden)]
     fn into_cow(self) -> Self::Cow;
 
-    /// This is `Cow<'static, [u8]>` for `String`, and `Cow<'a, [u8]>` for `&'a str`.
+    /// This is `Vec<u8>` for `String`, and `Cow<'a, [u8]>` for `&'a str`.
     type ByteCow: From<Vec<u8>> + AsRef<[u8]> + Borrow<[u8]> + Deref<Target = [u8]>;
 
     #[doc(hidden)]
@@ -325,7 +354,7 @@ mod sealed {
     pub trait Sealed {}
 }
 
-impl<'a> sealed::Sealed for &'a str {}
+impl sealed::Sealed for &'_ str {}
 impl<'a> Buffer for &'a str {
     #[doc(hidden)]
     fn cut(self, range: Range<usize>) -> Self {
@@ -356,15 +385,15 @@ impl Buffer for String {
         self
     }
 
-    type Cow = Cow<'static, str>;
+    type Cow = String;
     #[doc(hidden)]
     fn into_cow(self) -> Self::Cow {
-        self.into()
+        self
     }
 
-    type ByteCow = Cow<'static, [u8]>;
+    type ByteCow = Vec<u8>;
     #[doc(hidden)]
     fn into_byte_cow(self) -> Self::ByteCow {
-        self.into_bytes().into()
+        self.into_bytes()
     }
 }

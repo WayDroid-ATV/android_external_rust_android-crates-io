@@ -1,4 +1,8 @@
-use crate::{ParseError, err::{perr, ParseErrorKind::*}, parse::{hex_digit_value, check_suffix}};
+use crate::{
+    err::{perr, ParseErrorKind::*},
+    parse::{check_suffix, hex_digit_value},
+    ParseError,
+};
 
 
 /// Must start with `\`. Returns the unscaped value as `E` and the number of
@@ -14,134 +18,166 @@ use crate::{ParseError, err::{perr, ParseErrorKind::*}, parse::{hex_digit_value,
 /// [Unicode escapes]: https://doc.rust-lang.org/reference/tokens.html#unicode-escapes
 /// [Ascii escapes]: https://doc.rust-lang.org/reference/tokens.html#ascii-escapes
 /// [Byte escapes]: https://doc.rust-lang.org/reference/tokens.html#byte-escapes
-pub(crate) fn unescape<E: Escapee>(
+pub(crate) fn unescape(
     input: &str,
-    offset: usize,
     unicode: bool,
     byte_escapes: bool,
-) -> Result<(E, usize), ParseError> {
-    let first = input.as_bytes().get(1)
-        .ok_or(perr(offset, UnterminatedEscape))?;
+    allow_nul: bool,
+) -> Result<(Unescape, usize), ParseError> {
+    let first = input.as_bytes().get(1).ok_or(perr(0, UnterminatedEscape))?;
     let out = match first {
         // Quote escapes
-        b'\'' => (E::from_byte(b'\''), 2),
-        b'"' => (E::from_byte(b'"'), 2),
+        b'\'' => (Unescape::Byte(b'\''), 2),
+        b'"' => (Unescape::Byte(b'"'), 2),
 
         // Ascii escapes
-        b'n' => (E::from_byte(b'\n'), 2),
-        b'r' => (E::from_byte(b'\r'), 2),
-        b't' => (E::from_byte(b'\t'), 2),
-        b'\\' => (E::from_byte(b'\\'), 2),
-        b'0' => (E::from_byte(b'\0'), 2),
+        b'n' => (Unescape::Byte(b'\n'), 2),
+        b'r' => (Unescape::Byte(b'\r'), 2),
+        b't' => (Unescape::Byte(b'\t'), 2),
+        b'\\' => (Unescape::Byte(b'\\'), 2),
+        b'0' => if allow_nul {
+            (Unescape::Byte(b'\0'), 2)
+        } else {
+            return Err(perr(0..2, DisallowedNulEscape))
+        },
         b'x' => {
             let hex_string = input.get(2..4)
-                .ok_or(perr(offset..offset + input.len(), UnterminatedEscape))?
+                .ok_or(perr(0..input.len(), UnterminatedEscape))?
                 .as_bytes();
-            let first = hex_digit_value(hex_string[0])
-                .ok_or(perr(offset..offset + 4, InvalidXEscape))?;
-            let second = hex_digit_value(hex_string[1])
-                .ok_or(perr(offset..offset + 4, InvalidXEscape))?;
+            let first = hex_digit_value(hex_string[0]).ok_or(perr(0..4, InvalidXEscape))?;
+            let second = hex_digit_value(hex_string[1]).ok_or(perr(0..4, InvalidXEscape))?;
             let value = second + 16 * first;
 
             if !byte_escapes && value > 0x7F {
-                return Err(perr(offset..offset + 4, NonAsciiXEscape));
+                return Err(perr(0..4, NonAsciiXEscape));
             }
 
-            (E::from_byte(value), 4)
-        },
+            if !allow_nul && value == 0 {
+                return Err(perr(0..4, DisallowedNulEscape));
+            }
+
+            (Unescape::Byte(value), 4)
+        }
 
         // Unicode escape
         b'u' => {
             if !unicode {
-                return Err(perr(offset..offset + 2, UnicodeEscapeInByteLiteral));
+                return Err(perr(0..2, UnicodeEscapeInByteLiteral));
             }
 
             if input.as_bytes().get(2) != Some(&b'{') {
-                return Err(perr(offset..offset + 2, UnicodeEscapeWithoutBrace));
+                return Err(perr(0..2, UnicodeEscapeWithoutBrace));
             }
 
             let closing_pos = input.bytes().position(|b| b == b'}')
-                .ok_or(perr(offset..offset + input.len(), UnterminatedUnicodeEscape))?;
+                .ok_or(perr(0..input.len(), UnterminatedUnicodeEscape))?;
 
             let inner = &input[3..closing_pos];
             if inner.as_bytes().first() == Some(&b'_') {
-                return Err(perr(4, InvalidStartOfUnicodeEscape));
+                return Err(perr(3, InvalidStartOfUnicodeEscape));
             }
 
             let mut v: u32 = 0;
             let mut digit_count = 0;
             for (i, b) in inner.bytes().enumerate() {
-                if b == b'_'{
+                if b == b'_' {
                     continue;
                 }
 
-                let digit = hex_digit_value(b)
-                    .ok_or(perr(offset + 3 + i, NonHexDigitInUnicodeEscape))?;
+                let digit = hex_digit_value(b).ok_or(perr(3 + i, NonHexDigitInUnicodeEscape))?;
 
                 if digit_count == 6 {
-                    return Err(perr(offset + 3 + i, TooManyDigitInUnicodeEscape));
+                    return Err(perr(3 + i, TooManyDigitInUnicodeEscape));
                 }
                 digit_count += 1;
                 v = 16 * v + digit as u32;
             }
 
-            let c = std::char::from_u32(v)
-                .ok_or(perr(offset..offset + closing_pos + 1, InvalidUnicodeEscapeChar))?;
+            if !allow_nul && v == 0 {
+                return Err(perr(0..closing_pos + 1, DisallowedNulEscape));
+            }
 
-            (E::from_char(c), closing_pos + 1)
+            let c = std::char::from_u32(v)
+                .ok_or(perr(0..closing_pos + 1, InvalidUnicodeEscapeChar))?;
+
+            (Unescape::Unicode(c), closing_pos + 1)
         }
 
-        _ => return Err(perr(offset..offset + 2, UnknownEscape)),
+        _ => return Err(perr(0..2, UnknownEscape)),
     };
 
     Ok(out)
 }
 
-pub(crate) trait Escapee: Sized {
-    type Container: EscapeeContainer<Self>;
-    fn from_byte(b: u8) -> Self;
-    fn from_char(c: char) -> Self;
+/// Result of unescaping an escape-sequence in a string.
+pub(crate) enum Unescape {
+    Byte(u8),
+    Unicode(char),
 }
 
-impl Escapee for u8 {
-    type Container = Vec<u8>;
-    fn from_byte(b: u8) -> Self {
-        b
+impl Unescape {
+    /// Returns this value as `char`, panicking if it's a byte with a value > 0x7f.
+    pub(crate) fn unwrap_char(self) -> char {
+        match self {
+            Self::Byte(b) => {
+                assert!(b <= 0x7F, "non ASCII byte");
+                b.into()
+            }
+            Self::Unicode(c) => c,
+        }
     }
-    fn from_char(_: char) -> Self {
-        panic!("bug: `<u8 as Escapee>::from_char` was called");
+
+    /// Returns this value as `u8`, panicking if it was `Unicode`.
+    pub(crate) fn unwrap_byte(self) -> u8 {
+        match self {
+            Self::Byte(b) => b,
+            Self::Unicode(_) => panic!("unexpected unicode escape value"),
+        }
     }
 }
 
-impl Escapee for char {
-    type Container = String;
-    fn from_byte(b: u8) -> Self {
-        b.into()
-    }
-    fn from_char(c: char) -> Self {
-        c
-    }
-}
-
-pub(crate) trait EscapeeContainer<E: Escapee> {
+pub(crate) trait EscapeContainer {
     fn new() -> Self;
     fn is_empty(&self) -> bool;
-    fn push(&mut self, v: E);
+    fn push(&mut self, v: Unescape);
     fn push_str(&mut self, s: &str);
 }
 
-impl EscapeeContainer<u8> for Vec<u8> {
-    fn new() -> Self { Self::new() }
-    fn is_empty(&self) -> bool { self.is_empty() }
-    fn push(&mut self, v: u8) { self.push(v); }
-    fn push_str(&mut self, s: &str) { self.extend_from_slice(s.as_bytes()); }
+impl EscapeContainer for Vec<u8> {
+    fn new() -> Self {
+        Self::new()
+    }
+    fn is_empty(&self) -> bool {
+        self.is_empty()
+    }
+    fn push_str(&mut self, s: &str) {
+        self.extend_from_slice(s.as_bytes());
+    }
+    fn push(&mut self, v: Unescape) {
+        match v {
+            Unescape::Byte(b) => self.push(b),
+            Unescape::Unicode(c) => {
+                let start = self.len();
+                self.resize(self.len() + c.len_utf8(), 0);
+                c.encode_utf8(&mut self[start..]);
+            }
+        }
+    }
 }
 
-impl EscapeeContainer<char> for String {
-    fn new() -> Self { Self::new() }
-    fn is_empty(&self) -> bool { self.is_empty() }
-    fn push(&mut self, v: char) { self.push(v); }
-    fn push_str(&mut self, s: &str) { self.push_str(s); }
+impl EscapeContainer for String {
+    fn new() -> Self {
+        Self::new()
+    }
+    fn is_empty(&self) -> bool {
+        self.is_empty()
+    }
+    fn push_str(&mut self, s: &str) {
+        self.push_str(s);
+    }
+    fn push(&mut self, v: Unescape) {
+        self.push(v.unwrap_char());
+    }
 }
 
 
@@ -153,16 +189,17 @@ fn is_string_continue_skipable_whitespace(b: u8) -> bool {
 
 /// Unescapes a whole string or byte string.
 #[inline(never)]
-pub(crate) fn unescape_string<E: Escapee>(
+pub(crate) fn unescape_string<C: EscapeContainer>(
     input: &str,
     offset: usize,
     unicode: bool,
     byte_escapes: bool,
-) -> Result<(Option<E::Container>, usize), ParseError> {
+    allow_nul: bool,
+) -> Result<(Option<C>, usize), ParseError> {
     let mut closing_quote_pos = None;
     let mut i = offset;
     let mut end_last_escape = offset;
-    let mut value = <E::Container>::new();
+    let mut value = C::new();
     while i < input.len() {
         match input.as_bytes()[i] {
             // Handle "string continue".
@@ -179,7 +216,8 @@ pub(crate) fn unescape_string<E: Escapee>(
             }
             b'\\' => {
                 let rest = &input[i..input.len() - 1];
-                let (c, len) = unescape::<E>(rest, i, unicode, byte_escapes)?;
+                let (c, len) = unescape(rest, unicode, byte_escapes, allow_nul)
+                    .map_err(|e| e.offset_span(i))?;
                 value.push_str(&input[end_last_escape..i]);
                 value.push(c);
                 i += len;
@@ -189,7 +227,8 @@ pub(crate) fn unescape_string<E: Escapee>(
             b'"' => {
                 closing_quote_pos = Some(i);
                 break;
-            },
+            }
+            b'\0' if !allow_nul => return Err(perr(i, NulByte)),
             b if !unicode && !b.is_ascii() => return Err(perr(i, NonAsciiInByteLiteral)),
             _ => i += 1,
         }
@@ -219,14 +258,19 @@ pub(crate) fn unescape_string<E: Escapee>(
 /// Reads and checks a raw (byte) string literal. Returns the number of hashes
 /// and the index when the suffix starts.
 #[inline(never)]
-pub(crate) fn scan_raw_string<E: Escapee>(
+pub(crate) fn scan_raw_string(
     input: &str,
     offset: usize,
     unicode: bool,
-) -> Result<(u32, usize), ParseError> {
+    allow_nul: bool,
+) -> Result<(u8, usize), ParseError> {
     // Raw string literal
     let num_hashes = input[offset..].bytes().position(|b| b != b'#')
         .ok_or(perr(None, InvalidLiteral))?;
+
+    if num_hashes > 256 {
+        return Err(perr(offset..offset + num_hashes, TooManyHashes));
+    }
 
     if input.as_bytes().get(offset + num_hashes) != Some(&b'"') {
         return Err(perr(None, InvalidLiteral));
@@ -250,6 +294,10 @@ pub(crate) fn scan_raw_string<E: Escapee>(
             return Err(perr(i, CarriageReturn));
         }
 
+        if b == b'\0' && !allow_nul {
+            return Err(perr(i, NulByte));
+        }
+
         if !unicode {
             if !b.is_ascii() {
                 return Err(perr(i, NonAsciiInByteLiteral));
@@ -265,5 +313,5 @@ pub(crate) fn scan_raw_string<E: Escapee>(
     let suffix = &input[start_suffix..];
     check_suffix(suffix).map_err(|kind| perr(start_suffix, kind))?;
 
-    Ok((num_hashes as u32, start_suffix))
+    Ok((num_hashes as u8, start_suffix))
 }

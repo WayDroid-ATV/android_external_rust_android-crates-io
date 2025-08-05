@@ -1,10 +1,10 @@
 use std::fmt;
 
 use crate::{
-    Buffer, ParseError,
     err::{perr, ParseErrorKind::*},
     escape::unescape,
-    parse::{first_byte_or_empty, check_suffix},
+    parse::{check_suffix, first_byte_or_empty},
+    Buffer, ParseError,
 };
 
 
@@ -29,7 +29,7 @@ impl<B: Buffer> CharLit<B> {
             b'\'' => {
                 let (value, start_suffix) = parse_impl(&input)?;
                 Ok(Self { raw: input, value, start_suffix })
-            },
+            }
             _ => Err(perr(0, DoesNotStartWithQuote)),
         }
     }
@@ -53,7 +53,6 @@ impl<B: Buffer> CharLit<B> {
     pub fn into_raw_input(self) -> B {
         self.raw
     }
-
 }
 
 impl CharLit<&str> {
@@ -81,10 +80,12 @@ pub(crate) fn parse_impl(input: &str) -> Result<(char, usize), ParseError> {
     let (c, len) = match first {
         '\'' if input.chars().nth(2) == Some('\'') => return Err(perr(1, UnescapedSingleQuote)),
         '\'' => return Err(perr(None, EmptyCharLiteral)),
-        '\n' | '\t' | '\r'
-            => return Err(perr(1, UnescapedSpecialWhitespace)),
+        '\n' | '\t' | '\r' => return Err(perr(1, UnescapedSpecialWhitespace)),
 
-        '\\' => unescape::<char>(&input[1..], 1, true, false)?,
+        '\\' => {
+            let (v, len) = unescape(&input[1..], true, false, true).map_err(|e| e.offset_span(1))?;
+            (v.unwrap_char(), len)
+        }
         other => (other, other.len_utf8()),
     };
 

@@ -15,7 +15,7 @@ impl InvalidToken {
     /// `"msg"` is the output of `self.to_string()`. **Panics if called outside
     /// of a proc-macro context!**
     pub fn to_compile_error(&self) -> proc_macro::TokenStream {
-        use proc_macro::{Delimiter, Ident, Group, Punct, Spacing, TokenTree};
+        use proc_macro::{Delimiter, Group, Ident, Punct, Spacing, TokenTree};
 
         let span = match self.span {
             Span::One(s) => s,
@@ -41,7 +41,7 @@ impl InvalidToken {
     /// context.
     #[cfg(feature = "proc-macro2")]
     pub fn to_compile_error2(&self) -> proc_macro2::TokenStream {
-        use proc_macro2::{Delimiter, Ident, Group, Punct, Spacing, TokenTree};
+        use proc_macro2::{Delimiter, Group, Ident, Punct, Spacing, TokenTree};
 
         let span = match self.span {
             Span::One(s) => proc_macro2::Span::from(s),
@@ -79,6 +79,7 @@ impl fmt::Display for InvalidToken {
                 TokenKind::FloatLit => "a float literal (e.g. `3.14`)",
                 TokenKind::IntegerLit => "an integer literal (e.g. `27`)",
                 TokenKind::StringLit => r#"a string literal (e.g. "Ferris")"#,
+                TokenKind::CStringLit => r#"a C string literal (e.g. c"Ferris")"#,
             }
         }
 
@@ -99,6 +100,7 @@ pub(crate) enum TokenKind {
     FloatLit,
     IntegerLit,
     StringLit,
+    CStringLit,
 }
 
 /// Unfortunately, we have to deal with both cases.
@@ -162,6 +164,14 @@ impl ParseError {
     /// of this type][ParseError] for more information.
     pub fn span(&self) -> Option<Range<usize>> {
         self.span.clone()
+    }
+
+    /// Adds `offset` to the start and endpoint of the inner span.
+    pub(crate) fn offset_span(self, offset: usize) -> Self {
+        Self {
+            span: self.span.map(|span| span.start + offset..span.end + offset),
+            ..self
+        }
     }
 }
 
@@ -299,8 +309,20 @@ pub(crate) enum ParseErrorKind {
 
     InvalidByteStringLiteralStart,
 
+    /// Not starting with `c"` or `cr`.
+    InvalidCStringLiteralStart,
+
+    /// A `\0` escape inside a C string.
+    DisallowedNulEscape,
+
+    /// A nul byte inside a C String.
+    NulByte,
+
     /// `\r` in a (raw) string or (raw) byte string literal.
     CarriageReturn,
+
+    /// Rust only allows 256 hashes in raw * string literals.
+    TooManyHashes,
 
     /// Literal suffix is not a valid identifier.
     InvalidSuffix,
@@ -354,7 +376,11 @@ impl fmt::Display for ParseError {
             InvalidStringLiteralStart => "invalid start for string literal",
             InvalidByteLiteralStart => "invalid start for byte literal",
             InvalidByteStringLiteralStart => "invalid start for byte string literal",
+            InvalidCStringLiteralStart => "invalid start for C string literal",
+            DisallowedNulEscape => r"`\0` escape not allowed inside C string literal",
+            NulByte => r"nul byte not allowed inside C string literal",
             CarriageReturn => r"`\r` not allowed in string literals",
+            TooManyHashes => "raw string literal has too many # symbols (max 256)",
             InvalidSuffix => "literal suffix is not a valid identifier",
             UnexpectedIntegerLit => "expected float literal, but found integer",
             IntegerSuffixStartingWithE => "integer literal suffix must not start with 'e' or 'E'",

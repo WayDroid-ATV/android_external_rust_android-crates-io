@@ -333,7 +333,7 @@ dependencies = [
  "linkme",
  "linkme-impl",
  "litemap",
- "litrs",
+ "litrs 0.5.1",
  "lock_api",
  "log",
  "lru-cache",
@@ -2204,7 +2204,7 @@ version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95249b50c6c185bee49034bcb378a49dc2b5dff0be90ff6616d31d64febab05d"
 dependencies = [
- "litrs",
+ "litrs 0.4.2",
 ]
 
 [[package]]
@@ -4525,9 +4525,12 @@ name = "litrs"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f5e54036fe321fd421e10d732f155734c4e4afd610dd556d9a82833ab3ee0bed"
-dependencies = [
- "proc-macro2 1.0.95",
-]
+
+[[package]]
+name = "litrs"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e4cf394bcd88ba72eb3b2862e21ef6458b0e1586654e213b0176e667bb9d19e"
 
 [[package]]
 name = "lock_api"

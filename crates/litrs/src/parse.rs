@@ -1,15 +1,10 @@
 use crate::{
-    BoolLit,
-    Buffer,
-    ByteLit,
-    ByteStringLit,
-    CharLit,
-    ParseError,
-    FloatLit,
-    IntegerLit,
-    Literal,
-    StringLit,
-    err::{perr, ParseErrorKind::{*, self}},
+    err::{
+        perr,
+        ParseErrorKind::{self, *},
+    },
+    BoolLit, Buffer, ByteLit, ByteStringLit, CStringLit, CharLit, FloatLit, IntegerLit, Literal,
+    ParseError, StringLit,
 };
 
 
@@ -32,19 +27,21 @@ pub fn parse<B: Buffer>(input: B) -> Result<Literal<B>, ParseError> {
             // The first non-decimal char in a float literal must
             // be '.', 'e' or 'E'.
             match input.as_bytes().get(1 + end_dec_digits(rest)) {
-                Some(b'.') | Some(b'e') | Some(b'E')
-                    => FloatLit::parse(input).map(Literal::Float),
+                Some(b'.') | Some(b'e') | Some(b'E') => FloatLit::parse(input).map(Literal::Float),
 
                 _ => IntegerLit::parse(input).map(Literal::Integer),
             }
-        },
+        }
 
         b'\'' => CharLit::parse(input).map(Literal::Char),
         b'"' | b'r' => StringLit::parse(input).map(Literal::String),
 
         b'b' if second == Some(b'\'') => ByteLit::parse(input).map(Literal::Byte),
-        b'b' if second == Some(b'r') || second == Some(b'"')
-            => ByteStringLit::parse(input).map(Literal::ByteString),
+        b'b' if second == Some(b'r') || second == Some(b'"') => {
+            ByteStringLit::parse(input).map(Literal::ByteString)
+        }
+
+        b'c' => CStringLit::parse(input).map(Literal::CString),
 
         _ => Err(perr(None, InvalidLiteral)),
     }
@@ -52,7 +49,7 @@ pub fn parse<B: Buffer>(input: B) -> Result<Literal<B>, ParseError> {
 
 
 pub(crate) fn first_byte_or_empty(s: &str) -> Result<u8, ParseError> {
-    s.as_bytes().get(0).copied().ok_or(perr(None, Empty))
+    s.as_bytes().first().copied().ok_or(perr(None, Empty))
 }
 
 /// Returns the index of the first non-underscore, non-decimal digit in `input`,
