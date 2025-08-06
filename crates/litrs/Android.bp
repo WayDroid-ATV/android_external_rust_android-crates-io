@@ -15,10 +15,13 @@ license {
 
 rust_library_host {
     name: "liblitrs",
+    host_cross_supported: false,
     crate_name: "litrs",
     cargo_env_compat: true,
     cargo_pkg_version: "0.5.1",
     crate_root: "src/lib.rs",
     edition: "2021",
+    features: ["proc-macro2"],
+    rustlibs: ["libproc_macro2"],
     compile_multilib: "first",
 }
