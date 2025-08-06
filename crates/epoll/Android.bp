@@ -17,7 +17,7 @@ rust_library_host {
     name: "libepoll",
     crate_name: "epoll",
     cargo_env_compat: true,
-    cargo_pkg_version: "4.3.3",
+    cargo_pkg_version: "4.4.0",
     crate_root: "src/lib.rs",
     edition: "2015",
     rustlibs: [
