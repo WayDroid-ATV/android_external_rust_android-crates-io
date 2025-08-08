@@ -2,4 +2,13 @@ target: {
     windows: {
         enabled: true,
    },
+},
+
+arch: {
+    x86: {
+        flags: [
+            "-C",
+            "opt-level=0",
+        ],
+    },
 }

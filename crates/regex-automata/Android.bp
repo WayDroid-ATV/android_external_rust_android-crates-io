@@ -68,4 +68,14 @@ rust_library {
             enabled: true,
         },
     },
+
+    arch: {
+        x86: {
+            flags: [
+                "-C",
+                "opt-level=0",
+            ],
+        },
+    },
+
 }
