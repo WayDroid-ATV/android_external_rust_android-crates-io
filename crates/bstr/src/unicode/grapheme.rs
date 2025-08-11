@@ -219,7 +219,7 @@ pub fn decode_grapheme(bs: &[u8]) -> (&str, usize) {
         let grapheme = unsafe { bs[..hm.offset()].to_str_unchecked() };
         (grapheme, grapheme.len())
     } else {
-        const INVALID: &'static str = "\u{FFFD}";
+        const INVALID: &str = "\u{FFFD}";
         // No match on non-empty bytes implies we found invalid UTF-8.
         let (_, size) = utf8::decode_lossy(bs);
         (INVALID, size)
@@ -238,7 +238,7 @@ fn decode_last_grapheme(bs: &[u8]) -> (&str, usize) {
         let grapheme = unsafe { bs[start..].to_str_unchecked() };
         (grapheme, grapheme.len())
     } else {
-        const INVALID: &'static str = "\u{FFFD}";
+        const INVALID: &str = "\u{FFFD}";
         // No match on non-empty bytes implies we found invalid UTF-8.
         let (_, size) = utf8::decode_last_lossy(bs);
         (INVALID, size)
@@ -288,10 +288,16 @@ fn adjust_rev_for_regional_indicator(mut bs: &[u8], i: usize) -> usize {
 
 #[cfg(all(test, feature = "std"))]
 mod tests {
+    use alloc::{
+        string::{String, ToString},
+        vec,
+        vec::Vec,
+    };
+
     #[cfg(not(miri))]
     use ucd_parse::GraphemeClusterBreakTest;
 
-    use crate::{ext_slice::ByteSlice, tests::LOSSY_TESTS};
+    use crate::tests::LOSSY_TESTS;
 
     use super::*;
 
@@ -374,8 +380,7 @@ mod tests {
     /// Return all of the UCD for grapheme breaks.
     #[cfg(not(miri))]
     fn ucdtests() -> Vec<GraphemeClusterBreakTest> {
-        const TESTDATA: &'static str =
-            include_str!("data/GraphemeBreakTest.txt");
+        const TESTDATA: &str = include_str!("data/GraphemeBreakTest.txt");
 
         let mut tests = vec![];
         for mut line in TESTDATA.lines() {

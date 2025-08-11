@@ -72,7 +72,7 @@ use crate::{
 /// string literals. This can be quite convenient!
 #[allow(non_snake_case)]
 #[inline]
-pub fn B<'a, B: ?Sized + AsRef<[u8]>>(bytes: &'a B) -> &'a [u8] {
+pub fn B<B: ?Sized + AsRef<[u8]>>(bytes: &B) -> &[u8] {
     bytes.as_ref()
 }
 
@@ -3045,7 +3045,7 @@ pub trait ByteSlice: private::Sealed {
     #[inline]
     fn last_byte(&self) -> Option<u8> {
         let bytes = self.as_bytes();
-        bytes.get(bytes.len().saturating_sub(1)).map(|&b| b)
+        bytes.last().copied()
     }
 
     /// Returns the index of the first non-ASCII byte in this byte string (if
@@ -3246,7 +3246,7 @@ impl<'a> FinderReverse<'a> {
 ///
 /// `'h` is the lifetime of the haystack while `'n` is the lifetime of the
 /// needle.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Find<'h, 'n> {
     it: memmem::FindIter<'h, 'n>,
     haystack: &'h [u8],
@@ -3274,7 +3274,7 @@ impl<'h, 'n> Iterator for Find<'h, 'n> {
 ///
 /// `'h` is the lifetime of the haystack while `'n` is the lifetime of the
 /// needle.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct FindReverse<'h, 'n> {
     it: memmem::FindRevIter<'h, 'n>,
     haystack: &'h [u8],
@@ -3331,7 +3331,7 @@ impl<'a> Iterator for Bytes<'a> {
 
     #[inline]
     fn next(&mut self) -> Option<u8> {
-        self.it.next().map(|&b| b)
+        self.it.next().copied()
     }
 
     #[inline]
@@ -3343,7 +3343,7 @@ impl<'a> Iterator for Bytes<'a> {
 impl<'a> DoubleEndedIterator for Bytes<'a> {
     #[inline]
     fn next_back(&mut self) -> Option<u8> {
-        self.it.next_back().map(|&b| b)
+        self.it.next_back().copied()
     }
 }
 
@@ -3366,7 +3366,7 @@ impl<'a> iter::FusedIterator for Bytes<'a> {}
 ///
 /// `'a` is the lifetime of the byte string being split.
 #[cfg(feature = "unicode")]
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Fields<'a> {
     it: FieldsWith<'a, fn(char) -> bool>,
 }
@@ -3374,7 +3374,7 @@ pub struct Fields<'a> {
 #[cfg(feature = "unicode")]
 impl<'a> Fields<'a> {
     fn new(bytes: &'a [u8]) -> Fields<'a> {
-        Fields { it: bytes.fields_with(|ch| ch.is_whitespace()) }
+        Fields { it: bytes.fields_with(char::is_whitespace) }
     }
 }
 
@@ -3397,7 +3397,7 @@ impl<'a> Iterator for Fields<'a> {
 ///
 /// `'a` is the lifetime of the byte string being split, while `F` is the type
 /// of the predicate, i.e., `FnMut(char) -> bool`.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct FieldsWith<'a, F> {
     f: F,
     bytes: &'a [u8],
@@ -3428,7 +3428,7 @@ impl<'a, F: FnMut(char) -> bool> Iterator for FieldsWith<'a, F> {
                 }
             }
         }
-        while let Some((_, e, ch)) = self.chars.next() {
+        for (_, e, ch) in self.chars.by_ref() {
             if (self.f)(ch) {
                 break;
             }
@@ -3442,7 +3442,7 @@ impl<'a, F: FnMut(char) -> bool> Iterator for FieldsWith<'a, F> {
 ///
 /// `'h` is the lifetime of the byte string being split (the haystack), while
 /// `'s` is the lifetime of the byte string doing the splitting.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Split<'h, 's> {
     finder: Find<'h, 's>,
     /// The end position of the previous match of our splitter. The element
@@ -3498,7 +3498,7 @@ impl<'h, 's> Iterator for Split<'h, 's> {
 ///
 /// `'h` is the lifetime of the byte string being split (the haystack), while
 /// `'s` is the lifetime of the byte string doing the splitting.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SplitReverse<'h, 's> {
     finder: FindReverse<'h, 's>,
     /// The end position of the previous match of our splitter. The element
@@ -3555,7 +3555,7 @@ impl<'h, 's> Iterator for SplitReverse<'h, 's> {
 ///
 /// `'h` is the lifetime of the byte string being split (the haystack), while
 /// `'s` is the lifetime of the byte string doing the splitting.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SplitN<'h, 's> {
     split: Split<'h, 's>,
     limit: usize,
@@ -3594,7 +3594,7 @@ impl<'h, 's> Iterator for SplitN<'h, 's> {
 ///
 /// `'h` is the lifetime of the byte string being split (the haystack), while
 /// `'s` is the lifetime of the byte string doing the splitting.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SplitNReverse<'h, 's> {
     split: SplitReverse<'h, 's>,
     limit: usize,
@@ -3744,7 +3744,7 @@ impl<'a> Iterator for LinesWithTerminator<'a> {
                 Some(line)
             }
             Some(end) => {
-                let line = &self.bytes[..end + 1];
+                let line = &self.bytes[..=end];
                 self.bytes = &self.bytes[end + 1..];
                 Some(line)
             }
@@ -3764,7 +3764,7 @@ impl<'a> DoubleEndedIterator for LinesWithTerminator<'a> {
             }
             Some(end) => {
                 let line = &self.bytes[end + 1..];
-                self.bytes = &self.bytes[..end + 1];
+                self.bytes = &self.bytes[..=end];
                 Some(line)
             }
         }
@@ -3785,6 +3785,8 @@ fn trim_last_terminator(mut s: &[u8]) -> &[u8] {
 
 #[cfg(all(test, feature = "std"))]
 mod tests {
+    use alloc::{string::String, vec::Vec};
+
     use crate::{
         ext_slice::{ByteSlice, Lines, LinesWithTerminator, B},
         tests::LOSSY_TESTS,
