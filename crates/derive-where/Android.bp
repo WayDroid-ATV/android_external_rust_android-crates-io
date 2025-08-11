@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libderive_where",
     crate_name: "derive_where",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.5.0",
+    cargo_pkg_version: "1.6.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [

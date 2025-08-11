@@ -1,17 +1,17 @@
 name: "derive-where"
 description: "Deriving with custom trait bounds"
 third_party {
-  version: "1.5.0"
+  version: "1.6.0"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 7
-    day: 22
+    month: 8
+    day: 7
   }
   homepage: "https://crates.io/crates/derive-where"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/derive-where/derive-where-1.5.0.crate"
-    version: "1.5.0"
+    value: "https://static.crates.io/crates/derive-where/derive-where-1.6.0.crate"
+    version: "1.6.0"
   }
 }
