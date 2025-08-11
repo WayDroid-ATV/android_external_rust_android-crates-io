@@ -290,9 +290,24 @@ $ rebar cmp results.csv
 See the `rebar` documentation for more details on how it works and how to
 compare results with other regex engines.
 
+
+### Hacking
+
+The `regex` crate is, for the most part, a pretty thin wrapper around the
+[`meta::Regex`](https://docs.rs/regex-automata/latest/regex_automata/meta/struct.Regex.html)
+from the
+[`regex-automata` crate](https://docs.rs/regex-automata/latest/regex_automata/).
+Therefore, if you're looking to work on the internals of this crate, you'll
+likely either want to look in `regex-syntax` (for parsing) or `regex-automata`
+(for construction of finite automata and the search routines).
+
+My [blog on regex internals](https://blog.burntsushi.net/regex-internals/)
+goes into more depth.
+
+
 ### Minimum Rust version policy
 
-This crate's minimum supported `rustc` version is `1.60.0`.
+This crate's minimum supported `rustc` version is `1.65.0`.
 
 The policy is that the minimum Rust version required to use this crate can be
 increased in minor version updates. For example, if regex 1.0 requires Rust
