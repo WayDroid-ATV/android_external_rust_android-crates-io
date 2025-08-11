@@ -10,10 +10,16 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
+edition = "2024"
 name = "percore"
-version = "0.1.0"
+version = "0.2.1"
 authors = ["Andrew Walbran <qwandor@google.com>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Safe per-CPU core mutable state on no_std platforms through exception masking."
 readme = "README.md"
 keywords = [
@@ -31,4 +37,26 @@ repository = "https://github.com/google/percore"
 [package.metadata.docs.rs]
 default-target = "aarch64-unknown-none"
 
-[dependencies]
+[features]
+alloc = []
+default = [
+    "alloc",
+    "zerocopy",
+]
+
+[lib]
+name = "percore"
+path = "src/lib.rs"
+
+[dependencies.zerocopy]
+version = "0.8.26"
+features = ["derive"]
+optional = true
+
+[dev-dependencies.spin]
+version = "0.10.0"
+features = [
+    "lazy",
+    "once",
+]
+default-features = false
