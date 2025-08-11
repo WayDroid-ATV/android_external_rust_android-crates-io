@@ -885,6 +885,9 @@ pub const _CS_V6_ENV: c_int = 1148;
 pub const _CS_V7_ENV: c_int = 1149;
 
 pub const CLONE_NEWTIME: c_int = 0x80;
+// DIFF(main): changed to `c_ulonglong` in e9abac9ac2
+pub const CLONE_CLEAR_SIGHAND: c_int = 0x100000000;
+pub const CLONE_INTO_CGROUP: c_int = 0x200000000;
 
 cfg_if! {
     if #[cfg(target_arch = "s390x")] {
