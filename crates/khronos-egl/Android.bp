@@ -29,8 +29,13 @@ rust_library {
         "1_4",
         "1_5",
         "default",
+        "dynamic",
+        "libloading",
     ],
-    rustlibs: ["liblibc"],
+    rustlibs: [
+        "liblibc",
+        "liblibloading",
+    ],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
