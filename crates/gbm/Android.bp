@@ -24,6 +24,7 @@ rust_library {
     features: [
         "drm",
         "drm-support",
+        "import-egl",
     ],
     rustlibs: [
         "libbitflags",

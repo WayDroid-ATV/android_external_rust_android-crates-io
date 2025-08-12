@@ -12,7 +12,8 @@
     "libgbm": "libgbm_rust"
   },
   "features": [
-    "drm-support"
+    "drm-support",
+    "import-egl"
   ],
   "min_sdk_version": "29"
 }
