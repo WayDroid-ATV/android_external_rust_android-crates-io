@@ -28,7 +28,9 @@
       "run_cargo": false
     },
     {
-      "features": [],
+      "features": [
+        "extra_traits"
+      ],
       "tests": false,
       "module_name_overrides": {
         "liblibc": "liblibc_nostd"
