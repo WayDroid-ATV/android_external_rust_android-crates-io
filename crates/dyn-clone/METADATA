@@ -1,0 +1,17 @@
+name: "dyn-clone"
+description: "Clone trait that is dyn-compatible"
+third_party {
+  version: "1.0.20"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 8
+    day: 5
+  }
+  homepage: "https://crates.io/crates/dyn-clone"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/dyn-clone/dyn-clone-1.0.20.crate"
+    version: "1.0.20"
+  }
+}

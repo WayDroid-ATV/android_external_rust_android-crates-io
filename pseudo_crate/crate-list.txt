@@ -109,6 +109,7 @@ downcast-rs
 drm
 drm-ffi
 drm-fourcc
+dyn-clone
 either
 elf
 enum-as-inner
