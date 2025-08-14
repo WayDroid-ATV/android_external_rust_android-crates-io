@@ -1,0 +1,17 @@
+name: "num-modular"
+description: "Implementation of efficient integer division and modular arithmetic operations with generic number types. Supports various backends including num-bigint, etc.."
+third_party {
+  version: "0.6.1"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 8
+    day: 5
+  }
+  homepage: "https://crates.io/crates/num-modular"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/num-modular/num-modular-0.6.1.crate"
+    version: "0.6.1"
+  }
+}
