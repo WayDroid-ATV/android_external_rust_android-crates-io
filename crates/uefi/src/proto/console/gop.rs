@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! Graphics output protocol.
 //!
 //! The UEFI GOP is meant to replace existing [VGA][vga] hardware interfaces.
@@ -55,7 +57,6 @@ use crate::util::usize_from_u32;
 use crate::{boot, Result, StatusExt};
 use core::fmt::{Debug, Formatter};
 use core::marker::PhantomData;
-use core::mem;
 use core::ptr::{self, NonNull};
 use uefi_raw::protocol::console::{
     GraphicsOutputBltOperation, GraphicsOutputModeInformation, GraphicsOutputProtocol,
@@ -134,7 +135,7 @@ impl GraphicsOutput {
                     self.check_framebuffer_region((dest_x, dest_y), (width, height));
                     (self.0.blt)(
                         &mut self.0,
-                        &color as *const _ as *mut _,
+                        ptr::from_ref(&color) as *mut _,
                         GraphicsOutputBltOperation::BLT_VIDEO_FILL,
                         0,
                         0,
@@ -181,7 +182,7 @@ impl GraphicsOutput {
                             dest_y,
                             width,
                             height,
-                            px_stride * core::mem::size_of::<BltPixel>(),
+                            px_stride * size_of::<BltPixel>(),
                         )
                         .to_result(),
                     }
@@ -221,7 +222,7 @@ impl GraphicsOutput {
                             dest_y,
                             width,
                             height,
-                            px_stride * core::mem::size_of::<BltPixel>(),
+                            px_stride * size_of::<BltPixel>(),
                         )
                         .to_result(),
                     }
@@ -414,7 +415,7 @@ pub struct ModeIter<'gop> {
     max: u32,
 }
 
-impl<'gop> Iterator for ModeIter<'gop> {
+impl Iterator for ModeIter<'_> {
     type Item = Mode;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -435,7 +436,7 @@ impl<'gop> Iterator for ModeIter<'gop> {
     }
 }
 
-impl<'gop> Debug for ModeIter<'gop> {
+impl Debug for ModeIter<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("ModeIter")
             .field("current", &self.current)
@@ -557,7 +558,7 @@ pub struct FrameBuffer<'gop> {
     _lifetime: PhantomData<&'gop mut u8>,
 }
 
-impl<'gop> FrameBuffer<'gop> {
+impl FrameBuffer<'_> {
     /// Access the raw framebuffer pointer
     ///
     /// To use this pointer safely and correctly, you must...
@@ -588,7 +589,7 @@ impl<'gop> FrameBuffer<'gop> {
     #[inline]
     pub unsafe fn write_byte(&mut self, index: usize, value: u8) {
         debug_assert!(index < self.size, "Frame buffer accessed out of bounds");
-        self.base.add(index).write_volatile(value)
+        unsafe { self.base.add(index).write_volatile(value) }
     }
 
     /// Read the i-th byte of the frame buffer
@@ -602,7 +603,7 @@ impl<'gop> FrameBuffer<'gop> {
     #[must_use]
     pub unsafe fn read_byte(&self, index: usize) -> u8 {
         debug_assert!(index < self.size, "Frame buffer accessed out of bounds");
-        self.base.add(index).read_volatile()
+        unsafe { self.base.add(index).read_volatile() }
     }
 
     /// Write a value in the frame buffer, starting at the i-th byte
@@ -620,11 +621,13 @@ impl<'gop> FrameBuffer<'gop> {
     #[inline]
     pub unsafe fn write_value<T>(&mut self, index: usize, value: T) {
         debug_assert!(
-            index.saturating_add(mem::size_of::<T>()) <= self.size,
+            index.saturating_add(size_of::<T>()) <= self.size,
             "Frame buffer accessed out of bounds"
         );
-        let ptr = self.base.add(index).cast::<T>();
-        ptr.write_volatile(value)
+        unsafe {
+            let ptr = self.base.add(index).cast::<T>();
+            ptr.write_volatile(value)
+        }
     }
 
     /// Read a value from the frame buffer, starting at the i-th byte
@@ -643,9 +646,9 @@ impl<'gop> FrameBuffer<'gop> {
     #[must_use]
     pub unsafe fn read_value<T>(&self, index: usize) -> T {
         debug_assert!(
-            index.saturating_add(mem::size_of::<T>()) <= self.size,
+            index.saturating_add(size_of::<T>()) <= self.size,
             "Frame buffer accessed out of bounds"
         );
-        (self.base.add(index) as *const T).read_volatile()
+        unsafe { (self.base.add(index) as *const T).read_volatile() }
     }
 }

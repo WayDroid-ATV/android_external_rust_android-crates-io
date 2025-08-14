@@ -1,17 +1,17 @@
 name: "ptr_meta_derive"
-description: "Macros for ptr_meta"
+description: "Proc macros for ptr_meta"
 third_party {
-  version: "0.2.0"
+  version: "0.3.0"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 11
-    day: 11
+    year: 2025
+    month: 8
+    day: 13
   }
   homepage: "https://crates.io/crates/ptr_meta_derive"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/ptr_meta_derive/ptr_meta_derive-0.2.0.crate"
-    version: "0.2.0"
+    value: "https://static.crates.io/crates/ptr_meta_derive/ptr_meta_derive-0.3.0.crate"
+    version: "0.3.0"
   }
 }

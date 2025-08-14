@@ -1,27 +1,36 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 mod device_path_gen;
 
-use crate::{guid, Char16, Guid};
+use crate::{guid, Boolean, Char16, Guid};
 
 pub use device_path_gen::{acpi, bios_boot_spec, end, hardware, media, messaging};
 
 /// Device path protocol.
 ///
-/// A device path contains one or more device path instances made of up
+/// A device path contains one or more device path instances made up of
 /// variable-length nodes.
 ///
 /// Note that the fields in this struct define the header at the start of each
 /// node; a device path is typically larger than these four bytes.
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[repr(C)]
 pub struct DevicePathProtocol {
     pub major_type: DeviceType,
     pub sub_type: DeviceSubType,
+    /// Total length of the type including the fixed header as u16 in LE order.
     pub length: [u8; 2],
     // followed by payload (dynamically sized)
 }
 
 impl DevicePathProtocol {
     pub const GUID: Guid = guid!("09576e91-6d3f-11d2-8e39-00a0c969723b");
+
+    /// Returns the total length of the device path node.
+    #[must_use]
+    pub const fn length(&self) -> u16 {
+        u16::from_le_bytes(self.length)
+    }
 }
 
 newtype_enum! {
@@ -187,13 +196,13 @@ impl DeviceSubType {
 pub struct DevicePathToTextProtocol {
     pub convert_device_node_to_text: unsafe extern "efiapi" fn(
         device_node: *const DevicePathProtocol,
-        display_only: bool,
-        allow_shortcuts: bool,
+        display_only: Boolean,
+        allow_shortcuts: Boolean,
     ) -> *const Char16,
     pub convert_device_path_to_text: unsafe extern "efiapi" fn(
         device_path: *const DevicePathProtocol,
-        display_only: bool,
-        allow_shortcuts: bool,
+        display_only: Boolean,
+        allow_shortcuts: Boolean,
     ) -> *const Char16,
 }
 
@@ -212,4 +221,55 @@ pub struct DevicePathFromTextProtocol {
 
 impl DevicePathFromTextProtocol {
     pub const GUID: Guid = guid!("05c99a21-c70f-4ad2-8a5f-35df3343f51e");
+}
+
+#[derive(Debug)]
+#[repr(C)]
+pub struct DevicePathUtilitiesProtocol {
+    pub get_device_path_size:
+        unsafe extern "efiapi" fn(device_path: *const DevicePathProtocol) -> usize,
+    pub duplicate_device_path: unsafe extern "efiapi" fn(
+        device_path: *const DevicePathProtocol,
+    ) -> *const DevicePathProtocol,
+    pub append_device_path: unsafe extern "efiapi" fn(
+        src1: *const DevicePathProtocol,
+        src2: *const DevicePathProtocol,
+    ) -> *const DevicePathProtocol,
+    pub append_device_node: unsafe extern "efiapi" fn(
+        device_path: *const DevicePathProtocol,
+        device_node: *const DevicePathProtocol,
+    ) -> *const DevicePathProtocol,
+    pub append_device_path_instance: unsafe extern "efiapi" fn(
+        device_path: *const DevicePathProtocol,
+        device_path_instance: *const DevicePathProtocol,
+    ) -> *const DevicePathProtocol,
+    pub get_next_device_path_instance: unsafe extern "efiapi" fn(
+        device_path_instance: *mut *const DevicePathProtocol,
+        device_path_instance_size: *mut usize,
+    ) -> *const DevicePathProtocol,
+    pub is_device_path_multi_instance:
+        unsafe extern "efiapi" fn(device_path: *const DevicePathProtocol) -> bool,
+    pub create_device_node: unsafe extern "efiapi" fn(
+        node_type: DeviceType,
+        node_sub_type: DeviceSubType,
+        node_length: u16,
+    ) -> *const DevicePathProtocol,
+}
+
+impl DevicePathUtilitiesProtocol {
+    pub const GUID: Guid = guid!("0379be4e-d706-437d-b037-edb82fb772a4");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use core::mem;
+
+    /// Test that ensures the struct is packed. Thus, we don't need to
+    /// explicitly specify `packed`.
+    #[test]
+    fn abi() {
+        assert_eq!(mem::size_of::<DevicePathProtocol>(), 4);
+        assert_eq!(mem::align_of::<DevicePathProtocol>(), 1);
+    }
 }

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! Module for UEFI-specific error encodings. See [`Error`].
 
 use super::Status;
@@ -68,5 +70,4 @@ impl<Data: Debug> Error<Data> {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl<Data: Debug> core::error::Error for Error<Data> {}

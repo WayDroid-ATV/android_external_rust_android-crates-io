@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 // This module defines the `ComponentName1` type and marks it deprecated. That
 // causes warnings for uses within this module (e.g. the `impl ComponentName1`
 // block), so turn off deprecated warnings. It's not yet possible to make this
@@ -41,7 +43,7 @@ impl ComponentName1 {
     /// English is encoded as "eng".
     ///
     /// [ISO 639-2]: https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
-    pub fn supported_languages(&self) -> core::result::Result<LanguageIter, LanguageError> {
+    pub const fn supported_languages(&self) -> core::result::Result<LanguageIter, LanguageError> {
         LanguageIter::new(self.0.supported_languages, LanguageIterKind::V1)
     }
 
@@ -108,7 +110,7 @@ impl ComponentName2 {
     /// as "en".
     ///
     /// [RFC 4646]: https://www.rfc-editor.org/rfc/rfc4646
-    pub fn supported_languages(&self) -> core::result::Result<LanguageIter, LanguageError> {
+    pub const fn supported_languages(&self) -> core::result::Result<LanguageIter, LanguageError> {
         LanguageIter::new(self.0.supported_languages, LanguageIterKind::V2)
     }
 
@@ -182,6 +184,7 @@ impl ComponentName {
     ///
     /// [ISO 639-2]: https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
     /// [RFC 4646]: https://www.rfc-editor.org/rfc/rfc4646
+    #[allow(clippy::missing_const_for_fn)] // false-positive since Rust 1.86
     pub fn supported_languages(&self) -> core::result::Result<LanguageIter, LanguageError> {
         match self {
             Self::V1(cn1) => cn1.supported_languages(),
@@ -248,7 +251,6 @@ impl Display for LanguageError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for LanguageError {}
 
 #[derive(Debug, PartialEq)]
@@ -265,8 +267,8 @@ pub struct LanguageIter<'a> {
     kind: LanguageIterKind,
 }
 
-impl<'a> LanguageIter<'a> {
-    fn new(
+impl LanguageIter<'_> {
+    const fn new(
         languages: *const u8,
         kind: LanguageIterKind,
     ) -> core::result::Result<Self, LanguageError> {

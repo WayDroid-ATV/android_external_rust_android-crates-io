@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use crate::proto::unsafe_protocol;
 use crate::{Char16, Event, Result, Status, StatusExt};
 use core::mem::MaybeUninit;
@@ -19,7 +21,7 @@ impl Input {
     ///
     /// - `DeviceError` if the device is malfunctioning and cannot be reset.
     pub fn reset(&mut self, extended_verification: bool) -> Result {
-        unsafe { (self.0.reset)(&mut self.0, extended_verification) }.to_result()
+        unsafe { (self.0.reset)(&mut self.0, extended_verification.into()) }.to_result()
     }
 
     /// Reads the next keystroke from the input device, if any.

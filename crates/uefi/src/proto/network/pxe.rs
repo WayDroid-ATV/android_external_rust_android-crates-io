@@ -1,127 +1,51 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! PXE Base Code protocol.
 
-use core::ffi::c_void;
+use super::{IpAddress, MacAddress};
+use crate::polyfill::maybe_uninit_slice_as_mut_ptr;
+use crate::proto::unsafe_protocol;
+use crate::util::{ptr_write_unaligned_and_add, usize_from_u32};
+use crate::{CStr8, Result, Status, StatusExt};
+use bitflags::bitflags;
 use core::fmt::{self, Debug, Display, Formatter};
 use core::iter::from_fn;
 use core::mem::MaybeUninit;
-use core::ptr::{null, null_mut};
-
-use crate::polyfill::maybe_uninit_slice_as_mut_ptr;
-use crate::proto::unsafe_protocol;
-use crate::util::ptr_write_unaligned_and_add;
-use bitflags::bitflags;
+use core::ptr::{self, null, null_mut};
+use core::slice;
 use ptr_meta::Pointee;
+use uefi_raw::protocol::network::pxe::{
+    PxeBaseCodeDiscoverInfo, PxeBaseCodeIpFilter, PxeBaseCodeMode, PxeBaseCodeMtftpInfo,
+    PxeBaseCodePacket, PxeBaseCodeProtocol, PxeBaseCodeTftpOpcode,
+};
+use uefi_raw::{Boolean, Char8};
 
-use crate::{CStr8, Char8, Result, Status, StatusExt};
-
-use super::{IpAddress, MacAddress};
+pub use uefi_raw::protocol::network::pxe::{
+    PxeBaseCodeBootType as BootstrapType, PxeBaseCodeIpFilterFlags as IpFilters,
+    PxeBaseCodeUdpOpFlags as UdpOpFlags,
+};
 
 /// PXE Base Code protocol
 #[derive(Debug)]
-#[repr(C)]
-#[unsafe_protocol("03c4e603-ac28-11d3-9a2d-0090273fc14d")]
-#[allow(clippy::type_complexity)]
-pub struct BaseCode {
-    revision: u64,
-    start: extern "efiapi" fn(this: &Self, use_ipv6: bool) -> Status,
-    stop: extern "efiapi" fn(this: &Self) -> Status,
-    dhcp: extern "efiapi" fn(this: &Self, sort_offers: bool) -> Status,
-    discover: extern "efiapi" fn(
-        this: &Self,
-        ty: BootstrapType,
-        layer: &mut u16,
-        use_bis: bool,
-        info: *const FfiDiscoverInfo,
-    ) -> Status,
-    mtftp: unsafe extern "efiapi" fn(
-        this: &Self,
-        operation: TftpOpcode,
-        buffer: *mut c_void,
-        overwrite: bool,
-        buffer_size: &mut u64,
-        block_size: Option<&usize>,
-        server_ip: &IpAddress,
-        filename: *const Char8,
-        info: Option<&MtftpInfo>,
-        dont_use_buffer: bool,
-    ) -> Status,
-    udp_write: unsafe extern "efiapi" fn(
-        this: &Self,
-        op_flags: UdpOpFlags,
-        dest_ip: &IpAddress,
-        dest_port: &u16,
-        gateway_ip: Option<&IpAddress>,
-        src_ip: Option<&IpAddress>,
-        src_port: Option<&mut u16>,
-        header_size: Option<&usize>,
-        header_ptr: *const c_void,
-        buffer_size: &usize,
-        buffer_ptr: *const c_void,
-    ) -> Status,
-    udp_read: unsafe extern "efiapi" fn(
-        this: &Self,
-        op_flags: UdpOpFlags,
-        dest_ip: Option<&mut IpAddress>,
-        dest_port: Option<&mut u16>,
-        src_ip: Option<&mut IpAddress>,
-        src_port: Option<&mut u16>,
-        header_size: Option<&usize>,
-        header_ptr: *mut c_void,
-        buffer_size: &mut usize,
-        buffer_ptr: *mut c_void,
-    ) -> Status,
-    set_ip_filter: extern "efiapi" fn(this: &Self, new_filter: &IpFilter) -> Status,
-    arp: extern "efiapi" fn(
-        this: &Self,
-        ip_addr: &IpAddress,
-        mac_addr: Option<&mut MacAddress>,
-    ) -> Status,
-    set_parameters: extern "efiapi" fn(
-        this: &Self,
-        new_auto_arp: Option<&bool>,
-        new_send_guid: Option<&bool>,
-        new_ttl: Option<&u8>,
-        new_tos: Option<&u8>,
-        new_make_callback: Option<&bool>,
-    ) -> Status,
-    set_station_ip: extern "efiapi" fn(
-        this: &Self,
-        new_station_ip: Option<&IpAddress>,
-        new_subnet_mask: Option<&IpAddress>,
-    ) -> Status,
-    set_packets: extern "efiapi" fn(
-        this: &Self,
-        new_dhcp_discover_valid: Option<&bool>,
-        new_dhcp_ack_received: Option<&bool>,
-        new_proxy_offer_received: Option<&bool>,
-        new_pxe_discover_valid: Option<&bool>,
-        new_pxe_reply_received: Option<&bool>,
-        new_pxe_bis_reply_received: Option<&bool>,
-        new_dhcp_discover: Option<&Packet>,
-        new_dhcp_ack: Option<&Packet>,
-        new_proxy_offer: Option<&Packet>,
-        new_pxe_discover: Option<&Packet>,
-        new_pxe_reply: Option<&Packet>,
-        new_pxe_bis_reply: Option<&Packet>,
-    ) -> Status,
-    mode: *const Mode,
-}
+#[repr(transparent)]
+#[unsafe_protocol(PxeBaseCodeProtocol::GUID)]
+pub struct BaseCode(PxeBaseCodeProtocol);
 
 impl BaseCode {
     /// Enables the use of the PXE Base Code Protocol functions.
     pub fn start(&mut self, use_ipv6: bool) -> Result {
-        (self.start)(self, use_ipv6).to_result()
+        unsafe { (self.0.start)(&mut self.0, use_ipv6.into()) }.to_result()
     }
 
     /// Disables the use of the PXE Base Code Protocol functions.
     pub fn stop(&mut self) -> Result {
-        (self.stop)(self).to_result()
+        unsafe { (self.0.stop)(&mut self.0) }.to_result()
     }
 
     /// Attempts to complete a DHCPv4 D.O.R.A. (discover / offer / request /
     /// acknowledge) or DHCPv6 S.A.R.R (solicit / advertise / request / reply) sequence.
     pub fn dhcp(&mut self, sort_offers: bool) -> Result {
-        (self.dhcp)(self, sort_offers).to_result()
+        unsafe { (self.0.dhcp)(&mut self.0, sort_offers.into()) }.to_result()
     }
 
     /// Attempts to complete the PXE Boot Server and/or boot image discovery
@@ -133,14 +57,11 @@ impl BaseCode {
         use_bis: bool,
         info: Option<&DiscoverInfo>,
     ) -> Result {
-        let info: *const FfiDiscoverInfo = info
-            .map(|info| {
-                let info_ptr: *const DiscoverInfo = info;
-                info_ptr.cast()
-            })
+        let info: *const PxeBaseCodeDiscoverInfo = info
+            .map(|info| ptr::from_ref(info).cast())
             .unwrap_or(null());
 
-        (self.discover)(self, ty, layer, use_bis, info).to_result()
+        unsafe { (self.0.discover)(&mut self.0, ty, layer, use_bis.into(), info) }.to_result()
     }
 
     /// Returns the size of a file located on a TFTP server.
@@ -148,17 +69,17 @@ impl BaseCode {
         let mut buffer_size = 0;
 
         let status = unsafe {
-            (self.mtftp)(
-                self,
-                TftpOpcode::TftpGetFileSize,
+            (self.0.mtftp)(
+                &mut self.0,
+                PxeBaseCodeTftpOpcode::TFTP_GET_FILE_SIZE,
                 null_mut(),
-                false,
+                Boolean::FALSE,
                 &mut buffer_size,
-                None,
-                server_ip,
-                filename.as_ptr(),
-                None,
-                false,
+                null(),
+                server_ip.as_raw_ptr(),
+                cstr8_to_ptr(filename),
+                null(),
+                Boolean::FALSE,
             )
         };
         status.to_result_with_val(|| buffer_size)
@@ -173,22 +94,22 @@ impl BaseCode {
     ) -> Result<u64> {
         let (buffer_ptr, mut buffer_size, dont_use_buffer) = if let Some(buffer) = buffer {
             let buffer_size = u64::try_from(buffer.len()).unwrap();
-            ((&mut buffer[0] as *mut u8).cast(), buffer_size, false)
+            (buffer.as_mut_ptr().cast(), buffer_size, Boolean::FALSE)
         } else {
-            (null_mut(), 0, true)
+            (null_mut(), 0, Boolean::TRUE)
         };
 
         let status = unsafe {
-            (self.mtftp)(
-                self,
-                TftpOpcode::TftpReadFile,
+            (self.0.mtftp)(
+                &mut self.0,
+                PxeBaseCodeTftpOpcode::TFTP_READ_FILE,
                 buffer_ptr,
-                false,
+                Boolean::FALSE,
                 &mut buffer_size,
-                None,
-                server_ip,
-                filename.as_ptr(),
-                None,
+                null(),
+                server_ip.as_raw_ptr(),
+                cstr8_to_ptr(filename),
+                null(),
                 dont_use_buffer,
             )
         };
@@ -203,21 +124,21 @@ impl BaseCode {
         overwrite: bool,
         buffer: &[u8],
     ) -> Result {
-        let buffer_ptr = (&buffer[0] as *const u8 as *mut u8).cast();
+        let buffer_ptr = buffer.as_ptr().cast_mut().cast();
         let mut buffer_size = u64::try_from(buffer.len()).expect("buffer length should fit in u64");
 
         unsafe {
-            (self.mtftp)(
-                self,
-                TftpOpcode::TftpWriteFile,
+            (self.0.mtftp)(
+                &mut self.0,
+                PxeBaseCodeTftpOpcode::TFTP_WRITE_FILE,
                 buffer_ptr,
-                overwrite,
+                overwrite.into(),
                 &mut buffer_size,
-                None,
-                server_ip,
-                filename.as_ptr(),
-                None,
-                false,
+                null(),
+                server_ip.as_raw_ptr(),
+                cstr8_to_ptr(filename),
+                null(),
+                Boolean::FALSE,
             )
         }
         .to_result()
@@ -225,27 +146,27 @@ impl BaseCode {
 
     /// Reads a directory listing of a directory on a TFTP server.
     pub fn tftp_read_dir<'a>(
-        &self,
+        &mut self,
         server_ip: &IpAddress,
         directory_name: &CStr8,
         buffer: &'a mut [u8],
     ) -> Result<impl Iterator<Item = core::result::Result<TftpFileInfo<'a>, ReadDirParseError>> + 'a>
     {
-        let buffer_ptr = (&buffer[0] as *const u8 as *mut u8).cast();
+        let buffer_ptr = buffer.as_mut_ptr().cast();
         let mut buffer_size = u64::try_from(buffer.len()).expect("buffer length should fit in u64");
 
         let status = unsafe {
-            (self.mtftp)(
-                self,
-                TftpOpcode::TftpReadDirectory,
+            (self.0.mtftp)(
+                &mut self.0,
+                PxeBaseCodeTftpOpcode::TFTP_READ_DIRECTORY,
                 buffer_ptr,
-                false,
+                Boolean::FALSE,
                 &mut buffer_size,
-                None,
-                server_ip,
-                directory_name.as_ptr(),
-                None,
-                false,
+                null(),
+                server_ip.as_raw_ptr(),
+                cstr8_to_ptr(directory_name),
+                null(),
+                Boolean::FALSE,
             )
         };
         status.to_result()?;
@@ -308,17 +229,17 @@ impl BaseCode {
         let mut buffer_size = 0;
 
         let status = unsafe {
-            (self.mtftp)(
-                self,
-                TftpOpcode::MtftpGetFileSize,
+            (self.0.mtftp)(
+                &mut self.0,
+                PxeBaseCodeTftpOpcode::MTFTP_GET_FILE_SIZE,
                 null_mut(),
-                false,
+                Boolean::FALSE,
                 &mut buffer_size,
-                None,
-                server_ip,
-                filename.as_ptr(),
-                Some(info),
-                false,
+                null(),
+                server_ip.as_raw_ptr(),
+                cstr8_to_ptr(filename),
+                info.as_raw_ptr(),
+                Boolean::FALSE,
             )
         };
         status.to_result_with_val(|| buffer_size)
@@ -334,22 +255,22 @@ impl BaseCode {
     ) -> Result<u64> {
         let (buffer_ptr, mut buffer_size, dont_use_buffer) = if let Some(buffer) = buffer {
             let buffer_size = u64::try_from(buffer.len()).unwrap();
-            ((&mut buffer[0] as *mut u8).cast(), buffer_size, false)
+            (buffer.as_mut_ptr().cast(), buffer_size, Boolean::FALSE)
         } else {
-            (null_mut(), 0, true)
+            (null_mut(), 0, Boolean::TRUE)
         };
 
         let status = unsafe {
-            (self.mtftp)(
-                self,
-                TftpOpcode::MtftpReadFile,
+            (self.0.mtftp)(
+                &mut self.0,
+                PxeBaseCodeTftpOpcode::MTFTP_READ_FILE,
                 buffer_ptr,
-                false,
+                Boolean::FALSE,
                 &mut buffer_size,
-                None,
-                server_ip,
-                filename.as_ptr(),
-                Some(info),
+                null(),
+                server_ip.as_raw_ptr(),
+                cstr8_to_ptr(filename),
+                info.as_raw_ptr(),
                 dont_use_buffer,
             )
         };
@@ -358,27 +279,27 @@ impl BaseCode {
 
     /// Reads a directory listing of a directory on a MTFTP server.
     pub fn mtftp_read_dir<'a>(
-        &self,
+        &mut self,
         server_ip: &IpAddress,
         buffer: &'a mut [u8],
         info: &MtftpInfo,
     ) -> Result<impl Iterator<Item = core::result::Result<MtftpFileInfo<'a>, ReadDirParseError>> + 'a>
     {
-        let buffer_ptr = (&buffer[0] as *const u8 as *mut u8).cast();
+        let buffer_ptr = buffer.as_mut_ptr().cast();
         let mut buffer_size = u64::try_from(buffer.len()).expect("buffer length should fit in u64");
 
         let status = unsafe {
-            (self.mtftp)(
-                self,
-                TftpOpcode::MtftpReadDirectory,
+            (self.0.mtftp)(
+                &mut self.0,
+                PxeBaseCodeTftpOpcode::MTFTP_READ_DIRECTORY,
                 buffer_ptr,
-                false,
+                Boolean::FALSE,
                 &mut buffer_size,
-                None,
-                server_ip,
+                null(),
+                server_ip.as_raw_ptr(),
                 null_mut(),
-                Some(info),
-                false,
+                info.as_raw_ptr(),
+                Boolean::FALSE,
             )
         };
         status.to_result()?;
@@ -464,24 +385,24 @@ impl BaseCode {
         let header_size_tmp;
         let (header_size, header_ptr) = if let Some(header) = header {
             header_size_tmp = header.len();
-            (Some(&header_size_tmp), (&header[0] as *const u8).cast())
+            (Some(&header_size_tmp), header.as_ptr().cast())
         } else {
             (None, null())
         };
 
         unsafe {
-            (self.udp_write)(
-                self,
+            (self.0.udp_write)(
+                &mut self.0,
                 op_flags,
-                dest_ip,
+                dest_ip.as_raw_ptr(),
                 &dest_port,
-                gateway_ip,
-                src_ip,
-                src_port,
-                header_size,
+                opt_ip_addr_to_ptr(gateway_ip),
+                opt_ip_addr_to_ptr(src_ip),
+                opt_mut_to_ptr(src_port),
+                opt_ref_to_ptr(header_size),
                 header_ptr,
                 &buffer.len(),
-                (&buffer[0] as *const u8).cast(),
+                buffer.as_ptr().cast(),
             )
         }
         .to_result()
@@ -502,25 +423,25 @@ impl BaseCode {
         let header_size_tmp;
         let (header_size, header_ptr) = if let Some(header) = header {
             header_size_tmp = header.len();
-            (Some(&header_size_tmp), (&mut header[0] as *mut u8).cast())
+            (ptr::from_ref(&header_size_tmp), header.as_mut_ptr().cast())
         } else {
-            (None, null_mut())
+            (null(), null_mut())
         };
 
         let mut buffer_size = buffer.len();
 
         let status = unsafe {
-            (self.udp_read)(
-                self,
+            (self.0.udp_read)(
+                &mut self.0,
                 op_flags,
-                dest_ip,
-                dest_port,
-                src_ip,
-                src_port,
+                opt_ip_addr_to_ptr_mut(dest_ip),
+                opt_mut_to_ptr(dest_port),
+                opt_ip_addr_to_ptr_mut(src_ip),
+                opt_mut_to_ptr(src_port),
                 header_size,
                 header_ptr,
                 &mut buffer_size,
-                (&mut buffer[0] as *mut u8).cast(),
+                buffer.as_mut_ptr().cast(),
             )
         };
         status.to_result_with_val(|| buffer_size)
@@ -529,12 +450,14 @@ impl BaseCode {
     /// Updates the IP receive filters of a network device and enables software
     /// filtering.
     pub fn set_ip_filter(&mut self, new_filter: &IpFilter) -> Result {
-        (self.set_ip_filter)(self, new_filter).to_result()
+        let new_filter: *const PxeBaseCodeIpFilter = ptr::from_ref(new_filter).cast();
+        unsafe { (self.0.set_ip_filter)(&mut self.0, new_filter) }.to_result()
     }
 
     /// Uses the ARP protocol to resolve a MAC address.
     pub fn arp(&mut self, ip_addr: &IpAddress, mac_addr: Option<&mut MacAddress>) -> Result {
-        (self.arp)(self, ip_addr, mac_addr).to_result()
+        unsafe { (self.0.arp)(&mut self.0, ip_addr.as_raw_ptr(), opt_mut_to_ptr(mac_addr)) }
+            .to_result()
     }
 
     /// Updates the parameters that affect the operation of the PXE Base Code
@@ -547,14 +470,16 @@ impl BaseCode {
         new_tos: Option<u8>,
         new_make_callback: Option<bool>,
     ) -> Result {
-        (self.set_parameters)(
-            self,
-            new_auto_arp.as_ref(),
-            new_send_guid.as_ref(),
-            new_ttl.as_ref(),
-            new_tos.as_ref(),
-            new_make_callback.as_ref(),
-        )
+        unsafe {
+            (self.0.set_parameters)(
+                &mut self.0,
+                opt_bool_to_ptr(&new_auto_arp),
+                opt_bool_to_ptr(&new_send_guid),
+                opt_ref_to_ptr(new_ttl.as_ref()),
+                opt_ref_to_ptr(new_tos.as_ref()),
+                opt_bool_to_ptr(&new_make_callback),
+            )
+        }
         .to_result()
     }
 
@@ -565,7 +490,14 @@ impl BaseCode {
         new_station_ip: Option<&IpAddress>,
         new_subnet_mask: Option<&IpAddress>,
     ) -> Result {
-        (self.set_station_ip)(self, new_station_ip, new_subnet_mask).to_result()
+        unsafe {
+            (self.0.set_station_ip)(
+                &mut self.0,
+                opt_ip_addr_to_ptr(new_station_ip),
+                opt_ip_addr_to_ptr(new_subnet_mask),
+            )
+        }
+        .to_result()
     }
 
     /// Updates the contents of the cached DHCP and Discover packets.
@@ -585,61 +517,70 @@ impl BaseCode {
         new_pxe_reply: Option<&Packet>,
         new_pxe_bis_reply: Option<&Packet>,
     ) -> Result {
-        (self.set_packets)(
-            self,
-            new_dhcp_discover_valid.as_ref(),
-            new_dhcp_ack_received.as_ref(),
-            new_proxy_offer_received.as_ref(),
-            new_pxe_discover_valid.as_ref(),
-            new_pxe_reply_received.as_ref(),
-            new_pxe_bis_reply_received.as_ref(),
-            new_dhcp_discover,
-            new_dhcp_ack,
-            new_proxy_offer,
-            new_pxe_discover,
-            new_pxe_reply,
-            new_pxe_bis_reply,
-        )
+        unsafe {
+            (self.0.set_packets)(
+                &mut self.0,
+                opt_bool_to_ptr(&new_dhcp_discover_valid),
+                opt_bool_to_ptr(&new_dhcp_ack_received),
+                opt_bool_to_ptr(&new_proxy_offer_received),
+                opt_bool_to_ptr(&new_pxe_discover_valid),
+                opt_bool_to_ptr(&new_pxe_reply_received),
+                opt_bool_to_ptr(&new_pxe_bis_reply_received),
+                opt_packet_to_ptr(new_dhcp_discover),
+                opt_packet_to_ptr(new_dhcp_ack),
+                opt_packet_to_ptr(new_proxy_offer),
+                opt_packet_to_ptr(new_pxe_discover),
+                opt_packet_to_ptr(new_pxe_reply),
+                opt_packet_to_ptr(new_pxe_bis_reply),
+            )
+        }
         .to_result()
     }
 
     /// Returns a reference to the `Mode` struct.
     #[must_use]
     pub const fn mode(&self) -> &Mode {
-        unsafe { &*self.mode }
+        unsafe { &*(self.0.mode.cast()) }
     }
 }
 
-/// A type of bootstrap to perform in [`BaseCode::discover`].
+/// Convert a `&CStr8` to a `*const uefi_raw::Char8`.
+const fn cstr8_to_ptr(s: &CStr8) -> *const Char8 {
+    s.as_ptr().cast()
+}
+
+/// Convert an `&Option<bool>` to a `*const Boolean`.
 ///
-/// Corresponds to the `EFI_PXE_BASE_CODE_BOOT_` constants in the C API.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[repr(u16)]
-#[allow(missing_docs)]
-pub enum BootstrapType {
-    Bootstrap = 0,
-    MsWinntRis = 1,
-    IntelLcm = 2,
-    DosUndi = 3,
-    NecEsmpro = 4,
-    IbmWsoD = 5,
-    IbmLccm = 6,
-    CaUnicenterTng = 7,
-    HpOpenview = 8,
-    Altiris9 = 9,
-    Altiris10 = 10,
-    Altiris11 = 11,
-    // NOT_USED_12 = 12,
-    RedhatInstall = 13,
-    RedhatBoot = 14,
-    Rembo = 15,
-    Beoboot = 16,
-    //
-    // Values 17 through 32767 are reserved.
-    // Values 32768 through 65279 are for vendor use.
-    // Values 65280 through 65534 are reserved.
-    //
-    PxeTest = 65535,
+/// This is always a valid conversion; `bool` is an 8-bit `0` or `1`.
+fn opt_bool_to_ptr(arg: &Option<bool>) -> *const Boolean {
+    arg.as_ref()
+        .map(|arg| ptr::from_ref(arg).cast::<Boolean>())
+        .unwrap_or_else(null)
+}
+
+/// Convert an `Option<&IpAddress>` to a `*const uefi_raw::IpAddress`.
+fn opt_ip_addr_to_ptr(arg: Option<&IpAddress>) -> *const uefi_raw::IpAddress {
+    arg.map(|arg| arg.as_raw_ptr()).unwrap_or_else(null)
+}
+
+/// Convert an `Option<&mut IpAddress>` to a `*mut uefi_raw::IpAddress`.
+fn opt_ip_addr_to_ptr_mut(arg: Option<&mut IpAddress>) -> *mut uefi_raw::IpAddress {
+    arg.map(|arg| arg.as_raw_ptr_mut()).unwrap_or_else(null_mut)
+}
+
+/// Convert an `Option<&Packet>` to a `*const PxeBaseCodePacket`.
+fn opt_packet_to_ptr(arg: Option<&Packet>) -> *const PxeBaseCodePacket {
+    arg.map(|p| ptr::from_ref(p).cast()).unwrap_or_else(null)
+}
+
+/// Convert an `Option<&T>` to a `*const T`.
+fn opt_ref_to_ptr<T>(opt: Option<&T>) -> *const T {
+    opt.map(ptr::from_ref).unwrap_or(null())
+}
+
+/// Convert an `Option<&mut T>` to a `*mut T`.
+fn opt_mut_to_ptr<T>(opt: Option<&mut T>) -> *mut T {
+    opt.map(ptr::from_mut).unwrap_or(null_mut())
 }
 
 opaque_type! {
@@ -678,10 +619,10 @@ impl DiscoverInfo {
         let server_count = srv_list.len();
         assert!(server_count <= u16::MAX as usize, "too many servers");
 
-        let required_size = core::mem::size_of::<bool>() * 4
-            + core::mem::size_of::<IpAddress>()
-            + core::mem::size_of::<u16>()
-            + core::mem::size_of_val(srv_list);
+        let required_size = size_of::<bool>() * 4
+            + size_of::<IpAddress>()
+            + size_of::<u16>()
+            + size_of_val(srv_list);
 
         if buffer.len() < required_size {
             return Err(Status::BUFFER_TOO_SMALL.into());
@@ -792,18 +733,6 @@ impl Server {
     }
 }
 
-/// Corresponds to the `EFI_PXE_BASE_CODE_TFTP_OPCODE` type in the C API.
-#[repr(C)]
-enum TftpOpcode {
-    TftpGetFileSize = 1,
-    TftpReadFile,
-    TftpWriteFile,
-    TftpReadDirectory,
-    MtftpGetFileSize,
-    MtftpReadFile,
-    MtftpReadDirectory,
-}
-
 /// MTFTP connection parameters
 ///
 /// Corresponds to the `EFI_PXE_BASE_CODE_MTFTP_INFO` type in the C API.
@@ -827,26 +756,9 @@ pub struct MtftpInfo {
     pub transmit_timeout: u16,
 }
 
-// No corresponding type in the UEFI spec, it just uses UINT16.
-bitflags! {
-    /// Flags for UDP read and write operations.
-    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
-    #[repr(transparent)]
-    pub struct UdpOpFlags: u16 {
-        /// Receive a packet sent from any IP address in UDP read operations.
-        const ANY_SRC_IP = 0x0001;
-        /// Receive a packet sent from any UDP port in UDP read operations. If
-        /// the source port is no specified in UDP write operations, the
-        /// source port will be automatically selected.
-        const ANY_SRC_PORT = 0x0002;
-        /// Receive a packet sent to any IP address in UDP read operations.
-        const ANY_DEST_IP = 0x0004;
-        /// Receive a packet sent to any UDP port in UDP read operations.
-        const ANY_DEST_PORT = 0x0008;
-        /// The software filter is used in UDP read operations.
-        const USE_FILTER = 0x0010;
-        /// If required, a UDP write operation may be broken up across multiple packets.
-        const MAY_FRAGMENT = 0x0020;
+impl MtftpInfo {
+    const fn as_raw_ptr(&self) -> *const PxeBaseCodeMtftpInfo {
+        ptr::from_ref(self).cast()
     }
 }
 
@@ -893,22 +805,6 @@ impl IpFilter {
     }
 }
 
-bitflags! {
-    /// IP receive filters.
-    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
-    #[repr(transparent)]
-    pub struct IpFilters: u8 {
-        /// Enable the Station IP address.
-        const STATION_IP = 0x01;
-        /// Enable IPv4 broadcast addresses.
-        const BROADCAST = 0x02;
-        /// Enable all addresses.
-        const PROMISCUOUS = 0x04;
-        /// Enable all multicast addresses.
-        const PROMISCUOUS_MULTICAST = 0x08;
-    }
-}
-
 /// A network packet.
 ///
 /// Corresponds to the `EFI_PXE_BASE_CODE_PACKET` type in the C API.
@@ -917,6 +813,13 @@ pub union Packet {
     raw: [u8; 1472],
     dhcpv4: DhcpV4Packet,
     dhcpv6: DhcpV6Packet,
+}
+
+impl Packet {
+    const fn from_raw(packet: &PxeBaseCodePacket) -> &Self {
+        // Safety: `Packet` has the same layout as `PxeBaseCodePacket`.
+        unsafe { &*ptr::from_ref(packet).cast() }
+    }
 }
 
 impl Debug for Packet {
@@ -1037,8 +940,8 @@ impl DhcpV6Packet {
     /// The transaction id.
     #[must_use]
     pub fn transaction_id(&self) -> u32 {
-        u32::from(self.transaction_id[0]) << 16
-            | u32::from(self.transaction_id[1]) << 8
+        (u32::from(self.transaction_id[0]) << 16)
+            | (u32::from(self.transaction_id[1]) << 8)
             | u32::from(self.transaction_id[2])
     }
 }
@@ -1047,91 +950,169 @@ impl DhcpV6Packet {
 /// [`BaseCode`].
 ///
 /// Corresponds to the `EFI_PXE_BASE_CODE_MODE` type in the C API.
-#[repr(C)]
+#[repr(transparent)]
 #[derive(Debug)]
-pub struct Mode {
+pub struct Mode(PxeBaseCodeMode);
+
+impl Mode {
     /// `true` if this device has been started by calling [`BaseCode::start`].
     /// This field is set to `true` by [`BaseCode::start`] and to `false` by
     /// the [`BaseCode::stop`] function.
-    pub started: bool,
+    #[must_use]
+    pub fn started(&self) -> bool {
+        self.0.started.into()
+    }
+
     /// `true` if the UNDI protocol supports IPv6
-    pub ipv6_available: bool,
+    #[must_use]
+    pub fn ipv6_available(&self) -> bool {
+        self.0.ipv6_available.into()
+    }
+
     /// `true` if this PXE Base Code Protocol implementation supports IPv6.
-    pub ipv6_supported: bool,
+    #[must_use]
+    pub fn ipv6_supported(&self) -> bool {
+        self.0.ipv6_supported.into()
+    }
+
     /// `true` if this device is currently using IPv6. This field is set by
     /// [`BaseCode::start`].
-    pub using_ipv6: bool,
+    #[must_use]
+    pub fn using_ipv6(&self) -> bool {
+        self.0.using_ipv6.into()
+    }
+
     /// `true` if this PXE Base Code implementation supports Boot Integrity
     /// Services (BIS). This field is set by [`BaseCode::start`].
-    pub bis_supported: bool,
+    #[must_use]
+    pub fn bis_supported(&self) -> bool {
+        self.0.bis_supported.into()
+    }
+
     /// `true` if this device and the platform support Boot Integrity Services
     /// (BIS). This field is set by [`BaseCode::start`].
-    pub bis_detected: bool,
+    #[must_use]
+    pub fn bis_detected(&self) -> bool {
+        self.0.bis_detected.into()
+    }
+
     /// `true` for automatic ARP packet generation, `false` otherwise. This
     /// field is initialized to `true` by [`BaseCode::start`] and can be
     /// modified with [`BaseCode::set_parameters`].
-    pub auto_arp: bool,
+    #[must_use]
+    pub fn auto_arp(&self) -> bool {
+        self.0.auto_arp.into()
+    }
+
     /// This field is used to change the Client Hardware Address (chaddr) field
     /// in the DHCP and Discovery packets. Set to `true` to send the SystemGuid
     /// (if one is available). Set to `false` to send the client NIC MAC
     /// address. This field is initialized to `false` by [`BaseCode::start`]
     /// and can be modified with [`BaseCode::set_parameters`].
-    pub send_guid: bool,
+    #[must_use]
+    pub fn send_guid(&self) -> bool {
+        self.0.send_guid.into()
+    }
+
     /// This field is initialized to `false` by [`BaseCode::start`] and set to
     /// `true` when [`BaseCode::dhcp`] completes successfully. When `true`,
     /// [`Self::dhcp_discover`] is valid. This field can also be changed by
     /// [`BaseCode::set_packets`].
-    pub dhcp_discover_valid: bool,
+    #[must_use]
+    pub fn dhcp_discover_valid(&self) -> bool {
+        self.0.dhcp_discover_valid.into()
+    }
+
     /// This field is initialized to `false` by [`BaseCode::start`] and set to
     /// `true` when [`BaseCode::dhcp`] completes successfully. When `true`,
     /// [`Self::dhcp_ack`] is valid. This field can also be changed by
     /// [`BaseCode::set_packets`].
-    pub dhcp_ack_received: bool,
+    #[must_use]
+    pub fn dhcp_ack_received(&self) -> bool {
+        self.0.dhcp_ack_received.into()
+    }
+
     /// This field is initialized to `false` by [`BaseCode::start`] and set to
     /// `true` when [`BaseCode::dhcp`] completes successfully and a proxy DHCP
     /// offer packet was received. When `true`, [`Self::proxy_offer`] is valid.
     /// This field can also be changed by [`BaseCode::set_packets`].
-    pub proxy_offer_received: bool,
+    #[must_use]
+    pub fn proxy_offer_received(&self) -> bool {
+        self.0.proxy_offer_received.into()
+    }
+
     /// When `true`, [`Self::pxe_discover`] is valid. This field is set to
     /// `false` by [`BaseCode::start`] and [`BaseCode::dhcp`], and can be set
     /// to `true` or `false` by [`BaseCode::discover`] and
     /// [`BaseCode::set_packets`].
-    pub pxe_discover_valid: bool,
+    #[must_use]
+    pub fn pxe_discover_valid(&self) -> bool {
+        self.0.pxe_discover_valid.into()
+    }
+
     /// When `true`, [`Self::pxe_reply`] is valid. This field is set to `false`
     /// by [`BaseCode::start`] and [`BaseCode::dhcp`], and can be set to `true`
     /// or `false` by [`BaseCode::discover`] and [`BaseCode::set_packets`].
-    pub pxe_reply_received: bool,
+    #[must_use]
+    pub fn pxe_reply_received(&self) -> bool {
+        self.0.pxe_reply_received.into()
+    }
+
     /// When `true`, [`Self::pxe_bis_reply`] is valid. This field is set to
     /// `false` by [`BaseCode::start`] and [`BaseCode::dhcp`], and can be set
     /// to `true` or `false` by the [`BaseCode::discover`] and
     /// [`BaseCode::set_packets`].
-    pub pxe_bis_reply_received: bool,
+    #[must_use]
+    pub fn pxe_bis_reply_received(&self) -> bool {
+        self.0.pxe_bis_reply_received.into()
+    }
+
     /// Indicates whether [`Self::icmp_error`] has been updated. This field is
     /// reset to `false` by [`BaseCode::start`], [`BaseCode::dhcp`],
     /// [`BaseCode::discover`],[`BaseCode::udp_read`], [`BaseCode::udp_write`],
     /// [`BaseCode::arp`] and any of the TFTP/MTFTP operations. If an ICMP
     /// error is received, this field will be set to `true` after
     /// [`Self::icmp_error`] is updated.
-    pub icmp_error_received: bool,
+    #[must_use]
+    pub fn icmp_error_received(&self) -> bool {
+        self.0.icmp_error_received.into()
+    }
+
     /// Indicates whether [`Self::tftp_error`] has been updated. This field is
     /// reset to `false` by [`BaseCode::start`] and any of the TFTP/MTFTP
     /// operations. If a TFTP error is received, this field will be set to
     /// `true` after [`Self::tftp_error`] is updated.
-    pub tftp_error_received: bool,
+    #[must_use]
+    pub fn tftp_error_received(&self) -> bool {
+        self.0.tftp_error_received.into()
+    }
+
     /// When `false`, callbacks will not be made. When `true`, make callbacks
     /// to the PXE Base Code Callback Protocol. This field is reset to `false`
     /// by [`BaseCode::start`] if the PXE Base Code Callback Protocol is not
     /// available. It is reset to `true` by [`BaseCode::start`] if the PXE Base
     /// Code Callback Protocol is available.
-    pub make_callbacks: bool,
+    #[must_use]
+    pub fn make_callbacks(&self) -> bool {
+        self.0.make_callbacks.into()
+    }
+
     /// The "time to live" field of the IP header. This field is initialized to
     /// `16` by [`BaseCode::start`] and can be modified by
     /// [`BaseCode::set_parameters`].
-    pub ttl: u8,
+    #[must_use]
+    pub const fn ttl(&self) -> u8 {
+        self.0.ttl
+    }
+
     /// The type of service field of the IP header. This field is initialized
     /// to `0` by [`BaseCode::start`], and can be modified with
     /// [`BaseCode::set_parameters`].
-    pub tos: u8,
+    #[must_use]
+    pub const fn tos(&self) -> u8 {
+        self.0.tos
+    }
+
     /// The device’s current IP address. This field is initialized to a zero
     /// address by Start(). This field is set when [`BaseCode::dhcp`] completes
     /// successfully. This field can also be set by
@@ -1140,7 +1121,11 @@ pub struct Mode {
     /// before [`BaseCode::discover`], [`BaseCode::udp_read`],
     /// [`BaseCode::udp_write`], [`BaseCode::arp`] and any of the TFTP/MTFTP
     /// operations are called.
-    pub station_ip: IpAddress,
+    #[must_use]
+    pub fn station_ip(&self) -> IpAddress {
+        unsafe { IpAddress::from_raw(self.0.station_ip, self.using_ipv6()) }
+    }
+
     /// The device's current subnet mask. This field is initialized to a zero
     /// address by [`BaseCode::start`]. This field is set when
     /// [`BaseCode::dhcp`] completes successfully. This field can also be set
@@ -1149,58 +1134,116 @@ pub struct Mode {
     /// [`BaseCode::set_station_ip`] before [`BaseCode::discover`],
     /// [`BaseCode::udp_read`], [`BaseCode::udp_write`],
     /// [`BaseCode::arp`] or any of the TFTP/MTFTP operations are called.
-    pub subnet_mask: IpAddress,
+    #[must_use]
+    pub fn subnet_mask(&self) -> IpAddress {
+        unsafe { IpAddress::from_raw(self.0.subnet_mask, self.using_ipv6()) }
+    }
+
     /// Cached DHCP Discover packet. This field is zero-filled by the
     /// [`BaseCode::start`] function, and is set when [`BaseCode::dhcp`]
     /// completes successfully. The contents of this field can replaced by
     /// [`BaseCode::set_packets`].
-    pub dhcp_discover: Packet,
+    #[must_use]
+    pub const fn dhcp_discover(&self) -> &Packet {
+        Packet::from_raw(&self.0.dhcp_discover)
+    }
+
     /// Cached DHCP Ack packet. This field is zero-filled by
     /// [`BaseCode::start`], and is set when [`BaseCode::dhcp`] completes
     /// successfully. The contents of this field can be replaced by
     /// [`BaseCode::set_packets`].
-    pub dhcp_ack: Packet,
+    #[must_use]
+    pub const fn dhcp_ack(&self) -> &Packet {
+        Packet::from_raw(&self.0.dhcp_ack)
+    }
+
     /// Cached Proxy Offer packet. This field is zero-filled by
     /// [`BaseCode::start`], and is set when [`BaseCode::dhcp`] completes
     /// successfully. The contents of this field can be replaced by
     /// [`BaseCode::set_packets`].
-    pub proxy_offer: Packet,
+    #[must_use]
+    pub const fn proxy_offer(&self) -> &Packet {
+        Packet::from_raw(&self.0.proxy_offer)
+    }
+
     /// Cached PXE Discover packet. This field is zero-filled by
     /// [`BaseCode::start`], and is set when [`BaseCode::discover`] completes
     /// successfully. The contents of this field can be replaced by
     /// [`BaseCode::set_packets`].
-    pub pxe_discover: Packet,
+    #[must_use]
+    pub const fn pxe_discover(&self) -> &Packet {
+        Packet::from_raw(&self.0.pxe_discover)
+    }
+
     /// Cached PXE Reply packet. This field is zero-filled by
     /// [`BaseCode::start`], and is set when [`BaseCode::discover`] completes
     /// successfully. The contents of this field can be replaced by the
     /// [`BaseCode::set_packets`] function.
-    pub pxe_reply: Packet,
+    #[must_use]
+    pub const fn pxe_reply(&self) -> &Packet {
+        Packet::from_raw(&self.0.pxe_reply)
+    }
+
     /// Cached PXE BIS Reply packet. This field is zero-filled by
     /// [`BaseCode::start`], and is set when [`BaseCode::discover`] completes
     /// successfully. This field can be replaced by [`BaseCode::set_packets`].
-    pub pxe_bis_reply: Packet,
+    #[must_use]
+    pub const fn pxe_bis_reply(&self) -> &Packet {
+        Packet::from_raw(&self.0.pxe_bis_reply)
+    }
+
     /// The current IP receive filter settings. The receive filter is disabled
     /// and the number of IP receive filters is set to zero by
     /// [`BaseCode::start`], and is set by [`BaseCode::set_ip_filter`].
-    pub ip_filter: IpFilter,
-    /// The number of valid entries in the ARP cache. This field is reset to
-    /// zero by [`BaseCode::start`].
-    pub arp_cache_entries: u32,
-    /// Array of cached ARP entries.
-    pub arp_cache: [ArpEntry; 8],
+    #[must_use]
+    pub const fn ip_filter(&self) -> &IpFilter {
+        // Safety: `IpFilter` has the same layout as `PxeBaseCodeIpFilter`.
+        unsafe { &*ptr::from_ref(&self.0.ip_filter).cast() }
+    }
+
+    /// Cached ARP entries.
+    #[must_use]
+    pub const fn arp_cache(&self) -> &[ArpEntry] {
+        let len = usize_from_u32(self.0.arp_cache_entries);
+        // Safety: `ArpEntry` has the same layout as `PxeBaseCodeArpEntry`.
+        unsafe { slice::from_raw_parts(ptr::from_ref(&self.0.arp_cache).cast::<ArpEntry>(), len) }
+    }
+
     /// The number of valid entries in the current route table. This field is
     /// reset to zero by [`BaseCode::start`].
-    pub route_table_entries: u32,
+    #[must_use]
+    pub const fn route_table_entries(&self) -> u32 {
+        self.0.route_table_entries
+    }
+
     /// Array of route table entries.
-    pub route_table: [RouteEntry; 8],
+    #[must_use]
+    pub const fn route_table(&self) -> &[RouteEntry] {
+        let len = usize_from_u32(self.0.route_table_entries);
+
+        // Safety: `RouteEntry` has the same layout as `PxeBaseCodeRouteEntry`.
+        unsafe {
+            slice::from_raw_parts(ptr::from_ref(&self.0.route_table).cast::<RouteEntry>(), len)
+        }
+    }
+
     /// ICMP error packet. This field is updated when an ICMP error is received
     /// and is undefined until the first ICMP error is received. This field is
     /// zero-filled by [`BaseCode::start`].
-    pub icmp_error: IcmpError,
+    #[must_use]
+    pub const fn icmp_error(&self) -> &IcmpError {
+        // Safety: `IcmpError` has the same layout as `PxeBaseCodeIcmpError`.
+        unsafe { &*ptr::from_ref(&self.0.icmp_error).cast() }
+    }
+
     /// TFTP error packet. This field is updated when a TFTP error is received
     /// and is undefined until the first TFTP error is received. This field is
     /// zero-filled by the [`BaseCode::start`] function.
-    pub tftp_error: TftpError,
+    #[must_use]
+    pub const fn tftp_error(&self) -> &TftpError {
+        // Safety: `TftpError` has the same layout as `PxeBaseCodeTftpError`.
+        unsafe { &*ptr::from_ref(&self.0.tftp_error).cast() }
+    }
 }
 
 /// An entry for the ARP cache found in [`Mode::arp_cache`]
@@ -1247,7 +1290,6 @@ impl Display for IcmpError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for IcmpError {}
 
 /// Corresponds to the anonymous union inside
@@ -1294,7 +1336,6 @@ impl Display for TftpError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for TftpError {}
 
 /// Returned by [`BaseCode::tftp_read_dir`].
@@ -1337,5 +1378,4 @@ impl Display for ReadDirParseError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for ReadDirParseError {}

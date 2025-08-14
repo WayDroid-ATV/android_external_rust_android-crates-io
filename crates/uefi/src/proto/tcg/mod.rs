@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! [TCG] (Trusted Computing Group) protocols.
 //!
 //! These protocols provide access to the [TPM][tpm] (Trusted Platform Module).
@@ -14,8 +16,7 @@
 pub mod v1;
 pub mod v2;
 
-mod enums;
-pub use enums::*;
+pub use uefi_raw::protocol::tcg::{AlgorithmId, EventType};
 
 use bitflags::bitflags;
 

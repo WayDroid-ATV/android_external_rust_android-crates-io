@@ -9,7 +9,7 @@ package {
 license {
     name: "external_rust_crates_uefi_license",
     visibility: [":__subpackages__"],
-    license_kinds: ["SPDX-license-identifier-MPL-2.0"],
+    license_kinds: ["SPDX-license-identifier-Apache-2.0"],
     license_text: ["LICENSE"],
 }
 
@@ -18,7 +18,7 @@ rust_library_rlib {
     defaults: ["rust_baremetal_defaults"],
     crate_name: "uefi",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.33.0",
+    cargo_pkg_version: "0.35.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: ["alloc"],

@@ -1,10 +1,12 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use super::FileAttribute;
 use crate::data_types::Align;
 use crate::runtime::Time;
 use crate::{CStr16, Char16, Guid, Identify};
 use core::ffi::c_void;
 use core::fmt::{self, Display, Formatter};
-use core::{mem, ptr};
+use core::ptr;
 use ptr_meta::Pointee;
 
 /// Common trait for data structures that can be used with
@@ -43,7 +45,7 @@ trait InfoInternal: Align + ptr_meta::Pointee<Metadata = usize> {
     /// struct.
     unsafe fn name_ptr(ptr: *mut u8) -> *mut Char16 {
         let offset_of_str = Self::name_offset();
-        ptr.add(offset_of_str).cast::<Char16>()
+        unsafe { ptr.add(offset_of_str).cast::<Char16>() }
     }
 
     /// Create a new info type in user-provided storage.
@@ -69,7 +71,7 @@ trait InfoInternal: Align + ptr_meta::Pointee<Metadata = usize> {
     {
         // Calculate the final size of the struct.
         let name_length_ucs2 = name.as_slice_with_nul().len();
-        let name_size = mem::size_of_val(name.as_slice_with_nul());
+        let name_size = size_of_val(name.as_slice_with_nul());
         let info_size = Self::name_offset() + name_size;
         let info_size = Self::round_up_to_alignment(info_size);
 
@@ -93,13 +95,13 @@ trait InfoInternal: Align + ptr_meta::Pointee<Metadata = usize> {
         // Create a pointer to the part of info where the name is
         // stored. Note that `info_ptr` is used rather than `storage` to
         // comply with Stacked Borrows.
-        let info_name_ptr = Self::name_ptr(info_ptr.cast::<u8>());
+        let info_name_ptr = unsafe { Self::name_ptr(info_ptr.cast::<u8>()) };
 
         // Initialize the name slice.
-        ptr::copy(name.as_ptr(), info_name_ptr, name_length_ucs2);
+        unsafe { ptr::copy(name.as_ptr(), info_name_ptr, name_length_ucs2) };
 
         // The struct is now valid and safe to dereference.
-        let info = &mut *info_ptr;
+        let info = unsafe { &mut *info_ptr };
         Ok(info)
     }
 }
@@ -109,10 +111,10 @@ where
     T: InfoInternal + ?Sized,
 {
     unsafe fn from_uefi<'ptr>(ptr: *mut c_void) -> &'ptr mut Self {
-        let name_ptr = Self::name_ptr(ptr.cast::<u8>());
-        let name = CStr16::from_ptr(name_ptr);
+        let name_ptr = unsafe { Self::name_ptr(ptr.cast::<u8>()) };
+        let name = unsafe { CStr16::from_ptr(name_ptr) };
         let name_len = name.as_slice_with_nul().len();
-        &mut *ptr_meta::from_raw_parts_mut(ptr.cast::<()>(), name_len)
+        unsafe { &mut *ptr_meta::from_raw_parts_mut(ptr.cast::<()>(), name_len) }
     }
 }
 
@@ -137,7 +139,6 @@ impl Display for FileInfoCreationError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for FileInfoCreationError {}
 
 /// Generic file information
@@ -432,7 +433,7 @@ mod tests {
 
     fn validate_layout<T: InfoInternal + ?Sized>(info: &T, name: &[Char16]) {
         // Check the hardcoded struct alignment.
-        assert_eq!(mem::align_of_val(info), T::alignment());
+        assert_eq!(align_of_val(info), T::alignment());
         // Check the hardcoded name slice offset.
         assert_eq!(
             unsafe { (name.as_ptr() as *const u8).offset_from(info as *const _ as *const u8) },
@@ -481,7 +482,7 @@ mod tests {
         // = 100
         // Round size up to match FileInfo alignment of 8: 104
         assert_eq!(info.size, 104);
-        assert_eq!(info.size, mem::size_of_val(info) as u64);
+        assert_eq!(info.size, size_of_val(info) as u64);
 
         assert_eq!(info.file_size(), file_size);
         assert_eq!(info.physical_size(), physical_size);
@@ -518,7 +519,7 @@ mod tests {
         // = 58
         // Round size up to match FileSystemInfo alignment of 8: 64
         assert_eq!(info.size, 64);
-        assert_eq!(info.size, mem::size_of_val(info) as u64);
+        assert_eq!(info.size, size_of_val(info) as u64);
 
         assert_eq!(info.read_only, read_only);
         assert_eq!(info.volume_size, volume_size);

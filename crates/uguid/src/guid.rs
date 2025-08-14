@@ -434,7 +434,7 @@ impl Serialize for Guid {
 struct DeserializerVisitor;
 
 #[cfg(feature = "serde")]
-impl Visitor<'_> for DeserializerVisitor {
+impl<'de> Visitor<'de> for DeserializerVisitor {
     type Value = Guid;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {

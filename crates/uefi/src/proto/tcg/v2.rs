@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! [TCG] (Trusted Computing Group) protocol for [TPM] (Trusted Platform
 //! Module) 2.0.
 //!
@@ -15,11 +17,11 @@ use crate::data_types::{Align, PhysicalAddress, UnalignedSlice};
 use crate::proto::unsafe_protocol;
 use crate::util::{ptr_write_unaligned_and_add, usize_from_u32};
 use crate::{Error, Result, Status, StatusExt};
-use bitflags::bitflags;
 use core::fmt::{self, Debug, Formatter};
 use core::marker::PhantomData;
-use core::{mem, ptr, slice};
-use ptr_meta::{Pointee, PtrExt};
+use core::{ptr, slice};
+use ptr_meta::Pointee;
+use uefi_raw::protocol::tcg::v2::{Tcg2EventHeader as EventHeader, Tcg2Protocol};
 
 #[cfg(feature = "alloc")]
 use {crate::mem::make_boxed, alloc::boxed::Box};
@@ -27,32 +29,10 @@ use {crate::mem::make_boxed, alloc::boxed::Box};
 #[cfg(all(feature = "unstable", feature = "alloc"))]
 use alloc::alloc::Global;
 
-/// Version information.
-///
-/// Layout compatible with the C type `EFI_TG2_VERSION`.
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd)]
-pub struct Version {
-    /// Major version.
-    pub major: u8,
-    /// Minor version.
-    pub minor: u8,
-}
-
-bitflags! {
-    /// Event log formats supported by the firmware.
-    ///
-    /// Corresponds to the C typedef `EFI_TCG2_EVENT_ALGORITHM_BITMAP`.
-    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
-    #[repr(transparent)]
-    pub struct EventLogFormat: u32 {
-        /// Firmware supports the SHA-1 log format.
-        const TCG_1_2 = 0x0000_0001;
-
-        /// Firmware supports the crypto-agile log format.
-        const TCG_2 = 0x0000_0002;
-    }
-}
+pub use uefi_raw::protocol::tcg::v2::{
+    Tcg2EventLogFormat as EventLogFormat, Tcg2HashAlgorithmBitmap,
+    Tcg2HashLogExtendEventFlags as HashLogExtendEventFlags, Tcg2Version as Version,
+};
 
 /// Information about the protocol and the TPM device.
 ///
@@ -102,7 +82,7 @@ pub struct BootServiceCapability {
 impl Default for BootServiceCapability {
     fn default() -> Self {
         // OK to unwrap, the size is less than u8.
-        let struct_size = u8::try_from(mem::size_of::<Self>()).unwrap();
+        let struct_size = u8::try_from(size_of::<Self>()).unwrap();
 
         Self {
             size: struct_size,
@@ -126,31 +106,6 @@ impl BootServiceCapability {
     pub const fn tpm_present(&self) -> bool {
         self.present_flag != 0
     }
-}
-
-bitflags! {
-    /// Flags for the [`Tcg::hash_log_extend_event`] function.
-    #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
-    #[repr(transparent)]
-    pub struct HashLogExtendEventFlags: u64 {
-        /// Extend an event but don't log it.
-        const EFI_TCG2_EXTEND_ONLY = 0x0000_0000_0000_0001;
-
-        /// Use when measuring a PE/COFF image.
-        const PE_COFF_IMAGE = 0x0000_0000_0000_0010;
-    }
-}
-
-/// Header used in [`PcrEventInputs`].
-///
-/// Layout compatible with the C type `EFI_TCG2_EVENT_HEADER`.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-#[repr(C, packed)]
-struct EventHeader {
-    header_size: u32,
-    header_version: u16,
-    pcr_index: PcrIndex,
-    event_type: EventType,
 }
 
 /// Event type passed to [`Tcg::hash_log_extend_event`].
@@ -187,8 +142,7 @@ impl PcrEventInputs {
         event_type: EventType,
         event_data: &[u8],
     ) -> Result<&'buf mut Self, Option<usize>> {
-        let required_size =
-            mem::size_of::<u32>() + mem::size_of::<EventHeader>() + event_data.len();
+        let required_size = size_of::<u32>() + size_of::<EventHeader>() + event_data.len();
 
         if buffer.len() < required_size {
             return Err(Error::new(Status::BUFFER_TOO_SMALL, Some(required_size)));
@@ -203,9 +157,9 @@ impl PcrEventInputs {
             ptr_write_unaligned_and_add(
                 &mut ptr,
                 EventHeader {
-                    header_size: u32::try_from(mem::size_of::<EventHeader>()).unwrap(),
+                    header_size: u32::try_from(size_of::<EventHeader>()).unwrap(),
                     header_version: 1,
-                    pcr_index,
+                    pcr_index: pcr_index.0,
                     event_type,
                 },
             );
@@ -278,7 +232,7 @@ struct AlgorithmDigestSize {
 #[derive(Clone, Debug)]
 struct AlgorithmDigestSizes<'a>(UnalignedSlice<'a, AlgorithmDigestSize>);
 
-impl<'a> AlgorithmDigestSizes<'a> {
+impl AlgorithmDigestSizes<'_> {
     fn get_size(&self, alg: AlgorithmId) -> Option<u16> {
         self.0.iter().find_map(|elem| {
             if { elem.algorithm_id } == alg {
@@ -336,7 +290,7 @@ impl<'a> EventLogHeader<'a> {
         let uintn_size = *event.get(23)?;
         let number_of_algorithms = usize_from_u32(u32_le_from_bytes_at_offset(event, 24)?);
         let vendor_info_size_byte_offset =
-            28 + (number_of_algorithms * mem::size_of::<AlgorithmDigestSize>());
+            28 + (number_of_algorithms * size_of::<AlgorithmDigestSize>());
         let vendor_info_size = usize::from(*event.get(vendor_info_size_byte_offset)?);
 
         // Safety: we know the slice is big enough because we just
@@ -379,7 +333,7 @@ pub struct EventLog<'a> {
     is_truncated: bool,
 }
 
-impl<'a> EventLog<'a> {
+impl EventLog<'_> {
     /// Iterator of events in the log.
     #[must_use]
     pub fn iter(&self) -> EventLogIter {
@@ -431,7 +385,7 @@ pub struct PcrEventDigests<'a> {
     algorithm_digest_sizes: AlgorithmDigestSizes<'a>,
 }
 
-impl<'a> Debug for PcrEventDigests<'a> {
+impl Debug for PcrEventDigests<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.clone()).finish()
     }
@@ -498,35 +452,35 @@ pub struct PcrEvent<'a> {
 impl<'a> PcrEvent<'a> {
     unsafe fn from_ptr(ptr: *const u8, header: EventLogHeader<'a>) -> Option<Self> {
         let ptr_u32: *const u32 = ptr.cast();
-        let pcr_index = PcrIndex(ptr_u32.read_unaligned());
-        let event_type = EventType(ptr_u32.add(1).read_unaligned());
-        let digests_count = ptr_u32.add(2).read_unaligned();
-        let digests_ptr: *const u8 = ptr.add(12);
+        let pcr_index = PcrIndex(unsafe { ptr_u32.read_unaligned() });
+        let event_type = EventType(unsafe { ptr_u32.add(1).read_unaligned() });
+        let digests_count = unsafe { ptr_u32.add(2).read_unaligned() };
+        let digests_ptr: *const u8 = unsafe { ptr.add(12) };
 
         // Get the byte size of the digests so that the digests iterator
         // can be safe code.
         let mut digests_byte_size = 0;
         let mut elem_ptr = digests_ptr;
         for _ in 0..digests_count {
-            let algorithm_id = AlgorithmId(elem_ptr.cast::<u16>().read_unaligned());
-            let alg_and_digest_size = mem::size_of::<AlgorithmId>()
+            let algorithm_id = AlgorithmId(unsafe { elem_ptr.cast::<u16>().read_unaligned() });
+            let alg_and_digest_size = size_of::<AlgorithmId>()
                 + usize::from(header.algorithm_digest_sizes.get_size(algorithm_id)?);
             digests_byte_size += alg_and_digest_size;
-            elem_ptr = elem_ptr.add(alg_and_digest_size);
+            elem_ptr = unsafe { elem_ptr.add(alg_and_digest_size) };
         }
 
-        let digests = slice::from_raw_parts(digests_ptr, digests_byte_size);
-        let event_size_ptr = digests_ptr.add(digests_byte_size);
-        let event_size = usize_from_u32(event_size_ptr.cast::<u32>().read_unaligned());
-        let event_data_ptr = event_size_ptr.add(4);
-        let event_data = slice::from_raw_parts(event_data_ptr, event_size);
+        let digests = unsafe { slice::from_raw_parts(digests_ptr, digests_byte_size) };
+        let event_size_ptr = unsafe { digests_ptr.add(digests_byte_size) };
+        let event_size = usize_from_u32(unsafe { event_size_ptr.cast::<u32>().read_unaligned() });
+        let event_data_ptr = unsafe { event_size_ptr.add(4) };
+        let event_data = unsafe { slice::from_raw_parts(event_data_ptr, event_size) };
 
         Some(Self {
             pcr_index,
             event_type,
             digests,
             event_data,
-            next: event_data_ptr.add(event_size),
+            next: unsafe { event_data_ptr.add(event_size) },
             algorithm_digest_sizes: header.algorithm_digest_sizes,
         })
     }
@@ -609,58 +563,18 @@ impl<'a> Iterator for EventLogIter<'a> {
 ///
 /// The corresponding C type is `EFI_TCG2_PROTOCOL`.
 #[derive(Debug)]
-#[repr(C)]
-#[unsafe_protocol("607f766c-7455-42be-930b-e4d76db2720f")]
-pub struct Tcg {
-    get_capability: unsafe extern "efiapi" fn(
-        this: *mut Tcg,
-        protocol_capability: *mut BootServiceCapability,
-    ) -> Status,
-
-    get_event_log: unsafe extern "efiapi" fn(
-        this: *mut Tcg,
-        event_log_format: EventLogFormat,
-        event_log_location: *mut PhysicalAddress,
-        event_log_last_entry: *mut PhysicalAddress,
-        event_log_truncated: *mut u8,
-    ) -> Status,
-
-    hash_log_extend_event: unsafe extern "efiapi" fn(
-        this: *mut Tcg,
-        flags: HashLogExtendEventFlags,
-        data_to_hash: PhysicalAddress,
-        data_to_hash_len: u64,
-        // Use `()` here rather than `PcrEventInputs` so that it's a
-        // thin pointer.
-        event: *const (),
-    ) -> Status,
-
-    submit_command: unsafe extern "efiapi" fn(
-        this: *mut Tcg,
-        input_parameter_block_size: u32,
-        input_parameter_block: *const u8,
-        output_parameter_block_size: u32,
-        output_parameter_block: *mut u8,
-    ) -> Status,
-
-    get_active_pcr_banks:
-        unsafe extern "efiapi" fn(this: *mut Tcg, active_pcr_banks: *mut HashAlgorithm) -> Status,
-
-    set_active_pcr_banks:
-        unsafe extern "efiapi" fn(this: *mut Tcg, active_pcr_banks: HashAlgorithm) -> Status,
-
-    get_result_of_set_active_pcr_banks: unsafe extern "efiapi" fn(
-        this: *mut Tcg,
-        operation_present: *mut u32,
-        response: *mut u32,
-    ) -> Status,
-}
+#[repr(transparent)]
+#[unsafe_protocol(Tcg2Protocol::GUID)]
+pub struct Tcg(Tcg2Protocol);
 
 impl Tcg {
     /// Get information about the protocol and TPM device.
     pub fn get_capability(&mut self) -> Result<BootServiceCapability> {
         let mut capability = BootServiceCapability::default();
-        unsafe { (self.get_capability)(self, &mut capability).to_result_with_val(|| capability) }
+        unsafe {
+            (self.0.get_capability)(&mut self.0, ptr::from_mut(&mut capability).cast())
+                .to_result_with_val(|| capability)
+        }
     }
 
     /// Get the V1 event log. This provides events in the same format as a V1
@@ -671,8 +585,8 @@ impl Tcg {
         let mut truncated = 0;
 
         let status = unsafe {
-            (self.get_event_log)(
-                self,
+            (self.0.get_event_log)(
+                &mut self.0,
                 EventLogFormat::TCG_1_2,
                 &mut location,
                 &mut last_entry,
@@ -700,8 +614,8 @@ impl Tcg {
         let mut truncated = 0;
 
         let status = unsafe {
-            (self.get_event_log)(
-                self,
+            (self.0.get_event_log)(
+                &mut self.0,
                 EventLogFormat::TCG_2,
                 &mut location,
                 &mut last_entry,
@@ -733,15 +647,15 @@ impl Tcg {
         event: &PcrEventInputs,
     ) -> Result {
         let event: *const PcrEventInputs = event;
-        let (event, _event_size) = PtrExt::to_raw_parts(event);
+        let (event, _event_size) = ptr_meta::to_raw_parts(event);
         unsafe {
-            (self.hash_log_extend_event)(
-                self,
+            (self.0.hash_log_extend_event)(
+                &mut self.0,
                 flags,
                 data_to_hash.as_ptr() as PhysicalAddress,
                 // OK to unwrap, usize fits in u64.
                 u64::try_from(data_to_hash.len()).unwrap(),
-                event,
+                event.cast(),
             )
             .to_result()
         }
@@ -767,8 +681,8 @@ impl Tcg {
             .map_err(|_| Error::from(Status::BAD_BUFFER_SIZE))?;
 
         unsafe {
-            (self.submit_command)(
-                self,
+            (self.0.submit_command)(
+                &mut self.0,
                 input_parameter_block_len,
                 input_parameter_block.as_ptr(),
                 output_parameter_block_len,
@@ -781,18 +695,19 @@ impl Tcg {
     /// Get a bitmap of the active PCR banks. Each bank corresponds to a hash
     /// algorithm.
     pub fn get_active_pcr_banks(&mut self) -> Result<HashAlgorithm> {
-        let mut active_pcr_banks = HashAlgorithm::empty();
+        let mut active_pcr_banks = Tcg2HashAlgorithmBitmap::empty();
 
-        let status = unsafe { (self.get_active_pcr_banks)(self, &mut active_pcr_banks) };
+        let status = unsafe { (self.0.get_active_pcr_banks)(&mut self.0, &mut active_pcr_banks) };
 
-        status.to_result_with_val(|| active_pcr_banks)
+        status.to_result_with_val(|| HashAlgorithm::from_bits_retain(active_pcr_banks.bits()))
     }
 
     /// Set the active PCR banks. Each bank corresponds to a hash
     /// algorithm. This change will not take effect until the system is
     /// rebooted twice.
     pub fn set_active_pcr_banks(&mut self, active_pcr_banks: HashAlgorithm) -> Result {
-        unsafe { (self.set_active_pcr_banks)(self, active_pcr_banks) }.to_result()
+        let active_pcr_banks = Tcg2HashAlgorithmBitmap::from_bits_retain(active_pcr_banks.bits());
+        unsafe { (self.0.set_active_pcr_banks)(&mut self.0, active_pcr_banks) }.to_result()
     }
 
     /// Get the stored result of calling [`Tcg::set_active_pcr_banks`] in a
@@ -809,7 +724,11 @@ impl Tcg {
         let mut response = 0;
 
         let status = unsafe {
-            (self.get_result_of_set_active_pcr_banks)(self, &mut operation_present, &mut response)
+            (self.0.get_result_of_set_active_pcr_banks)(
+                &mut self.0,
+                &mut operation_present,
+                &mut response,
+            )
         };
 
         status.to_result_with_val(|| {
@@ -842,7 +761,7 @@ mod tests {
             EventHeader {
                 header_size: 14,
                 header_version: 1,
-                pcr_index: PcrIndex(4),
+                pcr_index: 4,
                 event_type: EventType::IPL,
             }
         );
@@ -850,7 +769,7 @@ mod tests {
         // Cast to a byte slice to check the data is exactly as expected.
         let event_ptr: *const PcrEventInputs = event;
         let event_ptr: *const u8 = event_ptr.cast();
-        let event_bytes = unsafe { slice::from_raw_parts(event_ptr, mem::size_of_val(event)) };
+        let event_bytes = unsafe { slice::from_raw_parts(event_ptr, size_of_val(event)) };
 
         #[rustfmt::skip]
         assert_eq!(event_bytes, [

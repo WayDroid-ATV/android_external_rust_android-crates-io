@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! Block I/O protocols.
 
 use crate::proto::unsafe_protocol;
@@ -21,13 +23,14 @@ impl BlockIO {
     /// Resets the block device hardware.
     ///
     /// # Arguments
-    /// * `extended_verification`   Indicates that the driver may perform a more exhaustive verification operation of
-    ///     the device during reset.
+    /// * `extended_verification` Indicates that the driver may perform a more
+    ///   exhaustive verification operation of the device during reset.
     ///
     /// # Errors
-    /// * `uefi::Status::DEVICE_ERROR`  The block device is not functioning correctly and could not be reset.
+    /// * `uefi::Status::DEVICE_ERROR`  The block device is not functioning
+    ///   correctly and could not be reset.
     pub fn reset(&mut self, extended_verification: bool) -> Result {
-        unsafe { (self.0.reset)(&mut self.0, extended_verification) }.to_result()
+        unsafe { (self.0.reset)(&mut self.0, extended_verification.into()) }.to_result()
     }
 
     /// Read the requested number of blocks from the device.
@@ -39,13 +42,13 @@ impl BlockIO {
     ///
     /// # Errors
     /// * `uefi::Status::DEVICE_ERROR`       The device reported an error while attempting to perform the read
-    ///     operation.
+    ///   operation.
     /// * `uefi::Status::NO_MEDIA`           There is no media in the device.
     /// * `uefi::Status::MEDIA_CHANGED`      The `media_id` is not for the current media.
     /// * `uefi::Status::BAD_BUFFER_SIZE`    The buffer size parameter is not a multiple of the intrinsic block size of
-    ///     the device.
+    ///   the device.
     /// * `uefi::Status::INVALID_PARAMETER`  The read request contains LBAs that are not valid, or the buffer is not on
-    ///     proper alignment.
+    ///   proper alignment.
     pub fn read_blocks(&self, media_id: u32, lba: Lba, buffer: &mut [u8]) -> Result {
         let buffer_size = buffer.len();
         unsafe {
@@ -72,11 +75,11 @@ impl BlockIO {
     /// * `uefi::Status::NO_MEDIA`              There is no media in the device.
     /// * `uefi::Status::MEDIA_CHANGED`         The `media_id` is not for the current media.
     /// * `uefi::Status::DEVICE_ERROR`          The device reported an error while attempting to perform the write
-    ///     operation.
+    ///   operation.
     /// * `uefi::Status::BAD_BUFFER_SIZE`       The buffer size parameter is not a multiple of the intrinsic block size
-    ///     of the device.
+    ///   of the device.
     /// * `uefi::Status::INVALID_PARAMETER`     The write request contains LBAs that are not valid, or the buffer is not
-    ///     on proper alignment.
+    ///   on proper alignment.
     pub fn write_blocks(&mut self, media_id: u32, lba: Lba, buffer: &[u8]) -> Result {
         let buffer_size = buffer.len();
         unsafe {
@@ -115,32 +118,32 @@ impl BlockIOMedia {
 
     /// True if the media is removable.
     #[must_use]
-    pub const fn is_removable_media(&self) -> bool {
-        self.0.removable_media
+    pub fn is_removable_media(&self) -> bool {
+        self.0.removable_media.into()
     }
 
     /// True if there is a media currently present in the device.
     #[must_use]
-    pub const fn is_media_present(&self) -> bool {
-        self.0.media_present
+    pub fn is_media_present(&self) -> bool {
+        self.0.media_present.into()
     }
 
     /// True if block IO was produced to abstract partition structure.
     #[must_use]
-    pub const fn is_logical_partition(&self) -> bool {
-        self.0.logical_partition
+    pub fn is_logical_partition(&self) -> bool {
+        self.0.logical_partition.into()
     }
 
     /// True if the media is marked read-only.
     #[must_use]
-    pub const fn is_read_only(&self) -> bool {
-        self.0.read_only
+    pub fn is_read_only(&self) -> bool {
+        self.0.read_only.into()
     }
 
     /// True if `writeBlocks` function writes data.
     #[must_use]
-    pub const fn is_write_caching(&self) -> bool {
-        self.0.write_caching
+    pub fn is_write_caching(&self) -> bool {
+        self.0.write_caching.into()
     }
 
     /// The intrinsic block size of the device.

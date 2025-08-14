@@ -1,6 +1,81 @@
 # uefi - [Unreleased]
 
 
+# uefi - 0.35.0 (2025-05-04)
+
+## Added
+- Added `boot::signal_event`.
+- Added conversions between `proto::network::IpAddress` and `core::net` types.
+- Added conversions between `proto::network::MacAddress` and the `[u8; 6]` type that's more commonly used to represent MAC addresses.
+- Added `proto::media::disk_info::DiskInfo`.
+- Added `mem::AlignedBuffer`.
+- Added `proto::device_path::DevicePath::append_path()`.
+- Added `proto::device_path::DevicePath::append_node()`.
+- Added `proto::scsi::pass_thru::ExtScsiPassThru`.
+- Added `proto::nvme::pass_thru::NvmePassThru`.
+- Added `proto::ata::pass_thru::AtaPassThru`.
+- Added `boot::ScopedProtocol::open_params()`.
+- Added `boot::TplGuard::old_tpl()`.
+- Added `boot::calculate_crc32()`.
+
+## Changed
+- **Breaking:** Removed `BootPolicyError` as `BootPolicy` construction is no
+  longer fallible. `BootPolicy` now tightly integrates the new `Boolean` type
+  of `uefi-raw`.
+- **Breaking:** The `pxe::BaseCode::tftp_read_dir` and
+  `pxe::BaseCode::mtftp_read_dir` methods now take `&mut self` instead of
+  `&self`.
+- **Breaking:** The `pxe::Mode` struct is now opaque. Use method calls to access
+  mode data instead of direct field access.
+- **Breaking:** `PoolDevicePathNode` and `PoolDevicePath` moved from module
+  `proto::device_path::text` to `proto::device_path`.
+- **Breaking:** `exit_boot_services` now consumes a `Option<MemoryType>` which
+  defaults to the recommended value of `MemoryType::LOADER_DATA`.
+- **Breaking:** Removed duplication in `DevicePathHeader`. Instead of public fields,
+  there is now a public constructor combined with public getters.
+- `boot::memory_map()` will never return `Status::BUFFER_TOO_SMALL` from now on,
+  as this is considered a hard internal error where users can't do anything
+  about it anyway. It will panic instead.
+- `SimpleNetwork::transmit` now passes the correct buffer size argument.
+  Previously it incorrectly added the header size to the buffer length, which
+  could cause the firmware to read past the end of the buffer.
+- `boot::allocate_pages` no longer panics if the allocation is at address
+  zero. The allocation is retried instead, and in all failure cases an error is
+  returned rather than panicking.
+- The `Display` impl for `CStr8` now excludes the trailing null character.
+- `VariableKeys` initializes with a larger name buffer to work around firmware
+  bugs on some devices.
+- The UEFI `allocator::Allocator` has been optimized for page-aligned
+  allocations.
+
+
+# uefi - 0.34.1 (2025-02-07)
+
+Trivial release to fix crate license documentation.
+
+
+# uefi - 0.34.0 (2025-02-07)
+
+As of this release, the project has been relicensed from MPL-2.0 to
+Apache-2.0/MIT, to better align with the Rust crate ecosystem. (This does not
+alter the license of previous releases.)
+Details at <https://github.com/rust-osdev/uefi-rs/issues/1470>.
+
+## Added
+- Added `proto::device_path::PoolDevicePath` and
+  `proto::device_path::PoolDevicePathNode`.
+
+## Changed
+- MSRV increased to 1.81.
+- `core::error::Error` impls are no longer gated by the `unstable` feature.
+- Fixed missing checks in the `TryFrom` conversion from `&DevicePathNode` to
+  specific node types. The node type and subtype are now checked, and
+  `NodeConversionError::DifferentType` is returned if they do not match.
+- **Breaking:** Fixed memory leaks in `DevicePathFromText` protocol. The methods
+  now return wrapper objects that free the device path / device path node on
+  drop.
+
+
 # uefi - 0.33.0 (2024-10-23)
 
 See [Deprecating SystemTable/BootServices/RuntimeServices][funcmigrate] for
@@ -26,7 +101,6 @@ details of the deprecated items that were removed in this release.
   users.
 - The `VariableKeys` iterator will now yield an error item if a variable name is
   not UCS-2.
-
 
 # uefi - 0.32.0 (2024-09-09)
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use core::fmt::{self, Debug, Formatter};
 use core::marker::PhantomData;
 use core::mem::MaybeUninit;
@@ -57,7 +59,7 @@ impl<'a, T: Copy> UnalignedSlice<'a, T> {
     /// Returns the element at `index`, or `None` if the `index` is out
     /// of bounds.
     #[must_use]
-    pub fn get(&self, index: usize) -> Option<T> {
+    pub const fn get(&self, index: usize) -> Option<T> {
         if index < self.len {
             Some(unsafe { self.data.add(index).read_unaligned() })
         } else {
@@ -134,7 +136,7 @@ impl<'a, T: Copy> UnalignedSlice<'a, T> {
     }
 }
 
-impl<'a, T: Copy + Debug> Debug for UnalignedSlice<'a, T> {
+impl<T: Copy + Debug> Debug for UnalignedSlice<'_, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.iter()).finish()
     }
@@ -175,7 +177,7 @@ pub struct UnalignedSliceIntoIter<'a, T: Copy> {
     index: usize,
 }
 
-impl<'a, T: Copy> Iterator for UnalignedSliceIntoIter<'a, T> {
+impl<T: Copy> Iterator for UnalignedSliceIntoIter<'_, T> {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
@@ -192,7 +194,7 @@ pub struct UnalignedSliceIter<'a, T: Copy> {
     index: usize,
 }
 
-impl<'a, T: Copy> Iterator for UnalignedSliceIter<'a, T> {
+impl<T: Copy> Iterator for UnalignedSliceIter<'_, T> {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {

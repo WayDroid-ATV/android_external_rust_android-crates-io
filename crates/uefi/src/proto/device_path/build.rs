@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! Utilities for creating new [`DevicePaths`].
 //!
 //! This module contains [`DevicePathBuilder`], as well as submodules
@@ -189,7 +191,6 @@ impl Display for BuildError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for BuildError {}
 
 /// Trait for types that can be used to build a node via
@@ -224,7 +225,7 @@ pub unsafe trait BuildNode {
 
 unsafe impl BuildNode for &DevicePathNode {
     fn size_in_bytes(&self) -> Result<u16, BuildError> {
-        Ok(self.header.length)
+        Ok(self.header.length())
     }
 
     fn write_data(&self, out: &mut [MaybeUninit<u8>]) {
@@ -245,10 +246,10 @@ mod tests {
     use crate::proto::device_path::messaging::{
         Ipv4AddressOrigin, IscsiLoginOptions, IscsiProtocol, RestServiceAccessMode, RestServiceType,
     };
-    use core::{mem, slice};
+    use core::slice;
 
     fn path_to_bytes(path: &DevicePath) -> &[u8] {
-        unsafe { slice::from_raw_parts(path.as_ffi_ptr().cast::<u8>(), mem::size_of_val(path)) }
+        unsafe { slice::from_raw_parts(path.as_ffi_ptr().cast::<u8>(), size_of_val(path)) }
     }
 
     /// Test building an ACPI ADR node.

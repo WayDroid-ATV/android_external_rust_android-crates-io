@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! This module provides the `FileHandle` structure as well as the more specific `RegularFile` and
 //! `Directory` structures. This module also provides the `File` trait for opening, querying,
 //! creating, reading, and writing files.
@@ -169,8 +171,8 @@ pub trait File: Sized {
     /// * [`uefi::Status::VOLUME_FULL`]
     /// * [`uefi::Status::BAD_BUFFER_SIZE`]
     fn set_info<Info: FileProtocolInfo + ?Sized>(&mut self, info: &Info) -> Result {
-        let info_ptr = (info as *const Info).cast::<c_void>();
-        let info_size = mem::size_of_val(info);
+        let info_ptr = ptr::from_ref(info).cast::<c_void>();
+        let info_size = size_of_val(info);
         unsafe { (self.imp().set_info)(self.imp(), &Info::GUID, info_size, info_ptr).to_result() }
     }
 
@@ -404,15 +406,19 @@ mod tests {
             &CString16::try_from("test_file").unwrap(),
         )
         .unwrap();
-        let required_size = mem::size_of_val(info);
-        if *buffer_size < required_size {
-            *buffer_size = required_size;
+        let required_size = size_of_val(info);
+        if unsafe { *buffer_size } < required_size {
+            unsafe {
+                *buffer_size = required_size;
+            }
             Status::BUFFER_TOO_SMALL
         } else {
             unsafe {
                 ptr::copy_nonoverlapping((info as *const FileInfo).cast(), buffer, required_size);
             }
-            *buffer_size = required_size;
+            unsafe {
+                *buffer_size = required_size;
+            }
             Status::SUCCESS
         }
     }

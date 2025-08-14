@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! This optional feature adds support for the `log` crate, providing
 //! a custom logger implementation which writes to a UEFI text output protocol.
 //!
@@ -27,7 +29,7 @@ static LOGGER: Logger = Logger::new();
 /// disable() on exit from UEFI boot services.
 pub unsafe fn init() {
     // Connect the logger to stdout.
-    system::with_stdout(|stdout| {
+    system::with_stdout(|stdout| unsafe {
         LOGGER.set_output(stdout);
     });
 
@@ -217,7 +219,7 @@ impl<'writer, 'a, W: fmt::Write> DecoratedLog<'writer, 'a, W> {
     }
 }
 
-impl<'writer, 'a, W: fmt::Write> fmt::Write for DecoratedLog<'writer, 'a, W> {
+impl<W: fmt::Write> fmt::Write for DecoratedLog<'_, '_, W> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         // Split the input string into lines
         let mut lines = s.lines();

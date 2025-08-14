@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! Pointer device access.
 
 use crate::proto::unsafe_protocol;
@@ -13,14 +15,14 @@ pub struct Pointer(SimplePointerProtocol);
 impl Pointer {
     /// Resets the pointer device hardware.
     ///
+    /// # Arguments
     /// The `extended_verification` parameter is used to request that UEFI
     /// performs an extended check and reset of the input device.
     ///
     /// # Errors
-    ///
     /// - `DeviceError` if the device is malfunctioning and cannot be reset.
     pub fn reset(&mut self, extended_verification: bool) -> Result {
-        unsafe { (self.0.reset)(&mut self.0, extended_verification) }.to_result()
+        unsafe { (self.0.reset)(&mut self.0, extended_verification.into()) }.to_result()
     }
 
     /// Retrieves the pointer device's current state, if a state change occurred

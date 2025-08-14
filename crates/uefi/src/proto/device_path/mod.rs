@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! Device Path protocol
 //!
 //! A UEFI device path is a very flexible structure for encoding a
@@ -75,27 +77,32 @@
 
 pub mod build;
 pub mod text;
+pub mod util;
 
 mod device_path_gen;
+
 pub use device_path_gen::{
     acpi, bios_boot_spec, end, hardware, media, messaging, DevicePathNodeEnum,
 };
 pub use uefi_raw::protocol::device_path::{DeviceSubType, DeviceType};
 
+use crate::mem::PoolAllocation;
 use crate::proto::{unsafe_protocol, ProtocolPointer};
 use core::ffi::c_void;
 use core::fmt::{self, Debug, Display, Formatter};
-use core::mem;
 use core::ops::Deref;
 use ptr_meta::Pointee;
 
+use uefi_raw::protocol::device_path::DevicePathProtocol;
 #[cfg(feature = "alloc")]
 use {
     crate::boot::{self, OpenProtocolAttributes, OpenProtocolParams, ScopedProtocol, SearchType},
     crate::proto::device_path::text::{AllowShortcuts, DevicePathToText, DisplayOnly},
+    crate::proto::device_path::util::DevicePathUtilities,
     crate::{CString16, Identify},
     alloc::borrow::ToOwned,
     alloc::boxed::Box,
+    core::mem,
 };
 
 opaque_type! {
@@ -106,23 +113,72 @@ opaque_type! {
     pub struct FfiDevicePath;
 }
 
-/// Header that appears at the start of every [`DevicePathNode`].
+/// Device path allocated from UEFI pool memory.
+#[derive(Debug)]
+pub struct PoolDevicePath(pub(crate) PoolAllocation);
+
+impl Deref for PoolDevicePath {
+    type Target = DevicePath;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { DevicePath::from_ffi_ptr(self.0.as_ptr().as_ptr().cast()) }
+    }
+}
+
+/// Device path node allocated from UEFI pool memory.
+#[derive(Debug)]
+pub struct PoolDevicePathNode(pub(crate) PoolAllocation);
+
+impl Deref for PoolDevicePathNode {
+    type Target = DevicePathNode;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { DevicePathNode::from_ffi_ptr(self.0.as_ptr().as_ptr().cast()) }
+    }
+}
+
+/// Fixed header that appears at the start of every [`DevicePathNode`].
+///
+/// This type is ABI-compatible with `EFI_DEVICE_PATH_PROTOCOL`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-#[repr(C, packed)]
-pub struct DevicePathHeader {
-    /// Type of device
-    pub device_type: DeviceType,
-    /// Sub type of device
-    pub sub_type: DeviceSubType,
-    /// Size (in bytes) of the [`DevicePathNode`], including this header.
-    pub length: u16,
+#[repr(transparent)]
+pub struct DevicePathHeader(DevicePathProtocol);
+
+impl DevicePathHeader {
+    /// Constructs a new [`DevicePathHeader`].
+    #[must_use]
+    pub const fn new(major_type: DeviceType, sub_type: DeviceSubType, length: u16) -> Self {
+        Self(DevicePathProtocol {
+            major_type,
+            sub_type,
+            length: length.to_le_bytes(),
+        })
+    }
+
+    /// Returns the [`DeviceType`].
+    #[must_use]
+    pub const fn device_type(&self) -> DeviceType {
+        self.0.major_type
+    }
+
+    /// Returns the [`DeviceSubType`].
+    #[must_use]
+    pub const fn sub_type(&self) -> DeviceSubType {
+        self.0.sub_type
+    }
+
+    /// Returns the total length of the device path node.
+    #[must_use]
+    pub const fn length(&self) -> u16 {
+        self.0.length()
+    }
 }
 
 impl<'a> TryFrom<&'a [u8]> for &'a DevicePathHeader {
     type Error = ByteConversionError;
 
     fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
-        if mem::size_of::<DevicePathHeader>() <= bytes.len() {
+        if size_of::<DevicePathHeader>() <= bytes.len() {
             unsafe { Ok(&*bytes.as_ptr().cast::<DevicePathHeader>()) }
         } else {
             Err(ByteConversionError::InvalidLength)
@@ -171,10 +227,10 @@ impl DevicePathNode {
     /// that lifetime.
     #[must_use]
     pub unsafe fn from_ffi_ptr<'a>(ptr: *const FfiDevicePath) -> &'a Self {
-        let header = *ptr.cast::<DevicePathHeader>();
+        let header = unsafe { *ptr.cast::<DevicePathHeader>() };
 
-        let data_len = usize::from(header.length) - mem::size_of::<DevicePathHeader>();
-        &*ptr_meta::from_raw_parts(ptr.cast(), data_len)
+        let data_len = usize::from(header.length()) - size_of::<DevicePathHeader>();
+        unsafe { &*ptr_meta::from_raw_parts(ptr.cast(), data_len) }
     }
 
     /// Cast to a [`FfiDevicePath`] pointer.
@@ -187,25 +243,25 @@ impl DevicePathNode {
     /// Type of device
     #[must_use]
     pub const fn device_type(&self) -> DeviceType {
-        self.header.device_type
+        self.header.device_type()
     }
 
     /// Sub type of device
     #[must_use]
     pub const fn sub_type(&self) -> DeviceSubType {
-        self.header.sub_type
+        self.header.sub_type()
     }
 
     /// Tuple of the node's type and subtype.
     #[must_use]
     pub const fn full_type(&self) -> (DeviceType, DeviceSubType) {
-        (self.header.device_type, self.header.sub_type)
+        (self.device_type(), self.sub_type())
     }
 
     /// Size (in bytes) of the full [`DevicePathNode`], including the header.
     #[must_use]
     pub const fn length(&self) -> u16 {
-        self.header.length
+        self.header.length()
     }
 
     /// True if this node ends an entire [`DevicePath`].
@@ -268,7 +324,7 @@ impl<'a> TryFrom<&'a [u8]> for &'a DevicePathNode {
 
     fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
         let dp = <&DevicePathHeader>::try_from(bytes)?;
-        if usize::from(dp.length) <= bytes.len() {
+        if usize::from(dp.length()) <= bytes.len() {
             unsafe { Ok(DevicePathNode::from_ffi_ptr(bytes.as_ptr().cast())) }
         } else {
             Err(ByteConversionError::InvalidLength)
@@ -366,11 +422,11 @@ pub struct DevicePath {
 
 impl ProtocolPointer for DevicePath {
     unsafe fn ptr_from_ffi(ptr: *const c_void) -> *const Self {
-        ptr_meta::from_raw_parts(ptr.cast(), Self::size_in_bytes_from_ptr(ptr))
+        ptr_meta::from_raw_parts(ptr.cast(), unsafe { Self::size_in_bytes_from_ptr(ptr) })
     }
 
     unsafe fn mut_ptr_from_ffi(ptr: *mut c_void) -> *mut Self {
-        ptr_meta::from_raw_parts_mut(ptr.cast(), Self::size_in_bytes_from_ptr(ptr))
+        ptr_meta::from_raw_parts_mut(ptr.cast(), unsafe { Self::size_in_bytes_from_ptr(ptr) })
     }
 }
 
@@ -382,13 +438,13 @@ impl DevicePath {
         let mut ptr = ptr.cast::<u8>();
         let mut total_size_in_bytes: usize = 0;
         loop {
-            let node = DevicePathNode::from_ffi_ptr(ptr.cast::<FfiDevicePath>());
+            let node = unsafe { DevicePathNode::from_ffi_ptr(ptr.cast::<FfiDevicePath>()) };
             let node_size_in_bytes = usize::from(node.length());
             total_size_in_bytes += node_size_in_bytes;
             if node.is_end_entire() {
                 break;
             }
-            ptr = ptr.add(node_size_in_bytes);
+            ptr = unsafe { ptr.add(node_size_in_bytes) };
         }
 
         total_size_in_bytes
@@ -432,7 +488,7 @@ impl DevicePath {
     /// that lifetime.
     #[must_use]
     pub unsafe fn from_ffi_ptr<'a>(ptr: *const FfiDevicePath) -> &'a Self {
-        &*Self::ptr_from_ffi(ptr.cast::<c_void>())
+        unsafe { &*Self::ptr_from_ffi(ptr.cast::<c_void>()) }
     }
 
     /// Cast to a [`FfiDevicePath`] pointer.
@@ -496,6 +552,25 @@ impl DevicePath {
                 CString16::from(cstr16)
             })
             .map_err(|_| DevicePathToTextError::OutOfMemory)
+    }
+
+    /// Allocates and returns a new [`DevicePath`] by copying this one and appending the given `right` path.
+    #[cfg(feature = "alloc")]
+    pub fn append_path(&self, right: &Self) -> Result<PoolDevicePath, DevicePathUtilitiesError> {
+        open_utility_protocol()?
+            .append_path(self, right)
+            .map_err(|_| DevicePathUtilitiesError::OutOfMemory)
+    }
+
+    /// Allocates and returns a new [`DevicePath`] by copying this one and appending the given `right` node.
+    #[cfg(feature = "alloc")]
+    pub fn append_node(
+        &self,
+        right: &DevicePathNode,
+    ) -> Result<PoolDevicePath, DevicePathUtilitiesError> {
+        open_utility_protocol()?
+            .append_node(self, right)
+            .map_err(|_| DevicePathUtilitiesError::OutOfMemory)
     }
 }
 
@@ -644,6 +719,9 @@ pub enum ByteConversionError {
 /// specific node type.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum NodeConversionError {
+    /// The requested node type does not match the actual node type.
+    DifferentType,
+
     /// The length of the node data is not valid for its type.
     InvalidLength,
 
@@ -664,11 +742,15 @@ pub struct LoadedImageDevicePath(DevicePath);
 
 impl ProtocolPointer for LoadedImageDevicePath {
     unsafe fn ptr_from_ffi(ptr: *const c_void) -> *const Self {
-        ptr_meta::from_raw_parts(ptr.cast(), DevicePath::size_in_bytes_from_ptr(ptr))
+        ptr_meta::from_raw_parts(ptr.cast(), unsafe {
+            DevicePath::size_in_bytes_from_ptr(ptr)
+        })
     }
 
     unsafe fn mut_ptr_from_ffi(ptr: *mut c_void) -> *mut Self {
-        ptr_meta::from_raw_parts_mut(ptr.cast(), DevicePath::size_in_bytes_from_ptr(ptr))
+        ptr_meta::from_raw_parts_mut(ptr.cast(), unsafe {
+            DevicePath::size_in_bytes_from_ptr(ptr)
+        })
     }
 }
 
@@ -704,12 +786,11 @@ impl Display for DevicePathToTextError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for DevicePathToTextError {
     fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
         match self {
-            DevicePathToTextError::CantLocateHandleBuffer(e) => Some(e),
-            DevicePathToTextError::CantOpenProtocol(e) => Some(e),
+            Self::CantLocateHandleBuffer(e) => Some(e),
+            Self::CantOpenProtocol(e) => Some(e),
             _ => None,
         }
     }
@@ -737,6 +818,63 @@ fn open_text_protocol() -> Result<ScopedProtocol<DevicePathToText>, DevicePathTo
     .map_err(DevicePathToTextError::CantOpenProtocol)
 }
 
+/// Errors that may occur when working with the [`DevicePathUtilities`] protocol.
+///
+/// These errors are typically encountered during operations involving device
+/// paths, such as appending or manipulating path segments.
+#[derive(Debug)]
+pub enum DevicePathUtilitiesError {
+    /// Can't locate a handle buffer with handles associated with the
+    /// [`DevicePathUtilities`] protocol.
+    CantLocateHandleBuffer(crate::Error),
+    /// No handle supporting the [`DevicePathUtilities`] protocol was found.
+    NoHandle,
+    /// The handle supporting the [`DevicePathUtilities`] protocol exists but
+    /// it could not be opened.
+    CantOpenProtocol(crate::Error),
+    /// Memory allocation failed during device path operations.
+    OutOfMemory,
+}
+
+impl Display for DevicePathUtilitiesError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl core::error::Error for DevicePathUtilitiesError {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
+        match self {
+            Self::CantLocateHandleBuffer(e) => Some(e),
+            Self::CantOpenProtocol(e) => Some(e),
+            _ => None,
+        }
+    }
+}
+
+/// Helper function to open the [`DevicePathUtilities`] protocol using the boot
+/// services.
+#[cfg(feature = "alloc")]
+fn open_utility_protocol() -> Result<ScopedProtocol<DevicePathUtilities>, DevicePathUtilitiesError>
+{
+    let &handle = boot::locate_handle_buffer(SearchType::ByProtocol(&DevicePathToText::GUID))
+        .map_err(DevicePathUtilitiesError::CantLocateHandleBuffer)?
+        .first()
+        .ok_or(DevicePathUtilitiesError::NoHandle)?;
+
+    unsafe {
+        boot::open_protocol::<DevicePathUtilities>(
+            OpenProtocolParams {
+                handle,
+                agent: boot::image_handle(),
+                controller: None,
+            },
+            OpenProtocolAttributes::GetProtocol,
+        )
+    }
+    .map_err(DevicePathUtilitiesError::CantOpenProtocol)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -748,7 +886,7 @@ mod tests {
         path.push(device_type);
         path.push(sub_type);
         path.extend(
-            u16::try_from(mem::size_of::<DevicePathHeader>() + node_data.len())
+            u16::try_from(size_of::<DevicePathHeader>() + node_data.len())
                 .unwrap()
                 .to_le_bytes(),
         );
@@ -787,7 +925,7 @@ mod tests {
         assert_eq!(node.sub_type().0, sub_type);
         assert_eq!(
             node.length(),
-            u16::try_from(mem::size_of::<DevicePathHeader>() + node_data.len()).unwrap()
+            u16::try_from(size_of::<DevicePathHeader>() + node_data.len()).unwrap()
         );
         assert_eq!(&node.data, node_data);
     }
@@ -798,7 +936,7 @@ mod tests {
         let dp = unsafe { DevicePath::from_ffi_ptr(raw_data.as_ptr().cast()) };
 
         // Check that the size is the sum of the nodes' lengths.
-        assert_eq!(mem::size_of_val(dp), 6 + 8 + 4 + 6 + 8 + 4);
+        assert_eq!(size_of_val(dp), 6 + 8 + 4 + 6 + 8 + 4);
 
         // Check the list's node iter.
         let nodes: Vec<_> = dp.node_iter().collect();
@@ -824,7 +962,7 @@ mod tests {
         // Check the list's instance iter.
         let mut iter = dp.instance_iter();
         let mut instance = iter.next().unwrap();
-        assert_eq!(mem::size_of_val(instance), 6 + 8 + 4);
+        assert_eq!(size_of_val(instance), 6 + 8 + 4);
 
         // Check the first instance's node iter.
         let nodes: Vec<_> = instance.node_iter().collect();
@@ -835,7 +973,7 @@ mod tests {
 
         // Check second instance.
         instance = iter.next().unwrap();
-        assert_eq!(mem::size_of_val(instance), 6 + 8 + 4);
+        assert_eq!(size_of_val(instance), 6 + 8 + 4);
 
         let nodes: Vec<_> = instance.node_iter().collect();
         check_node(nodes[0], 0xa2, 0xb2, &[30, 31]);
@@ -876,7 +1014,7 @@ mod tests {
         // Raw data is long enough to hold a [`DevicePathNode`].
         raw_data.push(node[1]);
         raw_data.extend(
-            u16::try_from(mem::size_of::<DevicePathHeader>() + node_data.len())
+            u16::try_from(size_of::<DevicePathHeader>() + node_data.len())
                 .unwrap()
                 .to_le_bytes(),
         );
@@ -884,7 +1022,7 @@ mod tests {
         let dp = <&DevicePathNode>::try_from(raw_data.as_slice()).unwrap();
 
         // Relevant assertions to verify the conversion is fine.
-        assert_eq!(mem::size_of_val(dp), 6);
+        assert_eq!(size_of_val(dp), 6);
         check_node(dp, 0xa0, 0xb0, &[10, 11]);
 
         // [`DevicePathNode`] data length exceeds the raw_data slice.
@@ -898,7 +1036,7 @@ mod tests {
         let dp = <&DevicePath>::try_from(raw_data.as_slice()).unwrap();
 
         // Check that the size is the sum of the nodes' lengths.
-        assert_eq!(mem::size_of_val(dp), 6 + 8 + 4 + 6 + 8 + 4);
+        assert_eq!(size_of_val(dp), 6 + 8 + 4 + 6 + 8 + 4);
 
         // Check the list's node iter.
         let nodes: Vec<_> = dp.node_iter().collect();
@@ -914,5 +1052,24 @@ mod tests {
         check_node(nodes[4], 0xa3, 0xb3, &[40, 41, 42, 43]);
         // The end-entire node is not returned by the iterator.
         assert_eq!(nodes.len(), 5);
+    }
+
+    /// Test converting from `&DevicePathNode` to a specific node type.
+    #[test]
+    fn test_specific_node_from_device_path_node() {
+        let mut raw_data = Vec::new();
+        add_node(
+            &mut raw_data,
+            DeviceType::END.0,
+            DeviceSubType::END_INSTANCE.0,
+            &[],
+        );
+        let node = <&DevicePathNode>::try_from(raw_data.as_slice()).unwrap();
+
+        assert!(<&end::Instance>::try_from(node).is_ok());
+        assert_eq!(
+            <&end::Entire>::try_from(node).unwrap_err(),
+            NodeConversionError::DifferentType
+        );
     }
 }

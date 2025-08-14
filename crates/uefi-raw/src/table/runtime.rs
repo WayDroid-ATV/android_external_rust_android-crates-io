@@ -1,10 +1,12 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! UEFI services available at runtime, even after the OS boots.
 
 use crate::capsule::CapsuleHeader;
 use crate::table::boot::MemoryDescriptor;
 use crate::table::Header;
 use crate::time::Time;
-use crate::{guid, Char16, Guid, PhysicalAddress, Status};
+use crate::{guid, Boolean, Char16, Guid, PhysicalAddress, Status};
 use bitflags::bitflags;
 use core::ffi::c_void;
 
@@ -115,7 +117,7 @@ pub struct TimeCapabilities {
 
     /// Whether a time set operation clears the device's time below the
     /// "resolution" reporting level. False for normal PC-AT CMOS RTC devices.
-    pub sets_to_zero: bool,
+    pub sets_to_zero: Boolean,
 }
 
 bitflags! {

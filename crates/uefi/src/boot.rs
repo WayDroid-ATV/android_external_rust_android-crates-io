@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! UEFI boot services.
 //!
 //! These functions will panic if called after exiting boot services.
@@ -42,7 +44,7 @@ use core::ops::{Deref, DerefMut};
 use core::ptr::{self, NonNull};
 use core::sync::atomic::{AtomicPtr, Ordering};
 use core::{mem, slice};
-use uefi_raw::table::boot::InterfaceType;
+use uefi_raw::table::boot::{InterfaceType, TimerDelay};
 #[cfg(feature = "alloc")]
 use {alloc::vec::Vec, uefi::ResultExt};
 
@@ -114,7 +116,7 @@ pub unsafe fn raise_tpl(tpl: Tpl) -> TplGuard {
     let bt = unsafe { bt.as_ref() };
 
     TplGuard {
-        old_tpl: (bt.raise_tpl)(tpl),
+        old_tpl: unsafe { (bt.raise_tpl)(tpl) },
     }
 }
 
@@ -132,15 +134,40 @@ pub fn allocate_pages(ty: AllocateType, mem_ty: MemoryType, count: usize) -> Res
     let bt = boot_services_raw_panicking();
     let bt = unsafe { bt.as_ref() };
 
-    let (ty, mut addr) = match ty {
+    let (ty, initial_addr) = match ty {
         AllocateType::AnyPages => (0, 0),
         AllocateType::MaxAddress(addr) => (1, addr),
         AllocateType::Address(addr) => (2, addr),
     };
-    let addr =
-        unsafe { (bt.allocate_pages)(ty, mem_ty, count, &mut addr) }.to_result_with_val(|| addr)?;
-    let ptr = addr as *mut u8;
-    Ok(NonNull::new(ptr).expect("allocate_pages must not return a null pointer if successful"))
+
+    let mut addr1 = initial_addr;
+    unsafe { (bt.allocate_pages)(ty, mem_ty, count, &mut addr1) }.to_result()?;
+
+    // The UEFI spec allows `allocate_pages` to return a valid allocation at
+    // address zero. Rust does not allow writes through a null pointer (which
+    // Rust defines as address zero), so this is not very useful. Only return
+    // the allocation if the address is non-null.
+    if let Some(ptr) = NonNull::new(addr1 as *mut u8) {
+        return Ok(ptr);
+    }
+
+    // Attempt a second allocation. The first allocation (at address zero) has
+    // not yet been freed, so if this allocation succeeds it should be at a
+    // non-zero address.
+    let mut addr2 = initial_addr;
+    let r = unsafe { (bt.allocate_pages)(ty, mem_ty, count, &mut addr2) }.to_result();
+
+    // Free the original allocation (ignoring errors).
+    let _unused = unsafe { (bt.free_pages)(addr1, count) };
+
+    // Return an error if the second allocation failed, or if it is still at
+    // address zero. Otherwise, return a pointer to the second allocation.
+    r?;
+    if let Some(ptr) = NonNull::new(addr2 as *mut u8) {
+        Ok(ptr)
+    } else {
+        Err(Status::OUT_OF_RESOURCES.into())
+    }
 }
 
 /// Frees memory pages allocated by [`allocate_pages`].
@@ -245,6 +272,10 @@ pub(crate) fn memory_map_size() -> MemoryMapMeta {
 /// Stores the current UEFI memory map in an UEFI-heap allocated buffer
 /// and returns a [`MemoryMapOwned`].
 ///
+/// The implementation tries to mitigate some UEFI pitfalls, such as getting
+/// the right allocation size for the memory map to prevent
+/// [`Status::BUFFER_TOO_SMALL`].
+///
 /// # Parameters
 ///
 /// - `mt`: The memory type for the backing memory on the UEFI heap.
@@ -253,12 +284,30 @@ pub(crate) fn memory_map_size() -> MemoryMapMeta {
 ///
 /// # Errors
 ///
-/// * [`Status::BUFFER_TOO_SMALL`]
-/// * [`Status::INVALID_PARAMETER`]
+/// * [`Status::INVALID_PARAMETER`]: Invalid [`MemoryType`]
+/// * [`Status::OUT_OF_RESOURCES`]: allocation failed.
+///
+/// # Panics
+///
+/// Panics if the memory map can't be retrieved because of
+/// [`Status::BUFFER_TOO_SMALL`]. This behaviour was chosen explicitly as
+/// callers can't do anything about it anyway.
 pub fn memory_map(mt: MemoryType) -> Result<MemoryMapOwned> {
     let mut buffer = MemoryMapBackingMemory::new(mt)?;
 
-    let meta = get_memory_map(buffer.as_mut_slice())?;
+    let meta = get_memory_map(buffer.as_mut_slice());
+
+    if let Err(e) = &meta {
+        // We don't want to confuse users and let them think they should handle
+        // this, as they can't do anything about it anyway.
+        //
+        // This path won't be taken in OOM situations, but only if for unknown
+        // reasons, we failed to properly allocate the memory map.
+        if e.status() == Status::BUFFER_TOO_SMALL {
+            panic!("Failed to get a proper allocation for the memory map");
+        }
+    }
+    let meta = meta?;
 
     Ok(MemoryMapOwned::from_initialized_mem(buffer, meta))
 }
@@ -277,7 +326,7 @@ pub(crate) fn get_memory_map(buf: &mut [u8]) -> Result<MemoryMapMeta> {
     let mut desc_version = 0;
 
     assert_eq!(
-        (map_buffer as usize) % mem::align_of::<MemoryDescriptor>(),
+        (map_buffer as usize) % align_of::<MemoryDescriptor>(),
         0,
         "Memory map buffers must be aligned like a MemoryDescriptor"
     );
@@ -332,15 +381,17 @@ pub unsafe fn create_event(
 
     // Safety: the argument types of the function pointers are defined
     // differently, but are compatible and can be safely transmuted.
-    let notify_fn: Option<uefi_raw::table::boot::EventNotifyFn> = mem::transmute(notify_fn);
+    let notify_fn: Option<uefi_raw::table::boot::EventNotifyFn> =
+        unsafe { mem::transmute(notify_fn) };
 
     let notify_ctx = opt_nonnull_to_ptr(notify_ctx);
 
     // Now we're ready to call UEFI
-    (bt.create_event)(event_ty, notify_tpl, notify_fn, notify_ctx, &mut event).to_result_with_val(
-        // OK to unwrap: event is non-null for Status::SUCCESS.
-        || Event::from_ptr(event).unwrap(),
-    )
+    unsafe { (bt.create_event)(event_ty, notify_tpl, notify_fn, notify_ctx, &mut event) }
+        .to_result_with_val(
+            // OK to unwrap: event is non-null for Status::SUCCESS.
+            || unsafe { Event::from_ptr(event) }.unwrap(),
+        )
 }
 
 /// Creates an event in an event group.
@@ -402,19 +453,22 @@ pub unsafe fn create_event_ex(
 
     // Safety: the argument types of the function pointers are defined
     // differently, but are compatible and can be safely transmuted.
-    let notify_fn: Option<uefi_raw::table::boot::EventNotifyFn> = mem::transmute(notify_fn);
+    let notify_fn: Option<uefi_raw::table::boot::EventNotifyFn> =
+        unsafe { mem::transmute(notify_fn) };
 
-    (bt.create_event_ex)(
-        event_type,
-        notify_tpl,
-        notify_fn,
-        opt_nonnull_to_ptr(notify_ctx),
-        opt_nonnull_to_ptr(event_group),
-        &mut event,
-    )
+    unsafe {
+        (bt.create_event_ex)(
+            event_type,
+            notify_tpl,
+            notify_fn,
+            opt_nonnull_to_ptr(notify_ctx),
+            opt_nonnull_to_ptr(event_group),
+            &mut event,
+        )
+    }
     .to_result_with_val(
         // OK to unwrap: event is non-null for Status::SUCCESS.
-        || Event::from_ptr(event).unwrap(),
+        || unsafe { Event::from_ptr(event) }.unwrap(),
     )
 }
 
@@ -441,6 +495,31 @@ pub fn check_event(event: Event) -> Result<bool> {
         Status::NOT_READY => Ok(false),
         _ => Err(status.into()),
     }
+}
+
+/// Places the supplied `event` in the signaled state. If `event` is already in
+/// the signaled state, the function returns successfully. If `event` is of type
+/// [`NOTIFY_SIGNAL`], the event's notification function is scheduled to be
+/// invoked at the event's notification task priority level.
+///
+/// This function may be invoked from any task priority level.
+///
+/// If `event` is part of an event group, then all of the events in the event
+/// group are also signaled and their notification functions are scheduled.
+///
+/// When signaling an event group, it is possible to create an event in the
+/// group, signal it and then close the event to remove it from the group.
+///
+/// # Errors
+///
+/// The specification does not list any errors.
+///
+/// [`NOTIFY_SIGNAL`]: EventType::NOTIFY_SIGNAL
+pub fn signal_event(event: &Event) -> Result {
+    let bt = boot_services_raw_panicking();
+    let bt = unsafe { bt.as_ref() };
+
+    unsafe { (bt.signal_event)(event.as_ptr()) }.to_result()
 }
 
 /// Removes `event` from any event group to which it belongs and closes it.
@@ -472,9 +551,9 @@ pub fn set_timer(event: &Event, trigger_time: TimerTrigger) -> Result {
     let bt = unsafe { bt.as_ref() };
 
     let (ty, time) = match trigger_time {
-        TimerTrigger::Cancel => (0, 0),
-        TimerTrigger::Periodic(hundreds_ns) => (1, hundreds_ns),
-        TimerTrigger::Relative(hundreds_ns) => (2, hundreds_ns),
+        TimerTrigger::Cancel => (TimerDelay::CANCEL, 0),
+        TimerTrigger::Periodic(period) => (TimerDelay::PERIODIC, period),
+        TimerTrigger::Relative(delay) => (TimerDelay::RELATIVE, delay),
     };
     unsafe { (bt.set_timer)(event.as_ptr(), ty, time) }.to_result()
 }
@@ -561,7 +640,7 @@ pub fn connect_controller(
                 .map(|dp| dp.as_ffi_ptr())
                 .unwrap_or(ptr::null())
                 .cast(),
-            recursive,
+            recursive.into(),
         )
     }
     .to_result_with_err(|_| ())
@@ -622,13 +701,15 @@ pub unsafe fn install_protocol_interface(
     let bt = unsafe { bt.as_ref() };
 
     let mut handle = Handle::opt_to_ptr(handle);
-    ((bt.install_protocol_interface)(
-        &mut handle,
-        protocol,
-        InterfaceType::NATIVE_INTERFACE,
-        interface,
-    ))
-    .to_result_with_val(|| Handle::from_ptr(handle).unwrap())
+    unsafe {
+        (bt.install_protocol_interface)(
+            &mut handle,
+            protocol,
+            InterfaceType::NATIVE_INTERFACE,
+            interface,
+        )
+    }
+    .to_result_with_val(|| unsafe { Handle::from_ptr(handle) }.unwrap())
 }
 
 /// Reinstalls a protocol interface on a device handle. `old_interface` is replaced with `new_interface`.
@@ -656,8 +737,10 @@ pub unsafe fn reinstall_protocol_interface(
     let bt = boot_services_raw_panicking();
     let bt = unsafe { bt.as_ref() };
 
-    (bt.reinstall_protocol_interface)(handle.as_ptr(), protocol, old_interface, new_interface)
-        .to_result()
+    unsafe {
+        (bt.reinstall_protocol_interface)(handle.as_ptr(), protocol, old_interface, new_interface)
+    }
+    .to_result()
 }
 
 /// Removes a protocol interface from a device handle.
@@ -683,7 +766,7 @@ pub unsafe fn uninstall_protocol_interface(
     let bt = boot_services_raw_panicking();
     let bt = unsafe { bt.as_ref() };
 
-    (bt.uninstall_protocol_interface)(handle.as_ptr(), protocol, interface).to_result()
+    unsafe { (bt.uninstall_protocol_interface)(handle.as_ptr(), protocol, interface).to_result() }
 }
 
 /// Registers `event` to be signaled whenever a protocol interface is registered for
@@ -790,14 +873,14 @@ pub fn locate_handle<'buf>(
         SearchType::ByRegisterNotify(registration) => {
             (1, ptr::null(), registration.0.as_ptr().cast_const())
         }
-        SearchType::ByProtocol(guid) => (2, guid as *const Guid, ptr::null()),
+        SearchType::ByProtocol(guid) => (2, ptr::from_ref(guid), ptr::null()),
     };
 
-    let mut buffer_size = buffer.len() * mem::size_of::<Handle>();
+    let mut buffer_size = buffer.len() * size_of::<Handle>();
     let status =
         unsafe { (bt.locate_handle)(ty, guid, key, &mut buffer_size, buffer.as_mut_ptr().cast()) };
 
-    let num_handles = buffer_size / mem::size_of::<Handle>();
+    let num_handles = buffer_size / size_of::<Handle>();
 
     match status {
         Status::SUCCESS => {
@@ -829,7 +912,7 @@ pub fn locate_handle_buffer(search_ty: SearchType) -> Result<HandleBuffer> {
         SearchType::ByRegisterNotify(registration) => {
             (1, ptr::null(), registration.0.as_ptr().cast_const())
         }
-        SearchType::ByProtocol(guid) => (2, guid as *const _, ptr::null()),
+        SearchType::ByProtocol(guid) => (2, ptr::from_ref(guid), ptr::null()),
     };
 
     let mut num_handles: usize = 0;
@@ -961,19 +1044,21 @@ pub unsafe fn open_protocol<P: ProtocolPointer + ?Sized>(
     let bt = unsafe { bt.as_ref() };
 
     let mut interface = ptr::null_mut();
-    (bt.open_protocol)(
-        params.handle.as_ptr(),
-        &P::GUID,
-        &mut interface,
-        params.agent.as_ptr(),
-        Handle::opt_to_ptr(params.controller),
-        attributes as u32,
-    )
+    unsafe {
+        (bt.open_protocol)(
+            params.handle.as_ptr(),
+            &P::GUID,
+            &mut interface,
+            params.agent.as_ptr(),
+            Handle::opt_to_ptr(params.controller),
+            attributes as u32,
+        )
+    }
     .to_result_with_val(|| {
         let interface = if interface.is_null() {
             None
         } else {
-            NonNull::new(P::mut_ptr_from_ffi(interface))
+            NonNull::new(unsafe { P::mut_ptr_from_ffi(interface) })
         };
         ScopedProtocol {
             interface,
@@ -1146,12 +1231,14 @@ pub unsafe fn exit(
     let bt = boot_services_raw_panicking();
     let bt = unsafe { bt.as_ref() };
 
-    (bt.exit)(
-        image_handle.as_ptr(),
-        exit_status,
-        exit_data_size,
-        exit_data.cast(),
-    )
+    unsafe {
+        (bt.exit)(
+            image_handle.as_ptr(),
+            exit_status,
+            exit_data_size,
+            exit_data.cast(),
+        )
+    }
 }
 
 /// Get the current memory map and exit boot services.
@@ -1167,21 +1254,27 @@ unsafe fn get_memory_map_and_exit_boot_services(buf: &mut [u8]) -> Result<Memory
     // what boot services functions can be called. In UEFI 2.8 and earlier,
     // only `get_memory_map` and `exit_boot_services` are allowed. Starting
     // in UEFI 2.9 other memory allocation functions may also be called.
-    (bt.exit_boot_services)(image_handle().as_ptr(), memory_map.map_key.0)
+    unsafe { (bt.exit_boot_services)(image_handle().as_ptr(), memory_map.map_key.0) }
         .to_result_with_val(|| memory_map)
 }
 
-/// Exit UEFI boot services.
+/// Convenient wrapper to exit UEFI boot services along with corresponding
+/// essential steps to get the memory map.
+///
+/// Exiting UEFI boot services requires a **non-trivial sequence of steps**,
+/// including safe retrieval and finalization of the memory map. This wrapper
+/// ensures a safe and spec-compliant transition from UEFI boot services to
+/// runtime services by retrieving the system memory map and invoking
+/// `ExitBootServices()` with the correct memory map key, retrying if necessary.
 ///
 /// After this function completes, UEFI hands over control of the hardware
 /// to the executing OS loader, which implies that the UEFI boot services
 /// are shut down and cannot be used anymore. Only UEFI configuration tables
-/// and run-time services can be used.
+/// and runtime services can be used.
 ///
-/// The memory map at the time of exiting boot services returned. The map is
-/// backed by a pool allocation of the given `memory_type`. Since the boot
-/// services function to free that memory is no longer available after calling
-/// `exit_boot_services`, the allocation will not be freed on drop.
+/// Since the boot services function to free memory is no longer available after
+/// this function returns, the allocation will not be freed on drop. It will
+/// however be reflected by the memory map itself (self-contained).
 ///
 /// Note that once the boot services are exited, associated loggers and
 /// allocators can't use the boot services anymore. For the corresponding
@@ -1189,6 +1282,13 @@ unsafe fn get_memory_map_and_exit_boot_services(buf: &mut [u8]) -> Result<Memory
 /// invoking this function will automatically disable them. If the
 /// `global_allocator` feature is enabled, attempting to use the allocator
 /// after exiting boot services will panic.
+///
+/// # Arguments
+/// - `custom_memory_type`: The [`MemoryType`] for the UEFI allocation that will
+///   store the final memory map. If you pass `None`, this defaults to the
+///   recommended default value of [`MemoryType::LOADER_DATA`]. If you want a
+///   specific memory region for the memory map, you can pass the desired
+///   [`MemoryType`].
 ///
 /// # Safety
 ///
@@ -1218,9 +1318,12 @@ unsafe fn get_memory_map_and_exit_boot_services(buf: &mut [u8]) -> Result<Memory
 ///
 /// [`helpers`]: crate::helpers
 /// [`Output`]: crate::proto::console::text::Output
-/// [`PoolString`]: crate::proto::device_path::text::PoolString
+/// [`PoolString`]: crate::data_types::PoolString
 #[must_use]
-pub unsafe fn exit_boot_services(memory_type: MemoryType) -> MemoryMapOwned {
+pub unsafe fn exit_boot_services(custom_memory_type: Option<MemoryType>) -> MemoryMapOwned {
+    // LOADER_DATA is the default and also used by the Linux kernel:
+    // https://elixir.bootlin.com/linux/v6.13.7/source/drivers/firmware/efi/libstub/mem.c#L24
+    let memory_type = custom_memory_type.unwrap_or(MemoryType::LOADER_DATA);
     crate::helpers::exit();
 
     let mut buf = MemoryMapBackingMemory::new(memory_type).expect("Failed to allocate memory");
@@ -1270,7 +1373,7 @@ pub unsafe fn install_configuration_table(
     let bt = boot_services_raw_panicking();
     let bt = unsafe { bt.as_ref() };
 
-    (bt.install_configuration_table)(guid_entry, table_ptr).to_result()
+    unsafe { (bt.install_configuration_table)(guid_entry, table_ptr) }.to_result()
 }
 
 /// Sets the watchdog timer.
@@ -1358,6 +1461,19 @@ pub fn get_image_file_system(image_handle: Handle) -> Result<ScopedProtocol<Simp
     open_protocol_exclusive(device_handle)
 }
 
+/// Calculates the 32-bit CRC32 for the provided slice.
+///
+/// # Errors
+/// * [`Status::INVALID_PARAMETER`]
+pub fn calculate_crc32(data: &[u8]) -> Result<u32> {
+    let bt = boot_services_raw_panicking();
+    let bt = unsafe { bt.as_ref() };
+    let mut crc = 0u32;
+
+    unsafe { (bt.calculate_crc32)(data.as_ptr().cast(), data.len(), &mut crc) }
+        .to_result_with_val(|| crc)
+}
+
 /// Protocol interface [`Guids`][Guid] that are installed on a [`Handle`] as
 /// returned by [`protocols_per_handle`].
 #[derive(Debug)]
@@ -1433,6 +1549,14 @@ pub struct ScopedProtocol<P: Protocol + ?Sized> {
     open_params: OpenProtocolParams,
 }
 
+impl<P: Protocol + ?Sized> ScopedProtocol<P> {
+    /// Returns the [`OpenProtocolParams`] used to open the [`ScopedProtocol`].
+    #[must_use]
+    pub const fn open_params(&self) -> OpenProtocolParams {
+        self.open_params
+    }
+}
+
 impl<P: Protocol + ?Sized> Drop for ScopedProtocol<P> {
     fn drop(&mut self) {
         let bt = boot_services_raw_panicking();
@@ -1493,6 +1617,14 @@ impl<P: Protocol + ?Sized> ScopedProtocol<P> {
 #[derive(Debug)]
 pub struct TplGuard {
     old_tpl: Tpl,
+}
+
+impl TplGuard {
+    /// Returns the previous [`Tpl`].
+    #[must_use]
+    pub const fn old_tpl(&self) -> Tpl {
+        self.old_tpl
+    }
 }
 
 impl Drop for TplGuard {
@@ -1556,7 +1688,7 @@ pub enum OpenProtocolAttributes {
 }
 
 /// Parameters passed to [`open_protocol`].
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct OpenProtocolParams {
     /// The handle for the protocol to open.
     pub handle: Handle,
@@ -1613,7 +1745,7 @@ pub enum LoadImageSource<'a> {
     },
 }
 
-impl<'a> LoadImageSource<'a> {
+impl LoadImageSource<'_> {
     /// Returns the raw FFI parameters for `load_image`.
     #[must_use]
     pub(crate) fn to_ffi_params(
@@ -1677,7 +1809,7 @@ pub enum SearchType<'guid> {
     ByRegisterNotify(ProtocolSearchKey),
 }
 
-impl<'guid> SearchType<'guid> {
+impl SearchType<'_> {
     /// Constructs a new search type for a specified protocol.
     #[must_use]
     pub const fn from_proto<P: ProtocolPointer + ?Sized>() -> Self {
@@ -1688,19 +1820,29 @@ impl<'guid> SearchType<'guid> {
 /// Event notification callback type.
 pub type EventNotifyFn = unsafe extern "efiapi" fn(event: Event, context: Option<NonNull<c_void>>);
 
-/// Timer events manipulation.
+/// Trigger type for events of type [`TIMER`].
+///
+/// See [`set_timer`].
+///
+/// [`TIMER`]: EventType::TIMER
 #[derive(Debug)]
 pub enum TimerTrigger {
-    /// Cancel event's timer
+    /// Remove the event's timer setting.
     Cancel,
-    /// The event is to be signaled periodically.
-    /// Parameter is the period in 100ns units.
-    /// Delay of 0 will be signalled on every timer tick.
-    Periodic(u64),
-    /// The event is to be signaled once in 100ns units.
-    /// Parameter is the delay in 100ns units.
-    /// Delay of 0 will be signalled on next timer tick.
-    Relative(u64),
+
+    /// Trigger the event periodically.
+    Periodic(
+        /// Duration between event signaling in units of 100ns. If set to zero,
+        /// the event will be signaled on every timer tick.
+        u64,
+    ),
+
+    /// Trigger the event one time.
+    Relative(
+        /// Duration to wait before signaling the event in units of 100ns. If
+        /// set to zero, the event will be signaled on the next timer tick.
+        u64,
+    ),
 }
 
 /// Opaque pointer returned by [`register_protocol_notify`] to be used

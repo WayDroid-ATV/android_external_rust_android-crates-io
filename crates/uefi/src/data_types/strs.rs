@@ -1,11 +1,18 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+use uefi_raw::Status;
+
 use super::chars::{Char16, Char8, NUL_16, NUL_8};
 use super::UnalignedSlice;
+use crate::mem::PoolAllocation;
 use crate::polyfill::maybe_uninit_slice_assume_init_ref;
 use core::borrow::Borrow;
 use core::ffi::CStr;
 use core::fmt::{self, Display, Formatter};
 use core::mem::MaybeUninit;
-use core::slice;
+use core::ops::Deref;
+use core::ptr::NonNull;
+use core::{ptr, slice};
 
 #[cfg(feature = "alloc")]
 use super::CString16;
@@ -30,7 +37,6 @@ impl Display for FromSliceUntilNulError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for FromSliceUntilNulError {}
 
 /// Error converting from a slice (which cannot contain interior nuls) to a
@@ -57,7 +63,6 @@ impl Display for FromSliceWithNulError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for FromSliceWithNulError {}
 
 /// Error returned by [`CStr16::from_unaligned_slice`].
@@ -88,7 +93,6 @@ impl Display for UnalignedCStr16Error {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for UnalignedCStr16Error {}
 
 /// Error returned by [`CStr16::from_str_with_buf`].
@@ -115,7 +119,6 @@ impl Display for FromStrWithBufError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for FromStrWithBufError {}
 
 /// A null-terminated Latin-1 string.
@@ -145,11 +148,11 @@ impl CStr8 {
     #[must_use]
     pub unsafe fn from_ptr<'ptr>(ptr: *const Char8) -> &'ptr Self {
         let mut len = 0;
-        while *ptr.add(len) != NUL_8 {
+        while unsafe { *ptr.add(len) } != NUL_8 {
             len += 1
         }
         let ptr = ptr.cast::<u8>();
-        Self::from_bytes_with_nul_unchecked(slice::from_raw_parts(ptr, len + 1))
+        unsafe { Self::from_bytes_with_nul_unchecked(slice::from_raw_parts(ptr, len + 1)) }
     }
 
     /// Creates a CStr8 reference from bytes.
@@ -173,7 +176,7 @@ impl CStr8 {
     /// null-terminated string, with no interior null bytes.
     #[must_use]
     pub const unsafe fn from_bytes_with_nul_unchecked(chars: &[u8]) -> &Self {
-        &*(chars as *const [u8] as *const Self)
+        unsafe { &*(ptr::from_ref(chars) as *const Self) }
     }
 
     /// Returns the inner pointer to this CStr8.
@@ -186,7 +189,7 @@ impl CStr8 {
     /// character.
     #[must_use]
     pub const fn as_bytes(&self) -> &[u8] {
-        unsafe { &*(&self.0 as *const [Char8] as *const [u8]) }
+        unsafe { &*(ptr::from_ref(&self.0) as *const [u8]) }
     }
 }
 
@@ -198,7 +201,7 @@ impl fmt::Debug for CStr8 {
 
 impl fmt::Display for CStr8 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for c in self.0.iter() {
+        for c in &self.0[..&self.0.len() - 1] {
             <Char8 as fmt::Display>::fmt(c, f)?;
         }
         Ok(())
@@ -261,7 +264,7 @@ const unsafe fn latin1_from_utf8_at_offset(bytes: &[u8], offset: usize) -> (u8, 
     } else if bytes[offset] & 0b1110_0000 == 0b1100_0000 {
         let a = (bytes[offset] & 0b0001_1111) as u16;
         let b = (bytes[offset + 1] & 0b0011_1111) as u16;
-        let ch = a << 6 | b;
+        let ch = (a << 6) | b;
         if ch > 0xff {
             panic!("input string cannot be encoded as Latin-1");
         }
@@ -354,11 +357,11 @@ impl CStr16 {
     #[must_use]
     pub unsafe fn from_ptr<'ptr>(ptr: *const Char16) -> &'ptr Self {
         let mut len = 0;
-        while *ptr.add(len) != NUL_16 {
+        while unsafe { *ptr.add(len) } != NUL_16 {
             len += 1
         }
         let ptr = ptr.cast::<u16>();
-        Self::from_u16_with_nul_unchecked(slice::from_raw_parts(ptr, len + 1))
+        unsafe { Self::from_u16_with_nul_unchecked(slice::from_raw_parts(ptr, len + 1)) }
     }
 
     /// Creates a `&CStr16` from a u16 slice, stopping at the first nul character.
@@ -407,7 +410,7 @@ impl CStr16 {
     /// null-terminated string, with no interior null characters.
     #[must_use]
     pub const unsafe fn from_u16_with_nul_unchecked(codes: &[u16]) -> &Self {
-        &*(codes as *const [u16] as *const Self)
+        unsafe { &*(ptr::from_ref(codes) as *const Self) }
     }
 
     /// Creates a `&CStr16` from a [`Char16`] slice, stopping at the first nul character.
@@ -457,7 +460,7 @@ impl CStr16 {
     #[must_use]
     pub const unsafe fn from_char16_with_nul_unchecked(chars: &[Char16]) -> &Self {
         let ptr: *const [Char16] = chars;
-        &*(ptr as *const Self)
+        unsafe { &*(ptr as *const Self) }
     }
 
     /// Convert a [`&str`] to a `&CStr16`, backed by a buffer.
@@ -561,7 +564,7 @@ impl CStr16 {
     /// Converts this C string to a u16 slice containing the trailing null.
     #[must_use]
     pub const fn to_u16_slice_with_nul(&self) -> &[u16] {
-        unsafe { &*(&self.0 as *const [Char16] as *const [u16]) }
+        unsafe { &*(ptr::from_ref(&self.0) as *const [u16]) }
     }
 
     /// Returns an iterator over this C string
@@ -720,7 +723,41 @@ impl PartialEq<CString16> for &CStr16 {
     }
 }
 
-impl<'a> UnalignedSlice<'a, u16> {
+/// UCS-2 string allocated from UEFI pool memory.
+///
+/// This is similar to a [`CString16`], but used for memory that was allocated
+/// internally by UEFI rather than the Rust allocator.
+///
+/// [`CString16`]: crate::CString16
+#[derive(Debug)]
+pub struct PoolString(PoolAllocation);
+
+impl PoolString {
+    /// Create a [`PoolString`] from a [`CStr16`] residing in a buffer allocated
+    /// using [`allocate_pool()`][cbap].
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure that the buffer points to a valid [`CStr16`] and
+    /// resides in a buffer allocated using [`allocate_pool()`][cbap]
+    ///
+    /// [cbap]: crate::boot::allocate_pool()
+    pub unsafe fn new(text: *const Char16) -> crate::Result<Self> {
+        NonNull::new(text.cast_mut())
+            .map(|p| Self(PoolAllocation::new(p.cast())))
+            .ok_or(Status::OUT_OF_RESOURCES.into())
+    }
+}
+
+impl Deref for PoolString {
+    type Target = CStr16;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { CStr16::from_ptr(self.0.as_ptr().as_ptr().cast()) }
+    }
+}
+
+impl UnalignedSlice<'_, u16> {
     /// Create a [`CStr16`] from an [`UnalignedSlice`] using an aligned
     /// buffer for storage. The lifetime of the output is tied to `buf`,
     /// not `self`.
@@ -765,6 +802,7 @@ where
 mod tests {
     use super::*;
     use crate::{cstr16, cstr8};
+    use alloc::format;
     use alloc::string::String;
 
     // Tests if our CStr8 type can be constructed from a valid core::ffi::CStr
@@ -783,6 +821,18 @@ mod tests {
         assert_eq!(string.as_bytes(), &[b'a', 0]);
         assert_eq!(<CStr8 as AsRef<[u8]>>::as_ref(string), &[b'a', 0]);
         assert_eq!(<CStr8 as Borrow<[u8]>>::borrow(string), &[b'a', 0]);
+    }
+
+    #[test]
+    fn test_cstr8_display() {
+        let s = cstr8!("abc");
+        assert_eq!(format!("{s}"), "abc");
+    }
+
+    #[test]
+    fn test_cstr16_display() {
+        let s = cstr16!("abc");
+        assert_eq!(format!("{s}"), "abc");
     }
 
     #[test]

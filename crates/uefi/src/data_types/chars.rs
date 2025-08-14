@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! UEFI character handling
 //!
 //! UEFI uses both Latin-1 and UCS-2 character encoding, this module implements
@@ -15,7 +17,6 @@ impl Display for CharConversionError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for CharConversionError {}
 
 /// A Latin-1 character

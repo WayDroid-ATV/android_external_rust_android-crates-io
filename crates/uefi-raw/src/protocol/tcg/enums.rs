@@ -1,12 +1,4 @@
-// Providing docstrings for each constant would be a lot of work, so
-// allow missing docs. Each type-level doc links to the relevant spec to
-// provide more info.
-//
-// Setting this at the module level so that we don't have to write it
-// above each constant. That's also why these enums are in a separate
-// module instead of `super`, since we don't want to allow missing docs
-// too broadly.
-#![allow(missing_docs)]
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 newtype_enum! {
     /// Algorithm identifiers.

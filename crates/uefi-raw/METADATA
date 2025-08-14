@@ -1,17 +1,17 @@
 name: "uefi-raw"
 description: "Raw UEFI types and bindings for protocols, boot, and runtime services. This can serve as base for an UEFI firmware implementation or a high-level wrapper to access UEFI functionality from an UEFI image."
 third_party {
-  version: "0.9.0"
-  license_type: RECIPROCAL
+  version: "0.11.0"
+  license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 11
-    day: 5
+    year: 2025
+    month: 8
+    day: 13
   }
   homepage: "https://crates.io/crates/uefi-raw"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/uefi-raw/uefi-raw-0.9.0.crate"
-    version: "0.9.0"
+    value: "https://static.crates.io/crates/uefi-raw/uefi-raw-0.11.0.crate"
+    version: "0.11.0"
   }
 }

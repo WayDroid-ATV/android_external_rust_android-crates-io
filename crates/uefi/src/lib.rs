@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! Rusty wrapper for the [Unified Extensible Firmware Interface][UEFI].
 //!
 //! This crate makes it easy to develop Rust software that leverages **safe**,
@@ -65,9 +67,8 @@
 //! can't test all possible hardware/firmware/platform combinations in CI.
 //!
 //! ## MSRV
-//! <!-- Keep in Sync with README! -->
 //!
-//! The minimum supported Rust version is currently 1.70.
+//! The minimum supported Rust version is currently 1.81.
 //! Our policy is to support at least the past two stable releases.
 //!
 //! # API/User Documentation, Documentation Structure, and other Resources
@@ -185,18 +186,14 @@
 //! # License
 //! <!-- Keep in Sync with README! -->
 //!
-//! The code in this repository is licensed under the Mozilla Public License 2.
-//! This license allows you to use the crate in proprietary programs, but any
-//! modifications to the files must be open-sourced.
-//!
-//! The full text of the license is available in the [license file][LICENSE].
+//! Licensed under either of [Apache License, Version 2.0][apache] or
+//! [MIT license][mit] at your option.
 //!
 //! # Terminology
 //!
 //! Both "EFI" and "UEFI" can be used interchangeably, such as "UEFI image" or
 //! "EFI image". We prefer "UEFI" in our crate and its documentation.
 //!
-//! [LICENSE]: https://github.com/rust-osdev/uefi-rs/blob/main/uefi/LICENSE
 //! [Rust UEFI Book]: https://rust-osdev.github.io/uefi-rs/HEAD/
 //! [UEFI]: https://uefi.org/
 //! [Zulip]: https://rust-osdev.zulipchat.com
@@ -205,8 +202,10 @@
 //! [`entry-macro`]: uefi_macros::entry
 //! [`r-efi`]: https://crates.io/crates/r-efi
 //! [`unsafe_protocol`]: proto::unsafe_protocol
+//! [apache]: https://github.com/rust-osdev/uefi-rs/blob/main/uefi/LICENSE-APACHE
 //! [contributing]: https://github.com/rust-osdev/uefi-rs/blob/main/CONTRIBUTING.md
 //! [issue tracker]: https://github.com/rust-osdev/uefi-rs/issues
+//! [mit]: https://github.com/rust-osdev/uefi-rs/blob/main/uefi/LICENSE-MIT
 //! [rustc-uefi-std]: https://doc.rust-lang.org/nightly/rustc/platform-support/unknown-uefi.html
 //! [spec]: https://uefi.org/specifications
 //! [template]: https://github.com/rust-osdev/uefi-rs/tree/main/template
@@ -221,9 +220,11 @@
     clippy::missing_const_for_fn,
     clippy::must_use_candidate,
     clippy::ptr_as_ptr,
+    clippy::ref_as_ptr,
     clippy::use_self,
     missing_debug_implementations,
     missing_docs,
+    unsafe_op_in_unsafe_fn,
     unused
 )]
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use super::chars::{Char16, NUL_16};
 use super::strs::{CStr16, FromSliceWithNulError};
 use crate::data_types::strs::EqStrUntilNul;
@@ -8,7 +10,7 @@ use alloc::string::String;
 use alloc::vec;
 use alloc::vec::Vec;
 use core::fmt::{self, Display, Formatter};
-use core::ops;
+use core::{ops, ptr};
 
 /// Error returned by [`CString16::try_from::<&str>`].
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -32,7 +34,6 @@ impl Display for FromStrError {
     }
 }
 
-#[cfg(feature = "unstable")]
 impl core::error::Error for FromStrError {}
 
 /// An owned UCS-2 null-terminated string.
@@ -170,7 +171,7 @@ impl TryFrom<Vec<u16>> for CString16 {
     }
 }
 
-impl<'a> TryFrom<&UnalignedSlice<'a, u16>> for CString16 {
+impl TryFrom<&UnalignedSlice<'_, u16>> for CString16 {
     type Error = FromSliceWithNulError;
 
     fn try_from(input: &UnalignedSlice<u16>) -> Result<Self, Self::Error> {
@@ -193,7 +194,7 @@ impl From<&CString16> for String {
     }
 }
 
-impl<'a> UnalignedSlice<'a, u16> {
+impl UnalignedSlice<'_, u16> {
     /// Copies `self` to a new [`CString16`].
     pub fn to_cstring16(&self) -> Result<CString16, FromSliceWithNulError> {
         CString16::try_from(self)
@@ -204,7 +205,7 @@ impl ops::Deref for CString16 {
     type Target = CStr16;
 
     fn deref(&self) -> &CStr16 {
-        unsafe { &*(self.0.as_slice() as *const [Char16] as *const CStr16) }
+        unsafe { &*(ptr::from_ref(self.0.as_slice()) as *const CStr16) }
     }
 }
 

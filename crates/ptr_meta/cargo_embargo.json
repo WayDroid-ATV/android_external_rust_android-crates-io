@@ -1,6 +1,6 @@
 {
   "run_cargo": false,
-  "features": [],
+  "features": ["derive"],
   "module_name_overrides": {
     "libptr_meta": "libptr_meta_nostd"
   },

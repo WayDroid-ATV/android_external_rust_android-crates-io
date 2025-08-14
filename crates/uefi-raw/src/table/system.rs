@@ -1,10 +1,13 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use crate::protocol::console::{SimpleTextInputProtocol, SimpleTextOutputProtocol};
 use crate::table::boot::BootServices;
 use crate::table::configuration::ConfigurationTable;
 use crate::table::runtime::RuntimeServices;
 use crate::table::Header;
 use crate::{Char16, Handle};
-use core::{mem, ptr};
+use core::mem::size_of;
+use core::ptr;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 #[repr(C)]
@@ -44,7 +47,7 @@ impl Default for SystemTable {
         Self {
             header: Header {
                 signature: Self::SIGNATURE,
-                size: u32::try_from(mem::size_of::<Self>()).unwrap(),
+                size: u32::try_from(size_of::<Self>()).unwrap(),
                 ..Header::default()
             },
 

@@ -1,6 +1,53 @@
 # uefi-raw - [Unreleased]
 
 
+# uefi-raw - 0.11.0 (2025-05-04)
+
+## Added
+- MSRV increased to 1.77.
+- Added `Boolean` type
+- Added `protocol::network::pxe` module.
+- Added conversions between `MacAddress` and the `[u8; 6]` type that's more commonly used to represent MAC addresses.
+- Implemented `From` conversions between the `core::net` and `uefi_raw` IP
+  address types.
+- Added `DiskInfoProtocol`.
+- Added `ExtScsiPassThruProtocol`.
+- Added `NvmExpressPassThruProtocol`.
+- Added `AtaPassThruProtocol`.
+- Added `DevicePathUtilitiesProtocol`.
+- Added `UsbIoProtocol`.
+- Added `Usb2HostControllerProtocol`.
+- Added  `DevicePathProtocol::length()` properly constructing the `u16` value
+
+## Changed
+- `DevicePathProtocol` now derives
+  `Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash`
+
+
+# uefi-raw - 0.10.0 (2025-02-07)
+
+As of this release, the project has been relicensed from MPL-2.0 to
+Apache-2.0/MIT, to better align with the Rust crate ecosystem. (This does not
+alter the license of previous releases.)
+Details at <https://github.com/rust-osdev/uefi-rs/issues/1470>.
+
+## Added
+
+- Added `protocol::string::UnicodeCollationProtocol`.
+- Added `protocol::tcg` module, containing the TCG v1 and v2 protocols.
+- Added `DriverBindingProtocol`.
+- Added `FirmwareVolume2Protocol`.
+- Added `FirmwareVolumeBlock2Protocol`.
+- Added `HiiDatabaseProtocol`.
+- Added `ScsiIoProtocol`.
+- Added `Default` and other common impls for HTTP types.
+- Added `boot::TimerDelay`.
+
+## Changed
+- The definition of `BootServices::set_timer` now uses `TimerDelay` rather than
+  a plain integer.
+
+
 # uefi-raw - 0.9.0 (2024-10-23)
 
 ## Added
@@ -31,6 +78,7 @@
 ## Changed
 - `maximum_capsule_size` of `query_capsule_capabilities` now takes a *mut u64 instead of a *mut usize.
 - `ResetType` now derives the `Default` trait.
+
 
 # uefi-raw - 0.5.2 (2024-04-19)
 

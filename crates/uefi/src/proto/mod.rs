@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! Protocol definitions.
 //!
 //! Protocols are sets of related functionality identified by a unique
@@ -8,6 +10,8 @@
 //!
 //! [`boot`]: crate::boot#accessing-protocols
 
+#[cfg(feature = "alloc")]
+pub mod ata;
 pub mod console;
 pub mod debug;
 pub mod device_path;
@@ -16,8 +20,12 @@ pub mod loaded_image;
 pub mod media;
 pub mod misc;
 pub mod network;
+#[cfg(feature = "alloc")]
+pub mod nvme;
 pub mod pi;
 pub mod rng;
+#[cfg(feature = "alloc")]
+pub mod scsi;
 pub mod security;
 pub mod shell_params;
 pub mod shim;
@@ -26,16 +34,24 @@ pub mod tcg;
 
 mod boot_policy;
 
-pub use boot_policy::{BootPolicy, BootPolicyError};
+pub use boot_policy::BootPolicy;
 pub use uefi_macros::unsafe_protocol;
 
 use crate::Identify;
 use core::ffi::c_void;
 
-/// Common trait implemented by all standard UEFI protocols.
+#[cfg(doc)]
+use crate::boot;
+
+/// Marker trait for structures that represent UEFI protocols.
 ///
-/// You can derive the `Protocol` trait and specify the protocol's GUID using
-/// the [`unsafe_protocol`] macro.
+/// Implementing this trait allows a protocol to be opened with
+/// [`boot::open_protocol`] or [`boot::open_protocol_exclusive`]. Note that
+/// implementing this trait does not automatically install a protocol. To
+/// install a protocol, call [`boot::install_protocol_interface`].
+///
+/// As a convenience, you can derive the `Protocol` trait and specify the
+/// protocol's GUID using the [`unsafe_protocol`] macro.
 ///
 /// # Example
 ///

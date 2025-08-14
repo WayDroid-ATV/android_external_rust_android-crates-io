@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! Data type definitions
 //!
 //! This module defines the basic data types that are used throughout uefi-rs
@@ -99,8 +101,8 @@ impl Event {
 /// Trait for querying the alignment of a struct.
 ///
 /// For a statically-sized type the alignment can be retrieved with
-/// [`core::mem::align_of`]. For a dynamically-sized type (DST),
-/// [`core::mem::align_of_val`] provides the alignment given a reference. But in
+/// [`align_of`]. For a dynamically-sized type (DST),
+/// [`align_of_val`] provides the alignment given a reference. But in
 /// some cases it's helpful to know the alignment of a DST prior to having a
 /// value, meaning there's no reference to pass to `align_of_val`. For example,
 /// when using an API that creates a value using a `[u8]` buffer, the alignment
@@ -167,7 +169,8 @@ mod opaque;
 
 mod strs;
 pub use strs::{
-    CStr16, CStr8, EqStrUntilNul, FromSliceWithNulError, FromStrWithBufError, UnalignedCStr16Error,
+    CStr16, CStr8, EqStrUntilNul, FromSliceWithNulError, FromStrWithBufError, PoolString,
+    UnalignedCStr16Error,
 };
 
 /// These functions are used in the implementation of the [`cstr8`] macro.

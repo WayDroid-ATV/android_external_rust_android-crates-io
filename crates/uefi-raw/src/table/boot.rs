@@ -1,8 +1,10 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 //! UEFI services available during boot.
 
 use crate::protocol::device_path::DevicePathProtocol;
 use crate::table::Header;
-use crate::{Char16, Event, Guid, Handle, PhysicalAddress, Status, VirtualAddress};
+use crate::{Boolean, Char16, Event, Guid, Handle, PhysicalAddress, Status, VirtualAddress};
 use bitflags::bitflags;
 use core::ffi::c_void;
 use core::ops::RangeInclusive;
@@ -47,7 +49,8 @@ pub struct BootServices {
         notify_ctx: *mut c_void,
         out_event: *mut Event,
     ) -> Status,
-    pub set_timer: unsafe extern "efiapi" fn(event: Event, ty: u32, trigger_time: u64) -> Status,
+    pub set_timer:
+        unsafe extern "efiapi" fn(event: Event, ty: TimerDelay, trigger_time: u64) -> Status,
     pub wait_for_event: unsafe extern "efiapi" fn(
         number_of_events: usize,
         events: *mut Event,
@@ -103,7 +106,7 @@ pub struct BootServices {
 
     // Image services
     pub load_image: unsafe extern "efiapi" fn(
-        boot_policy: u8,
+        boot_policy: Boolean,
         parent_image_handle: Handle,
         device_path: *const DevicePathProtocol,
         source_buffer: *const u8,
@@ -140,7 +143,7 @@ pub struct BootServices {
         controller: Handle,
         driver_image: Handle,
         remaining_device_path: *const DevicePathProtocol,
-        recursive: bool,
+        recursive: Boolean,
     ) -> Status,
     pub disconnect_controller: unsafe extern "efiapi" fn(
         controller: Handle,
@@ -438,6 +441,8 @@ impl MemoryType {
 
     /// Construct a custom `MemoryType`. Values in the range `0x8000_0000..=0xffff_ffff` are free for use if you are
     /// an OS loader.
+    ///
+    /// **Warning**: Some EFI firmware versions (e.g., OVMF r11337) may crash or [behave incorrectly](https://wiki.osdev.org/UEFI#My_bootloader_hangs_if_I_use_user_defined_EFI_MEMORY_TYPE_values) when using a custom `MemoryType`.
     #[must_use]
     pub const fn custom(value: u32) -> Self {
         assert!(value >= 0x80000000);
@@ -484,3 +489,11 @@ pub enum Tpl: usize => {
 /// Note that this is not necessarily the processor's page size. The UEFI page
 /// size is always 4 KiB.
 pub const PAGE_SIZE: usize = 4096;
+
+newtype_enum! {
+    pub enum TimerDelay: i32 => {
+        CANCEL = 0,
+        PERIODIC = 1,
+        RELATIVE = 2,
+    }
+}
