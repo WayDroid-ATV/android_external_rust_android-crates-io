@@ -50,13 +50,18 @@ rust_library {
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
+        "attributes",
+        "default",
         "max_level_off",
         "release_max_level_off",
+        "std",
+        "tracing-attributes",
     ],
     rustlibs: [
         "libpin_project_lite",
         "libtracing_core",
     ],
+    proc_macros: ["libtracing_attributes"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
