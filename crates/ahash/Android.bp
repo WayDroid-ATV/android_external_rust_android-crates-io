@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "ahash",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.11",
+    cargo_pkg_version: "0.8.12",
     crate_root: "src/lib.rs",
     edition: "2018",
     arch: {
@@ -33,14 +33,16 @@ rust_library {
         "default",
         "getrandom",
         "runtime-rng",
-        "specialize",
         "std",
+    ],
+    cfgs: [
+        "specialize",
     ],
     rustlibs: [
         "libcfg_if",
-        "libgetrandom-0.2",
+        "libgetrandom",
         "libonce_cell",
-        "libzerocopy-0.7.35",
+        "libzerocopy",
     ],
     apex_available: [
         "//apex_available:platform",
