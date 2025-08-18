@@ -8,7 +8,7 @@
   },
   "run_cargo": false,
   "variants": [
-    {},
+    {"features": ["std"]},
     {
       "features": [],
       "generate_rulesmk": true,
