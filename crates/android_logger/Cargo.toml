@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "android_logger"
-version = "0.15.0"
+version = "0.15.1"
 authors = ["The android_logger Developers"]
 build = false
 autolib = false
@@ -47,9 +47,18 @@ targets = [
     "x86_64-linux-android",
 ]
 
+[features]
+android-api-30 = []
+default = ["regex"]
+regex = ["env_filter/regex"]
+
 [lib]
 name = "android_logger"
 path = "src/lib.rs"
+
+[[example]]
+name = "system_log_level_overrides"
+path = "examples/system_log_level_overrides.rs"
 
 [[test]]
 name = "config_log_level"
@@ -72,8 +81,3 @@ default-features = false
 
 [dependencies.log]
 version = "0.4"
-
-[features]
-android-api-30 = []
-default = ["regex"]
-regex = ["env_filter/regex"]
