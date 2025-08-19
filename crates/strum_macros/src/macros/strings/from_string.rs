@@ -53,8 +53,21 @@ pub fn from_string_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
                 return Err(occurrence_error(fst_kw, kw, "default"));
             }
 
+            default_kw = Some(kw);
+            default_err_ty = quote! { #strum_module_path::ParseError };
+
             match &variant.fields {
-                Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {}
+                Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
+                    default = quote! {
+                        ::core::result::Result::Ok(#name::#ident(s.into()))
+                    };
+                }
+                Fields::Named(ref f) if f.named.len() == 1 => {
+                    let field_name = f.named.last().unwrap().ident.as_ref().unwrap();
+                    default = quote! {
+                        ::core::result::Result::Ok(#name::#ident { #field_name : s.into() } )
+                    };
+                }
                 _ => {
                     return Err(syn::Error::new_spanned(
                         variant,
@@ -62,11 +75,7 @@ pub fn from_string_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
                     ))
                 }
             }
-            default_kw = Some(kw);
-            default_err_ty = quote! { #strum_module_path::ParseError };
-            default = quote! {
-                ::core::result::Result::Ok(#name::#ident(s.into()))
-            };
+
             continue;
         }
 
@@ -162,6 +171,7 @@ pub fn from_string_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
 
     let from_str = quote! {
         #[allow(clippy::use_self)]
+        #[automatically_derived]
         impl #impl_generics ::core::str::FromStr for #name #ty_generics #where_clause {
             type Err = #default_err_ty;
 
@@ -186,18 +196,6 @@ pub fn from_string_inner(ast: &DeriveInput) -> syn::Result<TokenStream> {
     })
 }
 
-#[rustversion::before(1.34)]
-fn try_from_str(
-    _name: &proc_macro2::Ident,
-    _impl_generics: &syn::ImplGenerics,
-    _ty_generics: &syn::TypeGenerics,
-    _where_clause: Option<&syn::WhereClause>,
-    _strum_module_path: &syn::Path,
-) -> TokenStream {
-    Default::default()
-}
-
-#[rustversion::since(1.34)]
 fn try_from_str(
     name: &proc_macro2::Ident,
     impl_generics: &syn::ImplGenerics,
@@ -207,6 +205,7 @@ fn try_from_str(
 ) -> TokenStream {
     quote! {
         #[allow(clippy::use_self)]
+        #[automatically_derived]
         impl #impl_generics ::core::convert::TryFrom<&str> for #name #ty_generics #where_clause {
             type Error = #default_err_ty;
 
