@@ -2,6 +2,7 @@
   "cfg_blocklist": [
     "std_atomic64"
   ],
+  "sdk_version": "29",
   "min_sdk_version": "29",
   "run_cargo": false,
   "ramdisk_available": true,

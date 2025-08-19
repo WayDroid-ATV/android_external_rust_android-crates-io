@@ -1,4 +1,5 @@
 {
+  "run_cargo": false,
   "features": [
     "alloc",
     "unicode_bidi",
@@ -13,5 +14,6 @@
     }
   },
   "native_bridge_supported": true,
+  "sdk_version": "29",
   "min_sdk_version": "29"
 }

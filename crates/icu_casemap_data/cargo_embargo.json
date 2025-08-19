@@ -8,5 +8,6 @@
       "add_module_block": "icu_casemap_data.bp.fragment"
     }
   },
+  "sdk_version": "29",
   "min_sdk_version": "29"
 }

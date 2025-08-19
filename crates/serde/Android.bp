@@ -45,6 +45,7 @@ rust_library {
     vendor_ramdisk_available: true,
     ramdisk_available: true,
     min_sdk_version: "29",
+    sdk_version: "29",
 }
 
 rust_test {
@@ -112,6 +113,7 @@ rust_library_rlib {
     vendor_ramdisk_available: true,
     ramdisk_available: true,
     min_sdk_version: "29",
+    sdk_version: "29",
 }
 
 dirgroup {

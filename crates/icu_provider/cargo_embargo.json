@@ -1,4 +1,5 @@
 {
+  "run_cargo": false,
   "features": [
     "alloc"
   ],
@@ -11,5 +12,7 @@
       "add_module_block": "icu4x_bionic_dep.bp.fragment"
     }
   },
+  "run_cargo": false,
+  "sdk_version": "29",
   "min_sdk_version": "29"
 }
