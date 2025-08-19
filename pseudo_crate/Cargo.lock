@@ -566,7 +566,7 @@ dependencies = [
  "untrusted 0.7.1",
  "url",
  "userfaultfd",
- "userfaultfd-sys",
+ "userfaultfd-sys 0.6.0",
  "utf-8",
  "uuid",
  "vhost",
@@ -1054,6 +1054,26 @@ dependencies = [
  "lazy_static",
  "lazycell",
  "peeking_take_while",
+ "proc-macro2 1.0.96",
+ "quote 1.0.40",
+ "regex",
+ "rustc-hash 1.1.0",
+ "shlex",
+ "syn 2.0.104",
+]
+
+[[package]]
+name = "bindgen"
+version = "0.69.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "271383c67ccabffb7381723dea0672a673f292304fcb45c01cc648c7a8d58088"
+dependencies = [
+ "bitflags 2.9.2",
+ "cexpr",
+ "clang-sys",
+ "itertools 0.12.1",
+ "lazy_static",
+ "lazycell",
  "proc-macro2 1.0.96",
  "quote 1.0.40",
  "regex",
@@ -2492,7 +2512,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "778e2ac28f6c47af28e4907f13ffd1e1ddbd400980a9abd7c8df189bf578a5ad"
 dependencies = [
  "libc 0.2.171",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -4432,7 +4452,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.6",
+ "windows-targets 0.53.3",
 ]
 
 [[package]]
@@ -8106,7 +8126,7 @@ dependencies = [
  "libc 0.2.171",
  "nix 0.27.1",
  "thiserror 1.0.49",
- "userfaultfd-sys",
+ "userfaultfd-sys 0.5.0",
 ]
 
 [[package]]
@@ -8116,6 +8136,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d75595d2a62b7db16bd47f5a1ce14e1fe05ccbe27d6c96721a958e0a027cad41"
 dependencies = [
  "bindgen 0.68.1",
+ "cc",
+ "cfg-if",
+]
+
+[[package]]
+name = "userfaultfd-sys"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc91d95a797a81604af22946d0e86656f27feb0b9665c60665cf3554df12d1a8"
+dependencies = [
+ "bindgen 0.69.5",
  "cc",
  "cfg-if",
 ]

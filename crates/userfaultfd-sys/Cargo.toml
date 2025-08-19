@@ -12,25 +12,36 @@
 [package]
 edition = "2018"
 name = "userfaultfd-sys"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["The Wasmtime Project Developers"]
 build = "build.rs"
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Low-level bindings for userfaultfd functionality on Linux."
+readme = false
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bytecodealliance/userfaultfd-rs"
+
+[features]
+default = []
+linux4_14 = []
+linux5_13 = ["linux5_7"]
+linux5_7 = ["linux4_14"]
+
+[lib]
+name = "userfaultfd_sys"
+path = "src/lib.rs"
 
 [dependencies.cfg-if]
 version = "^1.0.0"
 
 [build-dependencies.bindgen]
-version = "^0.68.1"
+version = "^0.69.2"
 features = ["runtime"]
 default-features = false
 
 [build-dependencies.cc]
 version = "1.0"
-
-[features]
-default = []
-linux4_14 = []
-linux5_7 = []
