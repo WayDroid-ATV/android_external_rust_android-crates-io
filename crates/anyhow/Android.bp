@@ -39,7 +39,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_test {
@@ -69,7 +68,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_test {
@@ -99,7 +97,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_test {
@@ -129,7 +126,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_test {
@@ -159,7 +155,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_test {
@@ -189,7 +184,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_test {
@@ -219,7 +213,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_test {
@@ -249,7 +242,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_test {
@@ -279,7 +271,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_test {
@@ -309,7 +300,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_test {
@@ -339,7 +329,6 @@ rust_test {
             enabled: true,
         },
     },
-
 }
 
 rust_library {
@@ -354,6 +343,11 @@ rust_library {
         "default",
         "std",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -361,10 +355,4 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-    target: {
-        windows: {
-            enabled: true,
-        },
-    },
-
 }

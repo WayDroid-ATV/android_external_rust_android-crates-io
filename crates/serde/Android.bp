@@ -29,6 +29,11 @@ rust_library {
         "std",
     ],
     proc_macros: ["libserde_derive"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -40,11 +45,6 @@ rust_library {
     vendor_ramdisk_available: true,
     ramdisk_available: true,
     min_sdk_version: "29",
-    target: {
-        windows: {
-            enabled: true,
-        },
-    },
 }
 
 rust_test {
@@ -89,6 +89,11 @@ rust_library_rlib {
         "serde_derive",
     ],
     proc_macros: ["libserde_derive"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -107,11 +112,6 @@ rust_library_rlib {
     vendor_ramdisk_available: true,
     ramdisk_available: true,
     min_sdk_version: "29",
-    target: {
-        windows: {
-            enabled: true,
-        },
-    },
 }
 
 dirgroup {

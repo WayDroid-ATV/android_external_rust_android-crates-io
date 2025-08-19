@@ -3,13 +3,13 @@
   "min_sdk_version": "29",
   "package": {
     "anyhow": {
-      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment",
       "dep_blocklist": [
         "libbacktrace_rust",
         "librustversion",
         "libsyn",
         "libtrybuild"
-      ]
+      ],
+      "target_windows": true
     }
   },
   "cfg_blocklist": [

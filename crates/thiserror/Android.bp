@@ -23,6 +23,11 @@ rust_library {
     edition: "2021",
     features: ["std"],
     proc_macros: ["libthiserror_impl"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
     apex_available: [
         "//apex_available:anyapex",
         "//apex_available:platform",
@@ -30,12 +35,6 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-    target: {
-        windows: {
-            enabled: true,
-        },
-    },
-
 }
 
 rust_library_rlib {
@@ -47,6 +46,11 @@ rust_library_rlib {
     crate_root: "src/lib.rs",
     edition: "2021",
     proc_macros: ["libthiserror_impl"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
     apex_available: [
         "//apex_available:anyapex",
         "//apex_available:platform",
@@ -60,12 +64,6 @@ rust_library_rlib {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-    target: {
-        windows: {
-            enabled: true,
-        },
-    },
-
 }
 
 dirgroup {

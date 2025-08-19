@@ -12,7 +12,7 @@
   "tests": true,
   "package": {
     "bytes": {
-      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
+      "target_windows": true
     }
   }
 }
