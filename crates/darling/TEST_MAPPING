@@ -13,6 +13,9 @@
       "name": "darling_test_tests_custom_bound"
     },
     {
+      "name": "darling_test_tests_data_with"
+    },
+    {
       "name": "darling_test_tests_defaults"
     },
     {
@@ -61,10 +64,16 @@
       "name": "darling_test_tests_generics"
     },
     {
+      "name": "darling_test_tests_generics_with"
+    },
+    {
       "name": "darling_test_tests_happy_path"
     },
     {
       "name": "darling_test_tests_hash_map"
+    },
+    {
+      "name": "darling_test_tests_meta_with"
     },
     {
       "name": "darling_test_tests_multiple"
@@ -74,6 +83,9 @@
     },
     {
       "name": "darling_test_tests_skip"
+    },
+    {
+      "name": "darling_test_tests_spanned_value"
     },
     {
       "name": "darling_test_tests_split_declaration"

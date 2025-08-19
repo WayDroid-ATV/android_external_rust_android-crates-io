@@ -7,9 +7,15 @@ use syn::{Ident, Meta};
 
 use crate::{FromMeta, Result};
 
+#[cfg(feature = "serde")]
+mod serde;
+
 /// A wrapper for an `Ident` which also keeps the value as a string.
 ///
 /// This struct can be used to perform string comparisons and operations.
+///
+/// With the optional `serde` feature, this will be serialized as a string and
+/// supports being deserialized from a string.
 #[derive(Clone, PartialOrd, Ord)]
 pub struct IdentString {
     ident: Ident,
@@ -99,7 +105,7 @@ impl PartialEq<String> for IdentString {
     }
 }
 
-impl<'a> PartialEq<&'a str> for IdentString {
+impl PartialEq<&str> for IdentString {
     fn eq(&self, rhs: &&str) -> bool {
         self.as_str() == *rhs
     }

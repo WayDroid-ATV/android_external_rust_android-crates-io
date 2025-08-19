@@ -18,7 +18,7 @@ rust_library_host {
     host_cross_supported: false,
     crate_name: "darling_core",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.20.10",
+    cargo_pkg_version: "0.21.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
