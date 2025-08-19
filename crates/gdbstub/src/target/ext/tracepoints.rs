@@ -18,6 +18,8 @@
 use crate::target::Arch;
 use crate::target::Target;
 use crate::target::TargetResult;
+#[cfg(feature = "alloc")]
+use alloc::borrow::ToOwned;
 use managed::ManagedSlice;
 
 /// A tracepoint, identified by a unique number.
