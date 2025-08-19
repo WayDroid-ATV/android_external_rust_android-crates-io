@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "unicode_bidi",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.15",
+    cargo_pkg_version: "0.3.18",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
@@ -45,7 +45,7 @@ rust_test {
     host_supported: true,
     crate_name: "unicode_bidi",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.15",
+    cargo_pkg_version: "0.3.18",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
