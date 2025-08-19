@@ -1,0 +1,17 @@
+name: "windows_x86_64_gnu"
+description: "Import lib for Windows"
+third_party {
+  version: "0.53.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 8
+    day: 18
+  }
+  homepage: "https://crates.io/crates/windows_x86_64_gnu"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/windows_x86_64_gnu/windows_x86_64_gnu-0.53.0.crate"
+    version: "0.53.0"
+  }
+}
