@@ -1,17 +1,17 @@
 name: "serde_json"
 description: "A JSON serialization file format"
 third_party {
-  version: "1.0.142"
+  version: "1.0.143"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
     month: 8
-    day: 1
+    day: 19
   }
   homepage: "https://crates.io/crates/serde_json"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/serde_json/serde_json-1.0.142.crate"
-    version: "1.0.142"
+    value: "https://static.crates.io/crates/serde_json/serde_json-1.0.143.crate"
+    version: "1.0.143"
   }
 }
