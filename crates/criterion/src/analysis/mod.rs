@@ -111,7 +111,7 @@ pub(crate) fn common<M: Measurement, T: ?Sized>(
 
     criterion.report.analysis(id, report_context);
 
-    if times.iter().any(|&f| f == 0.0) {
+    if times.contains(&0.0) {
         error!(
             "At least one measurement of benchmark {} took zero time per \
             iteration. This should not be possible. If using iter_custom, please verify \
@@ -222,7 +222,7 @@ pub(crate) fn common<M: Measurement, T: ?Sized>(
     };
 
     let measurement_data = crate::report::MeasurementData {
-        data: Data::new(&*iters, &*times),
+        data: Data::new(&iters, &times),
         avg_times: labeled_sample,
         absolute_estimates: estimates,
         distributions,

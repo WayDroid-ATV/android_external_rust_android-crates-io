@@ -1,8 +1,7 @@
 use super::*;
 use crate::estimate::Estimate;
 use crate::estimate::Statistic;
-use crate::measurement::ValueFormatter;
-use crate::report::{BenchmarkId, MeasurementData, ReportContext};
+use crate::report::ReportContext;
 use crate::stats::Distribution;
 
 fn abs_distribution(
@@ -85,11 +84,11 @@ fn abs_distribution(
     chart
         .draw_series(LineSeries::new(
             kde_xs.iter().zip(ys.iter()).map(|(&x, &y)| (x, y)),
-            &DARK_BLUE,
+            DARK_BLUE,
         ))
         .unwrap()
         .label("Bootstrap distribution")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &DARK_BLUE));
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], DARK_BLUE));
 
     chart
         .draw_series(AreaSeries::new(
@@ -115,7 +114,7 @@ fn abs_distribution(
         )))
         .unwrap()
         .label("Point estimate")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &DARK_BLUE));
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], DARK_BLUE));
 
     chart
         .configure_series_labels()
@@ -150,8 +149,8 @@ pub(crate) fn abs_distributions(
                 distribution,
                 estimate,
                 size,
-            )
-        })
+            );
+        });
 }
 
 fn rel_distribution(
@@ -240,11 +239,11 @@ fn rel_distribution(
     chart
         .draw_series(LineSeries::new(
             xs.iter().zip(ys.iter()).map(|(x, y)| (*x, *y)),
-            &DARK_BLUE,
+            DARK_BLUE,
         ))
         .unwrap()
         .label("Bootstrap distribution")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &DARK_BLUE));
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], DARK_BLUE));
 
     chart
         .draw_series(AreaSeries::new(
@@ -269,7 +268,7 @@ fn rel_distribution(
         )))
         .unwrap()
         .label("Point estimate")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &DARK_BLUE));
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], DARK_BLUE));
 
     chart
         .draw_series(std::iter::once(Rectangle::new(
@@ -304,6 +303,6 @@ pub(crate) fn rel_distributions(
             comparison.relative_estimates.get(statistic),
             comparison.noise_threshold,
             size,
-        )
+        );
     });
 }

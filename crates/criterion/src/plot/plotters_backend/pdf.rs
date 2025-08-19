@@ -1,8 +1,6 @@
 use super::*;
-use crate::measurement::ValueFormatter;
-use crate::report::{BenchmarkId, ComparisonData, MeasurementData, ReportContext};
+use crate::report::ReportContext;
 use plotters::data;
-use plotters::style::RGBAColor;
 use std::path::Path;
 
 pub(crate) fn pdf_comparison_figure(
@@ -38,7 +36,7 @@ pub(crate) fn pdf_comparison_figure(
     let y_range = data::fitting_range(base_ys.iter().chain(ys.iter()));
 
     let size = size.unwrap_or(SIZE);
-    let root_area = SVGBackend::new(&path, (size.0 as u32, size.1 as u32)).into_drawing_area();
+    let root_area = SVGBackend::new(&path, (size.0, size.1)).into_drawing_area();
 
     let mut cb = ChartBuilder::on(&root_area);
 
@@ -93,7 +91,7 @@ pub(crate) fn pdf_comparison_figure(
         )))
         .unwrap()
         .label("Base Mean")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &DARK_RED));
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], DARK_RED));
 
     chart
         .draw_series(std::iter::once(PathElement::new(
@@ -102,7 +100,7 @@ pub(crate) fn pdf_comparison_figure(
         )))
         .unwrap()
         .label("New Mean")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &DARK_BLUE));
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], DARK_BLUE));
 
     if title.is_some() {
         chart.configure_series_labels().draw().unwrap();
@@ -132,7 +130,7 @@ pub(crate) fn pdf_small(
     let path = context.report_path(id, "pdf_small.svg");
 
     let size = size.unwrap_or(SIZE);
-    let root_area = SVGBackend::new(&path, (size.0 as u32, size.1 as u32)).into_drawing_area();
+    let root_area = SVGBackend::new(&path, (size.0, size.1)).into_drawing_area();
 
     let mut chart = ChartBuilder::on(&root_area)
         .margin((5).percent())
@@ -208,7 +206,7 @@ pub(crate) fn pdf(
     let xs_ = Sample::new(&xs);
 
     let size = size.unwrap_or(SIZE);
-    let root_area = SVGBackend::new(&path, (size.0 as u32, size.1 as u32)).into_drawing_area();
+    let root_area = SVGBackend::new(&path, (size.0, size.1)).into_drawing_area();
 
     let range = data::fitting_range(ys.iter());
 
@@ -255,18 +253,18 @@ pub(crate) fn pdf(
     chart
         .draw_series(std::iter::once(PathElement::new(
             vec![(mean, 0.0), (mean, max_iters)],
-            &DARK_BLUE,
+            DARK_BLUE,
         )))
         .unwrap()
         .label("Mean")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &DARK_BLUE));
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], DARK_BLUE));
 
     chart
         .draw_series(vec![
-            PathElement::new(vec![(lomt, 0.0), (lomt, max_iters)], &DARK_ORANGE),
-            PathElement::new(vec![(himt, 0.0), (himt, max_iters)], &DARK_ORANGE),
-            PathElement::new(vec![(lost, 0.0), (lost, max_iters)], &DARK_RED),
-            PathElement::new(vec![(hist, 0.0), (hist, max_iters)], &DARK_RED),
+            PathElement::new(vec![(lomt, 0.0), (lomt, max_iters)], DARK_ORANGE),
+            PathElement::new(vec![(himt, 0.0), (himt, max_iters)], DARK_ORANGE),
+            PathElement::new(vec![(lost, 0.0), (lost, max_iters)], DARK_RED),
+            PathElement::new(vec![(hist, 0.0), (hist, max_iters)], DARK_RED),
         ])
         .unwrap();
     use crate::stats::univariate::outliers::tukey::Label;

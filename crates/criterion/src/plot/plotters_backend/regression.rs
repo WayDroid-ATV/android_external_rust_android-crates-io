@@ -4,7 +4,6 @@ use std::path::Path;
 
 use crate::estimate::{ConfidenceInterval, Estimate};
 use crate::stats::bivariate::regression::Slope;
-use crate::stats::bivariate::Data;
 
 pub(crate) fn regression_figure(
     title: Option<&str>,
@@ -61,7 +60,7 @@ pub(crate) fn regression_figure(
         .x_desc(x_label)
         .y_desc(format!("Total sample time ({})", unit))
         .x_label_formatter(&|x| pretty_print_float(x * x_scale, true))
-        .light_line_style(&TRANSPARENT)
+        .light_line_style(TRANSPARENT)
         .draw()
         .unwrap();
 
@@ -79,7 +78,7 @@ pub(crate) fn regression_figure(
     chart
         .draw_series(std::iter::once(PathElement::new(
             vec![(0.0, 0.0), (max_iters, point)],
-            &DARK_BLUE,
+            DARK_BLUE,
         )))
         .unwrap()
         .label("Linear regression")
@@ -187,13 +186,13 @@ pub(crate) fn regression_comparison_figure(
         .x_desc(x_label)
         .y_desc(format!("Total sample time ({})", unit))
         .x_label_formatter(&|x| pretty_print_float(x * x_scale, true))
-        .light_line_style(&TRANSPARENT)
+        .light_line_style(TRANSPARENT)
         .draw()
         .unwrap();
 
     chart
         .draw_series(vec![
-            PathElement::new(vec![(0.0, 0.0), (max_iters, base_point)], &DARK_RED).into_dyn(),
+            PathElement::new(vec![(0.0, 0.0), (max_iters, base_point)], DARK_RED).into_dyn(),
             Polygon::new(
                 vec![(0.0, 0.0), (max_iters, base_lb), (max_iters, base_ub)],
                 DARK_RED.mix(0.25).filled(),
@@ -208,7 +207,7 @@ pub(crate) fn regression_comparison_figure(
 
     chart
         .draw_series(vec![
-            PathElement::new(vec![(0.0, 0.0), (max_iters, point)], &DARK_BLUE).into_dyn(),
+            PathElement::new(vec![(0.0, 0.0), (max_iters, point)], DARK_BLUE).into_dyn(),
             Polygon::new(
                 vec![(0.0, 0.0), (max_iters, lb), (max_iters, ub)],
                 DARK_BLUE.mix(0.25).filled(),

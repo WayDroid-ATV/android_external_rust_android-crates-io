@@ -32,7 +32,7 @@ impl AxisScale {
     }
 }
 
-#[cfg_attr(feature = "cargo-clippy", allow(clippy::explicit_counter_loop))]
+#[allow(clippy::explicit_counter_loop)]
 pub fn line_comparison(
     formatter: &dyn ValueFormatter,
     title: &str,
@@ -47,6 +47,7 @@ pub fn line_comparison(
     let input_suffix = match value_type {
         ValueType::Bytes => " Size (Bytes)",
         ValueType::Elements => " Size (Elements)",
+        ValueType::Bits => " Size (Bits)",
         ValueType::Value => "",
     };
 
@@ -67,8 +68,8 @@ pub fn line_comparison(
 
     let max = all_curves
         .iter()
-        .map(|&&(_, ref data)| Sample::new(data).mean())
-        .fold(::std::f64::NAN, f64::max);
+        .map(|&(_, data)| Sample::new(data).mean())
+        .fold(f64::NAN, f64::max);
 
     let mut dummy = [1.0];
     let unit = formatter.scale_values(max, &mut dummy);
@@ -83,7 +84,7 @@ pub fn line_comparison(
     // This assumes the curves are sorted. It also assumes that the benchmark IDs all have numeric
     // values or throughputs and that value is sensible (ie. not a mix of bytes and elements
     // or whatnot)
-    for (key, group) in &all_curves.iter().group_by(|&&&(id, _)| &id.function_id) {
+    for (key, group) in &all_curves.iter().chunk_by(|&&&(id, _)| &id.function_id) {
         let mut tuples: Vec<_> = group
             .map(|&&(id, ref sample)| {
                 // Unwrap is fine here because it will only fail if the assumptions above are not true
@@ -130,11 +131,11 @@ pub fn violin(
 ) -> Child {
     let path = PathBuf::from(&path);
     let all_curves_vec = all_curves.iter().rev().cloned().collect::<Vec<_>>();
-    let all_curves: &[&(&BenchmarkId, Vec<f64>)] = &*all_curves_vec;
+    let all_curves: &[&(&BenchmarkId, Vec<f64>)] = &all_curves_vec;
 
     let kdes = all_curves
         .iter()
-        .map(|&&(_, ref sample)| {
+        .map(|&(_, sample)| {
             let (x, mut y) = kde::sweep(Sample::new(sample), KDE_POINTS, None);
             let y_max = Sample::new(&y).max();
             for y in y.iter_mut() {
@@ -144,10 +145,7 @@ pub fn violin(
             (x, y)
         })
         .collect::<Vec<_>>();
-    let mut xs = kdes
-        .iter()
-        .flat_map(|&(ref x, _)| x.iter())
-        .filter(|&&x| x > 0.);
+    let mut xs = kdes.iter().flat_map(|(x, _)| x.iter()).filter(|&&x| x > 0.);
     let (mut min, mut max) = {
         let &first = xs.next().unwrap();
         (first, first)
@@ -174,7 +172,7 @@ pub fn violin(
         .configure(Axis::BottomX, |a| {
             a.configure(Grid::Major, |g| g.show())
                 .configure(Grid::Minor, |g| g.hide())
-                .set(Range::Limits(0., max as f64 * one[0]))
+                .set(Range::Limits(0., max * one[0]))
                 .set(Label(format!("Average time ({})", unit)))
                 .set(axis_scale.to_gnuplot())
         })
@@ -190,7 +188,7 @@ pub fn violin(
         });
 
     let mut is_first = true;
-    for (i, &(ref x, ref y)) in kdes.iter().enumerate() {
+    for (i, (x, y)) in kdes.iter().enumerate() {
         let i = i as f64 + 0.5;
         let y1: Vec<_> = y.iter().map(|&y| i + y * 0.45).collect();
         let y2: Vec<_> = y.iter().map(|&y| i - y * 0.45).collect();

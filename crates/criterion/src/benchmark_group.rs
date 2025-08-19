@@ -16,8 +16,7 @@ use std::time::Duration;
 /// # Examples:
 ///
 /// ```no_run
-/// #[macro_use] extern crate criterion;
-/// use self::criterion::*;
+/// use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 /// use std::time::Duration;
 ///
 /// fn bench_simple(c: &mut Criterion) {
@@ -328,9 +327,9 @@ impl<'a, M: Measurement> BenchmarkGroup<'a, M> {
                     );
                 }
             }
-            Mode::List => {
+            Mode::List(_) => {
                 if do_run {
-                    println!("{}: bench", id);
+                    println!("{}: benchmark", id);
                 }
             }
             Mode::Test => {
@@ -392,7 +391,7 @@ impl<'a, M: Measurement> Drop for BenchmarkGroup<'a, M> {
                 self.criterion.measurement.formatter(),
             );
         }
-        if self.any_matched {
+        if self.any_matched && !self.criterion.mode.is_terse() {
             self.criterion.report.group_separator();
         }
     }

@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "criterion",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.0",
+    cargo_pkg_version: "0.7.0",
     crate_root: "src/lib.rs",
     srcs: [
         "src/html/benchmark_report.html.tt",
@@ -26,7 +26,7 @@ rust_library {
         "src/html/report_link.html.tt",
         "src/html/summary_report.html.tt",
     ],
-    edition: "2018",
+    edition: "2021",
     features: [
         "cargo_bench_support",
         "default",
@@ -35,13 +35,11 @@ rust_library {
     ],
     rustlibs: [
         "libanes",
-        "libatty",
         "libcast",
         "libciborium",
-        "libclap_3.2.23",
+        "libclap",
         "libcriterion_plot",
         "libitertools",
-        "liblazy_static",
         "libnum_traits",
         "liboorandom",
         "libplotters",
@@ -52,7 +50,6 @@ rust_library {
         "libtinytemplate",
         "libwalkdir",
     ],
-    proc_macros: ["libserde_derive"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

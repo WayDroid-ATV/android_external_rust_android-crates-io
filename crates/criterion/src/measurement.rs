@@ -1,7 +1,6 @@
 //! This module defines a set of traits that can be used to plug different measurements (eg.
 //! Unix's Processor Time, CPU or GPU performance counters, etc.) into Criterion.rs. It also
-//! includes the [WallTime](struct.WallTime.html) struct which defines the default wall-clock time
-//! measurement.
+//! includes the [`WallTime`] struct which defines the default wall-clock time measurement.
 
 use crate::format::short;
 use crate::Throughput;
@@ -10,13 +9,13 @@ use std::time::{Duration, Instant};
 /// Trait providing functions to format measured values to string so that they can be displayed on
 /// the command line or in the reports. The functions of this trait take measured values in f64
 /// form; implementors can assume that the values are of the same scale as those produced by the
-/// associated [MeasuredValue](trait.MeasuredValue.html) (eg. if your measurement produces values in
-/// nanoseconds, the values passed to the formatter will be in nanoseconds).
+/// associated [`Measurement`] (eg. if your measurement produces values in nanoseconds, the
+/// values passed to the formatter will be in nanoseconds).
 ///
 /// Implementors are encouraged to format the values in a way that is intuitive for humans and
-/// uses the SI prefix system. For example, the format used by [WallTime](struct.WallTime.html)
-/// can display the value in units ranging from picoseconds to seconds depending on the magnitude
-/// of the elapsed time in nanoseconds.
+/// uses the SI prefix system. For example, the format used by [`WallTime`] can display the value
+/// in units ranging from picoseconds to seconds depending on the magnitude of the elapsed time
+/// in nanoseconds.
 pub trait ValueFormatter {
     /// Format the value (with appropriate unit) and return it as a string.
     fn format_value(&self, value: f64) -> String {
@@ -64,8 +63,7 @@ pub trait ValueFormatter {
 }
 
 /// Trait for all types which define something Criterion.rs can measure. The only measurement
-/// currently provided is [WallTime](struct.WallTime.html), but third party crates or benchmarks
-/// may define more.
+/// currently provided is [`WallTime`], but third party crates or benchmarks may define more.
 ///
 /// This trait defines two core methods, `start` and `end`. `start` is called at the beginning of
 /// a measurement to produce some intermediate value (for example, the wall-clock time at the start
@@ -168,6 +166,26 @@ impl DurationFormatter {
 
         unit
     }
+
+    fn bits_per_second(&self, bits: f64, typical: f64, values: &mut [f64]) -> &'static str {
+        let bits_per_second = bits * (1e9 / typical);
+        let (denominator, unit) = if bits_per_second < 1000.0 {
+            (1.0, "  b/s")
+        } else if bits_per_second < 1000.0 * 1000.0 {
+            (1000.0, "Kb/s")
+        } else if bits_per_second < 1000.0 * 1000.0 * 1000.0 {
+            (1000.0 * 1000.0, "Mb/s")
+        } else {
+            (1000.0 * 1000.0 * 1000.0, "Gb/s")
+        };
+
+        for val in values {
+            let bits_per_second = bits * (1e9 / *val);
+            *val = bits_per_second / denominator;
+        }
+
+        unit
+    }
 }
 impl ValueFormatter for DurationFormatter {
     fn scale_throughputs(
@@ -182,6 +200,7 @@ impl ValueFormatter for DurationFormatter {
                 self.bytes_per_second_decimal(bytes as f64, typical, values)
             }
             Throughput::Elements(elems) => self.elements_per_second(elems as f64, typical, values),
+            Throughput::Bits(bits) => self.bits_per_second(bits as f64, typical, values),
         }
     }
 

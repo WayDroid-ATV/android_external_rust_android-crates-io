@@ -438,7 +438,7 @@ impl Report for Html {
 
         // If all of the value strings can be parsed into a number, sort/dedupe
         // numerically. Otherwise sort lexicographically.
-        if value_strs.iter().all(|os| try_parse(*os).is_some()) {
+        if value_strs.iter().all(|os| try_parse(os).is_some()) {
             value_strs.sort_unstable_by(|v1, v2| {
                 let num1 = try_parse(v1);
                 let num2 = try_parse(v2);
@@ -464,7 +464,7 @@ impl Report for Html {
 
                 self.generate_summary(
                     &subgroup_id,
-                    &*samples_with_function,
+                    &samples_with_function,
                     context,
                     formatter,
                     false,
@@ -483,13 +483,7 @@ impl Report for Html {
                 let subgroup_id =
                     BenchmarkId::new(group_id.clone(), None, Some(value_str.clone()), None);
 
-                self.generate_summary(
-                    &subgroup_id,
-                    &*samples_with_value,
-                    context,
-                    formatter,
-                    false,
-                );
+                self.generate_summary(&subgroup_id, &samples_with_value, context, formatter, false);
             }
         }
 
@@ -516,7 +510,7 @@ impl Report for Html {
 
         self.generate_summary(
             &BenchmarkId::new(group_id, None, None, None),
-            &*(all_data),
+            &all_data,
             context,
             formatter,
             true,
@@ -536,15 +530,12 @@ impl Report for Html {
         // Group IDs by group id
         let mut id_groups: HashMap<&str, Vec<&BenchmarkId>> = HashMap::new();
         for id in found_ids.iter() {
-            id_groups
-                .entry(&id.group_id)
-                .or_insert_with(Vec::new)
-                .push(id);
+            id_groups.entry(&id.group_id).or_default().push(id);
         }
 
         let mut groups = id_groups
-            .into_iter()
-            .map(|(_, group)| BenchmarkGroup::new(output_directory, &group))
+            .into_values()
+            .map(|group| BenchmarkGroup::new(output_directory, &group))
             .collect::<Vec<BenchmarkGroup<'_>>>();
         groups.sort_unstable_by_key(|g| g.group_report.name);
 
@@ -727,7 +718,7 @@ impl Html {
                     try_else_return!(fs::load(&entry.join("sample.json")), || None);
                 let avg_times = iters
                     .into_iter()
-                    .zip(times.into_iter())
+                    .zip(times)
                     .map(|(iters, time)| time / iters)
                     .collect::<Vec<_>>();
 

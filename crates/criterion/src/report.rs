@@ -11,6 +11,7 @@ use crate::stats::univariate::Sample;
 use crate::stats::Distribution;
 use crate::{PlotConfiguration, Throughput};
 use anes::{Attribute, ClearLine, Color, ResetAttributes, SetAttribute, SetForegroundColor};
+use serde::{Deserialize, Serialize};
 use std::cmp;
 use std::collections::HashSet;
 use std::fmt;
@@ -58,6 +59,7 @@ impl<'a> MeasurementData<'a> {
 pub enum ValueType {
     Bytes,
     Elements,
+    Bits,
     Value,
 }
 
@@ -116,9 +118,9 @@ impl BenchmarkId {
         throughput: Option<Throughput>,
     ) -> BenchmarkId {
         let full_id = match (&function_id, &value_str) {
-            (&Some(ref func), &Some(ref val)) => format!("{}/{}/{}", group_id, func, val),
-            (&Some(ref func), &None) => format!("{}/{}", group_id, func),
-            (&None, &Some(ref val)) => format!("{}/{}", group_id, val),
+            (Some(func), Some(val)) => format!("{}/{}/{}", group_id, func, val),
+            (Some(func), &None) => format!("{}/{}", group_id, func),
+            (&None, Some(val)) => format!("{}/{}", group_id, val),
             (&None, &None) => group_id.clone(),
         };
 
@@ -129,18 +131,18 @@ impl BenchmarkId {
         }
 
         let directory_name = match (&function_id, &value_str) {
-            (&Some(ref func), &Some(ref val)) => format!(
+            (Some(func), Some(val)) => format!(
                 "{}/{}/{}",
                 make_filename_safe(&group_id),
                 make_filename_safe(func),
                 make_filename_safe(val)
             ),
-            (&Some(ref func), &None) => format!(
+            (Some(func), &None) => format!(
                 "{}/{}",
                 make_filename_safe(&group_id),
                 make_filename_safe(func)
             ),
-            (&None, &Some(ref val)) => format!(
+            (&None, Some(val)) => format!(
                 "{}/{}",
                 make_filename_safe(&group_id),
                 make_filename_safe(val)
@@ -175,7 +177,8 @@ impl BenchmarkId {
         match self.throughput {
             Some(Throughput::Bytes(n))
             | Some(Throughput::Elements(n))
-            | Some(Throughput::BytesDecimal(n)) => Some(n as f64),
+            | Some(Throughput::BytesDecimal(n))
+            | Some(Throughput::Bits(n)) => Some(n as f64),
             None => self
                 .value_str
                 .as_ref()
@@ -188,6 +191,7 @@ impl BenchmarkId {
             Some(Throughput::Bytes(_)) => Some(ValueType::Bytes),
             Some(Throughput::BytesDecimal(_)) => Some(ValueType::Bytes),
             Some(Throughput::Elements(_)) => Some(ValueType::Elements),
+            Some(Throughput::Bits(_)) => Some(ValueType::Bits),
             None => self
                 .value_str
                 .as_ref()
@@ -395,12 +399,12 @@ impl CliReport {
 
     fn text_overwrite(&self) {
         if self.enable_text_overwrite {
-            eprint!("\r{}", ClearLine::All)
+            eprint!("\r{}", ClearLine::All);
         }
     }
 
     // Passing a String is the common case here.
-    #[cfg_attr(feature = "cargo-clippy", allow(clippy::needless_pass_by_value))]
+    #[allow(clippy::needless_pass_by_value)]
     fn print_overwritable(&self, s: String) {
         if self.enable_text_overwrite {
             eprint!("{}", s);
@@ -590,7 +594,7 @@ impl Report for CliReport {
                     throughput,
                     typical_estimate.confidence_interval.lower_bound
                 )),
-            )
+            );
         }
 
         if !matches!(self.verbosity, CliVerbosity::Quiet) {

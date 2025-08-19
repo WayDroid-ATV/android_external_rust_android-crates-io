@@ -3,6 +3,7 @@ use crate::measurement::ValueFormatter;
 use crate::report::{BenchmarkId, MeasurementData, Report, ReportContext};
 use crate::Throughput;
 use csv::Writer;
+use serde::Serialize;
 use std::io::Write;
 use std::path::Path;
 
@@ -35,12 +36,14 @@ impl<W: Write> CsvReportWriter<W> {
         let value = id.value_str.as_deref();
         let (throughput_num, throughput_type) = match id.throughput {
             Some(Throughput::Bytes(bytes)) => (Some(format!("{}", bytes)), Some("bytes")),
+            Some(Throughput::BytesDecimal(bytes)) => (Some(format!("{}", bytes)), Some("bytes")),
             Some(Throughput::Elements(elems)) => (Some(format!("{}", elems)), Some("elements")),
+            Some(Throughput::Bits(bits)) => (Some(format!("{}", bits)), Some("bits")),
             None => (None, None),
         };
         let throughput_num = throughput_num.as_deref();
 
-        for (count, measured_value) in data.iter_counts().iter().zip(data_scaled.into_iter()) {
+        for (count, measured_value) in data.iter_counts().iter().zip(data_scaled) {
             let row = CsvRow {
                 group,
                 function,
