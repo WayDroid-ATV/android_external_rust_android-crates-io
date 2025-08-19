@@ -18,7 +18,7 @@ rust_test {
     host_supported: true,
     crate_name: "libbz2_rs_sys",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.1",
+    cargo_pkg_version: "0.2.2",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -41,7 +41,7 @@ rust_library {
     host_supported: true,
     crate_name: "libbz2_rs_sys",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.1",
+    cargo_pkg_version: "0.2.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -68,7 +68,7 @@ rust_ffi_shared {
     host_supported: true,
     crate_name: "libbz2_rs_sys",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.1",
+    cargo_pkg_version: "0.2.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -95,7 +95,7 @@ rust_ffi_static {
     host_supported: true,
     crate_name: "libbz2_rs_sys",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.1",
+    cargo_pkg_version: "0.2.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
