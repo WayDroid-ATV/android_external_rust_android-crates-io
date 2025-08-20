@@ -12,8 +12,13 @@
 [package]
 edition = "2021"
 name = "protobuf-json-mapping"
-version = "3.2.0"
+version = "3.6.0"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = """
 JSON mapping for Protocol Buffers messages.
 """
@@ -27,13 +32,15 @@ repository = "https://github.com/stepancheg/rust-protobuf/"
 all-features = true
 
 [lib]
+name = "protobuf_json_mapping"
+path = "src/lib.rs"
 bench = false
 
 [dependencies.protobuf]
-version = "=3.2.0"
+version = "=3.6.0"
 
 [dependencies.protobuf-support]
-version = "=3.2.0"
+version = "=3.6.0"
 
 [dependencies.thiserror]
 version = "1.0.30"

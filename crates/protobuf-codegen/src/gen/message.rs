@@ -146,7 +146,7 @@ impl<'a> MessageGen<'a> {
             .collect()
     }
 
-    fn required_fields(&'a self) -> Vec<&'a FieldGen> {
+    fn required_fields(&'a self) -> Vec<&'a FieldGen<'a>> {
         self.fields
             .iter()
             .filter(|f| match f.kind {
@@ -156,14 +156,14 @@ impl<'a> MessageGen<'a> {
             .collect()
     }
 
-    fn message_fields(&'a self) -> Vec<&'a FieldGen> {
+    fn message_fields(&'a self) -> Vec<&'a FieldGen<'a>> {
         self.fields
             .iter()
             .filter(|f| f.proto_type == field_descriptor_proto::Type::TYPE_MESSAGE)
             .collect()
     }
 
-    fn fields_except_oneof(&'a self) -> Vec<&'a FieldGen> {
+    fn fields_except_oneof(&'a self) -> Vec<&'a FieldGen<'a>> {
         self.fields
             .iter()
             .filter(|f| match f.kind {
@@ -173,14 +173,14 @@ impl<'a> MessageGen<'a> {
             .collect()
     }
 
-    fn fields_except_group(&'a self) -> Vec<&'a FieldGen> {
+    fn fields_except_group(&'a self) -> Vec<&'a FieldGen<'a>> {
         self.fields
             .iter()
             .filter(|f| f.proto_type != field_descriptor_proto::Type::TYPE_GROUP)
             .collect()
     }
 
-    fn fields_except_oneof_and_group(&'a self) -> Vec<&'a FieldGen> {
+    fn fields_except_oneof_and_group(&'a self) -> Vec<&'a FieldGen<'a>> {
         self.fields
             .iter()
             .filter(|f| match f.kind {
@@ -568,17 +568,18 @@ impl<'a> MessageGen<'a> {
     }
 
     fn write_struct(&self, w: &mut CodeWriter) {
+        write_protoc_insertion_point_for_message(
+            w,
+            &self.customize.for_elem,
+            &self.message_descriptor,
+        );
         let mut derive = Vec::new();
         if self.supports_derive_partial_eq() {
             derive.push("PartialEq");
         }
         derive.extend(&["Clone", "Default", "Debug"]);
         w.derive(&derive);
-        write_protoc_insertion_point_for_message(
-            w,
-            &self.customize.for_elem,
-            &self.message_descriptor,
-        );
+
         w.pub_struct(&format!("{}", self.rust_name()), |w| {
             if !self.fields_except_oneof().is_empty() {
                 w.comment("message fields");

@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "protobuf_json_mapping",
     cargo_env_compat: true,
-    cargo_pkg_version: "3.2.0",
+    cargo_pkg_version: "3.6.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
@@ -40,7 +40,7 @@ rust_test {
     host_supported: true,
     crate_name: "protobuf_json_mapping",
     cargo_env_compat: true,
-    cargo_pkg_version: "3.2.0",
+    cargo_pkg_version: "3.6.0",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,

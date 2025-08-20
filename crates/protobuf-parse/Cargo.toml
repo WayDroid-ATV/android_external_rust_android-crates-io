@@ -12,8 +12,13 @@
 [package]
 edition = "2021"
 name = "protobuf-parse"
-version = "3.2.0"
+version = "3.6.0"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = """
 Parse `.proto` files.
 
@@ -30,6 +35,8 @@ repository = "https://github.com/stepancheg/rust-protobuf/tree/master/protobuf-p
 all-features = true
 
 [lib]
+name = "protobuf_parse"
+path = "src/lib.rs"
 doctest = false
 
 [[bin]]
@@ -37,20 +44,28 @@ name = "parse-and-typecheck"
 path = "src/bin/parse-and-typecheck.rs"
 test = false
 
+[[example]]
+name = "file-descriptor-out-compare"
+path = "examples/file-descriptor-out-compare.rs"
+
+[[test]]
+name = "bundled_proto_consistent"
+path = "tests/bundled_proto_consistent.rs"
+
 [dependencies.anyhow]
 version = "1.0.53"
 
 [dependencies.indexmap]
-version = "1.8.0"
+version = "2.0.0"
 
 [dependencies.log]
 version = "0.4"
 
 [dependencies.protobuf]
-version = "=3.2.0"
+version = "=3.6.0"
 
 [dependencies.protobuf-support]
-version = "=3.2.0"
+version = "=3.6.0"
 
 [dependencies.tempfile]
 version = "3.2.0"

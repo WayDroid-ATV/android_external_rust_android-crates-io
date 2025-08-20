@@ -90,7 +90,7 @@ impl LookupScope2 {
         match self.messages().iter().find(|m| m.name() == name.as_str()) {
             Some(m) => {
                 let mut path = self.current_path();
-                path.push_simple(name.clone());
+                path.push_simple(name);
                 Some(LookupScope2::Message(m.clone(), path))
             }
             None => None,
@@ -170,7 +170,7 @@ impl LookupScopeUnion2 {
 pub(crate) trait ProtobufOptions {
     fn by_name(&self, name: &str) -> Option<&model::ProtobufConstant>;
 
-    fn by_name_bool(&self, name: &str) -> anyhow::Result<Option<bool>> {
+    fn _by_name_bool(&self, name: &str) -> anyhow::Result<Option<bool>> {
         match self.by_name(name) {
             Some(model::ProtobufConstant::Bool(b)) => Ok(Some(*b)),
             Some(c) => Err(OptionResolverError::WrongOptionType("bool", c.to_string()).into()),

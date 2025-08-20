@@ -1,4 +1,3 @@
-use std::default::Default;
 use std::hash::Hash;
 use std::ops::Deref;
 use std::option;
@@ -171,17 +170,6 @@ impl<M: Message> Deref for MessageField<M> {
 
     fn deref(&self) -> &Self::Target {
         self.get_or_default()
-    }
-}
-
-/// Get a mutable reference to the message **and** initialize the message if not initialized yet.
-///
-/// Note that part about initializing is not conventional.
-/// Generally `DerefMut` is not supposed to modify the state.
-#[cfg(no)]
-impl<M: Message> DerefMut for MessageField<M> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.mut_or_insert_default()
     }
 }
 
