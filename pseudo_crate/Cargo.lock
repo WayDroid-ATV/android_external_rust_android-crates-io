@@ -8376,9 +8376,9 @@ dependencies = [
 
 [[package]]
 name = "vulkano"
-version = "0.33.0"
+version = "0.33.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e1f15eeb9d93a05eb3c237332a10806eac1eb82444e54485bfcc1859c483c23"
+checksum = "98ab44b5fe4174d4fb3b86a8172bd4e4e1cddef8700e34276c914052667fc32c"
 dependencies = [
  "ahash 0.8.12",
  "ash",

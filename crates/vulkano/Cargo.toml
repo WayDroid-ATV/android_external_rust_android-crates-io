@@ -12,12 +12,17 @@
 [package]
 edition = "2021"
 name = "vulkano"
-version = "0.33.0"
+version = "0.33.1"
 authors = [
     "Pierre Krieger <pierre.krieger1708@gmail.com>",
     "The vulkano contributors",
 ]
 build = "build.rs"
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Safe wrapper for the Vulkan graphics API"
 homepage = "https://vulkano.rs"
 documentation = "https://docs.rs/vulkano"
@@ -34,6 +39,15 @@ license = "MIT/Apache-2.0"
 repository = "https://github.com/vulkano-rs/vulkano"
 resolver = "1"
 
+[features]
+default = ["macros"]
+document_unchecked = []
+macros = ["vulkano-macros"]
+
+[lib]
+name = "vulkano"
+path = "src/lib.rs"
+
 [dependencies.ahash]
 version = "0.8"
 
@@ -42,6 +56,10 @@ version = "^0.37.2"
 
 [dependencies.bytemuck]
 version = "1.9"
+features = [
+    "derive",
+    "min_const_generics",
+]
 
 [dependencies.crossbeam-queue]
 version = "0.3"
@@ -111,13 +129,8 @@ version = "1.0"
 [build-dependencies.vk-parse]
 version = "0.8"
 
-[features]
-default = ["macros"]
-document_unchecked = []
-macros = ["vulkano-macros"]
-
-[target."cfg(target_os = \"ios\")".dependencies.core-graphics-types]
+[target.'cfg(target_os = "ios")'.dependencies.core-graphics-types]
 version = "0.1"
 
-[target."cfg(target_os = \"ios\")".dependencies.objc]
+[target.'cfg(target_os = "ios")'.dependencies.objc]
 version = "0.2.5"

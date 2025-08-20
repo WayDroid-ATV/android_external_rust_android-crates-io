@@ -36,7 +36,7 @@ rust_library {
     host_supported: true,
     crate_name: "vulkano",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.33.0",
+    cargo_pkg_version: "0.33.1",
     crate_root: "src/lib.rs",
     srcs: [":copy_vulkano_build_out"],
     edition: "2021",
