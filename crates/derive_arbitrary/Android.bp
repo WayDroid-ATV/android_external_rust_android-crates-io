@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libderive_arbitrary",
     crate_name: "derive_arbitrary",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.4.1",
+    cargo_pkg_version: "1.4.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
