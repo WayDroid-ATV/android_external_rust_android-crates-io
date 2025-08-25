@@ -31,7 +31,7 @@ rust_defaults {
         "libnix",
         "libnum_cpus",
         "libpin_project_lite",
-        "librand-0.8",
+        "librand",
         "libtokio",
         "libtokio_stream",
         "libtokio_test",

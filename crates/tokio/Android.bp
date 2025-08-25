@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "tokio",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.45.1",
+    cargo_pkg_version: "1.47.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -61,7 +61,7 @@ rust_library {
     host_supported: true,
     crate_name: "tokio",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.45.1",
+    cargo_pkg_version: "1.47.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -133,7 +133,7 @@ rust_defaults {
         "libnix",
         "libnum_cpus",
         "libpin_project_lite",
-        "librand-0.8",
+        "librand",
         "libtokio",
         "libtokio_stream",
         "libtokio_test",
