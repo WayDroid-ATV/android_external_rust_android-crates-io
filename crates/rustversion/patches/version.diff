@@ -8,7 +8,7 @@ index 813ba85d7..3d4e31485 100644
  
 -    if expr.eval(crate::RUSTVERSION) {
 +    if expr.eval(crate::rust_version()) {
-         Ok(input)
+         Ok(allow_incompatible_msrv(input))
      } else {
          Ok(TokenStream::new())
 @@ -31,7 +31,7 @@ fn try_cfg(introducer: &str, args: TokenStream, input: TokenStream) -> Result<To
