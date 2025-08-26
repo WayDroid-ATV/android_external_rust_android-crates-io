@@ -1,12 +1,13 @@
 diff --git a/Android.bp b/Android.bp
-index 60c613c..8f26c4f 100644
+index 6f0ffb4fb..939909ab1 100644
 --- a/Android.bp
 +++ b/Android.bp
-@@ -19,20 +19,7 @@ rust_library {
+@@ -19,21 +19,7 @@ rust_library {
      cargo_env_compat: true,
      cargo_pkg_version: "1.4.3+v1.4.5",
      crate_root: "src/lib.rs",
 -    edition: "2018",
+-    features: ["bindgen"],
 -    apex_available: [
 -        "//apex_available:platform",
 -        "//apex_available:anyapex",
@@ -22,5 +23,5 @@ index 60c613c..8f26c4f 100644
 -    crate_root: "src/lib.rs",
 +    srcs: [":liblibbpf_bindgen"],
      edition: "2018",
+     features: ["bindgen"],
      apex_available: [
-         "//apex_available:platform",

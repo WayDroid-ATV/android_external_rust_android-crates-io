@@ -21,6 +21,7 @@ rust_library {
     crate_root: "src/lib.rs",
     srcs: [":liblibbpf_bindgen"],
     edition: "2018",
+    features: ["bindgen"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -45,7 +46,7 @@ rust_bindgen {
     crate_name: "libbpf_bindgen",
     custom_bindgen: "libbpf_bindgen_build",
     wrapper_src: "android/libbpf_wrapper.h",
-    source_stem: "bindgen",
+    source_stem: "bindings",
     header_libs: ["libbpf_build_headers"],
     shared_libs: ["libbpf"],
 }

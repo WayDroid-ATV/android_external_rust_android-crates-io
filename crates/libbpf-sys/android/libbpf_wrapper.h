@@ -16,3 +16,5 @@
 #include "bpf/bpf.h"
 #include "bpf/btf.h"
 #include "bpf/libbpf.h"
+#include "linux/if_link.h"
+#include "linux/perf_event.h"

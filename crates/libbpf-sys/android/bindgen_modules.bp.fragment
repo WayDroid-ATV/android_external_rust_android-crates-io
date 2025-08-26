@@ -15,7 +15,7 @@ rust_bindgen {
     crate_name: "libbpf_bindgen",
     custom_bindgen: "libbpf_bindgen_build",
     wrapper_src: "android/libbpf_wrapper.h",
-    source_stem: "bindgen",
+    source_stem: "bindings",
     header_libs: ["libbpf_build_headers"],
     shared_libs: ["libbpf"],
 }

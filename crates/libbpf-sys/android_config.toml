@@ -2,5 +2,6 @@
 deletions = [
   "elfutils",
   "zlib",
-  "libbpf"
+  "libbpf",
+  "src/bindings.rs"
 ]
