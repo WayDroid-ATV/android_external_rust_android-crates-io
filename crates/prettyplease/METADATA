@@ -1,17 +1,17 @@
 name: "prettyplease"
 description: "A minimal `syn` syntax tree pretty-printer"
 third_party {
-  version: "0.2.36"
+  version: "0.2.37"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 7
-    day: 31
+    month: 8
+    day: 25
   }
   homepage: "https://crates.io/crates/prettyplease"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/prettyplease/prettyplease-0.2.36.crate"
-    version: "0.2.36"
+    value: "https://static.crates.io/crates/prettyplease/prettyplease-0.2.37.crate"
+    version: "0.2.37"
   }
 }
