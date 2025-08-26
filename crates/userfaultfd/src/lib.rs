@@ -87,6 +87,9 @@ bitflags! {
         /// Registers the range for write faults.
         #[cfg(feature = "linux5_7")]
         const WRITE_PROTECT = raw::UFFDIO_REGISTER_MODE_WP;
+        // Registers the range for minor faults.
+        #[cfg(feature = "linux5_13")]
+        const MINOR = raw::UFFDIO_REGISTER_MODE_MINOR;
     }
 }
 
@@ -267,6 +270,38 @@ impl Uffd {
         }
 
         Ok(())
+    }
+
+    /// Resolves minor faults for a range.
+    ///
+    /// If `wake` is `true`, wake up the thread waiting for page fault resolution on the memory
+    /// address range.
+    ///
+    /// Returns the number of bytes actually mapped. If this differs from `len`, then the ioctl
+    /// returned EAGAIN.
+    #[cfg(feature = "linux5_13")]
+    pub fn r#continue(&self, start: *mut c_void, len: usize, wake: bool) -> Result<u64> {
+        let mut ioctl = raw::uffdio_continue {
+            range: raw::uffdio_range {
+                start: start as u64,
+                len: len as u64,
+            },
+            mode: if wake {
+                0
+            } else {
+                raw::UFFDIO_CONTINUE_MODE_DONTWAKE
+            },
+            mapped: 0,
+        };
+
+        let r =
+            unsafe { raw::r#continue(self.as_raw_fd(), &mut ioctl as *mut raw::uffdio_continue) };
+
+        match r {
+            Err(Errno::EAGAIN) if ioctl.mapped > 0 => Ok(ioctl.mapped as u64),
+            Err(err) => Err(err.into()),
+            Ok(_) => Ok(ioctl.mapped as u64),
+        }
     }
 
     /// Read an `Event` from the userfaultfd object.

@@ -21,6 +21,10 @@ pub enum FaultKind {
     /// The fault was a write on a write-protected page.
     #[cfg(feature = "linux5_7")]
     WriteProtected,
+    // The fault was a minor page fault, meaning the page was present in the page cache,
+    // but the userspace page table entry was missing.
+    #[cfg(feature = "linux5_13")]
+    Minor,
 }
 
 /// Events from the userfaultfd object that are read by `Uffd::read_event()`.
@@ -82,17 +86,21 @@ impl Event {
         match msg.event {
             raw::UFFD_EVENT_PAGEFAULT => {
                 let pagefault = unsafe { msg.arg.pagefault };
-                cfg_if::cfg_if!(
-                    if #[cfg(feature = "linux5_7")] {
-                        let kind = if pagefault.flags & raw::UFFD_PAGEFAULT_FLAG_WP != 0 {
-                            FaultKind::WriteProtected
-                        } else {
-                            FaultKind::Missing
-                        };
-                    } else {
-                        let kind = FaultKind::Missing;
-                    }
-                );
+
+                #[allow(unused_mut)]
+                let mut kind = FaultKind::Missing;
+
+                // The below two flags are mutually exclusive (it does not make sense
+                // to have a minor fault that is a write-protect fault at the same time.
+                #[cfg(feature = "linux5_7")]
+                if pagefault.flags & raw::UFFD_PAGEFAULT_FLAG_WP != 0 {
+                    kind = FaultKind::WriteProtected;
+                }
+
+                #[cfg(feature = "linux5_13")]
+                if pagefault.flags & raw::UFFD_PAGEFAULT_FLAG_MINOR != 0 {
+                    kind = FaultKind::Minor
+                }
 
                 let rw = if pagefault.flags & raw::UFFD_PAGEFAULT_FLAG_WRITE == 0 {
                     ReadWrite::Read

@@ -566,7 +566,7 @@ dependencies = [
  "untrusted 0.9.0",
  "url",
  "userfaultfd",
- "userfaultfd-sys 0.6.0",
+ "userfaultfd-sys",
  "utf-8",
  "uuid",
  "vhost",
@@ -1040,26 +1040,6 @@ dependencies = [
  "rustc-hash 1.1.0",
  "shlex",
  "which",
-]
-
-[[package]]
-name = "bindgen"
-version = "0.68.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "726e4313eb6ec35d2730258ad4e15b547ee75d6afaa1361a922e78e59b7d8078"
-dependencies = [
- "bitflags 2.9.2",
- "cexpr",
- "clang-sys",
- "lazy_static",
- "lazycell",
- "peeking_take_while",
- "proc-macro2 1.0.96",
- "quote 1.0.40",
- "regex",
- "rustc-hash 1.1.0",
- "shlex",
- "syn 2.0.106",
 ]
 
 [[package]]
@@ -8162,27 +8142,16 @@ dependencies = [
 
 [[package]]
 name = "userfaultfd"
-version = "0.8.1"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18d8b176d4d3e420685e964f87c25df5fdd5b26d7eb0d0e7c892d771f5b81035"
+checksum = "5b3a8a0cb358f7d1b7ee9b6784be122b6f51248a6d9e214d555beb9b44c72aea"
 dependencies = [
  "bitflags 2.9.2",
  "cfg-if",
  "libc 0.2.172",
  "nix 0.27.1",
  "thiserror 1.0.49",
- "userfaultfd-sys 0.5.0",
-]
-
-[[package]]
-name = "userfaultfd-sys"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d75595d2a62b7db16bd47f5a1ce14e1fe05ccbe27d6c96721a958e0a027cad41"
-dependencies = [
- "bindgen 0.68.1",
- "cc",
- "cfg-if",
+ "userfaultfd-sys",
 ]
 
 [[package]]
