@@ -160,6 +160,10 @@ impl FeatureTableSubstitutionRecord {
     }
 }
 
+fn bit_storage(v: u32) -> u32 {
+    u32::BITS - v.leading_zeros()
+}
+
 impl<'a> CoverageTable<'a> {
     pub fn iter(&self) -> impl Iterator<Item = GlyphId16> + 'a {
         // all one expression so that we have a single return type
@@ -211,6 +215,14 @@ impl<'a> CoverageTable<'a> {
             CoverageTable::Format2(sub) => sub.population(),
         }
     }
+
+    /// Return the cost of looking up a glyph in this table
+    pub fn cost(&self) -> u32 {
+        match self {
+            CoverageTable::Format1(sub) => sub.cost(),
+            CoverageTable::Format2(sub) => sub.cost(),
+        }
+    }
 }
 
 impl CoverageFormat1<'_> {
@@ -229,8 +241,7 @@ impl CoverageFormat1<'_> {
     #[cfg(feature = "std")]
     fn intersects(&self, glyphs: &IntSet<GlyphId>) -> bool {
         let glyph_count = self.glyph_count() as u32;
-        let num_bits = 32 - glyph_count.leading_zeros();
-        if glyph_count > (glyphs.len() as u32) * num_bits {
+        if glyph_count > (glyphs.len() as u32) * self.cost() {
             glyphs.iter().any(|g| self.get(g).is_some())
         } else {
             self.glyph_array()
@@ -243,8 +254,7 @@ impl CoverageFormat1<'_> {
     #[cfg(feature = "std")]
     fn intersect_set(&self, glyphs: &IntSet<GlyphId>) -> IntSet<GlyphId> {
         let glyph_count = self.glyph_count() as u32;
-        let num_bits = 32 - glyph_count.leading_zeros();
-        if glyph_count > (glyphs.len() as u32) * num_bits {
+        if glyph_count > (glyphs.len() as u32) * self.cost() {
             glyphs
                 .iter()
                 .filter_map(|g| self.get(g).map(|_| g))
@@ -261,6 +271,11 @@ impl CoverageFormat1<'_> {
     /// Return the number of glyphs in this table
     pub fn population(&self) -> usize {
         self.glyph_count() as usize
+    }
+
+    /// Return the cost of looking up a glyph in this table
+    pub fn cost(&self) -> u32 {
+        bit_storage(self.glyph_count() as u32)
     }
 }
 
@@ -290,8 +305,7 @@ impl CoverageFormat2<'_> {
     #[cfg(feature = "std")]
     fn intersects(&self, glyphs: &IntSet<GlyphId>) -> bool {
         let range_count = self.range_count() as u32;
-        let num_bits = 32 - range_count.leading_zeros();
-        if range_count > (glyphs.len() as u32) * num_bits {
+        if range_count > (glyphs.len() as u32) * self.cost() {
             glyphs.iter().any(|g| self.get(g).is_some())
         } else {
             self.range_records()
@@ -304,8 +318,7 @@ impl CoverageFormat2<'_> {
     #[cfg(feature = "std")]
     fn intersect_set(&self, glyphs: &IntSet<GlyphId>) -> IntSet<GlyphId> {
         let range_count = self.range_count() as u32;
-        let num_bits = 32 - range_count.leading_zeros();
-        if range_count > (glyphs.len() as u32) * num_bits {
+        if range_count > (glyphs.len() as u32) * self.cost() {
             glyphs
                 .iter()
                 .filter_map(|g| self.get(g).map(|_| g))
@@ -343,6 +356,11 @@ impl CoverageFormat2<'_> {
         self.range_records()
             .iter()
             .fold(0, |acc, record| acc + record.population())
+    }
+
+    /// Return the cost of looking up a glyph in this table
+    pub fn cost(&self) -> u32 {
+        bit_storage(self.range_count() as u32)
     }
 }
 
@@ -398,11 +416,14 @@ impl From<DeltaFormat> for i64 {
 impl<'a> ClassDefFormat1<'a> {
     /// Get the class for this glyph id
     #[inline]
-    pub fn get(&self, gid: GlyphId16) -> u16 {
-        if gid < self.start_glyph_id() {
+    pub fn get(&self, gid: impl Into<GlyphId>) -> u16 {
+        let Some(idx) = gid
+            .into()
+            .to_u32()
+            .checked_sub(self.start_glyph_id().to_u32())
+        else {
             return 0;
-        }
-        let idx = gid.to_u16() - self.start_glyph_id().to_u16();
+        };
         self.class_value_array()
             .get(idx as usize)
             .map(|x| x.get())
@@ -424,6 +445,11 @@ impl<'a> ClassDefFormat1<'a> {
     /// Return the number of glyphs explicitly assigned to a class in this table
     pub fn population(&self) -> usize {
         self.glyph_count() as usize
+    }
+
+    /// Return the cost of looking up a glyph in this table
+    pub fn cost(&self) -> u32 {
+        1
     }
 
     /// Returns class values for the intersected glyphs of this table and input 'glyphs' set.
@@ -507,14 +533,15 @@ impl<'a> ClassDefFormat1<'a> {
 impl<'a> ClassDefFormat2<'a> {
     /// Get the class for this glyph id
     #[inline]
-    pub fn get(&self, gid: GlyphId16) -> u16 {
+    pub fn get(&self, gid: impl Into<GlyphId>) -> u16 {
+        let gid = gid.into().to_u32();
         let records = self.class_range_records();
-        let ix = match records.binary_search_by(|rec| rec.start_glyph_id().cmp(&gid)) {
+        let ix = match records.binary_search_by(|rec| rec.start_glyph_id().to_u32().cmp(&gid)) {
             Ok(ix) => ix,
             Err(ix) => ix.saturating_sub(1),
         };
         if let Some(record) = records.get(ix) {
-            if (record.start_glyph_id()..=record.end_glyph_id()).contains(&gid) {
+            if (record.start_glyph_id().to_u32()..=record.end_glyph_id().to_u32()).contains(&gid) {
                 return record.class();
             }
         }
@@ -535,6 +562,11 @@ impl<'a> ClassDefFormat2<'a> {
         self.class_range_records()
             .iter()
             .fold(0, |acc, record| acc + record.population())
+    }
+
+    /// Return the cost of looking up a glyph in this table
+    pub fn cost(&self) -> u32 {
+        bit_storage(self.class_range_count() as u32)
     }
 
     /// Returns class values for the intersected glyphs of this table and input 'glyphs' set.
@@ -574,10 +606,9 @@ impl<'a> ClassDefFormat2<'a> {
         }
 
         let num_ranges = self.class_range_count();
-        let num_bits = 16 - num_ranges.leading_zeros();
-        if num_ranges as u64 > glyphs.len() * num_bits as u64 {
+        if num_ranges as u64 > glyphs.len() * self.cost() as u64 {
             for g in glyphs.iter() {
-                let class = self.get(GlyphId16::from(g.to_u32() as u16));
+                let class = self.get(g);
                 if class != 0 {
                     out.insert(class);
                 }
@@ -622,10 +653,9 @@ impl<'a> ClassDefFormat2<'a> {
         }
 
         let num_ranges = self.class_range_count();
-        let num_bits = 16 - num_ranges.leading_zeros();
-        if num_ranges as u64 > glyphs.len() * num_bits as u64 {
+        if num_ranges as u64 > glyphs.len() * self.cost() as u64 {
             for g in glyphs.iter() {
-                let c = self.get(GlyphId16::from(g.to_u32() as u16));
+                let c = self.get(g);
                 if c == class {
                     out.insert(g);
                 }
@@ -663,7 +693,7 @@ impl ClassRangeRecord {
 impl ClassDef<'_> {
     /// Get the class for this glyph id
     #[inline]
-    pub fn get(&self, gid: GlyphId16) -> u16 {
+    pub fn get(&self, gid: impl Into<GlyphId>) -> u16 {
         match self {
             ClassDef::Format1(table) => table.get(gid),
             ClassDef::Format2(table) => table.get(gid),
@@ -686,6 +716,14 @@ impl ClassDef<'_> {
         match self {
             ClassDef::Format1(table) => table.population(),
             ClassDef::Format2(table) => table.population(),
+        }
+    }
+
+    /// Return the cost of looking up a glyph in this table
+    pub fn cost(&self) -> u32 {
+        match self {
+            ClassDef::Format1(sub) => sub.cost(),
+            ClassDef::Format2(sub) => sub.cost(),
         }
     }
 
@@ -876,5 +914,18 @@ mod tests {
             device.iter().collect::<Vec<_>>(),
             &[1i8, -12, 30, -11, 101, 8, 42]
         );
+    }
+
+    #[test]
+    fn bit_storage_tests() {
+        assert_eq!(bit_storage(0), 0);
+        assert_eq!(bit_storage(1), 1);
+        assert_eq!(bit_storage(2), 2);
+        assert_eq!(bit_storage(4), 3);
+        assert_eq!(bit_storage(9), 4);
+        assert_eq!(bit_storage(0x123), 9);
+        assert_eq!(bit_storage(0x1234), 13);
+        assert_eq!(bit_storage(0xffff), 16);
+        assert_eq!(bit_storage(0xffff_ffff), 32);
     }
 }

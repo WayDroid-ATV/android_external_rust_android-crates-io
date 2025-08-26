@@ -447,7 +447,7 @@ dependencies = [
  "rand_xorshift",
  "rayon",
  "rayon-core",
- "read-fonts",
+ "read-fonts 0.32.0",
  "regex",
  "regex-automata",
  "regex-syntax",
@@ -6323,6 +6323,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "read-fonts"
+version = "0.32.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a551c092f06f2ec38b689276d712fd2dd423ed53a80345dca1d9ad327a70add4"
+dependencies = [
+ "bytemuck",
+ "font-types",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7041,7 +7051,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb886d448c2a43b337448919c17947d33dd9f98defd37cf333d63cdfe5fff6ef"
 dependencies = [
  "bytemuck",
- "read-fonts",
+ "read-fonts 0.31.1",
 ]
 
 [[package]]
