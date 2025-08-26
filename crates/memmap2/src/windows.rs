@@ -227,6 +227,7 @@ impl MmapInner {
         handle: RawHandle,
         offset: u64,
         _populate: bool,
+        _no_reserve: bool,
     ) -> io::Result<MmapInner> {
         let write = protection_supported(handle, PAGE_READWRITE);
         let exec = protection_supported(handle, PAGE_EXECUTE_READ);
@@ -259,6 +260,7 @@ impl MmapInner {
         handle: RawHandle,
         offset: u64,
         _populate: bool,
+        _no_reserve: bool,
     ) -> io::Result<MmapInner> {
         let write = protection_supported(handle, PAGE_READWRITE);
         let mut access = FILE_MAP_READ | FILE_MAP_EXECUTE;
@@ -281,6 +283,7 @@ impl MmapInner {
         handle: RawHandle,
         offset: u64,
         _populate: bool,
+        _no_reserve: bool,
     ) -> io::Result<MmapInner> {
         let exec = protection_supported(handle, PAGE_EXECUTE_READ);
         let mut access = FILE_MAP_READ | FILE_MAP_WRITE;
@@ -303,6 +306,7 @@ impl MmapInner {
         handle: RawHandle,
         offset: u64,
         _populate: bool,
+        _no_reserve: bool,
     ) -> io::Result<MmapInner> {
         let exec = protection_supported(handle, PAGE_EXECUTE_READWRITE);
         let mut access = FILE_MAP_COPY;
@@ -325,6 +329,7 @@ impl MmapInner {
         handle: RawHandle,
         offset: u64,
         _populate: bool,
+        _no_reserve: bool,
     ) -> io::Result<MmapInner> {
         let write = protection_supported(handle, PAGE_READWRITE);
         let exec = protection_supported(handle, PAGE_EXECUTE_READ);
@@ -348,6 +353,7 @@ impl MmapInner {
         _stack: bool,
         _populate: bool,
         _huge: Option<u8>,
+        _no_reserve: bool,
     ) -> io::Result<MmapInner> {
         // Ensure a non-zero length for the underlying mapping
         let mapped_len = len.max(1);
