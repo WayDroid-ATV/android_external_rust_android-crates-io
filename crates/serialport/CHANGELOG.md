@@ -12,6 +12,33 @@ project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 ### Removed
 
+## [4.7.3] - 2025-08-24
+
+### Added
+
+* Add support for opening serial ports on windows with an absolute path.
+  [#259](https://github.com/serialport/serialport-rs/pull/259)
+
+### Changed
+
+* Revert automatically setting DTR when opening a port as the reported issues
+  seem to outweigh the aimed benefit.
+  [#285](https://github.com/serialport/serialport-rs/pull/285)
+  [#251](https://github.com/serialport/serialport-rs/issues/251)
+  [#243](https://github.com/serialport/serialport-rs/issues/243)
+  [#239](https://github.com/serialport/serialport-rs/pull/239)
+  [#29](https://github.com/serialport/serialport-rs/pull/29)
+
+### Fixed
+
+* Fix reporting serial numbers with colons on Windows.
+  [#279](https://github.com/serialport/serialport-rs/issues/279)
+  [#282](https://github.com/serialport/serialport-rs/issues/282)
+* Setting arbitrary baud rates on Linux which resulted in issues when read back
+  on Arch recently.
+  [#281](https://github.com/serialport/serialport-rs/issues/281)
+  [#283](https://github.com/serialport/serialport-rs/pull/283)
+
 
 ## [4.7.2] - 2025-05-16
 
@@ -512,7 +539,8 @@ Unreleased, happened due to a user error using `cargo-release`.
 * Initial release.
 
 
-[Unreleased]: https://github.com/serialport/serialport-rs/compare/v4.7.2...HEAD
+[Unreleased]: https://github.com/serialport/serialport-rs/compare/v4.7.3...HEAD
+[4.7.3]: https://github.com/serialport/serialport-rs/compare/v4.7.2...v4.7.3
 [4.7.2]: https://github.com/serialport/serialport-rs/compare/v4.7.1...v4.7.2
 [4.7.1]: https://github.com/serialport/serialport-rs/compare/v4.7.0...v4.7.1
 [4.7.0]: https://github.com/serialport/serialport-rs/compare/v4.6.1...v4.7.0

@@ -859,11 +859,14 @@ pub fn new<'a>(path: impl Into<std::borrow::Cow<'a, str>>, baud_rate: u32) -> Se
         parity: Parity::None,
         stop_bits: StopBits::One,
         timeout: Duration::from_millis(0),
-        // By default, set DTR when opening the device. There are USB devices performing "wait for
-        // DTR" before sending any data and users stumbled over this multiple times (see issues #29
-        // and #204). We are expecting little to no negative consequences from setting DTR by
-        // default but less hassle for users.
-        dtr_on_open: Some(true),
+        // Leave DTR alone when opening a device. We've started out with setting DTR on open (see
+        // issues #29 and #204) but despite pleasing some Arduino use cases, this apparently caused
+        // problems with other boards and when using pseudo terminals (see issues #243 and #251).
+        //
+        // To me it looks that the fallout from setting DTR on open by default gets on a
+        // substantially larger area than the one benefitting from it, I finally decided to revert
+        // this. Sorry for this back and forth, Christian.
+        dtr_on_open: None,
     }
 }
 
@@ -883,4 +886,26 @@ pub fn available_ports() -> Result<Vec<SerialPortInfo>> {
         ErrorKind::Unknown,
         "available_ports() not implemented for platform",
     ))
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use rstest::rstest;
+
+    /// Checks parameters and that default values don't get charged by accident.
+    #[rstest]
+    fn builder_new() {
+        let builder = new("port_test_dummy", 12345);
+
+        assert_eq!(builder.path, "port_test_dummy");
+        assert_eq!(builder.baud_rate, 12345);
+
+        assert_eq!(builder.data_bits, DataBits::Eight);
+        assert_eq!(builder.flow_control, FlowControl::None);
+        assert_eq!(builder.parity, Parity::None);
+        assert_eq!(builder.stop_bits, StopBits::One);
+        assert_eq!(builder.timeout, Duration::ZERO);
+        assert_eq!(builder.dtr_on_open, None);
+    }
 }
