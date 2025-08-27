@@ -1,5 +1,5 @@
 use crate::{
-    AdditionItem, LicenseItem, LicenseReq, ParseMode,
+    LicenseItem, LicenseReq, ParseMode,
     error::{ParseError, Reason},
     expression::{ExprNode, Expression, ExpressionReq, Operator},
     lexer::{Lexer, Token},
@@ -114,16 +114,6 @@ impl Expression {
                     can.push_str("LicenseRef-");
                     can.push_str(lic_ref);
                 }
-                Token::AdditionRef { doc_ref, add_ref } => {
-                    if let Some(dr) = doc_ref {
-                        can.push_str("DocumentRef-");
-                        can.push_str(dr);
-                        can.push(':');
-                    }
-
-                    can.push_str("AdditionRef-");
-                    can.push_str(add_ref);
-                }
             }
         }
 
@@ -187,10 +177,10 @@ impl Expression {
             let expected: &[&str] = match last_token {
                 None | Some(Token::And | Token::Or | Token::OpenParen) => &["<license>", "("],
                 Some(Token::CloseParen) => &["AND", "OR"],
-                Some(Token::Exception(_) | Token::AdditionRef { .. }) => &["AND", "OR", ")"],
+                Some(Token::Exception(_)) => &["AND", "OR", ")"],
                 Some(Token::Spdx(_)) => &["AND", "OR", "WITH", ")", "+"],
                 Some(Token::LicenseRef { .. } | Token::Plus) => &["AND", "OR", "WITH", ")"],
-                Some(Token::With) => &["<addition>"],
+                Some(Token::With) => &["<exception>"],
             };
 
             Err(ParseError {
@@ -206,16 +196,26 @@ impl Expression {
             match &lt.token {
                 Token::Spdx(id) => match last_token {
                     None | Some(Token::And | Token::Or | Token::OpenParen) => {
-                        if !mode.allow_deprecated && id.is_deprecated() {
-                            return Err(ParseError {
+                        let id = if id.is_gnu() {
+                            crate::gnu_license_id(id.name, false).ok_or_else(|| ParseError {
                                 original: original.to_owned(),
-                                span: lt.span,
-                                reason: Reason::DeprecatedLicenseId,
-                            });
-                        }
+                                span: lt.span.clone(),
+                                reason: Reason::UnknownLicense,
+                            })?
+                        } else {
+                            if !mode.allow_deprecated && id.is_deprecated() {
+                                return Err(ParseError {
+                                    original: original.to_owned(),
+                                    span: lt.span,
+                                    reason: Reason::DeprecatedLicenseId,
+                                });
+                            }
+
+                            *id
+                        };
 
                         expr_queue.push(ExprNode::Req(ExpressionReq {
-                            req: LicenseReq::from(*id),
+                            req: LicenseReq::from(id),
                             span: lt.span.start as u32..lt.span.end as u32,
                         }));
                     }
@@ -229,7 +229,7 @@ impl Expression {
                                     doc_ref: doc_ref.map(String::from),
                                     lic_ref: String::from(*lic_ref),
                                 },
-                                addition: None,
+                                exception: None,
                             },
                             span: lt.span.start as u32..lt.span.end as u32,
                         }));
@@ -291,7 +291,6 @@ impl Expression {
                         | Token::LicenseRef { .. }
                         | Token::CloseParen
                         | Token::Exception(_)
-                        | Token::AdditionRef { .. }
                         | Token::Plus,
                     ) => {
                         let new_op = match lt.token {
@@ -341,7 +340,6 @@ impl Expression {
                             | Token::LicenseRef { .. }
                             | Token::Plus
                             | Token::Exception(_)
-                            | Token::AdditionRef { .. }
                             | Token::CloseParen,
                         ) => {
                             while let Some(top) = op_stack.pop() {
@@ -369,19 +367,7 @@ impl Expression {
                 Token::Exception(exc) => match last_token {
                     Some(Token::With) => match expr_queue.last_mut() {
                         Some(ExprNode::Req(lic)) => {
-                            lic.req.addition = Some(AdditionItem::Spdx(*exc));
-                        }
-                        _ => unreachable!(),
-                    },
-                    _ => return make_err_for_token(last_token, lt.span),
-                },
-                Token::AdditionRef { doc_ref, add_ref } => match last_token {
-                    Some(Token::With) => match expr_queue.last_mut() {
-                        Some(ExprNode::Req(lic)) => {
-                            lic.req.addition = Some(AdditionItem::Other {
-                                doc_ref: doc_ref.map(String::from),
-                                add_ref: String::from(*add_ref),
-                            });
+                            lic.req.exception = Some(*exc);
                         }
                         _ => unreachable!(),
                     },
@@ -398,7 +384,6 @@ impl Expression {
                 Token::Spdx(_)
                 | Token::LicenseRef { .. }
                 | Token::Exception(_)
-                | Token::AdditionRef { .. }
                 | Token::CloseParen
                 | Token::Plus,
             ) => {}
