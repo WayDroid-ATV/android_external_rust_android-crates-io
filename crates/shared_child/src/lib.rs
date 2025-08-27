@@ -63,7 +63,9 @@
 
 use std::io;
 use std::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command, ExitStatus};
-use std::sync::{Condvar, Mutex};
+use std::sync::{Condvar, Mutex, MutexGuard};
+#[cfg(feature = "timeout")]
+use std::time::{Duration, Instant};
 
 mod sys;
 
@@ -75,12 +77,6 @@ pub mod unix;
 enum ChildState {
     NotWaiting,
     Waiting,
-    // std::process::Child caches the exit status internally, and we could *almost* get away with
-    // omitting the Exited state here and just calling Child::try_wait whenever we wanted it. But
-    // the one place we definitely can't get away with that is send_signal, because we never want
-    // reaping the child to race against a blocking call to waitid. (SharedChild::try_wait
-    // short-circuits in the Waiting state, so it doesn't have this issue, but send_signal needs to
-    // work in that state.)
     Exited(ExitStatus),
 }
 
@@ -90,32 +86,6 @@ use crate::ChildState::{Exited, NotWaiting, Waiting};
 struct SharedChildInner {
     child: Child,
     state: ChildState,
-}
-
-impl SharedChildInner {
-    fn new(child: Child) -> Self {
-        Self {
-            child,
-            state: NotWaiting,
-        }
-    }
-
-    // This is the only codepath in this crate that reaps the child process.
-    fn try_wait_and_reap(&mut self) -> io::Result<Option<ExitStatus>> {
-        // We never want reaping to race with other waiters.
-        assert!(
-            matches!(self.state, NotWaiting),
-            "unexpected state {:?}",
-            self.state,
-        );
-        // This is the standard Child::try_wait API. On Unix it calls waitpid with WNOHANG.
-        if let Some(exit_status) = self.child.try_wait()? {
-            self.state = Exited(exit_status);
-            Ok(Some(exit_status))
-        } else {
-            Ok(None)
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -129,7 +99,10 @@ impl SharedChild {
     /// [`std::process::Command`](https://doc.rust-lang.org/std/process/struct.Command.html).
     pub fn spawn(command: &mut Command) -> io::Result<Self> {
         Ok(SharedChild {
-            inner: Mutex::new(SharedChildInner::new(command.spawn()?)),
+            inner: Mutex::new(SharedChildInner {
+                child: command.spawn()?,
+                state: NotWaiting,
+            }),
             condvar: Condvar::new(),
         })
     }
@@ -142,12 +115,14 @@ impl SharedChild {
     /// [`Child::try_wait`](https://doc.rust-lang.org/std/process/struct.Child.html#method.try_wait)
     /// internally. If the child process is currently a zombie, that call will clean it up as a
     /// side effect. The [`SharedChild::spawn`] constructor doesn't need to do this.
-    pub fn new(child: Child) -> io::Result<Self> {
-        // See the comment on the Exited variant above for more about why this is the way it is.
-        let mut inner = SharedChildInner::new(child);
-        inner.try_wait_and_reap()?;
+    pub fn new(mut child: Child) -> io::Result<Self> {
+        let state = if let Some(exit_status) = child.try_wait()? {
+            Exited(exit_status)
+        } else {
+            NotWaiting
+        };
         Ok(SharedChild {
-            inner: Mutex::new(inner),
+            inner: Mutex::new(SharedChildInner { child, state }),
             condvar: Condvar::new(),
         })
     }
@@ -160,149 +135,199 @@ impl SharedChild {
     /// Wait for the child to exit, blocking the current thread, and return its
     /// exit status.
     pub fn wait(&self) -> io::Result<ExitStatus> {
-        // Start by taking the inner lock, but note that we need to release it before doing a
-        // blocking wait, or else .try_wait() and .kill() would block.
+        // Start by taking the inner lock, but note that we need to release it before waiting, or
+        // else we'd block .try_wait(), .wait_deadline(), and .kill().
         let mut inner_guard = self.inner.lock().unwrap();
         loop {
             match inner_guard.state {
-                NotWaiting => {
-                    // Either no one is waiting on the child yet, or a previous
-                    // waiter failed. That means we need to do it ourselves.
-                    // Break out of this loop.
-                    break;
-                }
-                Waiting => {
-                    // Another thread is already waiting on the child. We'll
-                    // block until it signal us on the condvar, then loop again.
-                    // Spurious wakeups could bring us here multiple times
-                    // though, see the Condvar docs.
-                    inner_guard = self.condvar.wait(inner_guard).unwrap();
-                }
+                // The child has already been reaped. Return its saved exit status.
                 Exited(exit_status) => return Ok(exit_status),
+                // There is another blocking waiter. Sleep until it signals the condvar. Spurious
+                // wakeups are acceptable here.
+                Waiting => inner_guard = self.condvar.wait(inner_guard).unwrap(),
+                // There are no other blocking waiters. Proceed to the blocking wait.
+                NotWaiting => break,
             }
         }
 
-        // We have the inner lock, and we're the thread responsible for waiting on the child. We're
-        // about to release the lock and do a blocking, non-reaping wait. However, there's another
-        // subtle race condition we need to worry about, apart from the kill/wait PID reuse race
-        // that this crate is all about. Here's a possible order of events:
-        //   1. The child process exits.
-        //   2. Lots of time passes. Now any waiter will certainly see that the child has exited.
-        //   3. One thread calls .wait(). It acquires the lock, sets the status to Waiting, and
-        //      releases the lock, in preparation for attempting its blocking wait.
-        //   4. Suddently, another thread swoops in and calls .try_wait(). That thread acquires the
-        //      lock, sees the Waiting status, and returns None. ***THIS IS A BUG.***
-        //   5. The first thread sees that the child has exited, reacquires the lock, and cleans
-        //      up.
-        // If the call to .try_wait() were racing against the child's actual exit, then we wouldn't
-        // care what it returned. That would be an "honest" race, and it would be correct for the
-        // result to be a coin flip. But that's not what happens in this situation. Here the child
-        // has definitely exited, maybe seconds or minutes ago, and a single call to .try_wait()
-        // would certainly have returned Some. It's only by racing against .wait() that this
-        // situation could incorrectly report that the child hasn't exited.
-        //
-        // To fix this, .wait() must do a non-blocking wait (that is, actually check the status of
-        // the child process) *before* releasing the lock. If that returns false, then the only
-        // possible race is a race against the child itself, where again it's expected and fine for
-        // the result to be a coin flip. Doing this before setting inner.state to Waiting
-        // simplifies error handling. (try_wait_and_reap also asserts the NotWaiting state.)
-        if let Some(exit_status) = inner_guard.try_wait_and_reap()? {
-            return Ok(exit_status);
-        }
-
-        // We're still holding the inner lock, and the child process has not yet exited. Release
-        // the lock so that we can do a blocking wait. Once we enter the Waiting state, we must get
-        // out of that state before returning (or else we'll deadlock other callers), so we don't
-        // do any short-circuiting or ? error handling in this "critical section".
+        // We are the blocking waiter. Set the state to Waiting and release the lock before
+        // blocking. After this, we must reset the state and notify the condvar before returning.
         inner_guard.state = Waiting;
         let handle = sys::get_handle(&inner_guard.child);
         drop(inner_guard);
 
-        // Block until the child exits without reaping it. (On Unix, that means we need to call
-        // libc::waitid with the WNOWAIT flag. On Windows waiting never reaps.) That makes it safe
-        // for another thread to kill() while we're here, without racing against some process
-        // reusing the child's PID. Having only one thread in this section is important, because
-        // POSIX doesn't guarantee much about what happens when multiple threads wait on a child at
-        // the same time: http://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_13
-        // It's probably fine to have multiple waiters if they're all WNOWAIT, but it's definitely
-        // not fine to have multiple waiters if one of them is a reaper. See also:
-        // https://gist.github.com/oconnor663/73266d2e552c3d9ef6e1e9259c58bfab
-        //
-        // Again, we can't short-circuit if this fails.
-        let noreap_result = sys::wait_without_reaping(handle);
+        // Do the blocking wait.
+        let wait_result = sys::wait_noreap(handle);
 
-        // No matter what happened, retake the lock, leave the Waiting state, and signal the
-        // condvar. (Again note that try_wait_and_reap asserts the NotWaiting state.)
+        // Before checking the result, reacquire the lock, leave the Waiting state, and notify the
+        // condvar. If the child did exit, we'll set the Exited state before releasing the lock
+        // again, and no other threads will observe NotWaiting.
         inner_guard = self.inner.lock().unwrap();
         inner_guard.state = NotWaiting;
         self.condvar.notify_all();
 
-        // Now the "critical section" is over, and it's safe to short-circuit again. If
-        // wait_without_reaping succeeded (and fwiw I'm not aware of any natural case where it
-        // could fail), reap the child and update the state to Exited. Use Child::try_wait instead
-        // of Child::wait to do this, because if we somehow find out (to our horror) that the child
-        // hasn't *actually* exited, I'd rather panic than block forever holding the inner lock.
-        noreap_result?;
-        Ok(inner_guard
-            .try_wait_and_reap()?
-            .expect("the child should have exited"))
+        wait_result?;
+        // The child has exited. Reap it with std::process::Child::wait. The state was Waiting when
+        // we re-acquired the lock, so there are no other threads in blocking waits (other waiters
+        // would be sleeping on the condvar), and it's safe to free the child PID.
+        let exit_status = inner_guard.child.wait()?;
+        inner_guard.state = Exited(exit_status);
+        Ok(exit_status)
     }
 
-    /// Return the child's exit status if it has already exited. If the child is
-    /// still running, return `Ok(None)`.
-    pub fn try_wait(&self) -> io::Result<Option<ExitStatus>> {
-        // NOTE: Taking this lock will not block, because wait() doesn't hold it while blocking.
+    /// Wait for the child to exit, blocking the current thread, and return its exit status. Or if
+    /// the timeout passes before then, return `Ok(None)`.
+    ///
+    /// This polls the child at least once, and if the child has already exited it will return
+    /// `Ok(Some(_))` even if the timeout is zero.
+    #[cfg(feature = "timeout")]
+    pub fn wait_timeout(&self, timeout: Duration) -> io::Result<Option<ExitStatus>> {
+        let deadline = std::time::Instant::now() + timeout;
+        self.wait_deadline(deadline)
+    }
+
+    /// Wait for the child to exit, blocking the current thread, and return its exit status. Or if
+    /// the deadline passes before then, return `Ok(None)`.
+    ///
+    /// This polls the child at least once, and if the child has already exited it will return
+    /// `Ok(Some(_))` even if the deadline is in the past.
+    #[cfg(feature = "timeout")]
+    pub fn wait_deadline(&self, deadline: Instant) -> io::Result<Option<ExitStatus>> {
+        // Start by taking the inner lock, but note that we need to release it before waiting, or
+        // else we'd block .try_wait(), .kill(), and other calls to .wait_deadline().
         let mut inner_guard = self.inner.lock().unwrap();
+        loop {
+            match inner_guard.state {
+                // The child has already been reaped. Return its saved exit status.
+                Exited(exit_status) => return Ok(Some(exit_status)),
+                // The deadline has passed. Poll the child on the way out, to make sure we always
+                // poll at least once.
+                _ if deadline < Instant::now() => {
+                    return self.try_wait_inner(inner_guard);
+                }
+                // There is another blocking waiter. Sleep until it signals the condvar or the
+                // deadline passes. Spurious wakeups are acceptable here.
+                Waiting => {
+                    let timeout = deadline.saturating_duration_since(Instant::now());
+                    inner_guard = self.condvar.wait_timeout(inner_guard, timeout).unwrap().0;
+                }
+                // There are no other blocking waiters. Proceed to the blocking wait.
+                NotWaiting => break,
+            }
+        }
 
-        // Unlike wait() above, we don't loop on the Condvar here. If the status is Waiting or
-        // Exited, we return immediately. However, if the status is NotWaiting, we'll do a
-        // non-blocking wait below, which reaps the child if it has already exited.
+        // We are the blocking waiter. Set the state to Waiting and release the lock before
+        // blocking. After this, we must reset the state and notify the condvar before returning.
+        inner_guard.state = Waiting;
+        let handle = sys::get_handle(&inner_guard.child);
+        drop(inner_guard);
+
+        // Do the blocking wait.
+        let wait_result = sys::wait_deadline_noreap(handle, deadline);
+
+        // Before checking the result, reacquire the lock, leave the Waiting state, and notify the
+        // condvar. If the child did exit, we'll set the Exited state before releasing the lock
+        // again, and no other threads will observe NotWaiting.
+        inner_guard = self.inner.lock().unwrap();
+        inner_guard.state = NotWaiting;
+        self.condvar.notify_all();
+
+        let exited = wait_result?;
+        if exited {
+            // The child has exited. Reap it with std::process::Child::wait. The state was Waiting
+            // when we re-acquired the lock, so there are no other threads in blocking waits (other
+            // waiters would be sleeping on the condvar), and it's safe to free the child PID.
+            let exit_status = inner_guard.child.wait()?;
+            inner_guard.state = Exited(exit_status);
+            Ok(Some(exit_status))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Return the child's exit status if it has already exited. If the child is still running,
+    /// return `Ok(None)`.
+    pub fn try_wait(&self) -> io::Result<Option<ExitStatus>> {
+        // Taking this lock will not block for long, because .wait() and .wait_deadline() don't
+        // hold it while waiting.
+        let inner_guard = self.inner.lock().unwrap();
+        self.try_wait_inner(inner_guard)
+    }
+
+    fn try_wait_inner(
+        &self,
+        mut inner_guard: MutexGuard<SharedChildInner>,
+    ) -> io::Result<Option<ExitStatus>> {
         match inner_guard.state {
-            // If there are no blocking waiters, fall through.
-            NotWaiting => {}
-
-            // If another thread is already doing a blocking .wait(), short circuit without
-            // checking the child. It could be ok to have multiple threads calling waitid at the
-            // same time if they all used WNOWAIT. (We don't actually do that, but we could.)
-            // However, it's *not* ok to let one thread reap the child (i.e. inner.child.try_wait()
-            // below) while other threads are waiting, because some of the waiters will randomly
-            // get "No child processes" errors depending on the kernel's order of operations. So we
-            // don't want to fall through in this case. We rely on the waiting thread to do an
-            // initial non-blocking wait before releasing the inner lock, to avoid a race in the
-            // case where the child exited long ago. See the comments in .wait() above.
-            Waiting => return Ok(None),
-
-            Exited(exit_status) => return Ok(Some(exit_status)),
-        };
-
-        // No one is waiting on the child. Check to see if it's already exited. If it has, reap it
-        // and put ourselves in the Exited state. There can't be any other waiters to signal,
-        // because the state was NotWaiting when we started, and we're still holding the lock.
-        inner_guard.try_wait_and_reap()
+            // The child has already been reaped. Return its saved exit status.
+            Exited(exit_status) => Ok(Some(exit_status)),
+            // There are no other blocking waiters, so it's safe to (potentially) reap the child
+            // and free the child PID with std::process::Child::try_wait.
+            NotWaiting => {
+                if let Some(status) = inner_guard.child.try_wait()? {
+                    inner_guard.state = Exited(status);
+                    Ok(Some(status))
+                } else {
+                    Ok(None)
+                }
+            }
+            // There is another blocking waiter, which might still be in libc::waitid. Poll the
+            // child to see whether it's exited, without reaping it. This library used to take the
+            // `Waiting` status as a proxy for "not exited yet", but we no longer do that for two
+            // reasons:
+            // 1. That risks a subtle race condition. If a wait()ing thread sets the Waiting status
+            //    and releases the child lock without first polling the child, a call to try_wait()
+            //    from another thread at the exact same time might incorrectly assume the child
+            //    hasn't exited yet, even if in fact it exited long ago. Polling before releasing
+            //    the lock avoids this, but it's easy to forget. Note that this is currently a bug
+            //    in the Python standard library: https://github.com/python/cpython/issues/127050
+            // 2. If try_wait() is racing against child exit, it's possible to have a case where
+            //    polling *would've* returned true, but we don't poll and instead return false. We
+            //    used to say we didn't care about that, because if you're racing exit then you
+            //    shouldn't really care answer you get. But that's not entirely fair, because you
+            //    might be calling try_wait() in response to receiving SIGCHLD, in which case you
+            //    *know* the child has exited.  In that case you're not really racing against exit,
+            //    but only against the wait() thread. We prefer to guarantee that you'll get true
+            //    in that case. (It's arguably more robust to call wait() instead if you *know* the
+            //    child has exited, but either should work after SIGCHLD.)
+            Waiting => {
+                if sys::try_wait_noreap(sys::get_handle(&inner_guard.child))? {
+                    // The child has exited, but we can't reap it without conflicting with the
+                    // other waiter, so use `.wait()` instead to synchronize with it.
+                    drop(inner_guard);
+                    let exit_status = self.wait()?;
+                    Ok(Some(exit_status))
+                } else {
+                    Ok(None)
+                }
+            }
+        }
     }
 
     /// Send a kill signal to the child. On Unix this sends SIGKILL, and you
     /// should call `wait` afterwards to avoid leaving a zombie. If the process
     /// has already been waited on, this returns `Ok(())` and does nothing.
     pub fn kill(&self) -> io::Result<()> {
-        // The reason we can do this, but the standard library can't, is that our SharedChild::wait
-        // function uses the newer (i.e. only 20 years old) libc::waitid with the WNOHANG flag,
-        // which lets it wait for the child to exit without reaping it. The actual reaping happens
-        // after SharedChild::wait re-acquires the inner lock, which is the same lock we take here,
-        // preventing the PID reuse race.
+        // The reason we can do this, but the standard library can't, is that on Unix our
+        // SharedChild::wait function uses the newer (i.e. only 20 years old) libc::waitid with the
+        // WNOWAIT flag, which lets it wait for the child to exit without reaping it. The actual
+        // reaping happens after SharedChild::wait re-acquires the inner lock, which is the same
+        // lock we take here, preventing the PID reuse race.
         //
-        // Taking this lock won't block, because wait() doesn't hold it while blocking. Also we
-        // always reap the child process via Child::try_wait, so this is a no-op after the child
-        // process is reaped.
+        // Taking this lock won't block, because .wait() and .wait_deadline() don't hold it while
+        // blocking. Also we always reap the child process via std::process::Child methods, so this
+        // is a safe no-op after we've freed the child PID.
         self.inner.lock().unwrap().child.kill()
     }
 
     /// Consume the `SharedChild` and return the
-    /// [`std::process::Child`](https://doc.rust-lang.org/std/process/struct.Child.html)
-    /// it contains.
+    /// [`std::process::Child`](https://doc.rust-lang.org/std/process/struct.Child.html) it
+    /// contains.
     ///
-    /// We never reap the child process except by calling `Child::try_wait` on it, so the child
-    /// object's inner state is correct, even if it was waited on while it was shared.
+    /// We never reap the child process except by calling
+    /// [`std::process::Child`](https://doc.rust-lang.org/std/process/struct.Child.html) methods on
+    /// it, so the child object's inner state is correct, even if it was waited on while it was
+    /// shared.
     pub fn into_inner(self) -> Child {
         self.inner.into_inner().unwrap().child
     }
@@ -344,6 +369,7 @@ mod tests {
     use std::error::Error;
     use std::process::{Command, Stdio};
     use std::sync::Arc;
+    use std::time::{Duration, Instant};
 
     // Python isn't available on some Unix platforms, e.g. Android, so we need this instead.
     #[cfg(unix)]
@@ -360,17 +386,24 @@ mod tests {
 
     // Python isn't available on some Unix platforms, e.g. Android, so we need this instead.
     #[cfg(unix)]
-    pub fn sleep_forever_cmd() -> Command {
+    pub fn sleep_cmd(duration: Duration) -> Command {
         let mut cmd = Command::new("sleep");
-        cmd.arg("1000000");
+        cmd.arg(format!("{}", duration.as_secs_f32()));
         cmd
     }
 
     #[cfg(not(unix))]
-    pub fn sleep_forever_cmd() -> Command {
+    pub fn sleep_cmd(duration: Duration) -> Command {
         let mut cmd = Command::new("python");
-        cmd.arg("-c").arg("import time; time.sleep(1000000)");
+        cmd.arg("-c").arg(format!(
+            "import time; time.sleep({})",
+            duration.as_secs_f32()
+        ));
         cmd
+    }
+
+    pub fn sleep_forever_cmd() -> Command {
+        sleep_cmd(Duration::from_secs(1000000))
     }
 
     // Python isn't available on some Unix platforms, e.g. Android, so we need this instead.
@@ -396,6 +429,112 @@ mod tests {
         assert_eq!(status.code().unwrap(), 0);
     }
 
+    #[cfg(feature = "timeout")]
+    fn exited_but_unawaited_child() -> SharedChild {
+        // The `true` command will exit immediately.
+        let child = SharedChild::spawn(&mut true_cmd()).unwrap();
+        // Wait on the child "out of band", so the SharedChild state is not updated.
+        let handle = sys::get_handle(&child.inner.lock().unwrap().child);
+        sys::wait_noreap(handle).unwrap();
+        // At this point the child has definitely exited, but the SharedChild is still in the
+        // NotWaiting state.
+        child
+    }
+
+    // This test is pretty much copy-pasted as test_wait_deadline below. Copy-paste any future
+    // changes too.
+    #[test]
+    #[cfg(feature = "timeout")]
+    fn test_wait_timeout() {
+        let exited_child = exited_but_unawaited_child();
+        // The first .wait_timeout reaps the child.
+        assert!(exited_child
+            .wait_timeout(Duration::from_secs(0))
+            .expect("no IO error")
+            .expect("did not time out")
+            .success());
+        // The second returns the cached status.
+        assert!(exited_child
+            .wait_timeout(Duration::from_secs(0))
+            .expect("no IO error")
+            .expect("did not time out")
+            .success());
+
+        // Test two different timeout cases. First, if we're the only waiter...
+        let long_child = Arc::new(SharedChild::spawn(&mut sleep_forever_cmd()).unwrap());
+        let status = long_child
+            .wait_timeout(Duration::from_millis(10))
+            .expect("no IO error");
+        assert!(status.is_none(), "timed out");
+        // And second, if there's another background thread already waiting (this tests the condvar
+        // wait loop, which the first case skips)...
+        let long_child_clone = Arc::clone(&long_child);
+        std::thread::spawn(move || long_child_clone.wait().unwrap());
+        // There's no perfect way to make sure that the bg thread has already entered the blocking
+        // wait, so just sleep for a moment before waiting. Weird timing here might mean we're not
+        // testing what we meant to, but it won't make the test fail.
+        std::thread::sleep(Duration::from_millis(10));
+        let status = long_child
+            .wait_timeout(Duration::from_millis(10))
+            .expect("no IO error");
+        assert!(status.is_none(), "timed out");
+
+        // Kill and clean up the long_child, mostly just to avoid leaving processes around after
+        // the test suite is finished.
+        long_child.kill().unwrap();
+        long_child
+            .wait_timeout(Duration::from_millis(100))
+            .expect("no IO error")
+            .expect("did not time out");
+    }
+
+    // This test is pretty much copy-pasted as test_wait_timeout above. Copy-paste any future
+    // changes too.
+    #[test]
+    #[cfg(feature = "timeout")]
+    fn test_wait_deadline() {
+        let exited_child = exited_but_unawaited_child();
+        // The first .wait_deadline reaps the child.
+        assert!(exited_child
+            .wait_deadline(Instant::now() + Duration::from_secs(0))
+            .expect("no IO error")
+            .expect("did not time out")
+            .success());
+        // The second returns the cached status.
+        assert!(exited_child
+            .wait_deadline(Instant::now() + Duration::from_secs(0))
+            .expect("no IO error")
+            .expect("did not time out")
+            .success());
+
+        // Test two different timeout cases. First, if we're the only waiter...
+        let long_child = Arc::new(SharedChild::spawn(&mut sleep_forever_cmd()).unwrap());
+        let status = long_child
+            .wait_deadline(Instant::now() + Duration::from_millis(10))
+            .expect("no IO error");
+        assert!(status.is_none(), "timed out");
+        // And second, if there's another background thread already waiting (this tests the condvar
+        // wait loop, which the first case skips)...
+        let long_child_clone = Arc::clone(&long_child);
+        std::thread::spawn(move || long_child_clone.wait().unwrap());
+        // There's no perfect way to make sure that the bg thread has already entered the blocking
+        // wait, so just sleep for a moment before waiting. Weird timing here might mean we're not
+        // testing what we meant to, but it won't make the test fail.
+        std::thread::sleep(Duration::from_millis(10));
+        let status = long_child
+            .wait_deadline(Instant::now() + Duration::from_millis(10))
+            .expect("no IO error");
+        assert!(status.is_none(), "timed out");
+
+        // Kill and clean up the long_child, mostly just to avoid leaving processes around after
+        // the test suite is finished.
+        long_child.kill().unwrap();
+        long_child
+            .wait_deadline(Instant::now() + Duration::from_millis(100))
+            .expect("no IO error")
+            .expect("did not time out");
+    }
+
     #[test]
     fn test_kill() {
         let child = SharedChild::spawn(&mut sleep_forever_cmd()).unwrap();
@@ -413,7 +552,7 @@ mod tests {
         // The child will handle that signal asynchronously, so we check it
         // repeatedly in a busy loop.
         let mut maybe_status = None;
-        while let None = maybe_status {
+        while maybe_status.is_none() {
             maybe_status = child.try_wait().unwrap();
         }
         assert!(maybe_status.is_some());
@@ -439,11 +578,13 @@ mod tests {
         // There are ominous reports (https://bugs.python.org/issue10812) of a
         // broken waitid implementation on OSX, which might hang forever if it
         // tries to wait on a child that's already exited.
-        let child = true_cmd().spawn().unwrap();
-        sys::wait_without_reaping(sys::get_handle(&child)).unwrap();
+        let mut child = true_cmd().spawn().unwrap();
+        sys::wait_noreap(sys::get_handle(&child)).unwrap();
         // At this point the child has definitely exited. Wait again to test
         // that a second wait doesn't block.
-        sys::wait_without_reaping(sys::get_handle(&child)).unwrap();
+        sys::wait_noreap(sys::get_handle(&child)).unwrap();
+        // Clean up the child to avoid leaving a zombie.
+        child.wait().unwrap();
     }
 
     #[test]
@@ -523,22 +664,18 @@ mod tests {
     fn test_wait_try_wait_race() -> Result<(), Box<dyn Error>> {
         // Make sure that .wait() and .try_wait() can't race against each other. The scenario we're
         // worried about is:
-        //   1. wait() takes the child lock, set the state to Waiting, and releases the child lock.
-        //   2. try_wait swoops in, takes the child lock, sees the Waiting state, and returns
-        //      Ok(None).
+        //   1. wait() takes the lock, set the state to Waiting, and releases the lock.
+        //   2. try_wait swoops in, takes the lock, sees the Waiting state, and returns Ok(None).
         //   3. wait() resumes, actually calls waitit(), observes the child has exited, retakes the
-        //      child lock, reaps the child, and sets the state to Exited.
+        //      lock, reaps the child, and sets the state to Exited.
         // A race like this could cause .try_wait() to report that the child hasn't exited, even if
         // in fact the child exited long ago. A subsequent call to .try_wait() would almost
         // certainly report Ok(Some(_)), but the first call is still a bug. The way to prevent the
-        // bug is by either [a] making .try_wait() call waitid() even it the state is Waiting or
-        // [b] making .wait() do a non-blocking call to waitid() before releasing the child lock.
-        // (Remember that we can't hold the child lock while blocking.)
+        // bug is by making .wait() do a non-blocking call to waitid() before releasing the lock.
         //
         // This was a failing test when I first committed it. Most of the time it would fail after
         // a few hundred iterations, but sometimes it took thousands. Default to one second so that
         // the tests don't take too long, but use an env var to configure a really big run in CI.
-        use std::time::{Duration, Instant};
         let mut test_duration_secs: u64 = 1;
         if let Ok(test_duration_secs_str) = std::env::var("SHARED_CHILD_RACE_TEST_SECONDS") {
             dbg!(&test_duration_secs_str);
@@ -552,7 +689,7 @@ mod tests {
             let child = SharedChild::spawn(&mut true_cmd())?;
             // Wait for the child to exit, without updating the SharedChild state.
             let handle = sys::get_handle(&child.inner.lock().unwrap().child);
-            sys::wait_without_reaping(handle)?;
+            sys::wait_noreap(handle)?;
             // Spawn two threads, one to wait() and one to try_wait(). It should be impossible for the
             // try_wait thread to return Ok(None) at this point. However, we want to make sure there's
             // no race condition between them, where the wait() thread has said it's waiting and
@@ -574,9 +711,7 @@ mod tests {
             let test_time_so_far = Instant::now().saturating_duration_since(test_start);
             assert!(
                 try_wait_ret.is_some(),
-                "encountered the race condition after {:?} ({} iterations)",
-                test_time_so_far,
-                iterations,
+                "encountered the race condition after {test_time_so_far:?} ({iterations} iterations)",
             );
             iterations += 1;
 
