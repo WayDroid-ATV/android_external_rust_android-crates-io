@@ -5,8 +5,11 @@ use core::{
     array,
     convert::TryFrom,
     fmt::{self, Display, Formatter},
+    ops::Deref,
+    ptr::NonNull,
 };
 use log::warn;
+use safe_mmio::{fields::ReadPureWrite, UniqueMmioPointer};
 use thiserror::Error;
 
 const INVALID_READ: u32 = 0xffffffff;
@@ -123,14 +126,14 @@ impl Cam {
     pub fn cam_offset(self, device_function: DeviceFunction, register_offset: u8) -> u32 {
         assert!(device_function.valid());
 
-        let bdf = (device_function.bus as u32) << 8
-            | (device_function.device as u32) << 3
-            | device_function.function as u32;
+        let bdf = ((device_function.bus as u32) << 8)
+            | ((device_function.device as u32) << 3)
+            | (device_function.function as u32);
         let address =
-            bdf << match self {
+            (bdf << match self {
                 Cam::MmioCam => 8,
                 Cam::Ecam => 12,
-            } | register_offset as u32;
+            }) | (register_offset as u32);
         // Ensure that address is within range.
         assert!(address < self.size());
         // Ensure that address is word-aligned.
@@ -150,7 +153,7 @@ impl<C: ConfigurationAccess> PciRoot<C> {
 
     /// Enumerates PCI devices on the given bus.
     pub fn enumerate_bus(&self, bus: u8) -> BusDeviceIterator<C> {
-        // Safe because the BusDeviceIterator only reads read-only fields.
+        // SAFETY: The `BusDeviceIterator` only reads read-only fields.
         let configuration_access = unsafe { self.configuration_access.unsafe_clone() };
         BusDeviceIterator {
             configuration_access,
@@ -199,9 +202,13 @@ impl<C: ConfigurationAccess> PciRoot<C> {
         let mut bar_index = 0;
         while bar_index < 6 {
             let info = self.bar_info(device_function, bar_index)?;
-            let takes_two_entries = info.takes_two_entries();
-            bars[usize::from(bar_index)] = Some(info);
-            bar_index += if takes_two_entries { 2 } else { 1 };
+            let bar_entries = if info.as_ref().is_some_and(BarInfo::takes_two_entries) {
+                2
+            } else {
+                1
+            };
+            bars[usize::from(bar_index)] = info;
+            bar_index += bar_entries;
         }
         Ok(bars)
     }
@@ -211,10 +218,18 @@ impl<C: ConfigurationAccess> PciRoot<C> {
         &mut self,
         device_function: DeviceFunction,
         bar_index: u8,
-    ) -> Result<BarInfo, PciError> {
+    ) -> Result<Option<BarInfo>, PciError> {
+        // Disable address decoding while sizing the BAR.
+        let (_status, command_orig) = self.get_status_command(device_function);
+        let command_disable_decode = command_orig & !(Command::IO_SPACE | Command::MEMORY_SPACE);
+        if command_disable_decode != command_orig {
+            self.set_command(device_function, command_disable_decode);
+        }
+
         let bar_orig = self
             .configuration_access
             .read_word(device_function, BAR0_OFFSET + 4 * bar_index);
+        let io_space = bar_orig & 0x00000001 == 0x00000001;
 
         // Get the size of the BAR.
         self.configuration_access.write_word(
@@ -222,12 +237,44 @@ impl<C: ConfigurationAccess> PciRoot<C> {
             BAR0_OFFSET + 4 * bar_index,
             0xffffffff,
         );
-        let size_mask = self
-            .configuration_access
-            .read_word(device_function, BAR0_OFFSET + 4 * bar_index);
+        let mut size_mask = u64::from(
+            self.configuration_access
+                .read_word(device_function, BAR0_OFFSET + 4 * bar_index),
+        );
+
+        // Read the upper 32 bits of 64-bit memory BARs.
+        let (address_top, size_top) = if bar_orig & 0b111 == 0b100 {
+            if bar_index >= 5 {
+                return Err(PciError::InvalidBarType);
+            }
+            let bar_top_orig = self
+                .configuration_access
+                .read_word(device_function, BAR0_OFFSET + 4 * (bar_index + 1));
+            self.configuration_access.write_word(
+                device_function,
+                BAR0_OFFSET + 4 * (bar_index + 1),
+                0xffffffff,
+            );
+            let size_top = self
+                .configuration_access
+                .read_word(device_function, BAR0_OFFSET + 4 * (bar_index + 1));
+            self.configuration_access.write_word(
+                device_function,
+                BAR0_OFFSET + 4 * (bar_index + 1),
+                bar_top_orig,
+            );
+            (bar_top_orig, size_top)
+        } else {
+            let size_top = if size_mask == 0 { 0 } else { 0xffffffff };
+            (0, size_top)
+        };
+        size_mask |= u64::from(size_top) << 32;
+
+        // For IO BARs bits 2 and 3 can be part of the address.
+        let flag_bits = if io_space { 0b11 } else { 0b1111 };
         // A wrapping add is necessary to correctly handle the case of unused BARs, which read back
         // as 0, and should be treated as size 0.
-        let size = (!(size_mask & 0xfffffff0)).wrapping_add(1);
+        let size = (!(size_mask & !flag_bits)).wrapping_add(1);
 
         // Restore the original value.
         self.configuration_access.write_word(
@@ -236,30 +283,30 @@ impl<C: ConfigurationAccess> PciRoot<C> {
             bar_orig,
         );
 
-        if bar_orig & 0x00000001 == 0x00000001 {
+        if command_disable_decode != command_orig {
+            self.set_command(device_function, command_orig);
+        }
+
+        if size_mask == 0 {
+            Ok(None)
+        } else if io_space {
             // I/O space
             let address = bar_orig & 0xfffffffc;
-            Ok(BarInfo::IO { address, size })
+            Ok(Some(BarInfo::IO {
+                address,
+                size: size as u32,
+            }))
         } else {
             // Memory space
-            let mut address = u64::from(bar_orig & 0xfffffff0);
+            let address = u64::from(bar_orig & 0xfffffff0) | (u64::from(address_top) << 32);
             let prefetchable = bar_orig & 0x00000008 != 0;
             let address_type = MemoryBarType::try_from(((bar_orig & 0x00000006) >> 1) as u8)?;
-            if address_type == MemoryBarType::Width64 {
-                if bar_index >= 5 {
-                    return Err(PciError::InvalidBarType);
-                }
-                let address_top = self
-                    .configuration_access
-                    .read_word(device_function, BAR0_OFFSET + 4 * (bar_index + 1));
-                address |= u64::from(address_top) << 32;
-            }
-            Ok(BarInfo::Memory {
+            Ok(Some(BarInfo::Memory {
                 address_type,
                 prefetchable,
                 address,
                 size,
-            })
+            }))
         }
     }
 
@@ -315,12 +362,12 @@ pub trait ConfigurationAccess {
 /// `ConfigurationAccess` implementation for memory-mapped access to a PCI root complex, via either
 /// a 16 MiB region for the PCI Configuration Access Mechanism or a 256 MiB region for the PCIe
 /// Enhanced Configuration Access Mechanism.
-pub struct MmioCam {
-    mmio_base: *mut u32,
+pub struct MmioCam<'a> {
+    mmio: UniqueMmioPointer<'a, [ReadPureWrite<u32>]>,
     cam: Cam,
 }
 
-impl MmioCam {
+impl MmioCam<'_> {
     /// Wraps the PCI root complex with the given MMIO base address.
     ///
     /// Panics if the base address is not aligned to a 4-byte boundary.
@@ -329,64 +376,47 @@ impl MmioCam {
     ///
     /// `mmio_base` must be a valid pointer to an appropriately-mapped MMIO region of at least
     /// 16 MiB (if `cam == Cam::MmioCam`) or 256 MiB (if `cam == Cam::Ecam`). The pointer must be
-    /// valid for the entire lifetime of the program (i.e. `'static`), which implies that no Rust
-    /// references may be used to access any of the memory region at any point.
+    /// valid for the lifetime `'a`, which implies that no Rust references may be used to access any
+    /// of the memory region at least during that lifetime.
     pub unsafe fn new(mmio_base: *mut u8, cam: Cam) -> Self {
         assert!(mmio_base as usize & 0x3 == 0);
         Self {
-            mmio_base: mmio_base as *mut u32,
+            mmio: UniqueMmioPointer::new(NonNull::slice_from_raw_parts(
+                NonNull::new(mmio_base as *mut ReadPureWrite<u32>).unwrap(),
+                cam.size() as usize / size_of::<u32>(),
+            )),
             cam,
         }
     }
 }
 
-impl ConfigurationAccess for MmioCam {
+impl ConfigurationAccess for MmioCam<'_> {
     fn read_word(&self, device_function: DeviceFunction, register_offset: u8) -> u32 {
         let address = self.cam.cam_offset(device_function, register_offset);
-        // Safe because both the `mmio_base` and the address offset are properly aligned, and the
-        // resulting pointer is within the MMIO range of the CAM.
-        unsafe {
-            // Right shift to convert from byte offset to word offset.
-            (self.mmio_base.add((address >> 2) as usize)).read_volatile()
-        }
+        // Right shift to convert from byte offset to word offset.
+        self.mmio
+            .deref()
+            .get((address >> 2) as usize)
+            .unwrap()
+            .read()
     }
 
     fn write_word(&mut self, device_function: DeviceFunction, register_offset: u8, data: u32) {
         let address = self.cam.cam_offset(device_function, register_offset);
-        // Safe because both the `mmio_base` and the address offset are properly aligned, and the
-        // resulting pointer is within the MMIO range of the CAM.
-        unsafe {
-            // Right shift to convert from byte offset to word offset.
-            let ptr = self.mmio_base.add((address >> 2) as usize);
-            #[cfg(not(target_arch = "aarch64"))]
-            {
-                ptr.write_volatile(data)
-            }
-            #[cfg(target_arch = "aarch64")]
-            {
-                core::arch::asm!(
-                    "str {value:w}, [{ptr}]",
-                    value = in(reg) data,
-                    ptr = in(reg) ptr,
-                )
-            }
-        }
+        self.mmio.get((address >> 2) as usize).unwrap().write(data);
     }
 
     unsafe fn unsafe_clone(&self) -> Self {
         Self {
-            mmio_base: self.mmio_base,
+            mmio: UniqueMmioPointer::new(NonNull::new(self.mmio.ptr().cast_mut()).unwrap()),
             cam: self.cam,
         }
     }
 }
 
-// SAFETY: `mmio_base` is only used for MMIO, which can happen from any thread or CPU core.
-unsafe impl Send for MmioCam {}
-
 // SAFETY: `&MmioCam` only allows MMIO reads, which are fine to happen concurrently on different CPU
 // cores.
-unsafe impl Sync for MmioCam {}
+unsafe impl Sync for MmioCam<'_> {}
 
 /// Information about a PCI Base Address Register.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -401,7 +431,7 @@ pub enum BarInfo {
         /// The memory address, always 16-byte aligned.
         address: u64,
         /// The size of the BAR in bytes.
-        size: u32,
+        size: u64,
     },
     /// The BAR is for an I/O region.
     IO {
@@ -427,7 +457,7 @@ impl BarInfo {
 
     /// Returns the address and size of this BAR if it is a memory bar, or `None` if it is an IO
     /// BAR.
-    pub fn memory_address_size(&self) -> Option<(u64, u32)> {
+    pub fn memory_address_size(&self) -> Option<(u64, u64)> {
         if let Self::Memory { address, size, .. } = self {
             Some((*address, *size))
         } else {
@@ -594,7 +624,7 @@ impl<C: ConfigurationAccess> Iterator for BusDeviceIterator<C> {
 }
 
 /// An identifier for a PCI bus, device and function.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct DeviceFunction {
     /// The PCI bus number, between 0 and 255.
     pub bus: u8,
@@ -672,6 +702,236 @@ impl From<u8> for HeaderType {
             0x01 => Self::PciPciBridge,
             0x02 => Self::PciCardbusBridge,
             _ => Self::Unrecognised(value),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn read_status_command() {
+        let status_command = 0x0020_0003;
+        let device_function = DeviceFunction {
+            bus: 0,
+            device: 1,
+            function: 2,
+        };
+        let fake_cam = FakeCam {
+            device_function,
+            bar_values: [0, 1, 4, 0, 0, 0],
+            bar_masks: [
+                0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            ],
+            status_command,
+        };
+        let root = PciRoot::new(fake_cam);
+
+        assert_eq!(
+            root.get_status_command(device_function),
+            (
+                Status::MHZ_66_CAPABLE,
+                Command::IO_SPACE | Command::MEMORY_SPACE
+            )
+        );
+    }
+
+    #[test]
+    fn bar_info_unused() {
+        let status_command = 0x0020_0003;
+        let device_function = DeviceFunction {
+            bus: 0,
+            device: 1,
+            function: 2,
+        };
+        let fake_cam = FakeCam {
+            device_function,
+            bar_values: [0, 1, 4, 0, 0, 0],
+            bar_masks: [
+                0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+            ],
+            status_command,
+        };
+        let fake_cam_orig = fake_cam.clone();
+        let mut root = PciRoot::new(fake_cam);
+
+        assert_eq!(
+            root.bars(device_function).unwrap(),
+            [
+                None,
+                Some(BarInfo::IO {
+                    address: 0,
+                    size: 0,
+                }),
+                Some(BarInfo::Memory {
+                    address_type: MemoryBarType::Width64,
+                    prefetchable: false,
+                    address: 0,
+                    size: 0,
+                }),
+                None,
+                None,
+                None,
+            ]
+        );
+
+        // Status and command should be restored to their initial values, as should BAR values.
+        assert_eq!(root.configuration_access, fake_cam_orig);
+    }
+
+    #[test]
+    fn bar_info_32() {
+        let status_command = 0x0020_0003;
+        let device_function = DeviceFunction {
+            bus: 0,
+            device: 1,
+            function: 2,
+        };
+        let fake_cam = FakeCam {
+            device_function,
+            bar_values: [0b0000, 0b0010, 0b1000, 0b01, 0b0000, 0b0000],
+            bar_masks: [63, 31, 127, 7, 1023, 255],
+            status_command,
+        };
+        let fake_cam_orig = fake_cam.clone();
+        let mut root = PciRoot::new(fake_cam);
+
+        assert_eq!(
+            root.bars(device_function).unwrap(),
+            [
+                Some(BarInfo::Memory {
+                    address_type: MemoryBarType::Width32,
+                    prefetchable: false,
+                    address: 0,
+                    size: 64,
+                }),
+                Some(BarInfo::Memory {
+                    address_type: MemoryBarType::Below1MiB,
+                    prefetchable: false,
+                    address: 0,
+                    size: 32,
+                }),
+                Some(BarInfo::Memory {
+                    address_type: MemoryBarType::Width32,
+                    prefetchable: true,
+                    address: 0,
+                    size: 128,
+                }),
+                Some(BarInfo::IO {
+                    address: 0,
+                    size: 8,
+                }),
+                Some(BarInfo::Memory {
+                    address_type: MemoryBarType::Width32,
+                    prefetchable: false,
+                    address: 0,
+                    size: 1024,
+                }),
+                Some(BarInfo::Memory {
+                    address_type: MemoryBarType::Width32,
+                    prefetchable: false,
+                    address: 0,
+                    size: 256,
+                }),
+            ]
+        );
+
+        // Status and command should be restored to their initial values, as should BAR values.
+        assert_eq!(root.configuration_access, fake_cam_orig);
+    }
+
+    #[test]
+    fn bar_info_64() {
+        let status_command = 0x0020_0003;
+        let device_function = DeviceFunction {
+            bus: 0,
+            device: 1,
+            function: 2,
+        };
+        let fake_cam = FakeCam {
+            device_function,
+            bar_values: [0b0100, 0, 0b0100, 0, 0b1100, 0],
+            bar_masks: [127, 0, 0xffffffff, 3, 255, 0],
+            status_command,
+        };
+        let fake_cam_orig = fake_cam.clone();
+        let mut root = PciRoot::new(fake_cam);
+
+        assert_eq!(
+            root.bars(device_function).unwrap(),
+            [
+                Some(BarInfo::Memory {
+                    address_type: MemoryBarType::Width64,
+                    prefetchable: false,
+                    address: 0,
+                    size: 128,
+                }),
+                None,
+                Some(BarInfo::Memory {
+                    address_type: MemoryBarType::Width64,
+                    prefetchable: false,
+                    address: 0,
+                    size: 0x400000000,
+                }),
+                None,
+                Some(BarInfo::Memory {
+                    address_type: MemoryBarType::Width64,
+                    prefetchable: true,
+                    address: 0,
+                    size: 256,
+                }),
+                None,
+            ]
+        );
+
+        // Status and command should be restored to their initial values, as should BAR values.
+        assert_eq!(root.configuration_access, fake_cam_orig);
+    }
+
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    struct FakeCam {
+        device_function: DeviceFunction,
+        bar_values: [u32; 6],
+        // Bits which can't be changed.
+        bar_masks: [u32; 6],
+        status_command: u32,
+    }
+
+    impl ConfigurationAccess for FakeCam {
+        fn read_word(&self, device_function: DeviceFunction, register_offset: u8) -> u32 {
+            assert_eq!(device_function, self.device_function);
+            assert_eq!(register_offset & 0b11, 0);
+            if register_offset == STATUS_COMMAND_OFFSET {
+                self.status_command
+            } else if register_offset >= BAR0_OFFSET && register_offset < 0x28 {
+                let bar_index = usize::from((register_offset - BAR0_OFFSET) / 4);
+                self.bar_values[bar_index]
+            } else {
+                println!("Reading unsupported register offset {}", register_offset);
+                0xffffffff
+            }
+        }
+
+        fn write_word(&mut self, device_function: DeviceFunction, register_offset: u8, data: u32) {
+            assert_eq!(device_function, self.device_function);
+            assert_eq!(register_offset & 0b11, 0);
+            if register_offset == STATUS_COMMAND_OFFSET {
+                // Ignore write to status, only write to command.
+                self.status_command = (self.status_command & 0xffff_0000) | (data & 0x0000_ffff);
+            } else if register_offset >= BAR0_OFFSET && register_offset < 0x28 {
+                let bar_index = usize::from((register_offset - BAR0_OFFSET) / 4);
+                let bar_mask = self.bar_masks[bar_index];
+                self.bar_values[bar_index] =
+                    (bar_mask & self.bar_values[bar_index]) | (!bar_mask & data);
+            } else {
+                println!("Ignoring write of {:#010x} to {}", data, register_offset);
+                return;
+            }
+        }
+
+        unsafe fn unsafe_clone(&self) -> Self {
+            self.clone()
         }
     }
 }
