@@ -88,22 +88,8 @@ impl KernelLog {
         // environment variable "ANDROID_FILE_<file_name>" where <file_name> is the path to the
         // file where non alpha-numeric characters are replaced with '_'.
         match env::var("ANDROID_FILE__dev_kmsg") {
-            Ok(val) => {
-                let fd = val.parse().map_err(|_| {
-                    Error::new(ErrorKind::Other, "ANDROID_FILE__dev_kmsg doesn't parse")
-                })?;
-                // SAFETY: This is a fd provided by init, so it outlives the process unless
-                // something closes it. We only use it for `dup`ing it to an owned file, so
-                // we are unconcerned about any interleaved read/write/seeks. Since this fd
-                // is not owned by any file object, it is not possible to close it without
-                // `unsafe`.
-                let borrowed = unsafe { std::os::fd::BorrowedFd::borrow_raw(fd) };
-                Ok(File::from(borrowed.try_clone_to_owned()?))
-            }
-            Err(e) => Err(Error::new(
-                ErrorKind::Other,
-                "ANDROID_FILE__dev_kmsg doesn't exist",
-            )),
+            Ok(val) => OpenOptions::new().write(true).open(format!("/proc/self/fd/{}", val)),
+            Err(e) => Err(Error::new(ErrorKind::Other, "ANDROID_FILE__dev_kmsg doesn't exist")),
         }
     }
 
