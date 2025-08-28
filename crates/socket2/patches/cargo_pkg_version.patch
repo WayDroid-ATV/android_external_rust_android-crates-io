@@ -1,0 +1,48 @@
+From 50fc51e73d90bac51bca71b765e0f0896c204fb2 Mon Sep 17 00:00:00 2001
+From: Taiki Endo <te316e89@gmail.com>
+Date: Sun, 20 Jul 2025 12:32:01 +0900
+Subject: [PATCH] Update windows-sys to 0.60
+
+---
+ src/socket.rs      | 4 ++--
+ src/sys/windows.rs | 5 ++---
+ 3 files changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/src/socket.rs b/src/socket.rs
+index 1afb50d9..22fe858b 100644
+--- a/src/socket.rs
++++ b/src/socket.rs
+@@ -871,7 +871,7 @@ impl Socket {
+     pub fn keepalive(&self) -> io::Result<bool> {
+         unsafe {
+             getsockopt::<Bool>(self.as_raw(), sys::SOL_SOCKET, sys::SO_KEEPALIVE)
+-                .map(|keepalive| keepalive != 0)
++                .map(|keepalive| keepalive != false as Bool)
+         }
+     }
+ 
+@@ -2219,7 +2219,7 @@ impl Socket {
+     pub fn tcp_nodelay(&self) -> io::Result<bool> {
+         unsafe {
+             getsockopt::<Bool>(self.as_raw(), sys::IPPROTO_TCP, sys::TCP_NODELAY)
+-                .map(|nodelay| nodelay != 0)
++                .map(|nodelay| nodelay != false as Bool)
+         }
+     }
+ 
+diff --git a/src/sys/windows.rs b/src/sys/windows.rs
+index 33678bc2..2d43e2bf 100644
+--- a/src/sys/windows.rs
++++ b/src/sys/windows.rs
+@@ -93,9 +93,8 @@ pub(crate) const SOL_SOCKET: c_int = windows_sys::Win32::Networking::WinSock::SO
+ /// NOTE: <https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-getsockopt>
+ /// documents that options such as `TCP_NODELAY` and `SO_KEEPALIVE` expect a
+ /// `BOOL` (alias for `c_int`, 4 bytes), however in practice this turns out to
+-/// be false (or misleading) as a `BOOLEAN` (`c_uchar`, 1 byte) is returned by
+-/// `getsockopt`.
+-pub(crate) type Bool = windows_sys::Win32::Foundation::BOOLEAN;
++/// be false (or misleading) as a `bool` (1 byte) is returned by `getsockopt`.
++pub(crate) type Bool = bool;
+ 
+ /// Maximum size of a buffer passed to system call like `recv` and `send`.
+ const MAX_BUF_LEN: usize = c_int::MAX as usize;

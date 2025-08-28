@@ -1,4 +1,10 @@
 {
   "run_cargo": false,
-  "min_sdk_version": "29"
+  "min_sdk_version": "29",
+  "package": {
+    "windows-link": {
+      "device_supported": false,
+      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
+      }
+  }
 }

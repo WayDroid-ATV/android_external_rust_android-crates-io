@@ -13,21 +13,29 @@ license {
     license_text: ["LICENSE"],
 }
 
-rust_library {
+rust_library_host {
     name: "libwindows_sys",
-    host_supported: true,
     crate_name: "windows_sys",
     cargo_env_compat: true,
     cargo_pkg_version: "0.60.2",
     crate_root: "src/lib.rs",
     edition: "2021",
-    features: ["default"],
-    rustlibs: ["libwindows_targets"],
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
+    features: [
+        "Win32",
+        "Win32_Foundation",
+        "Win32_Networking",
+        "Win32_Networking_WinSock",
+        "Win32_System",
+        "Win32_System_IO",
+        "Win32_System_Threading",
+        "Win32_System_WindowsProgramming",
     ],
-    product_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
+    rustlibs: ["libwindows_targets"],
+    enabled: false,
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }

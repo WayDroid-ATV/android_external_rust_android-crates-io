@@ -1,4 +1,17 @@
 {
   "run_cargo": false,
-  "min_sdk_version": "29"
+  "min_sdk_version": "29",
+  "package": {
+    "windows-sys": {
+    "device_supported": false,
+    "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
+    }
+  },
+  "features": [
+    "Win32_Foundation",
+    "Win32_Networking_WinSock",
+    "Win32_System_IO",
+    "Win32_System_Threading",
+    "Win32_System_WindowsProgramming"
+  ]
 }

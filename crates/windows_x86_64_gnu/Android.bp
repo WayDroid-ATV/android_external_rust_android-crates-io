@@ -13,19 +13,18 @@ license {
     license_text: ["LICENSE"],
 }
 
-rust_library {
+rust_library_host {
     name: "libwindows_x86_64_gnu",
-    host_supported: true,
     crate_name: "windows_x86_64_gnu",
     cargo_env_compat: true,
     cargo_pkg_version: "0.53.0",
     crate_root: "src/lib.rs",
     edition: "2021",
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-    product_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
+    enabled: false,
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+
 }
