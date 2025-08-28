@@ -82,6 +82,7 @@ genrule_defaults {
         "//packages/modules/Nfc:__subpackages__",
         "//packages/modules/Uwb:__subpackages__",
         "//tools/netsim:__subpackages__",
+        "//tools/rootcanal:__subpackages__",
         "//vendor:__subpackages__",
     ],
 }
@@ -98,6 +99,7 @@ genrule_defaults {
         "//packages/modules/Nfc:__subpackages__",
         "//packages/modules/Uwb:__subpackages__",
         "//tools/netsim:__subpackages__",
+        "//tools/rootcanal:__subpackages__",
     ],
 }
 
