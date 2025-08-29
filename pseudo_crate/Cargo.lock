@@ -521,8 +521,8 @@ dependencies = [
  "termtree",
  "textdistance",
  "textwrap 0.16.2",
- "thiserror 2.0.12",
- "thiserror-impl 2.0.12",
+ "thiserror 2.0.16",
+ "thiserror-impl 2.0.16",
  "thread-priority",
  "thread_local",
  "threadpool",
@@ -1382,7 +1382,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -1813,7 +1813,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "smol_str",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
  "toml 0.8.19",
 ]
 
@@ -2066,7 +2066,7 @@ dependencies = [
  "protobuf-codegen",
  "serde",
  "serde_bytes",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -2081,7 +2081,7 @@ dependencies = [
  "protobuf 3.6.0",
  "serde",
  "taffy 0.6.3",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -3259,7 +3259,7 @@ dependencies = [
  "pest_derive",
  "serde",
  "serde_json",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -4226,7 +4226,7 @@ dependencies = [
  "log",
  "num-traits",
  "reqwest",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
  "tokio-util",
 ]
 
@@ -4410,7 +4410,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b7f0d6a1db283ff342c373c82788157bb28293bbb3f41ceee9fd2c4d3f0d7780"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -5142,7 +5142,7 @@ dependencies = [
  "log",
  "netlink-packet-core",
  "netlink-sys",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -5690,7 +5690,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1db05f56d34358a8b1066f67cbb203ee3e7ed2ba674a6263a1d5ec6db2204323"
 dependencies = [
  "memchr",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
  "ucd-trie",
 ]
 
@@ -6805,7 +6805,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "selinux-sys",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -7137,7 +7137,7 @@ version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c73e0ca8c566478040487791c9f488f86c5aec846ca1ab18484be8a1d8c55cd"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -7512,11 +7512,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "2.0.12"
+version = "2.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
+checksum = "3467d614147380f2e4e374161426ff399c91084acd2363eaf549172b3d5e60c0"
 dependencies = [
- "thiserror-impl 2.0.12",
+ "thiserror-impl 2.0.16",
 ]
 
 [[package]]
@@ -7532,9 +7532,9 @@ dependencies = [
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.12"
+version = "2.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
+checksum = "6c5e1be1c48b9172ee610da68fd9cd2770e7a4056cb3fc98710ee6906f0c7960"
 dependencies = [
  "proc-macro2 1.0.96",
  "quote 1.0.40",
@@ -8020,7 +8020,7 @@ dependencies = [
  "log",
  "rand 0.9.2",
  "sha1",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
  "utf-8",
 ]
 
@@ -8103,7 +8103,7 @@ version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c01d12e3a56a4432a8b436f293c25f4808bdf9e9f9f98f9260bba1f1bc5a1f26"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -8364,7 +8364,7 @@ dependencies = [
  "enumn",
  "log",
  "safe-mmio",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
  "zerocopy",
 ]
 
@@ -8378,7 +8378,7 @@ dependencies = [
  "embedded-io",
  "enumn",
  "log",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
  "zerocopy",
 ]
 
