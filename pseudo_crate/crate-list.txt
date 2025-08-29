@@ -15,6 +15,9 @@ arc-swap
 argh
 argh_derive
 argh_shared
+arm-ffa
+arm-pl011-uart
+arm-psci
 arrayvec
 ash
 async-stream
@@ -23,6 +26,7 @@ async-task
 async-trait
 atomic
 atty
+autocfg
 axum
 axum-core
 base64

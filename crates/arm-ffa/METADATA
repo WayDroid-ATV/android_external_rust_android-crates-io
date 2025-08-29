@@ -1,0 +1,17 @@
+name: "arm-ffa"
+description: "Arm Firmware Framework for Arm A-profile support library"
+third_party {
+  version: "0.3.1"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 8
+    day: 22
+  }
+  homepage: "https://crates.io/crates/arm-ffa"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/arm-ffa/arm-ffa-0.3.1.crate"
+    version: "0.3.1"
+  }
+}

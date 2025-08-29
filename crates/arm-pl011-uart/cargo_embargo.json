@@ -1,0 +1,14 @@
+{
+  "package": {
+      "arm-pl011-uart": {
+          "force_rlib": true,
+          "no_std": true,
+          "host_supported": false
+      }
+  },
+  "module_name_overrides": { "libzerocopy": "libzerocopy_nostd" },
+  "run_cargo": false,
+  "min_sdk_version": "29",
+  "features": [],
+  "tests": false
+}
