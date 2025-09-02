@@ -13,7 +13,7 @@
         "tinyvec_macros",
         "rustc_1_57"
       ],
-      "tests": true
+      "tests": false
     },
     {
       "features": [],

@@ -1,8 +1,11 @@
-use super::Array;
+use core::default;
 
-impl<T: Default, const N: usize> Array for [T; N] {
+use super::Array;
+use generic_array::{ArrayLength, GenericArray};
+
+impl<T: Default, N: ArrayLength> Array for GenericArray<T, N> {
   type Item = T;
-  const CAPACITY: usize = N;
+  const CAPACITY: usize = N::USIZE;
 
   #[inline(always)]
   fn as_slice(&self) -> &[T] {
@@ -16,6 +19,6 @@ impl<T: Default, const N: usize> Array for [T; N] {
 
   #[inline(always)]
   fn default() -> Self {
-    [(); N].map(|_| Default::default())
+    <Self as Default>::default()
   }
 }

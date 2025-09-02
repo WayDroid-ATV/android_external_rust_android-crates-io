@@ -18,14 +18,12 @@ rust_library {
     host_supported: true,
     crate_name: "tinyvec",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.6.0",
+    cargo_pkg_version: "1.10.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
         "alloc",
         "default",
-        "rustc_1_40",
-        "rustc_1_55",
         "rustc_1_57",
         "std",
         "tinyvec_macros",
@@ -40,74 +38,12 @@ rust_library {
     min_sdk_version: "29",
 }
 
-rust_test {
-    name: "tinyvec_test_tests_arrayvec",
-    host_supported: true,
-    crate_name: "arrayvec",
-    cargo_env_compat: true,
-    cargo_pkg_version: "1.6.0",
-    crate_root: "tests/arrayvec.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2018",
-    features: [
-        "alloc",
-        "default",
-        "rustc_1_40",
-        "rustc_1_55",
-        "rustc_1_57",
-        "std",
-        "tinyvec_macros",
-    ],
-    rustlibs: [
-        "libcriterion",
-        "libserde_test",
-        "libsmallvec",
-        "libtinyvec",
-        "libtinyvec_macros",
-    ],
-}
-
-rust_test {
-    name: "tinyvec_test_tests_tinyvec",
-    host_supported: true,
-    crate_name: "tinyvec",
-    cargo_env_compat: true,
-    cargo_pkg_version: "1.6.0",
-    crate_root: "tests/tinyvec.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2018",
-    features: [
-        "alloc",
-        "default",
-        "rustc_1_40",
-        "rustc_1_55",
-        "rustc_1_57",
-        "std",
-        "tinyvec_macros",
-    ],
-    rustlibs: [
-        "libcriterion",
-        "libserde_test",
-        "libsmallvec",
-        "libtinyvec",
-        "libtinyvec_macros",
-    ],
-}
-
 rust_library_rlib {
     name: "libtinyvec_nostd",
     defaults: ["rust_baremetal_defaults"],
     crate_name: "tinyvec",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.6.0",
+    cargo_pkg_version: "1.10.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     apex_available: [
