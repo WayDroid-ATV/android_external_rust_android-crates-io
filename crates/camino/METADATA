@@ -1,17 +1,17 @@
 name: "camino"
 description: "UTF-8 paths"
 third_party {
-  version: "1.1.11"
+  version: "1.1.12"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
     month: 8
-    day: 8
+    day: 28
   }
   homepage: "https://crates.io/crates/camino"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/camino/camino-1.1.11.crate"
-    version: "1.1.11"
+    value: "https://static.crates.io/crates/camino/camino-1.1.12.crate"
+    version: "1.1.12"
   }
 }
