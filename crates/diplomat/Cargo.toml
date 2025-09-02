@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.71"
+rust-version = "1.81"
 name = "diplomat"
-version = "0.10.0"
+version = "0.12.0"
 authors = [
     "Shadaj Laddad <shadaj@users.noreply.github.com>",
     "Manish Goregaokar <manishsmail@gmail.com>",
@@ -26,7 +26,7 @@ autoexamples = false
 autotests = false
 autobenches = false
 description = "The diplomat FFI generation macro"
-readme = false
+readme = "README.md"
 keywords = [
     "ffi",
     "codegen",
@@ -44,7 +44,7 @@ path = "src/lib.rs"
 proc-macro = true
 
 [dependencies.diplomat_core]
-version = "0.10.0"
+version = "0.12.0"
 default-features = false
 
 [dependencies.proc-macro2]
@@ -62,6 +62,9 @@ features = [
 
 [dev-dependencies.insta]
 version = "1.7.1"
+
+[dev-dependencies.prettyplease]
+version = "0.2.30"
 
 [dev-dependencies.tempfile]
 version = "3.2.0"

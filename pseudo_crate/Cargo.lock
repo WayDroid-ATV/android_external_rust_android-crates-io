@@ -210,9 +210,9 @@ dependencies = [
  "derive_builder",
  "derive_builder_core",
  "derive_builder_macro",
- "diplomat",
+ "diplomat 0.12.0",
  "diplomat-runtime 0.12.0",
- "diplomat_core",
+ "diplomat_core 0.12.1",
  "displaydoc",
  "doc-comment",
  "document-features",
@@ -2202,7 +2202,19 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d03b211df3fe764426cab5ac16913c1b37f762002a3e8ecd798435d7c9a4ec57"
 dependencies = [
- "diplomat_core",
+ "diplomat_core 0.10.0",
+ "proc-macro2 1.0.96",
+ "quote 1.0.40",
+ "syn 2.0.106",
+]
+
+[[package]]
+name = "diplomat"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ced081520ee8cf2b8c5b64a1a901eccd7030ece670dac274afe64607d6499b71"
+dependencies = [
+ "diplomat_core 0.12.1",
  "proc-macro2 1.0.96",
  "quote 1.0.40",
  "syn 2.0.106",
@@ -2228,6 +2240,20 @@ name = "diplomat_core"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77bc52d6ad2f9600bea1639059432d4621cb563755875c370cc3ccfe493da99c"
+dependencies = [
+ "proc-macro2 1.0.96",
+ "quote 1.0.40",
+ "serde",
+ "smallvec",
+ "strck",
+ "syn 2.0.106",
+]
+
+[[package]]
+name = "diplomat_core"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad619d9fdee0e731bb6f8f7d797b6ecfdc2395e363f554d2f6377155955171eb"
 dependencies = [
  "proc-macro2 1.0.96",
  "quote 1.0.40",
@@ -3589,7 +3615,7 @@ version = "2.0.0-beta2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dad3b883dd9a67fbbf7cd7082a319a7a4a7f4a5e917f75c56cd247bec3ba7b82"
 dependencies = [
- "diplomat",
+ "diplomat 0.10.0",
  "diplomat-runtime 0.10.0",
  "fixed_decimal",
  "icu_calendar",

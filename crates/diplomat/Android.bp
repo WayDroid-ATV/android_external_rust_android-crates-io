@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libdiplomat",
     crate_name: "diplomat",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.10.0",
+    cargo_pkg_version: "0.12.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [

@@ -291,7 +291,7 @@ impl From<&syn::TypePath> for PathType {
                             .iter()
                             .map(|generic_arg| match generic_arg {
                                 syn::GenericArgument::Lifetime(lifetime) => lifetime.into(),
-                                _ => panic!("generic type arguments are unsupported {other:?}"),
+                                _ => panic!("generic type arguments are unsupported (type: {other:?}, arg: {generic_arg:?})"),
                             })
                             .collect(),
                     )
@@ -464,7 +464,7 @@ pub enum TypeName {
     ///
     /// The path must be present! Ordering will be parsed as an AST type!
     Ordering,
-    Function(Vec<Box<TypeName>>, Box<TypeName>),
+    Function(Vec<Box<TypeName>>, Box<TypeName>, Mutability),
     ImplTrait(PathType),
 }
 
@@ -693,7 +693,7 @@ impl TypeName {
             }
 
             TypeName::Unit => syn::parse_quote_spanned!(Span::call_site() => ()),
-            TypeName::Function(_input_types, output_type) => {
+            TypeName::Function(_input_types, output_type, _mutability) => {
                 let output_type = output_type.to_syn();
                 // should be DiplomatCallback<function_output_type>
                 syn::parse_quote_spanned!(Span::call_site() => DiplomatCallback<#output_type>)
@@ -899,15 +899,15 @@ impl TypeName {
                     || is_runtime_type(p, "DiplomatOwnedSlice")
                 {
                     let ltmut = if is_runtime_type(p, "DiplomatOwnedSlice") {
+                        None
+                    } else {
+                        let lt = get_lifetime_from_syn_path(p);
                         let mutability = if is_runtime_type(p, "DiplomatSlice") {
                             Mutability::Immutable
                         } else {
                             Mutability::Mutable
                         };
-                        let lt = get_lifetime_from_syn_path(p);
                         Some((lt, mutability))
-                    } else {
-                        None
                     };
 
                     let ty = get_ty_from_syn_path(p).expect("Expected type argument to DiplomatSlice/DiplomatSliceMut/DiplomatOwnedSlice");
@@ -993,53 +993,96 @@ impl TypeName {
                 }
             }
             syn::Type::ImplTrait(tr) => {
-                let trait_bound = tr.bounds.first();
-                if tr.bounds.len() > 1 {
-                    todo!("Currently don't support implementing multiple traits");
-                }
-                if let Some(syn::TypeParamBound::Trait(syn::TraitBound { path: p, .. })) =
-                    trait_bound
-                {
-                    let rel_segs = &p.segments;
-                    let path_seg = &rel_segs[0];
-                    if path_seg.ident.eq("Fn") {
-                        // we're in a function type
-                        // get input and output args
-                        if let syn::PathArguments::Parenthesized(
-                            syn::ParenthesizedGenericArguments {
-                                inputs: input_types,
-                                output: output_type,
-                                ..
-                            },
-                        ) = &path_seg.arguments
-                        {
-                            let in_types = input_types
-                                .iter()
-                                .map(|in_ty| {
-                                    Box::new(TypeName::from_syn(in_ty, self_path_type.clone()))
-                                })
-                                .collect::<Vec<Box<TypeName>>>();
-                            let out_type = match output_type {
-                                syn::ReturnType::Type(_, output_type) => {
-                                    TypeName::from_syn(output_type, self_path_type.clone())
-                                }
-                                syn::ReturnType::Default => TypeName::Unit,
+                let mut ret_type: Option<TypeName> = None;
+                for trait_bound in &tr.bounds {
+                    match trait_bound {
+                        syn::TypeParamBound::Trait(syn::TraitBound { path: p, .. }) => {
+                            if ret_type.is_some() {
+                                todo!("Currently don't support implementing multiple traits");
+                            }
+                            let rel_segs = &p.segments;
+                            let path_seg = &rel_segs[0];
+
+                            // From the FFI side there's no real way to enforce the distinction between these two,
+                            // but we can at least make the void* on the C-API side const or not.
+                            let fn_mutability = match path_seg.ident.to_string().as_str() {
+                                "Fn" => Some(Mutability::Immutable),
+                                "FnMut" => Some(Mutability::Mutable),
+                                _ => None,
                             };
-                            let ret = TypeName::Function(in_types, Box::new(out_type));
-                            return ret;
+
+                            if let Some(mutability) = fn_mutability {
+                                // we're in a function type
+                                // get input and output args
+                                if let syn::PathArguments::Parenthesized(
+                                    syn::ParenthesizedGenericArguments {
+                                        inputs: input_types,
+                                        output: output_type,
+                                        ..
+                                    },
+                                ) = &path_seg.arguments
+                                {
+                                    // Validate none of the callback lifetimes are named - we only allow default behavior or 'static
+                                    for input_type in input_types {
+                                        if let syn::Type::Reference(syn::TypeReference {
+                                            lifetime: Some(in_lifetime),
+                                            ..
+                                        }) = input_type
+                                        {
+                                            panic!("Lifetimes are not allowed on callback parameters: lifetime '{} on trait {} ", in_lifetime.ident, path_seg.ident);
+                                        }
+                                    }
+
+                                    let in_types = input_types
+                                        .iter()
+                                        .map(|in_ty| {
+                                            Box::new(TypeName::from_syn(
+                                                in_ty,
+                                                self_path_type.clone(),
+                                            ))
+                                        })
+                                        .collect::<Vec<Box<TypeName>>>();
+
+                                    let out_type = match output_type {
+                                        syn::ReturnType::Type(_, output_type) => {
+                                            TypeName::from_syn(output_type, self_path_type.clone())
+                                        }
+                                        syn::ReturnType::Default => TypeName::Unit,
+                                    };
+
+                                    // Validate lifetimes
+
+                                    ret_type = Some(TypeName::Function(
+                                        in_types,
+                                        Box::new(out_type),
+                                        mutability,
+                                    ));
+                                    continue;
+                                }
+                                panic!("Unsupported function type: {:?}", &path_seg.arguments);
+                            } else {
+                                ret_type =
+                                    Some(TypeName::ImplTrait(PathType::from(&syn::TraitBound {
+                                        paren_token: None,
+                                        modifier: syn::TraitBoundModifier::None,
+                                        lifetimes: None, // todo this is an assumption
+                                        path: p.clone(),
+                                    })));
+                                continue;
+                            }
                         }
-                        panic!("Unsupported function type: {:?}", &path_seg.arguments);
-                    } else {
-                        let ret = TypeName::ImplTrait(PathType::from(&syn::TraitBound {
-                            paren_token: None,
-                            modifier: syn::TraitBoundModifier::None,
-                            lifetimes: None, // todo this is an assumption
-                            path: p.clone(),
-                        }));
-                        return ret;
+                        syn::TypeParamBound::Lifetime(syn::Lifetime { ident, .. }) => {
+                            assert_eq!(
+                                ident, "static",
+                                "only 'static lifetimes are supported on trait objects for now"
+                            );
+                        }
+                        _ => {
+                            panic!("Unsupported trait component: {:?}", trait_bound);
+                        }
                     }
                 }
-                panic!("Unsupported trait type: {:?}", tr);
+                ret_type.expect("No valid traits found")
             }
             other => panic!("Unsupported type: {}", other.to_token_stream()),
         }
@@ -1140,7 +1183,8 @@ impl TypeName {
         &self,
         mut transitivity: LifetimeTransitivity<'env>,
     ) -> Vec<&'env NamedLifetime> {
-        self.visit_lifetimes(&mut |lifetime, _| -> ControlFlow<()> {
+        // We don't use the control flow here
+        let _ = self.visit_lifetimes(&mut |lifetime, _| -> ControlFlow<()> {
             if let Lifetime::Named(named) = lifetime {
                 transitivity.visit(named);
             }
@@ -1251,7 +1295,7 @@ impl fmt::Display for TypeName {
             }
             TypeName::PrimitiveSlice(None, typ, _) => write!(f, "Box<[{typ}]>"),
             TypeName::Unit => "()".fmt(f),
-            TypeName::Function(input_types, out_type) => {
+            TypeName::Function(input_types, out_type, _mutability) => {
                 write!(f, "fn (")?;
                 for in_typ in input_types.iter() {
                     write!(f, "{in_typ}")?;
@@ -1659,6 +1703,41 @@ mod tests {
         insta::assert_yaml_snapshot!(TypeName::from_syn(
             &syn::parse_quote! {
                 Result<OkRef<'a, 'b>, ErrRef<'c>>
+            },
+            None
+        ));
+
+        insta::assert_yaml_snapshot!(TypeName::from_syn(
+            &syn::parse_quote! {
+                DiplomatSlice<'a, u16>
+            },
+            None
+        ));
+
+        insta::assert_yaml_snapshot!(TypeName::from_syn(
+            &syn::parse_quote! {
+                DiplomatOwnedSlice<i8>
+            },
+            None
+        ));
+
+        insta::assert_yaml_snapshot!(TypeName::from_syn(
+            &syn::parse_quote! {
+                DiplomatSliceStr<'a>
+            },
+            None
+        ));
+
+        insta::assert_yaml_snapshot!(TypeName::from_syn(
+            &syn::parse_quote! {
+                DiplomatSliceMut<'a, f32>
+            },
+            None
+        ));
+
+        insta::assert_yaml_snapshot!(TypeName::from_syn(
+            &syn::parse_quote! {
+                DiplomatSlice<i32>
             },
             None
         ));
