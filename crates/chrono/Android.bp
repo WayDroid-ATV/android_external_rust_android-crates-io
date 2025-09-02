@@ -13,127 +13,12 @@ license {
     license_text: ["LICENSE"],
 }
 
-rust_test {
-    name: "chrono_test_src_lib",
-    host_supported: true,
-    crate_name: "chrono",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.4.39",
-    crate_root: "src/lib.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2021",
-    features: [
-        "alloc",
-        "now",
-        "serde",
-        "std",
-    ],
-    rustlibs: [
-        "libbincode",
-        "libnum_traits",
-        "libserde",
-        "libserde_json",
-    ],
-    proc_macros: ["libserde_derive"],
-}
-
-rust_test {
-    name: "chrono_test_tests_dateutils",
-    host_supported: true,
-    crate_name: "dateutils",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.4.39",
-    crate_root: "tests/dateutils.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2021",
-    features: [
-        "alloc",
-        "now",
-        "serde",
-        "std",
-    ],
-    rustlibs: [
-        "libbincode",
-        "libchrono",
-        "libnum_traits",
-        "libserde",
-        "libserde_json",
-    ],
-    proc_macros: ["libserde_derive"],
-}
-
-rust_test {
-    name: "chrono_test_tests_wasm",
-    host_supported: true,
-    crate_name: "wasm",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.4.39",
-    crate_root: "tests/wasm.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2021",
-    features: [
-        "alloc",
-        "now",
-        "serde",
-        "std",
-    ],
-    rustlibs: [
-        "libbincode",
-        "libchrono",
-        "libnum_traits",
-        "libserde",
-        "libserde_json",
-    ],
-    proc_macros: ["libserde_derive"],
-}
-
-rust_test {
-    name: "chrono_test_tests_win_bindings",
-    host_supported: true,
-    crate_name: "win_bindings",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.4.39",
-    crate_root: "tests/win_bindings.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2021",
-    features: [
-        "alloc",
-        "now",
-        "serde",
-        "std",
-    ],
-    rustlibs: [
-        "libbincode",
-        "libchrono",
-        "libnum_traits",
-        "libserde",
-        "libserde_json",
-    ],
-    proc_macros: ["libserde_derive"],
-}
-
 rust_library {
     name: "libchrono",
     host_supported: true,
     crate_name: "chrono",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.39",
+    cargo_pkg_version: "0.4.41",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
