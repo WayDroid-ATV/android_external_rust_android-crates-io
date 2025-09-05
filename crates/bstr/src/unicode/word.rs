@@ -66,7 +66,7 @@ impl<'a> Iterator for Words<'a> {
 
     #[inline]
     fn next(&mut self) -> Option<&'a str> {
-        for word in self.0.by_ref() {
+        while let Some(word) = self.0.next() {
             let input =
                 Input::new(word).anchored(Anchored::Yes).earliest(true);
             if SIMPLE_WORD_FWD.try_search_fwd(&input).unwrap().is_some() {
@@ -144,7 +144,7 @@ impl<'a> Iterator for WordIndices<'a> {
 
     #[inline]
     fn next(&mut self) -> Option<(usize, usize, &'a str)> {
-        for (start, end, word) in self.0.by_ref() {
+        while let Some((start, end, word)) = self.0.next() {
             let input =
                 Input::new(word).anchored(Anchored::Yes).earliest(true);
             if SIMPLE_WORD_FWD.try_search_fwd(&input).unwrap().is_some() {
@@ -319,7 +319,7 @@ fn decode_word(bs: &[u8]) -> (&str, usize) {
         let word = unsafe { bs[..hm.offset()].to_str_unchecked() };
         (word, word.len())
     } else {
-        const INVALID: &str = "\u{FFFD}";
+        const INVALID: &'static str = "\u{FFFD}";
         // No match on non-empty bytes implies we found invalid UTF-8.
         let (_, size) = utf8::decode_lossy(bs);
         (INVALID, size)
@@ -328,8 +328,6 @@ fn decode_word(bs: &[u8]) -> (&str, usize) {
 
 #[cfg(all(test, feature = "std"))]
 mod tests {
-    use alloc::{vec, vec::Vec};
-
     #[cfg(not(miri))]
     use ucd_parse::WordBreakTest;
 
@@ -414,7 +412,7 @@ mod tests {
     /// Return all of the UCD for word breaks.
     #[cfg(not(miri))]
     fn ucdtests() -> Vec<WordBreakTest> {
-        const TESTDATA: &str = include_str!("data/WordBreakTest.txt");
+        const TESTDATA: &'static str = include_str!("data/WordBreakTest.txt");
 
         let mut tests = vec![];
         for mut line in TESTDATA.lines() {

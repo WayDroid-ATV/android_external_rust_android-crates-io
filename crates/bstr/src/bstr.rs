@@ -1,3 +1,5 @@
+use core::mem;
+
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
 
@@ -27,6 +29,7 @@ use alloc::boxed::Box;
 /// The `Display` implementation behaves as if `BStr` were first lossily
 /// converted to a `str`. Invalid UTF-8 bytes are substituted with the Unicode
 /// replacement codepoint, which looks like this: �.
+#[derive(Hash)]
 #[repr(transparent)]
 pub struct BStr {
     pub(crate) bytes: [u8],
@@ -57,7 +60,7 @@ impl BStr {
     /// assert_eq!(a, c);
     /// ```
     #[inline]
-    pub fn new<B: ?Sized + AsRef<[u8]>>(bytes: &B) -> &BStr {
+    pub fn new<'a, B: ?Sized + AsRef<[u8]>>(bytes: &'a B) -> &'a BStr {
         BStr::from_bytes(bytes.as_ref())
     }
 
@@ -70,12 +73,12 @@ impl BStr {
 
     #[inline]
     pub(crate) fn from_bytes(slice: &[u8]) -> &BStr {
-        unsafe { &*(slice as *const [u8] as *const BStr) }
+        unsafe { mem::transmute(slice) }
     }
 
     #[inline]
     pub(crate) fn from_bytes_mut(slice: &mut [u8]) -> &mut BStr {
-        unsafe { &mut *(slice as *mut [u8] as *mut BStr) }
+        unsafe { mem::transmute(slice) }
     }
 
     #[inline]

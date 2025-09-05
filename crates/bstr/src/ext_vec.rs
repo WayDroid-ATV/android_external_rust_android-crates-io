@@ -1,4 +1,7 @@
-use core::{fmt, iter, ops, ptr};
+use core::fmt;
+use core::iter;
+use core::ops;
+use core::ptr;
 
 use alloc::{borrow::Cow, string::String, vec, vec::Vec};
 
@@ -185,7 +188,7 @@ pub trait ByteVec: private::Sealed {
         fn imp(os_str: OsString) -> Result<Vec<u8>, OsString> {
             use std::os::unix::ffi::OsStringExt;
 
-            Ok(os_str.into_vec())
+            Ok(Vec::from(os_str.into_vec()))
         }
 
         #[cfg(not(unix))]
@@ -220,10 +223,10 @@ pub trait ByteVec: private::Sealed {
     /// ```
     #[inline]
     #[cfg(feature = "std")]
-    fn from_os_str_lossy(os_str: &OsStr) -> Cow<'_, [u8]> {
+    fn from_os_str_lossy<'a>(os_str: &'a OsStr) -> Cow<'a, [u8]> {
         #[cfg(unix)]
         #[inline]
-        fn imp(os_str: &OsStr) -> Cow<'_, [u8]> {
+        fn imp<'a>(os_str: &'a OsStr) -> Cow<'a, [u8]> {
             use std::os::unix::ffi::OsStrExt;
 
             Cow::Borrowed(os_str.as_bytes())
@@ -231,7 +234,7 @@ pub trait ByteVec: private::Sealed {
 
         #[cfg(not(unix))]
         #[inline]
-        fn imp(os_str: &OsStr) -> Cow<'_, [u8]> {
+        fn imp<'a>(os_str: &'a OsStr) -> Cow<'a, [u8]> {
             match os_str.to_string_lossy() {
                 Cow::Borrowed(x) => Cow::Borrowed(x.as_bytes()),
                 Cow::Owned(x) => Cow::Owned(Vec::from(x)),
@@ -289,7 +292,7 @@ pub trait ByteVec: private::Sealed {
     /// ```
     #[inline]
     #[cfg(feature = "std")]
-    fn from_path_lossy(path: &Path) -> Cow<'_, [u8]> {
+    fn from_path_lossy<'a>(path: &'a Path) -> Cow<'a, [u8]> {
         Vec::from_os_str_lossy(path.as_os_str())
     }
 
@@ -958,7 +961,7 @@ pub trait ByteVec: private::Sealed {
         R: ops::RangeBounds<usize>,
         B: AsRef<[u8]>,
     {
-        self.as_vec_mut().splice(range, replace_with.as_ref().iter().copied());
+        self.as_vec_mut().splice(range, replace_with.as_ref().iter().cloned());
     }
 
     /// Creates a draining iterator that removes the specified range in this
@@ -1162,8 +1165,6 @@ impl fmt::Display for FromUtf8Error {
 
 #[cfg(all(test, feature = "std"))]
 mod tests {
-    use alloc::{vec, vec::Vec};
-
     use crate::ext_vec::ByteVec;
 
     #[test]

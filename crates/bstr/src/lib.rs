@@ -391,14 +391,10 @@ and Unicode support.
   `BString` when `alloc` is enabled.
 */
 
-// #![cfg_attr(not(any(feature = "std", test)), no_std)]
-#![no_std]
+#![cfg_attr(not(any(feature = "std", test)), no_std)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-#[cfg(any(test, feature = "std"))]
-extern crate std;
-
-#[cfg(any(test, feature = "alloc"))]
+#[cfg(feature = "alloc")]
 extern crate alloc;
 
 pub use crate::bstr::BStr;
