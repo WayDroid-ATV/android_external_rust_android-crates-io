@@ -18,7 +18,7 @@ rust_library_rlib {
     defaults: ["rust_baremetal_defaults"],
     crate_name: "bit_field",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.10.2",
+    cargo_pkg_version: "0.10.3",
     crate_root: "src/lib.rs",
     edition: "2015",
     apex_available: [
