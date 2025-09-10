@@ -1,4 +1,5 @@
 aarch64-paging
+aarch64-rt
 acpi
 adler2
 ahash

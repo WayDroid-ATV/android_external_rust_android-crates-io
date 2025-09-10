@@ -12,6 +12,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "aarch64-rt"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "683c4295f0608c531130ed6daf301785844c1f71eb126eb56343838968e728c5"
+dependencies = [
+ "smccc",
+]
+
+[[package]]
 name = "acpi"
 version = "5.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -104,6 +113,7 @@ name = "android-pseudo-crate"
 version = "0.1.0"
 dependencies = [
  "aarch64-paging",
+ "aarch64-rt",
  "acpi",
  "adler2",
  "ahash 0.8.12",
