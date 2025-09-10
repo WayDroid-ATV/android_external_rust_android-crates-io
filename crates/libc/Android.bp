@@ -13,41 +13,12 @@ license {
     license_text: ["LICENSE"],
 }
 
-rust_test {
-    name: "libc_test_src_lib",
-    host_supported: true,
-    crate_name: "libc",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.2.175",
-    crate_root: "src/lib.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2021",
-    features: [
-        "default",
-        "extra_traits",
-        "std",
-    ],
-    cfgs: [
-        "freebsd11",
-        "libc_const_extern_fn",
-    ],
-    target: {
-        windows: {
-            enabled: true,
-        },
-    },
-}
-
 rust_library {
     name: "liblibc",
     host_supported: true,
     crate_name: "libc",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.175",
+    cargo_pkg_version: "0.2.172",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -79,7 +50,7 @@ rust_library_rlib {
     defaults: ["rust_baremetal_defaults"],
     crate_name: "libc",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.2.175",
+    cargo_pkg_version: "0.2.172",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: ["extra_traits"],

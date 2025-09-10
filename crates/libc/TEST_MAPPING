@@ -174,10 +174,5 @@
     {
       "path": "system/security/keystore2/src/crypto"
     }
-  ],
-  "postsubmit": [
-    {
-      "name": "libc_test_src_lib"
-    }
   ]
 }

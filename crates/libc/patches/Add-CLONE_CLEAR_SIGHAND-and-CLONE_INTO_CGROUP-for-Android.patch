@@ -1,0 +1,25 @@
+From cbcd3445cb146b18cd96aa86764e3e8864d6411c Mon Sep 17 00:00:00 2001
+From: Chris Wailes <chriswailes@google.com>
+Date: Tue, 24 Jun 2025 17:07:02 -0700
+Subject: [PATCH] Add CLONE_CLEAR_SIGHAND and CLONE_INTO_CGROUP for Android
+
+---
+ src/unix/linux_like/android/mod.rs | 2 ++
+ 1 files changed, 2 insertions(+)
+
+diff --git a/src/unix/linux_like/android/mod.rs b/src/unix/linux_like/android/mod.rs
+index c5452526f..c215b3110 100644
+--- a/src/unix/linux_like/android/mod.rs
++++ b/src/unix/linux_like/android/mod.rs
+@@ -2863,6 +2863,8 @@ pub const SCHED_DEADLINE: c_int = 6;
+ pub const SCHED_RESET_ON_FORK: c_int = 0x40000000;
+ 
+ pub const CLONE_PIDFD: c_int = 0x1000;
++pub const CLONE_CLEAR_SIGHAND: c_ulonglong = 0x100000000;
++pub const CLONE_INTO_CGROUP: c_ulonglong = 0x200000000;
+ 
+ // linux/membarrier.h
+ pub const MEMBARRIER_CMD_QUERY: c_int = 0;
+-- 
+2.50.0.714.g196bf9f422-goog
+
