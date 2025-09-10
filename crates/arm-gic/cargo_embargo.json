@@ -1,0 +1,12 @@
+{
+ "package": {
+  "arm-gic": {
+   "no_std": true,
+   "host_supported": false
+  }
+ },
+ "module_name_overrides": { "libzerocopy": "libzerocopy_nostd", "libthiserror": "libthiserror_nostd" },
+ "run_cargo": false,
+ "min_sdk_version": "29",
+ "tests": false
+}
