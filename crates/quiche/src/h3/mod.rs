@@ -1688,6 +1688,10 @@ impl Connection {
             return Ok((finished, Event::Finished));
         }
 
+        for stream_id in conn.streams.collected_streams() {
+            self.streams.remove(&stream_id);
+        }
+
         // Process queued DATAGRAMs if the poll threshold allows it.
         match self.process_dgrams(conn) {
             Ok(v) => return Ok(v),

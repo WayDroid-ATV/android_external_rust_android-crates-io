@@ -105,6 +105,10 @@ pub struct StreamMap {
     /// created streams, to prevent peers from re-creating them.
     collected: StreamIdHashSet,
 
+    /// Queue of streams to notify a transport stream of their completion
+    /// via the `.collected_streams()` call.
+    pending_collected: VecDeque<u64>,
+
     /// Peer's maximum bidirectional stream count limit.
     peer_max_streams_bidi: u64,
 
@@ -548,7 +552,9 @@ impl StreamMap {
         self.mark_writable(stream_id, false);
 
         self.streams.remove(&stream_id);
+
         self.collected.insert(stream_id);
+        self.pending_collected.push_front(stream_id);
     }
 
     /// Creates an iterator over streams that have outstanding data to read.
@@ -637,6 +643,11 @@ impl StreamMap {
     #[cfg(test)]
     pub fn len(&self) -> usize {
         self.streams.len()
+    }
+
+    /// Returns streams which have been removed but not yet processed
+    pub fn collected_streams<'a>(&'a mut self) -> impl Iterator<Item = u64> + 'a {
+        self.pending_collected.drain(..)
     }
 }
 
