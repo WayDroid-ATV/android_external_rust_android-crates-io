@@ -228,7 +228,7 @@ dependencies = [
  "doc-comment",
  "document-features",
  "downcast",
- "downcast-rs 2.0.1",
+ "downcast-rs 2.0.2",
  "drm 0.14.1",
  "drm-ffi 0.9.0",
  "drm-fourcc",
@@ -2362,9 +2362,9 @@ checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
 
 [[package]]
 name = "downcast-rs"
-version = "2.0.1"
+version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea8a8b81cacc08888170eef4d13b775126db426d0b348bee9d18c2c1eaf123cf"
+checksum = "117240f60069e65410b3ae1bb213295bd828f707b5bec6596a1afc8793ce0cbc"
 
 [[package]]
 name = "drm"

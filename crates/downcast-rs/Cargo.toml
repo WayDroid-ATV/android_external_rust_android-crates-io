@@ -13,15 +13,45 @@
 edition = "2021"
 rust-version = "1.56"
 name = "downcast-rs"
-version = "2.0.1"
-description = "Trait object downcasting support using only safe Rust. It supports type\nparameters, associated types, and type constraints.\n"
+version = "2.0.2"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = """
+Trait object downcasting support using only safe Rust. It supports type
+parameters, associated types, and type constraints.
+"""
 readme = "README.md"
-keywords = ["downcast", "any", "trait", "associated", "no_std"]
-license = "MIT/Apache-2.0"
+keywords = [
+    "downcast",
+    "any",
+    "trait",
+    "associated",
+    "no_std",
+]
+categories = ["rust-patterns"]
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/marcianx/downcast-rs"
-resolver = "2"
 
 [features]
-default = ["std", "sync"]
+default = [
+    "std",
+    "sync",
+]
 std = []
 sync = []
+
+[lib]
+name = "downcast_rs"
+path = "src/lib.rs"
+
+[[test]]
+name = "import_via_macro_use"
+path = "tests/import_via_macro_use.rs"
+
+[[test]]
+name = "use_via_namespace"
+path = "tests/use_via_namespace.rs"
