@@ -830,7 +830,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e696c550a2fbc7ad340a0dfcadab65a70d04e6126cf0fc0b727b3b61ca9512f"
 dependencies = [
  "num_enum",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
  "uuid",
  "zerocopy",
  "zerocopy-derive",
@@ -854,11 +854,11 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8797e113733a36b5fa906c81aefc126d255b88dd1c10a737749aa22ec7736b6a"
 dependencies = [
- "bitflags 2.9.2",
+ "bitflags 2.9.3",
  "embedded-hal-nb",
  "embedded-io",
  "safe-mmio",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
  "zerocopy",
 ]
 
@@ -868,9 +868,9 @@ version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ccd3fe79149f7216aa4c47e250080cbb9bce9bea908d2a9799ba37c729f5894f"
 dependencies = [
- "bitflags 2.9.2",
+ "bitflags 2.9.3",
  "num_enum",
- "thiserror 2.0.12",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
@@ -7585,9 +7585,9 @@ dependencies = [
 
 [[package]]
 name = "thread-priority"
-version = "2.1.0"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd4ef372b29fbcc6cb0cef97bcbf3ffa9da90e02eb23dbf14db48ce30d11d2d5"
+checksum = "98bb0223d20b98ed7205d68ee55e3fe9f1970c17359f5ecd62e128051b5278cb"
 dependencies = [
  "bitflags 2.9.3",
  "cfg-if",

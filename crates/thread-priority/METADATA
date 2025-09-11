@@ -1,17 +1,17 @@
 name: "thread-priority"
 description: "Library for managing threads priority and schedule policies"
 third_party {
-  version: "2.1.0"
+  version: "2.1.1"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 7
-    day: 23
+    month: 9
+    day: 11
   }
   homepage: "https://crates.io/crates/thread-priority"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/thread-priority/thread-priority-2.1.0.crate"
-    version: "2.1.0"
+    value: "https://static.crates.io/crates/thread-priority/thread-priority-2.1.1.crate"
+    version: "2.1.1"
   }
 }
