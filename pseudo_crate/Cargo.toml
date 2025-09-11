@@ -5,8 +5,8 @@ edition = "2021"
 publish = false
 license = "Apache-2.0"
 
+# go/keep-sorted start skip_lines=1
 [dependencies]
-# go/keep-sorted start
 aarch64-paging = "=0.7.0"
 aarch64-rt = "=0.2.2"
 acpi = "=5.2.0"
