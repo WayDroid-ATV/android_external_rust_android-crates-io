@@ -368,11 +368,6 @@ python_test_host {
     test_options: {
         unit_test: true,
     },
-    version: {
-        py3: {
-            embedded_launcher: true,
-        },
-    },
 }
 
 // Generate the C++ parser+serializer backend for the

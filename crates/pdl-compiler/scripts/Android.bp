@@ -8,11 +8,6 @@ python_binary_host {
         "pdl/core.py",
         "pdl/utils.py",
     ],
-    version: {
-        py3: {
-            embedded_launcher: true,
-        },
-    },
 }
 
 // C++ generator.
@@ -25,11 +20,6 @@ python_binary_host {
         "pdl/core.py",
         "pdl/utils.py",
     ],
-    version: {
-        py3: {
-            embedded_launcher: true,
-        },
-    },
 }
 
 // C++ test generator.
@@ -42,11 +32,6 @@ python_binary_host {
         "pdl/core.py",
         "pdl/utils.py",
     ],
-    version: {
-        py3: {
-            embedded_launcher: true,
-        },
-    },
 }
 
 // C++ packet runtime.

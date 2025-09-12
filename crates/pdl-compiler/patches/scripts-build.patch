@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000..05bee6b
 --- /dev/null
 +++ a/scripts/Android.bp
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,43 @@
 +// Python generator.
 +python_binary_host {
 +    name: "pdl_python_generator",
@@ -14,11 +14,6 @@ index 0000000..05bee6b
 +        "pdl/core.py",
 +        "pdl/utils.py",
 +    ],
-+    version: {
-+        py3: {
-+            embedded_launcher: true,
-+        },
-+    },
 +}
 +
 +// C++ generator.
@@ -31,11 +26,6 @@ index 0000000..05bee6b
 +        "pdl/core.py",
 +        "pdl/utils.py",
 +    ],
-+    version: {
-+        py3: {
-+            embedded_launcher: true,
-+        },
-+    },
 +}
 +
 +// C++ test generator.
@@ -48,11 +38,6 @@ index 0000000..05bee6b
 +        "pdl/core.py",
 +        "pdl/utils.py",
 +    ],
-+    version: {
-+        py3: {
-+            embedded_launcher: true,
-+        },
-+    },
 +}
 +
 +// C++ packet runtime.
