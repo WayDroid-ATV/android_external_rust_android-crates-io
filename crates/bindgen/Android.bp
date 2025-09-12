@@ -25,7 +25,7 @@ rust_library_host {
     host_cross_supported: false,
     crate_name: "bindgen",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.72.0",
+    cargo_pkg_version: "0.72.1",
     crate_root: "lib.rs",
     srcs: [":copy_bindgen_build_out"],
     edition: "2021",

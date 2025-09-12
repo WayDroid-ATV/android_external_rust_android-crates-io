@@ -148,7 +148,7 @@ dependencies = [
  "base64 0.22.1",
  "bencher",
  "bincode",
- "bindgen 0.72.0",
+ "bindgen 0.72.1",
  "bindgen-cli",
  "bit_field",
  "bitflags 2.9.3",
@@ -1150,9 +1150,9 @@ dependencies = [
 
 [[package]]
 name = "bindgen"
-version = "0.72.0"
+version = "0.72.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f72209734318d0b619a5e0f5129918b848c416e122a3c4ce054e03cb87b726f"
+checksum = "993776b509cfb49c750f11b8f07a46fa23e0a1386ffc01fb1e7d343efc387895"
 dependencies = [
  "annotate-snippets",
  "bitflags 2.9.3",
@@ -1177,7 +1177,7 @@ version = "0.72.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c607bcb6fa24e2919403e2135cfc212ac295e936234ec641bcff75cc364f925"
 dependencies = [
- "bindgen 0.72.0",
+ "bindgen 0.72.1",
  "env_logger 0.10.2",
  "log",
  "proc-macro2 1.0.96",
