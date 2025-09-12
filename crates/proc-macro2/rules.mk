@@ -14,6 +14,8 @@ MODULE_RUSTFLAGS += \
 	--cfg 'feature="proc-macro"' \
 	--cfg 'feature="span-locations"' \
 	--cfg 'proc_macro_span' \
+	--cfg 'proc_macro_span_file' \
+	--cfg 'proc_macro_span_location' \
 	--cfg 'span_locations' \
 	--cfg 'wrap_proc_macro'
 

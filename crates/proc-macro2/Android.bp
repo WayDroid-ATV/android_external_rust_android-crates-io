@@ -18,7 +18,7 @@ rust_library_host {
     host_cross_supported: false,
     crate_name: "proc_macro2",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.96",
+    cargo_pkg_version: "1.0.101",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -28,6 +28,8 @@ rust_library_host {
     ],
     cfgs: [
         "proc_macro_span",
+        "proc_macro_span_file",
+        "proc_macro_span_location",
         "span_locations",
         "wrap_proc_macro",
     ],
