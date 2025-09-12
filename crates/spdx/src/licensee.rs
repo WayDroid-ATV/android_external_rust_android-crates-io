@@ -1,17 +1,17 @@
 use crate::{
-    ExceptionId, LicenseItem, LicenseReq,
+    AdditionItem, LicenseItem, LicenseReq,
     error::{ParseError, Reason},
     lexer::{Lexer, Token},
 };
 use std::fmt;
 
-/// A convenience wrapper for a license and optional exception that can be
+/// A convenience wrapper for a license and optional additional text that can be
 /// checked against a license requirement to see if it satisfies the requirement
 /// placed by a license holder
 ///
 /// ```
 /// let licensee = spdx::Licensee::parse("GPL-2.0-or-later").unwrap();
-/// let req = spdx::LicenseReq::from(spdx::license_id("GPL-2.0-only").unwrap());
+/// let req = spdx::LicenseReq::from(spdx::license_id("GPL-2.0-or-later").unwrap());
 ///
 /// assert!(licensee.satisfies(&req));
 /// ```
@@ -40,13 +40,13 @@ impl Licensee {
     /// Note that use of SPDX's `or_later` is completely ignored for licensees
     /// as it only applies to the license holder(s), not the licensee
     #[must_use]
-    pub fn new(license: LicenseItem, exception: Option<ExceptionId>) -> Self {
+    pub fn new(license: LicenseItem, addition: Option<AdditionItem>) -> Self {
         if let LicenseItem::Spdx { or_later, .. } = &license {
             debug_assert!(!or_later);
         }
 
         Self {
-            inner: LicenseReq { license, exception },
+            inner: LicenseReq { license, addition },
         }
     }
 
@@ -57,8 +57,8 @@ impl Licensee {
     }
 
     /// Parses an simplified version of an SPDX license expression that can
-    /// contain at most 1 valid SPDX license with an optional exception joined
-    /// by a `WITH`.
+    /// contain at most 1 valid SPDX license with an optional additional text
+    /// joined by a `WITH`.
     ///
     /// ```
     /// use spdx::Licensee;
@@ -67,11 +67,18 @@ impl Licensee {
     /// Licensee::parse("MIT").unwrap();
     ///
     /// // SPDX allows license identifiers outside of the official license list
-    /// // via the LicenseRef- prefix
+    /// // via the LicenseRef- prefix (with optional DocumentRef- prefix)
     /// Licensee::parse("LicenseRef-My-Super-Extra-Special-License").unwrap();
+    /// Licensee::parse("DocumentRef-mydoc:LicenseRef-My-License").unwrap();
     ///
     /// // License and exception
     /// Licensee::parse("Apache-2.0 WITH LLVM-exception").unwrap();
+    ///
+    /// // SPDX allows license with additional text outside of the official
+    /// // license exception list via the AdditionRef- prefix (with optional
+    /// // DocumentRef- prefix)
+    /// Licensee::parse("MIT WITH AdditionRef-My-Exception").unwrap();
+    /// Licensee::parse("MIT WITH DocumentRef-mydoc:AdditionRef-My-Exception").unwrap();
     ///
     /// // `+` is only allowed to be used by license requirements from the license holder
     /// Licensee::parse("Apache-2.0+").unwrap_err();
@@ -89,22 +96,13 @@ impl Licensee {
             })??;
 
             match lt.token {
-                Token::Spdx(mut id) => {
+                Token::Spdx(id) => {
                     if !mode.allow_deprecated && id.is_deprecated() {
                         return Err(ParseError {
                             original: original.to_owned(),
                             span: lt.span,
                             reason: Reason::DeprecatedLicenseId,
                         });
-                    }
-
-                    if id.is_gnu() && !id.name.ends_with("-or-later") && !id.name.ends_with("-only")
-                    {
-                        id = crate::gnu_license_id(id.name, false).ok_or_else(|| ParseError {
-                            original: original.to_owned(),
-                            span: lt.span,
-                            reason: Reason::UnknownLicense,
-                        })?;
                     }
 
                     LicenseItem::Spdx {
@@ -126,7 +124,7 @@ impl Licensee {
             }
         };
 
-        let exception = match lexer.next() {
+        let addition = match lexer.next() {
             None => None,
             Some(lt) => {
                 let lt = lt?;
@@ -139,12 +137,16 @@ impl Licensee {
                         })??;
 
                         match lt.token {
-                            Token::Exception(exc) => Some(exc),
+                            Token::Exception(id) => Some(AdditionItem::Spdx(id)),
+                            Token::AdditionRef { doc_ref, add_ref } => Some(AdditionItem::Other {
+                                doc_ref: doc_ref.map(String::from),
+                                add_ref: add_ref.to_owned(),
+                            }),
                             _ => {
                                 return Err(ParseError {
                                     original: original.to_owned(),
                                     span: lt.span,
-                                    reason: Reason::Unexpected(&["<exception>"]),
+                                    reason: Reason::Unexpected(&["<addition>"]),
                                 });
                             }
                         }
@@ -161,12 +163,12 @@ impl Licensee {
         };
 
         Ok(Self {
-            inner: LicenseReq { license, exception },
+            inner: LicenseReq { license, addition },
         })
     }
 
     /// Determines whether the specified license requirement is satisfied by
-    /// this license (+exception)
+    /// this license (+addition)
     ///
     /// ```
     /// let licensee = spdx::Licensee::parse("Apache-2.0 WITH LLVM-exception").unwrap();
@@ -177,7 +179,8 @@ impl Licensee {
     ///         // Means the license holder is fine with Apache-2.0 or higher
     ///         or_later: true,
     ///     },
-    ///     exception: spdx::exception_id("LLVM-exception"),
+    ///     addition: spdx::exception_id("LLVM-exception")
+    ///         .map(spdx::AdditionItem::Spdx),
     /// }));
     /// ```
     #[must_use]
@@ -211,37 +214,6 @@ impl Licensee {
                                 _ => return false,
                             }
                         }
-                    } else if a.is_gnu() && b.is_gnu() {
-                        let abn = a.base();
-                        let bbn = b.base();
-
-                        if abn != bbn {
-                            return false;
-                        }
-
-                        // GFDL has the annoying -no -invariants...variants, both
-                        // sides have to agree on all or none
-                        if abn == "GFDL"
-                            && a.name.contains("-invariants") ^ b.name.contains("-invariants")
-                            || a.name.contains("-no-") ^ b.name.contains("-no-")
-                        {
-                            return false;
-                        }
-
-                        let Some(av) = a.version() else {
-                            return false;
-                        };
-                        let Some(bv) = b.version() else {
-                            return false;
-                        };
-
-                        if b.name.ends_with("-or-later") {
-                            if av < bv {
-                                return false;
-                            }
-                        } else if abn != bbn || av != bv {
-                            return false;
-                        }
                     } else {
                         return false;
                     }
@@ -264,7 +236,7 @@ impl Licensee {
             _ => return false,
         }
 
-        req.exception == self.inner.exception
+        req.addition == self.inner.addition
     }
 
     #[must_use]
@@ -296,7 +268,7 @@ impl AsRef<LicenseReq> for Licensee {
 
 #[cfg(test)]
 mod test {
-    use crate::{LicenseItem, LicenseReq, Licensee, exception_id, license_id};
+    use crate::{AdditionItem, LicenseItem, LicenseReq, Licensee, exception_id, license_id};
 
     const LICENSEES: &[&str] = &[
         "LicenseRef-Embark-Proprietary",
@@ -314,6 +286,7 @@ mod test {
         "Unicode-DFS-2016",
         "Unlicense",
         "Apache-2.0",
+        "Apache-2.0 WITH AdditionRef-Embark-Exception",
     ];
 
     #[test]
@@ -330,7 +303,7 @@ mod test {
                 id: mpl_id,
                 or_later: true,
             },
-            exception: None,
+            addition: None,
         };
 
         // Licensees can't have the `or_later`
@@ -362,7 +335,7 @@ mod test {
                 id: apache_id,
                 or_later: false,
             },
-            exception: Some(llvm_exc),
+            addition: Some(AdditionItem::Spdx(llvm_exc)),
         };
 
         assert_eq!(
@@ -387,7 +360,7 @@ mod test {
                 doc_ref: None,
                 lic_ref: "Embark-Proprietary".to_owned(),
             },
-            exception: None,
+            addition: None,
         };
 
         assert_eq!(
@@ -414,7 +387,7 @@ mod test {
                     id: lic_id,
                     or_later: true,
                 },
-                exception: None,
+                addition: None,
             };
 
             // Licensees can't have the `or_later`
