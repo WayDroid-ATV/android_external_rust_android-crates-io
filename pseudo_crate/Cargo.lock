@@ -255,7 +255,7 @@ dependencies = [
  "flate2",
  "fnv",
  "foldhash",
- "font-types",
+ "font-types 0.10.0",
  "foreign-types 0.3.2",
  "foreign-types-shared 0.1.1",
  "form_urlencoded",
@@ -2807,6 +2807,12 @@ checksum = "02a596f5713680923a2080d86de50fe472fb290693cf0f701187a1c8b36996b7"
 dependencies = [
  "bytemuck",
 ]
+
+[[package]]
+name = "font-types"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "511e2c18a516c666d27867d2f9821f76e7d591f762e9fc41dd6cc5c90fe54b0b"
 
 [[package]]
 name = "foreign-types"
@@ -6406,7 +6412,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a551c092f06f2ec38b689276d712fd2dd423ed53a80345dca1d9ad327a70add4"
 dependencies = [
  "bytemuck",
- "font-types",
+ "font-types 0.9.0",
 ]
 
 [[package]]
