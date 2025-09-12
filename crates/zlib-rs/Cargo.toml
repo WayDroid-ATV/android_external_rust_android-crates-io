@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.75"
 name = "zlib-rs"
-version = "0.5.1"
+version = "0.5.2"
 build = false
 publish = true
 autolib = false
@@ -65,3 +65,6 @@ version = "0.9.1"
 version = "1.0.3"
 features = []
 default-features = false
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "deny"

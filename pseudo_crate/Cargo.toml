@@ -525,5 +525,5 @@ zerotrie = "=0.2.2"
 zerovec = "=0.11.4"
 zerovec-derive = "=0.11.1"
 zip = "=0.6.6"
-zlib-rs = "=0.5.1"
+zlib-rs = "=0.5.2"
 # go/keep-sorted end

@@ -1,4 +1,3 @@
-#![warn(unsafe_op_in_unsafe_fn)]
 use crate::CRC32_INITIAL_VALUE;
 
 #[cfg(target_arch = "aarch64")]
@@ -24,6 +23,10 @@ pub fn crc32(start: u32, buf: &[u8]) -> u32 {
 
 pub fn crc32_braid(start: u32, buf: &[u8]) -> u32 {
     braid::crc32_braid::<5>(start, buf)
+}
+
+pub fn get_crc_table() -> &'static [u32; 256] {
+    braid::get_crc_table()
 }
 
 #[derive(Debug, Clone, Copy)]

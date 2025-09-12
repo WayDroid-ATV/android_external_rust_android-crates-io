@@ -11,11 +11,10 @@ mod cpu_features;
 pub mod crc32;
 pub mod deflate;
 pub mod inflate;
-pub mod read_buf;
 mod weak_slice;
 
 pub use adler32::{adler32, adler32_combine};
-pub use crc32::{crc32, crc32_combine};
+pub use crc32::{crc32, crc32_combine, get_crc_table};
 
 #[macro_export]
 macro_rules! trace {
@@ -53,6 +52,7 @@ pub const MAX_WBITS: i32 = 15; // 32kb LZ77 window
 pub(crate) const DEF_WBITS: i32 = MAX_WBITS;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "__internal-fuzz", derive(arbitrary::Arbitrary))]
 pub enum DeflateFlush {
     #[default]
     /// if flush is set to `NoFlush`, that allows deflate to decide how much data

@@ -1,17 +1,17 @@
 name: "zlib-rs"
 description: "A memory-safe zlib implementation written in rust"
 third_party {
-  version: "0.5.1"
+  version: "0.5.2"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 6
-    day: 18
+    month: 9
+    day: 11
   }
   homepage: "https://crates.io/crates/zlib-rs"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/zlib-rs/zlib-rs-0.5.1.crate"
-    version: "0.5.1"
+    value: "https://static.crates.io/crates/zlib-rs/zlib-rs-0.5.2.crate"
+    version: "0.5.2"
   }
 }
