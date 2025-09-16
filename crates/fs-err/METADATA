@@ -1,17 +1,17 @@
 name: "fs-err"
 description: "A drop-in replacement for std::fs with more helpful error messages."
 third_party {
-  version: "3.1.1"
+  version: "3.1.2"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 6
-    day: 10
+    month: 9
+    day: 16
   }
   homepage: "https://crates.io/crates/fs-err"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/fs-err/fs-err-3.1.1.crate"
-    version: "3.1.1"
+    value: "https://static.crates.io/crates/fs-err/fs-err-3.1.2.crate"
+    version: "3.1.2"
   }
 }
