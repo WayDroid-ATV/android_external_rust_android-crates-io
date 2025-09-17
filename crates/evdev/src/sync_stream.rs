@@ -485,12 +485,12 @@ fn compensate_events(state: &mut Option<SyncState>, dev: &mut Device) -> Option<
     macro_rules! try_compensate {
         ($time:expr, $start:ident : $typ:ident, $evtype:ident, $sync:ident, $supporteds:ident, $state:ty, $get_state:expr, $get_value:expr) => {
             if let Some(supported_types) = dev.$supporteds() {
-                let types_to_check = supported_types.slice(*$start);
+                let types_to_check = supported_types.slice_iter(*$start);
                 let get_state: fn(&DeviceState) -> $state = $get_state;
                 let vals = get_state(&dev.state);
                 let old_vals = get_state(&dev.prev_state);
                 let get_value: fn($state, $typ) -> _ = $get_value;
-                for typ in types_to_check.iter() {
+                for typ in types_to_check {
                     let prev = get_value(old_vals, typ);
                     let value = get_value(vals, typ);
                     if prev != value {

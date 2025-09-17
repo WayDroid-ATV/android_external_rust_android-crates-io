@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.64"
 name = "evdev"
-version = "0.13.1"
+version = "0.13.2"
 authors = ["Corey Richardson <corey@octayn.net>"]
 build = false
 autolib = false
@@ -35,6 +35,7 @@ rustdoc-args = [
 ]
 
 [features]
+device-test = []
 serde = ["dep:serde"]
 stream-trait = [
     "tokio",
@@ -86,6 +87,14 @@ path = "examples/virtual_keyboard.rs"
 [[example]]
 name = "virtual_mouse"
 path = "examples/virtual_mouse.rs"
+
+[[test]]
+name = "compensate"
+path = "tests/compensate.rs"
+
+[[test]]
+name = "device"
+path = "tests/device.rs"
 
 [[test]]
 name = "virtual_device"
