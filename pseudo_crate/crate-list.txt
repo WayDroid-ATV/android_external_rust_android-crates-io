@@ -162,6 +162,7 @@ fxhash
 gbm
 gdbstub
 gdbstub_arch
+genco-macros
 getrandom
 gl
 gl_common

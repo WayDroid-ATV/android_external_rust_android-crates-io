@@ -1,0 +1,17 @@
+name: "genco-macros"
+description: "A whitespace-aware quasiquoter for beautiful code generation."
+third_party {
+  version: "0.17.10"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 9
+    day: 16
+  }
+  homepage: "https://crates.io/crates/genco-macros"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/genco-macros/genco-macros-0.17.10.crate"
+    version: "0.17.10"
+  }
+}

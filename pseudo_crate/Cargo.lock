@@ -276,6 +276,7 @@ dependencies = [
  "gbm",
  "gdbstub",
  "gdbstub_arch",
+ "genco-macros",
  "getrandom 0.3.3",
  "gl",
  "gl_common",
@@ -3057,6 +3058,17 @@ checksum = "22dde0e1b68787036ccedd0b1ff6f953527a0e807e571fbe898975203027278f"
 dependencies = [
  "gdbstub",
  "num-traits",
+]
+
+[[package]]
+name = "genco-macros"
+version = "0.17.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43eaff6bbc0b3a878361aced5ec6a2818ee7c541c5b33b5880dfa9a86c23e9e7"
+dependencies = [
+ "proc-macro2 1.0.101",
+ "quote 1.0.40",
+ "syn 2.0.106",
 ]
 
 [[package]]
