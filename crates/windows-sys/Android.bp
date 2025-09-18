@@ -17,7 +17,7 @@ rust_library_host {
     name: "libwindows_sys",
     crate_name: "windows_sys",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.60.2",
+    cargo_pkg_version: "0.61.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -30,7 +30,7 @@ rust_library_host {
         "Win32_System_Threading",
         "Win32_System_WindowsProgramming",
     ],
-    rustlibs: ["libwindows_targets"],
+    rustlibs: ["libwindows_link"],
     enabled: false,
     target: {
         windows: {
