@@ -6,6 +6,7 @@
       "host_first_multilib": true
     }
   },
+  "features": ["default", "serde", "java"],
   "run_cargo": false,
   "min_sdk_version": "29"
 }

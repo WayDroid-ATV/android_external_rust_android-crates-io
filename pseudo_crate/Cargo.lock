@@ -276,6 +276,7 @@ dependencies = [
  "gbm",
  "gdbstub",
  "gdbstub_arch",
+ "genco",
  "genco-macros",
  "getrandom 0.3.3",
  "gl",
@@ -467,6 +468,7 @@ dependencies = [
  "regex",
  "regex-automata",
  "regex-syntax",
+ "relative-path",
  "remain",
  "ring 0.17.2",
  "rtnetlink",
@@ -3051,6 +3053,17 @@ checksum = "22dde0e1b68787036ccedd0b1ff6f953527a0e807e571fbe898975203027278f"
 dependencies = [
  "gdbstub",
  "num-traits",
+]
+
+[[package]]
+name = "genco"
+version = "0.17.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a35958104272e516c2a5f66a9d82fba4784d2b585fc1e2358b8f96e15d342995"
+dependencies = [
+ "genco-macros",
+ "relative-path",
+ "smallvec",
 ]
 
 [[package]]
@@ -5679,9 +5692,9 @@ dependencies = [
 
 [[package]]
 name = "pdl-compiler"
-version = "0.3.3"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7beb9af6a926159652e1b0a058d15d7852220b9a7caf75cec16a2a96bf3a980c"
+checksum = "820561f1cfd0caf8c104d66c7f0eafed00e79d3a4f9c328c26f85ace5cc3fbb7"
 dependencies = [
  "argh",
  "codespan-reporting",
@@ -6468,6 +6481,12 @@ name = "regex-syntax"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "caf4aa5b0f434c91fe5c7f1ecb6a5ece2130b02ad2a590589dda5146df959001"
+
+[[package]]
+name = "relative-path"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "629a4b40d41677dde754d00bb392d777c80b8716d9271b6e2aa5f6a2b3d4261e"
 
 [[package]]
 name = "remain"

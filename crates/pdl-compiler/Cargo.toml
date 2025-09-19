@@ -12,11 +12,12 @@
 [package]
 edition = "2021"
 name = "pdl-compiler"
-version = "0.3.3"
+version = "0.4.1"
 authors = [
     "Henri Chataing <henrichataing@google.com>",
     "David de Jesus Duarte <licorne@google.com>",
     "Martin Geisler <mgeisler@google.com>",
+    "James Eidson <jmes@google.com>",
 ]
 build = false
 exclude = ["editors/*"]
@@ -39,6 +40,13 @@ license = "Apache-2.0"
 repository = "https://github.com/google/pdl/"
 resolver = "1"
 
+[features]
+default = ["serde"]
+java = [
+    "genco",
+    "once_cell",
+]
+
 [lib]
 name = "pdl_compiler"
 path = "src/lib.rs"
@@ -53,8 +61,16 @@ version = "0.1.12"
 [dependencies.codespan-reporting]
 version = "0.11.1"
 
+[dependencies.genco]
+version = "0.17.10"
+optional = true
+
 [dependencies.heck]
 version = "0.4.1"
+
+[dependencies.once_cell]
+version = "1.21.3"
+optional = true
 
 [dependencies.pest]
 version = "2.7.6"
@@ -83,7 +99,7 @@ features = [
 optional = true
 
 [dependencies.serde_json]
-version = "1.0.94"
+version = "1.0.143"
 
 [dependencies.syn]
 version = "2.0.58"
@@ -109,6 +125,3 @@ version = "3.3.0"
 
 [dev-dependencies.thiserror]
 version = "1.0.37"
-
-[features]
-default = ["serde"]

@@ -162,6 +162,7 @@ fxhash
 gbm
 gdbstub
 gdbstub_arch
+genco
 genco-macros
 getrandom
 gl
@@ -356,6 +357,7 @@ read-fonts
 regex
 regex-automata
 regex-syntax
+relative-path
 remain
 ring
 rtnetlink

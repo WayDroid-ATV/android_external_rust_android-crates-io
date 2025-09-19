@@ -18,17 +18,22 @@ rust_library_host {
     host_cross_supported: false,
     crate_name: "pdl_compiler",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.3",
+    cargo_pkg_version: "0.4.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
         "default",
+        "genco",
+        "java",
+        "once_cell",
         "serde",
     ],
     rustlibs: [
         "libargh",
         "libcodespan_reporting",
+        "libgenco",
         "libheck",
+        "libonce_cell",
         "libpest",
         "libprettyplease",
         "libproc_macro2",
@@ -46,17 +51,22 @@ rust_binary_host {
     host_cross_supported: false,
     crate_name: "pdlc",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.3",
+    cargo_pkg_version: "0.4.1",
     crate_root: "src/main.rs",
     edition: "2021",
     features: [
         "default",
+        "genco",
+        "java",
+        "once_cell",
         "serde",
     ],
     rustlibs: [
         "libargh",
         "libcodespan_reporting",
+        "libgenco",
         "libheck",
+        "libonce_cell",
         "libpdl_compiler",
         "libpest",
         "libprettyplease",
@@ -230,7 +240,7 @@ genrule {
         " --exclude-declaration Struct_Array_Field_UnsizedElement_SizeModifier_" +
         " --exclude-declaration Struct_Array_Field_UnsizedElement_SizeModifier" +
         " $(location tests/canonical/le_test_file.pdl) > $(out);" +
-        "$(location :pdlc) $(location tests/canonical/le_test_vectors.json) --output-format rust --tests >> $(out)",
+        "$(location :pdlc) $(location tests/canonical/le_test_file.pdl) --test-file $(location tests/canonical/le_test_vectors.json) --output-format rust >> $(out)",
     srcs: [
         "tests/canonical/le_test_file.pdl",
         "tests/canonical/le_test_vectors.json",
@@ -258,7 +268,7 @@ genrule {
         " --exclude-declaration Struct_Array_Field_UnsizedElement_SizeModifier_" +
         " --exclude-declaration Struct_Array_Field_UnsizedElement_SizeModifier" +
         " $(location :pdl_be_test_file) > $(out);" +
-        "$(location :pdlc) $(location tests/canonical/be_test_vectors.json) --output-format rust --tests >> $(out)",
+        "$(location :pdlc) $(location :pdl_be_test_file) --test-file $(location tests/canonical/be_test_vectors.json) --output-format rust >> $(out)",
     srcs: [
         ":pdl_be_test_file",
         "tests/canonical/be_test_vectors.json",

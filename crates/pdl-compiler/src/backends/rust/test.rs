@@ -15,22 +15,9 @@
 //! Generate Rust unit tests for canonical test vectors.
 
 use quote::{format_ident, quote};
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde::Serialize;
 
-#[derive(Debug, Deserialize)]
-struct Packet {
-    #[serde(rename = "packet")]
-    name: String,
-    tests: Vec<TestVector>,
-}
-
-#[derive(Debug, Deserialize)]
-struct TestVector {
-    packed: String,
-    unpacked: Value,
-    packet: Option<String>,
-}
+use crate::backends::common::test::Packet;
 
 /// Convert a string of hexadecimal characters into a Rust vector of
 /// bytes.
@@ -70,10 +57,10 @@ fn generate_unit_tests(input: &str, packet_names: &[&str]) -> Result<String, Str
         for (i, test_vector) in packet.tests.iter().enumerate() {
             let test_packet = test_vector.packet.as_deref().unwrap_or(packet.name.as_str());
             if !packet_names.contains(&test_packet) {
-                eprintln!("Skipping packet {}", test_packet);
+                eprintln!("Skipping packet {test_packet}");
                 continue;
             }
-            eprintln!("Generating tests for packet {}", test_packet);
+            eprintln!("Generating tests for packet {test_packet}");
 
             let parse_test_name = format_ident!(
                 "test_parse_{}_vector_{}_0x{}",

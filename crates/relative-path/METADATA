@@ -1,0 +1,17 @@
+name: "relative-path"
+description: "Portable, relative paths for Rust."
+third_party {
+  version: "1.2.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 9
+    day: 16
+  }
+  homepage: "https://crates.io/crates/relative-path"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/relative-path/relative-path-1.2.0.crate"
+    version: "1.2.0"
+  }
+}
