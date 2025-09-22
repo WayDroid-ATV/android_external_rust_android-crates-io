@@ -13,7 +13,7 @@
 edition = "2024"
 rust-version = "1.85"
 name = "thread-priority"
-version = "2.1.1"
+version = "3.0.0"
 authors = ["Victor Polevoy <fx@thefx.co>"]
 build = false
 autolib = false
