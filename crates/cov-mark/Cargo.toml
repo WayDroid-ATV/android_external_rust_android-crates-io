@@ -13,16 +13,22 @@
 edition = "2021"
 rust-version = "1.63"
 name = "cov-mark"
-version = "2.0.0"
+version = "2.1.0"
 authors = [
     "Aleksey Kladov <aleksey.kladov@gmail.com>",
     "Simonas Kazlauskas <cov-mark@kazlauskas.me>",
 ]
+build = false
 exclude = [
     ".github/",
     "bors.toml",
     "rustfmt.toml",
 ]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Manual coverage marks."
 documentation = "https://docs.rs/cov-mark"
 readme = "README.md"
@@ -44,3 +50,11 @@ rustdoc-args = [
 [features]
 default = ["enable"]
 enable = []
+
+[lib]
+name = "cov_mark"
+path = "src/lib.rs"
+
+[[test]]
+name = "smoke"
+path = "tests/smoke.rs"
