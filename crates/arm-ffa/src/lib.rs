@@ -163,6 +163,10 @@ pub enum FuncId {
     MemPermGet64 = 0xc4000088,
     MemPermSet32 = 0x84000089,
     MemPermSet64 = 0xc4000089,
+    MemOpPause = 0x84000078,
+    MemOpResume = 0x84000079,
+    MemFragRx = 0x8400007a,
+    MemFragTx = 0x8400007b,
 }
 
 impl FuncId {
@@ -204,7 +208,11 @@ impl FuncId {
             | FuncId::MemRetrieveReq64
             | FuncId::MemRetrieveResp
             | FuncId::MemRelinquish
-            | FuncId::MemReclaim => Version(1, 0),
+            | FuncId::MemReclaim
+            | FuncId::MemOpPause
+            | FuncId::MemOpResume
+            | FuncId::MemFragRx
+            | FuncId::MemFragTx => Version(1, 0),
 
             FuncId::RxAcquire
             | FuncId::SpmIdGet
@@ -257,6 +265,73 @@ pub enum FfaError {
     Aborted = -8,
     #[error("No data")]
     NoData = -9,
+}
+
+/// Collection of helper functions for converting between `Uuid` type and its representations in
+/// various FF-A containers.
+pub struct UuidHelper;
+
+impl UuidHelper {
+    /// Converts byte array into `Uuid`.
+    /// Example:
+    /// * Input `[a1, a2, a3, a4, b1, b2, c1, c2, d1, d2, d3, d4, d5, d6, d7, d8]`
+    /// * Output: `a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8`
+    pub fn from_bytes(value: [u8; 16]) -> Uuid {
+        Uuid::from_bytes(value)
+    }
+
+    /// Converts `Uuid` into byte array.
+    /// Example:
+    /// * Input: `a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8`
+    /// * Output `[a1, a2, a3, a4, b1, b2, c1, c2, d1, d2, d3, d4, d5, d6, d7, d8]`
+    pub fn to_bytes(value: Uuid) -> [u8; 16] {
+        value.into_bytes()
+    }
+
+    /// Creates `Uuid` from four 32 bit register values.
+    /// Example:
+    /// * Input `[a4a3a2a1, c2c1b2b1, d4d3d2d1, d8d7d6d5]`
+    /// * Output: `a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8`
+    pub fn from_u32_regs(value: [u32; 4]) -> Uuid {
+        Uuid::from_u128_le(
+            value[0] as u128
+                | (value[1] as u128) << 32
+                | (value[2] as u128) << 64
+                | (value[3] as u128) << 96,
+        )
+    }
+
+    /// Converts `Uuid` into four 32 bit register values.
+    /// Example:
+    /// * Input: `a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8`
+    /// * Output `[a4a3a2a1, c2c1b2b1, d4d3d2d1, d8d7d6d5]`
+    pub fn to_u32_regs(value: Uuid) -> [u32; 4] {
+        let bits = value.to_u128_le();
+
+        [
+            bits as u32,
+            (bits >> 32) as u32,
+            (bits >> 64) as u32,
+            (bits >> 96) as u32,
+        ]
+    }
+
+    /// Creates `Uuid` from a 64 bit register pair.
+    /// Example:
+    /// * Input `[c2c1b2b1a4a3a2a1, d8d7d6d5d4d3d2d1]`
+    /// * Output: `a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8`
+    pub fn from_u64_regs(value: [u64; 2]) -> Uuid {
+        Uuid::from_u128_le(value[0] as u128 | (value[1] as u128) << 64)
+    }
+
+    /// Converts `Uuid` into a 64 bit register pair.
+    /// Example:
+    /// * Input `[c2c1b2b1a4a3a2a1, d8d7d6d5d4d3d2d1]`
+    /// * Output: `a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8`
+    pub fn to_u64_regs(value: Uuid) -> [u64; 2] {
+        let bits = value.to_u128_le();
+        [bits as u64, (bits >> 64) as u64]
+    }
 }
 
 /// Endpoint ID and vCPU ID pair, used by `FFA_ERROR`, `FFA_INTERRUPT` and `FFA_RUN` interfaces.
@@ -387,6 +462,35 @@ impl Display for Version {
 impl Debug for Version {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         Display::fmt(self, f)
+    }
+}
+
+/// Enum for storing the response of an FFA_VERSION request. It can either contain a `Version` or
+/// a `NOT_SUPPORTED` error code.
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
+pub enum VersionOut {
+    Version(Version),
+    NotSupported,
+}
+
+impl TryFrom<u32> for VersionOut {
+    type Error = Error;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        if value == i32::from(FfaError::NotSupported) as u32 {
+            Ok(Self::NotSupported)
+        } else {
+            Ok(Self::Version(Version::try_from(value)?))
+        }
+    }
+}
+
+impl From<VersionOut> for u32 {
+    fn from(value: VersionOut) -> Self {
+        match value {
+            VersionOut::Version(version) => version.into(),
+            VersionOut::NotSupported => i32::from(FfaError::NotSupported) as u32,
+        }
     }
 }
 
@@ -1241,7 +1345,7 @@ pub enum Interface {
         input_version: Version,
     },
     VersionOut {
-        output_version: Version,
+        output_version: VersionOut,
     },
     Features {
         feat_id: Feature,
@@ -1348,6 +1452,22 @@ pub enum Interface {
         addr: MemAddr,
         page_cnt: u32,
         mem_perm: memory_management::MemPermissionsGetSet,
+    },
+    MemOpPause {
+        handle: memory_management::Handle,
+    },
+    MemOpResume {
+        handle: memory_management::Handle,
+    },
+    MemFragRx {
+        handle: memory_management::Handle,
+        frag_offset: u32,
+        endpoint_id: u16,
+    },
+    MemFragTx {
+        handle: memory_management::Handle,
+        frag_len: u32,
+        endpoint_id: u16,
     },
     ConsoleLog {
         chars: ConsoleLogChars,
@@ -1469,6 +1589,10 @@ impl Interface {
                 MemAddr::Addr32(_) => Some(FuncId::MemPermSet32),
                 MemAddr::Addr64(_) => Some(FuncId::MemPermSet64),
             },
+            Interface::MemOpPause { .. } => Some(FuncId::MemOpPause),
+            Interface::MemOpResume { .. } => Some(FuncId::MemOpResume),
+            Interface::MemFragRx { .. } => Some(FuncId::MemFragRx),
+            Interface::MemFragTx { .. } => Some(FuncId::MemFragTx),
             Interface::ConsoleLog { chars, .. } => match chars {
                 ConsoleLogChars::Chars32(_) => Some(FuncId::ConsoleLog32),
                 ConsoleLogChars::Chars64(_) => Some(FuncId::ConsoleLog64),
@@ -1601,7 +1725,9 @@ impl Interface {
 
                 Self::RxTxMap { addr, page_cnt }
             }
-            FuncId::RxTxUnmap => Self::RxTxUnmap { id: regs[1] as u16 },
+            FuncId::RxTxUnmap => Self::RxTxUnmap {
+                id: (regs[1] >> 16) as u16,
+            },
             FuncId::PartitionInfoGet => {
                 let uuid_words = [
                     regs[1] as u32,
@@ -1609,12 +1735,9 @@ impl Interface {
                     regs[3] as u32,
                     regs[4] as u32,
                 ];
-                let mut bytes: [u8; 16] = [0; 16];
-                for (i, b) in uuid_words.iter().flat_map(|w| w.to_le_bytes()).enumerate() {
-                    bytes[i] = b;
-                }
+
                 Self::PartitionInfoGet {
-                    uuid: Uuid::from_bytes(bytes),
+                    uuid: UuidHelper::from_u32_regs(uuid_words),
                     flags: PartitionInfoGetFlags::try_from(regs[5] as u32)?,
                 }
             }
@@ -1639,7 +1762,7 @@ impl Interface {
                 entrypoint: SecondaryEpRegisterAddr::Addr64(regs[1]),
             },
             FuncId::MsgSend2 => Self::MsgSend2 {
-                sender_vm_id: regs[1] as u16,
+                sender_vm_id: (regs[1] >> 16) as u16,
                 flags: (regs[2] as u32).try_into()?,
             },
             FuncId::MsgSendDirectReq32 => Self::MsgSendDirectReq {
@@ -1888,6 +2011,22 @@ impl Interface {
                 page_cnt: regs[2] as u32,
                 mem_perm: (regs[3] as u32).try_into()?,
             },
+            FuncId::MemOpPause => Self::MemOpPause {
+                handle: memory_management::Handle::from([regs[1] as u32, regs[2] as u32]),
+            },
+            FuncId::MemOpResume => Self::MemOpResume {
+                handle: memory_management::Handle::from([regs[1] as u32, regs[2] as u32]),
+            },
+            FuncId::MemFragRx => Self::MemFragRx {
+                handle: memory_management::Handle::from([regs[1] as u32, regs[2] as u32]),
+                frag_offset: regs[3] as u32,
+                endpoint_id: (regs[4] >> 16) as u16,
+            },
+            FuncId::MemFragTx => Self::MemFragTx {
+                handle: memory_management::Handle::from([regs[1] as u32, regs[2] as u32]),
+                frag_len: regs[3] as u32,
+                endpoint_id: (regs[4] >> 16) as u16,
+            },
             FuncId::ConsoleLog32 => {
                 let char_cnt = regs[1] as u8;
                 if char_cnt > ConsoleLogChars32::MAX_LENGTH {
@@ -1971,7 +2110,7 @@ impl Interface {
             FuncId::MsgSendDirectReq64_2 => Self::MsgSendDirectReq2 {
                 src_id: (regs[1] >> 16) as u16,
                 dst_id: regs[1] as u16,
-                uuid: Uuid::from_u64_pair(regs[2].swap_bytes(), regs[3].swap_bytes()),
+                uuid: UuidHelper::from_u64_regs([regs[2], regs[3]]),
                 args: DirectMsg2Args(regs[4..18].try_into().unwrap()),
             },
             FuncId::MsgSendDirectResp64_2 => Self::MsgSendDirectResp2 {
@@ -1997,7 +2136,7 @@ impl Interface {
                 let start_index = (regs[3] & 0xffff) as u16;
                 let info_tag = ((regs[3] >> 16) & 0xffff) as u16;
                 Self::PartitionInfoGetRegs {
-                    uuid: Uuid::from_u64_pair(regs[1].swap_bytes(), regs[2].swap_bytes()),
+                    uuid: UuidHelper::from_u64_regs([regs[1], regs[2]]),
                     start_index,
                     info_tag: if start_index == 0 && info_tag != 0 {
                         return Err(Error::InvalidInformationTag(info_tag));
@@ -2129,14 +2268,15 @@ impl Interface {
                 a[3] = page_cnt.into();
             }
             Interface::RxTxUnmap { id } => {
-                a[1] = id.into();
+                a[1] = (u32::from(id) << 16).into();
             }
             Interface::PartitionInfoGet { uuid, flags } => {
-                let bytes = uuid.into_bytes();
-                a[1] = u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]).into();
-                a[2] = u32::from_le_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]).into();
-                a[3] = u32::from_le_bytes([bytes[8], bytes[9], bytes[10], bytes[11]]).into();
-                a[4] = u32::from_le_bytes([bytes[12], bytes[13], bytes[14], bytes[15]]).into();
+                let uuid_words: [u32; 4] = UuidHelper::to_u32_regs(uuid);
+
+                a[1] = uuid_words[0].into();
+                a[2] = uuid_words[1].into();
+                a[3] = uuid_words[2].into();
+                a[4] = uuid_words[3].into();
                 a[5] = u32::from(flags).into();
             }
             Interface::MsgWait { flags } => {
@@ -2159,7 +2299,7 @@ impl Interface {
                 sender_vm_id,
                 flags,
             } => {
-                a[1] = sender_vm_id.into();
+                a[1] = (sender_vm_id as u64) << 16;
                 a[2] = u32::from(flags).into();
             }
             Interface::MsgSendDirectReq {
@@ -2356,6 +2496,38 @@ impl Interface {
                 a[2] = page_cnt.into();
                 a[3] = u32::from(mem_perm).into();
             }
+            Interface::MemOpPause { handle } => {
+                let handle_regs: [u32; 2] = handle.into();
+                a[1] = handle_regs[0].into();
+                a[2] = handle_regs[1].into();
+            }
+            Interface::MemOpResume { handle } => {
+                let handle_regs: [u32; 2] = handle.into();
+                a[1] = handle_regs[0].into();
+                a[2] = handle_regs[1].into();
+            }
+            Interface::MemFragRx {
+                handle,
+                frag_offset,
+                endpoint_id,
+            } => {
+                let handle_regs: [u32; 2] = handle.into();
+                a[1] = handle_regs[0].into();
+                a[2] = handle_regs[1].into();
+                a[3] = frag_offset.into();
+                a[4] = (u32::from(endpoint_id) << 16).into();
+            }
+            Interface::MemFragTx {
+                handle,
+                frag_len,
+                endpoint_id,
+            } => {
+                let handle_regs: [u32; 2] = handle.into();
+                a[1] = handle_regs[0].into();
+                a[2] = handle_regs[1].into();
+                a[3] = frag_len.into();
+                a[4] = (u32::from(endpoint_id) << 16).into();
+            }
             Interface::ConsoleLog { chars } => match chars {
                 ConsoleLogChars::Chars32(ConsoleLogChars32 {
                     char_cnt,
@@ -2445,8 +2617,7 @@ impl Interface {
                 args,
             } => {
                 a[1] = ((src_id as u64) << 16) | dst_id as u64;
-                let (uuid_msb, uuid_lsb) = uuid.as_u64_pair();
-                (a[2], a[3]) = (uuid_msb.swap_bytes(), uuid_lsb.swap_bytes());
+                [a[2], a[3]] = UuidHelper::to_u64_regs(uuid);
                 a[4..18].copy_from_slice(&args.0[..14]);
             }
             Interface::MsgSendDirectResp2 {
@@ -2477,8 +2648,7 @@ impl Interface {
                 if start_index == 0 && info_tag != 0 {
                     panic!("Information Tag MBZ if start index is 0: {:#x?}", self);
                 }
-                let (uuid_msb, uuid_lsb) = uuid.as_u64_pair();
-                (a[1], a[2]) = (uuid_msb.swap_bytes(), uuid_lsb.swap_bytes());
+                [a[1], a[2]] = UuidHelper::to_u64_regs(uuid);
                 a[3] = (u64::from(info_tag) << 16) | u64::from(start_index);
             }
             _ => panic!("{:#x?} requires 8 registers", self),
@@ -2505,12 +2675,44 @@ impl Interface {
 
 #[cfg(test)]
 mod tests {
+    use uuid::uuid;
+
+    use crate::{
+        memory_management::Handle,
+        partition_info::{SuccessArgsPartitionInfoGet, SuccessArgsPartitionInfoGetRegs},
+    };
+
     use super::*;
+
+    const fn error_code(code: i32) -> u64 {
+        (code as u32) as u64
+    }
 
     #[test]
     fn version_reg_count() {
         assert!(!Version(1, 1).needs_18_regs());
         assert!(Version(1, 2).needs_18_regs())
+    }
+
+    #[test]
+    fn ffa_uuid_helpers() {
+        const UUID: Uuid = uuid!("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8");
+
+        let bytes = [
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
+            0xd7, 0xd8,
+        ];
+
+        assert_eq!(UUID, UuidHelper::from_bytes(bytes));
+        assert_eq!(bytes, UuidHelper::to_bytes(UUID));
+
+        let words = [0xa4a3a2a1, 0xc2c1b2b1, 0xd4d3d2d1, 0xd8d7d6d5];
+        assert_eq!(UUID, UuidHelper::from_u32_regs(words));
+        assert_eq!(words, UuidHelper::to_u32_regs(UUID));
+
+        let pair = [0xc2c1b2b1a4a3a2a1, 0xd8d7d6d5d4d3d2d1];
+        assert_eq!(UUID, UuidHelper::from_u64_regs(pair));
+        assert_eq!(pair, UuidHelper::to_u64_regs(UUID));
     }
 
     #[test]
@@ -2859,6 +3061,949 @@ mod tests {
             Err(Error::MemoryManagementError(
                 memory_management::Error::InvalidPageCount
             )),
+        );
+    }
+
+    macro_rules! test_regs_serde {
+        ($value:expr, $bytes:expr) => {
+            let mut regs = [0u64; 18];
+            let mut bytes = [0u64; 18];
+
+            let b: &[u64] = &$bytes;
+            bytes[0..(b.len())].copy_from_slice(&b);
+
+            $value.to_regs(Version(1, 2), &mut regs);
+            assert_eq!(regs, bytes);
+
+            assert_eq!(Interface::from_regs(Version(1, 2), &bytes), Ok($value));
+        };
+    }
+    pub(crate) use test_regs_serde;
+
+    macro_rules! test_args_serde {
+        ($args:expr, $sa:expr) => {
+            assert_eq!($args.try_into(), Ok($sa));
+            assert_eq!($sa.try_into(), Ok($args));
+        };
+        ($args:expr, $sa:expr, $flags:expr) => {
+            assert_eq!($args.try_into(), Ok($sa));
+            assert_eq!(($flags, $sa).try_into(), Ok($args));
+        };
+    }
+    pub(crate) use test_args_serde;
+
+    #[test]
+    fn ffa_error_serde() {
+        test_regs_serde!(
+            Interface::Error {
+                target_info: TargetInfo {
+                    endpoint_id: 0x1234,
+                    vcpu_id: 0xabcd
+                },
+                error_code: FfaError::Aborted,
+                error_arg: 0xdead_beef
+            },
+            [0x84000060, 0x1234_abcd, error_code(-8), 0xdead_beef]
+        );
+    }
+
+    #[test]
+    fn ffa_success_serde() {
+        test_regs_serde!(
+            Interface::Success {
+                target_info: TargetInfo {
+                    endpoint_id: 0x1234,
+                    vcpu_id: 0xabcd
+                },
+                args: SuccessArgs::Args32([1, 2, 3, 4, 5, 6])
+            },
+            [0x84000061, 0x1234_abcd, 1, 2, 3, 4, 5, 6]
+        );
+        test_regs_serde!(
+            Interface::Success {
+                target_info: TargetInfo {
+                    endpoint_id: 0x1234,
+                    vcpu_id: 0xabcd
+                },
+                args: SuccessArgs::Args64_2([
+                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+                ])
+            },
+            [
+                0xC4000061,
+                0x1234_abcd,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+            ]
+        );
+    }
+
+    #[test]
+    fn ffa_interrupt_serde() {
+        test_regs_serde!(
+            Interface::Interrupt {
+                target_info: TargetInfo {
+                    endpoint_id: 0x1234,
+                    vcpu_id: 0xabcd
+                },
+                interrupt_id: 0xdead_beef
+            },
+            [0x84000062, 0x1234_abcd, 0xdead_beef]
+        );
+    }
+
+    #[test]
+    fn ffa_version_serde() {
+        test_regs_serde!(
+            Interface::Version {
+                input_version: Version(1, 2),
+            },
+            [0x84000063, 0x0001_0002]
+        );
+    }
+
+    #[test]
+    fn ffa_feature_serde() {
+        test_regs_serde!(
+            Interface::Features {
+                feat_id: Feature::FeatureId(FeatureId::NotificationPendingInterrupt),
+                input_properties: 0
+            },
+            [0x84000064, 0x1]
+        );
+        test_regs_serde!(
+            Interface::Features {
+                feat_id: Feature::FeatureId(FeatureId::ScheduleReceiverInterrupt),
+                input_properties: 0
+            },
+            [0x84000064, 0x2]
+        );
+        test_regs_serde!(
+            Interface::Features {
+                feat_id: Feature::FeatureId(FeatureId::ManagedExitInterrupt),
+                input_properties: 0
+            },
+            [0x84000064, 0x3]
+        );
+        test_regs_serde!(
+            Interface::Features {
+                feat_id: Feature::FuncId(FuncId::Features),
+                input_properties: 32
+            },
+            [0x84000064, 0x84000064, 32]
+        );
+        test_args_serde!(
+            SuccessArgs::Args32([8, 8, 0, 0, 0, 0]),
+            SuccessArgsFeatures { properties: [8, 8] }
+        );
+    }
+
+    #[test]
+    fn ffa_rx_acquire_serde() {
+        test_regs_serde!(Interface::RxAcquire { vm_id: 0xbeef }, [0x84000084, 0xbeef]);
+    }
+
+    #[test]
+    fn ffa_rx_release_serde() {
+        test_regs_serde!(Interface::RxRelease { vm_id: 0xbeef }, [0x84000065, 0xbeef]);
+    }
+
+    #[test]
+    fn ffa_rxtx_map_serde() {
+        test_regs_serde!(
+            Interface::RxTxMap {
+                addr: RxTxAddr::Addr32 {
+                    rx: 0xbeef,
+                    tx: 0xfeed_dead
+                },
+                page_cnt: 0x1234_abcd
+            },
+            [0x84000066, 0xfeed_dead, 0xbeef, 0x1234_abcd]
+        );
+        test_regs_serde!(
+            Interface::RxTxMap {
+                addr: RxTxAddr::Addr64 {
+                    rx: 0xdead_1234_beef,
+                    tx: 0xaaaa_bbbb_feed_dead
+                },
+                page_cnt: 0x1234_abcd
+            },
+            [
+                0xC4000066,
+                0xaaaa_bbbb_feed_dead,
+                0xdead_1234_beef,
+                0x1234_abcd
+            ]
+        );
+    }
+
+    #[test]
+    fn ffa_rxtx_unmap_serde() {
+        test_regs_serde!(
+            Interface::RxTxUnmap { id: 0x1234 },
+            [0x84000067, 0x1234_0000]
+        );
+    }
+
+    #[test]
+    fn ffa_partition_info_get_serde() {
+        test_regs_serde!(
+            Interface::PartitionInfoGet {
+                uuid: uuid!("12345678-abcd-ef12-3456-7890abcdef00"),
+                flags: PartitionInfoGetFlags { count_only: false }
+            },
+            [0x84000068, 0x78563412, 0x12efcdab, 0x90785634, 0x00efcdab]
+        );
+        test_args_serde!(
+            SuccessArgsPartitionInfoGet {
+                count: 0x1234_5678,
+                size: Some(0xabcd_beef)
+            },
+            SuccessArgs::Args32([0x1234_5678, 0xabcd_beef, 0, 0, 0, 0]),
+            PartitionInfoGetFlags { count_only: false }
+        );
+        test_regs_serde!(
+            Interface::PartitionInfoGet {
+                uuid: uuid!("12345678-abcd-ef12-3456-7890abcdef00"),
+                flags: PartitionInfoGetFlags { count_only: true }
+            },
+            [0x84000068, 0x78563412, 0x12efcdab, 0x90785634, 0x00efcdab, 0b1]
+        );
+        test_args_serde!(
+            SuccessArgsPartitionInfoGet {
+                count: 0x1234_5678,
+                size: None
+            },
+            SuccessArgs::Args32([0x1234_5678, 0, 0, 0, 0, 0]),
+            PartitionInfoGetFlags { count_only: true }
+        );
+    }
+
+    #[test]
+    fn ffa_partition_info_get_regs_serde() {
+        test_regs_serde!(
+            Interface::PartitionInfoGetRegs {
+                uuid: uuid!("12345678-abcd-ef12-3456-7890abcdef00"),
+                start_index: 0xfeed,
+                info_tag: 0xbeef
+            },
+            [
+                0xC400008B,
+                0x12ef_cdab_7856_3412,
+                0x00ef_cdab_9078_5634,
+                0xbeef_feed
+            ]
+        );
+        test_args_serde!(
+            SuccessArgs::Args64_2([
+                0x0018_2222_0002_0004,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ]),
+            SuccessArgsPartitionInfoGetRegs {
+                last_index: 4,
+                current_index: 2,
+                info_tag: 0x2222,
+                descriptor_data: [0; 120]
+            }
+        );
+    }
+
+    #[test]
+    fn ffa_id_get_serde() {
+        test_regs_serde!(Interface::IdGet, [0x84000069]);
+        test_args_serde!(
+            SuccessArgs::Args32([0x1234, 0, 0, 0, 0, 0]),
+            SuccessArgsIdGet { id: 0x1234 }
+        );
+    }
+
+    #[test]
+    fn ffa_spm_id_get_serde() {
+        test_regs_serde!(Interface::SpmIdGet, [0x84000085]);
+        test_args_serde!(
+            SuccessArgs::Args32([0x1234, 0, 0, 0, 0, 0]),
+            SuccessArgsSpmIdGet { id: 0x1234 }
+        );
+    }
+
+    #[test]
+    fn ffa_console_log_serde() {
+        test_regs_serde!(
+            Interface::ConsoleLog {
+                chars: ConsoleLogChars::Chars32(LogChars {
+                    char_cnt: 8,
+                    char_lists: [0x6566_6768, 0x6970_7172, 0, 0, 0, 0,]
+                })
+            },
+            [0x8400008A, 8, 0x6566_6768, 0x6970_7172]
+        );
+        test_regs_serde!(
+            Interface::ConsoleLog {
+                chars: ConsoleLogChars::Chars64(LogChars {
+                    char_cnt: 8,
+                    char_lists: [
+                        0x6566_6768_6970_7172,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ]
+                })
+            },
+            [0xC400008A, 8, 0x6566_6768_6970_7172]
+        );
+    }
+
+    #[test]
+    fn ffa_msg_send2_serde() {
+        test_regs_serde!(
+            Interface::MsgSend2 {
+                sender_vm_id: 0xfeed,
+                flags: MsgSend2Flags {
+                    delay_schedule_receiver: true
+                }
+            },
+            [0x84000086, 0xfeed_0000, 0b10]
+        );
+    }
+
+    #[test]
+    fn ffa_msg_send_direct_req_serde() {
+        test_regs_serde!(
+            Interface::MsgSendDirectReq {
+                src_id: 0x8005,
+                dst_id: 0x8003,
+                args: DirectMsgArgs::Args32([1, 2, 3, 4, 5])
+            },
+            [0x8400006F, 0x8005_8003, 0x0, 1, 2, 3, 4, 5]
+        );
+
+        test_regs_serde!(
+            Interface::MsgSendDirectReq {
+                src_id: 0x8005,
+                dst_id: 0x8003,
+                args: DirectMsgArgs::Args64([1, 2, 3, 4, 5])
+            },
+            [0xC400006F, 0x8005_8003, 0x0, 1, 2, 3, 4, 5]
+        );
+    }
+
+    #[test]
+    fn ffa_msg_send_direct_resp_serde() {
+        test_regs_serde!(
+            Interface::MsgSendDirectResp {
+                src_id: 0x8005,
+                dst_id: 0x8003,
+                args: DirectMsgArgs::Args32([1, 2, 3, 4, 5])
+            },
+            [0x84000070, 0x8005_8003, 0x0, 1, 2, 3, 4, 5]
+        );
+
+        test_regs_serde!(
+            Interface::MsgSendDirectResp {
+                src_id: 0x8005,
+                dst_id: 0x8003,
+                args: DirectMsgArgs::Args64([1, 2, 3, 4, 5])
+            },
+            [0xC4000070, 0x8005_8003, 0x0, 1, 2, 3, 4, 5]
+        );
+    }
+
+    #[test]
+    fn ffa_psci_req_serde() {
+        test_regs_serde!(
+            Interface::MsgSendDirectReq {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::PowerPsciReq32 {
+                    params: [1, 2, 3, 4]
+                }
+            },
+            [0x8400006F, 0xdead_beef, 0x8000_0000, 1, 2, 3, 4]
+        );
+        test_regs_serde!(
+            Interface::MsgSendDirectReq {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::PowerPsciReq64 {
+                    params: [0x1234_5678_90ab_cdef, 2, 3, 4]
+                }
+            },
+            [
+                0xC400006F,
+                0xdead_beef,
+                0x8000_0000,
+                0x1234_5678_90ab_cdef,
+                2,
+                3,
+                4
+            ]
+        );
+    }
+
+    #[test]
+    fn ffa_power_warm_boot_req_serde() {
+        test_regs_serde!(
+            Interface::MsgSendDirectReq {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::PowerWarmBootReq {
+                    boot_type: WarmBootType::ExitFromLowPower
+                }
+            },
+            [0x8400006F, 0xdead_beef, 0x80000001, 0b1]
+        );
+        test_regs_serde!(
+            Interface::MsgSendDirectReq {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::PowerWarmBootReq {
+                    boot_type: WarmBootType::ExitFromSuspend
+                }
+            },
+            [0x8400006F, 0xdead_beef, 0x80000001, 0b0]
+        );
+    }
+
+    #[test]
+    fn ffa_power_resp_serde() {
+        test_regs_serde!(
+            Interface::MsgSendDirectResp {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::PowerPsciResp {
+                    psci_status: 0x1234
+                }
+            },
+            [0x84000070, 0xdead_beef, 0x8000_0002, 0x1234]
+        );
+    }
+
+    #[test]
+    fn ffa_vm_creation_req() {
+        test_regs_serde!(
+            Interface::MsgSendDirectReq {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::VmCreated {
+                    handle: Handle(0x1234_5678_90ab_cdef),
+                    vm_id: 0x1234
+                }
+            },
+            [
+                0x8400006F,
+                0xdead_beef,
+                0x8000_0004,
+                0x90ab_cdef,
+                0x1234_5678,
+                0x1234
+            ]
+        );
+    }
+
+    #[test]
+    fn ffa_vm_creation_resp() {
+        test_regs_serde!(
+            Interface::MsgSendDirectResp {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::VmCreatedAck {
+                    sp_status: VmAvailabilityStatus::Success
+                }
+            },
+            [0x84000070, 0xdead_beef, 0x8000_0005]
+        );
+        test_regs_serde!(
+            Interface::MsgSendDirectResp {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::VmCreatedAck {
+                    sp_status: VmAvailabilityStatus::Error(FfaError::Retry)
+                }
+            },
+            [0x84000070, 0xdead_beef, 0x8000_0005, error_code(-7)]
+        );
+    }
+
+    #[test]
+    fn ffa_vm_destruction_req() {
+        test_regs_serde!(
+            Interface::MsgSendDirectReq {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::VmDestructed {
+                    handle: Handle(0x1234_5678_90ab_cdef),
+                    vm_id: 0x1234
+                }
+            },
+            [
+                0x8400006F,
+                0xdead_beef,
+                0x8000_0006,
+                0x90ab_cdef,
+                0x1234_5678,
+                0x1234
+            ]
+        );
+    }
+
+    #[test]
+    fn ffa_vm_destruction_resp() {
+        test_regs_serde!(
+            Interface::MsgSendDirectResp {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::VmDestructedAck {
+                    sp_status: VmAvailabilityStatus::Success
+                }
+            },
+            [0x84000070, 0xdead_beef, 0x8000_0007]
+        );
+        test_regs_serde!(
+            Interface::MsgSendDirectResp {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::VmDestructedAck {
+                    sp_status: VmAvailabilityStatus::Error(FfaError::Denied)
+                }
+            },
+            [0x84000070, 0xdead_beef, 0x8000_0007, error_code(-6)]
+        );
+    }
+
+    #[test]
+    fn ffa_version_req() {
+        test_regs_serde!(
+            Interface::MsgSendDirectReq {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::VersionReq {
+                    version: Version(1, 2)
+                }
+            },
+            [0x8400006F, 0xdead_beef, 0x8000_0008, 0x0001_0002]
+        );
+    }
+
+    #[test]
+    fn ffa_version_resp() {
+        test_regs_serde!(
+            Interface::MsgSendDirectResp {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::VersionResp {
+                    version: Some(Version(1, 2))
+                }
+            },
+            [0x84000070, 0xdead_beef, 0x8000_0009, 0x0001_0002]
+        );
+        test_regs_serde!(
+            Interface::MsgSendDirectResp {
+                src_id: 0xdead,
+                dst_id: 0xbeef,
+                args: DirectMsgArgs::VersionResp { version: None }
+            },
+            [0x84000070, 0xdead_beef, 0x8000_0009, u32::MAX as u64]
+        );
+    }
+
+    #[test]
+    fn ffa_msg_send_direct_req2_serde() {
+        test_regs_serde!(
+            Interface::MsgSendDirectReq2 {
+                src_id: 0x1234,
+                dst_id: 0xdcba,
+                uuid: uuid!("12345678-abcd-ef12-3456-7890abcdef00"),
+                args: DirectMsg2Args([4; 14])
+            },
+            [
+                0xC400008D,
+                0x1234_dcba,
+                0x12ef_cdab_7856_3412,
+                0x00ef_cdab_9078_5634,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+            ]
+        );
+    }
+
+    #[test]
+    fn ffa_msg_send_direct_resp2_serde() {
+        test_regs_serde!(
+            Interface::MsgSendDirectResp2 {
+                src_id: 0xaaaa,
+                dst_id: 0xbbbb,
+                args: DirectMsg2Args([8; 14])
+            },
+            [
+                0xC400008E,
+                0xaaaa_bbbb,
+                0,
+                0,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8,
+                8
+            ]
+        );
+    }
+
+    #[test]
+    fn ffa_msg_wait_serde() {
+        test_regs_serde!(
+            Interface::MsgWait {
+                flags: Some(MsgWaitFlags {
+                    retain_rx_buffer: true
+                })
+            },
+            [0x8400006B, 0, 0b1]
+        );
+    }
+
+    #[test]
+    fn ffa_yield_serde() {
+        test_regs_serde!(Interface::Yield, [0x8400006C]);
+    }
+
+    #[test]
+    fn ffa_run_serde() {
+        test_regs_serde!(
+            Interface::Run {
+                target_info: TargetInfo {
+                    endpoint_id: 0xaaaa,
+                    vcpu_id: 0x1234
+                }
+            },
+            [0x8400006D, 0xaaaa_1234]
+        );
+    }
+
+    #[test]
+    fn ffa_normal_world_resume_serde() {
+        test_regs_serde!(Interface::NormalWorldResume, [0x8400007C]);
+    }
+
+    #[test]
+    fn ffa_notification_bitmap_create_serde() {
+        test_regs_serde!(
+            Interface::NotificationBitmapCreate {
+                vm_id: 0xabcd,
+                vcpu_cnt: 16
+            },
+            [0x8400007D, 0xabcd, 16]
+        );
+    }
+
+    #[test]
+    fn ffa_notification_bitmap_destroy_serde() {
+        test_regs_serde!(
+            Interface::NotificationBitmapDestroy { vm_id: 0xabcd },
+            [0x8400007E, 0xabcd]
+        );
+    }
+
+    #[test]
+    fn ffa_notification_bind_serde() {
+        test_regs_serde!(
+            Interface::NotificationBind {
+                sender_id: 0xdead,
+                receiver_id: 0xbeef,
+                flags: NotificationBindFlags {
+                    per_vcpu_notification: true
+                },
+                bitmap: 0x1234_abcd_5678_def0
+            },
+            [0x8400007F, 0xdead_beef, 0b1, 0x5678_def0, 0x1234_abcd]
+        );
+    }
+
+    #[test]
+    fn ffa_notification_unbind_serde() {
+        test_regs_serde!(
+            Interface::NotificationUnbind {
+                sender_id: 0xaaaa,
+                receiver_id: 0xbbbb,
+                bitmap: 0x1234_abcd_5678_def0
+            },
+            [0x84000080, 0xaaaa_bbbb, 0, 0x5678_def0, 0x1234_abcd]
+        );
+    }
+
+    #[test]
+    fn ffa_notification_set_serde() {
+        test_regs_serde!(
+            Interface::NotificationSet {
+                sender_id: 0xaaaa,
+                receiver_id: 0xbbbb,
+                flags: NotificationSetFlags {
+                    delay_schedule_receiver: true,
+                    vcpu_id: Some(7)
+                },
+                bitmap: 0x1234_abcd_5678_def0
+            },
+            [
+                0x84000081,
+                0xaaaa_bbbb,
+                0x0007_0003,
+                0x5678_def0,
+                0x1234_abcd
+            ]
+        );
+        test_regs_serde!(
+            Interface::NotificationSet {
+                sender_id: 0xaaaa,
+                receiver_id: 0xbbbb,
+                flags: NotificationSetFlags {
+                    delay_schedule_receiver: false,
+                    vcpu_id: None
+                },
+                bitmap: 0x1234_abcd_5678_def0
+            },
+            [0x84000081, 0xaaaa_bbbb, 0, 0x5678_def0, 0x1234_abcd]
+        );
+    }
+
+    #[test]
+    fn ffa_notification_get_serde() {
+        test_regs_serde!(
+            Interface::NotificationGet {
+                vcpu_id: 13,
+                endpoint_id: 0x1234,
+                flags: NotificationGetFlags {
+                    sp_bitmap_id: false,
+                    vm_bitmap_id: true,
+                    spm_bitmap_id: true,
+                    hyp_bitmap_id: false
+                }
+            },
+            [0x84000082, 0x000d_1234, 0b0110]
+        );
+        test_regs_serde!(
+            Interface::NotificationGet {
+                vcpu_id: 13,
+                endpoint_id: 0x1234,
+                flags: NotificationGetFlags {
+                    sp_bitmap_id: false,
+                    vm_bitmap_id: false,
+                    spm_bitmap_id: false,
+                    hyp_bitmap_id: false
+                }
+            },
+            [0x84000082, 0x000d_1234, 0b0000]
+        );
+        test_regs_serde!(
+            Interface::NotificationGet {
+                vcpu_id: 13,
+                endpoint_id: 0x1234,
+                flags: NotificationGetFlags {
+                    sp_bitmap_id: true,
+                    vm_bitmap_id: true,
+                    spm_bitmap_id: true,
+                    hyp_bitmap_id: true
+                }
+            },
+            [0x84000082, 0x000d_1234, 0b1111]
+        );
+
+        test_args_serde!(
+            SuccessArgsNotificationGet {
+                sp_notifications: None,
+                vm_notifications: None,
+                spm_notifications: None,
+                hypervisor_notifications: None
+            },
+            SuccessArgs::Args32([0, 0, 0, 0, 0, 0]),
+            NotificationGetFlags {
+                sp_bitmap_id: false,
+                vm_bitmap_id: false,
+                spm_bitmap_id: false,
+                hyp_bitmap_id: false
+            }
+        );
+        test_args_serde!(
+            SuccessArgsNotificationGet {
+                sp_notifications: None,
+                vm_notifications: Some(0xdead_beef_1234_1234),
+                spm_notifications: None,
+                hypervisor_notifications: Some(0x1234_5678)
+            },
+            SuccessArgs::Args32([0, 0, 0x1234_1234, 0xdead_beef, 0, 0x1234_5678]),
+            NotificationGetFlags {
+                sp_bitmap_id: false,
+                vm_bitmap_id: true,
+                spm_bitmap_id: false,
+                hyp_bitmap_id: true
+            }
+        );
+
+        test_args_serde!(
+            SuccessArgsNotificationGet {
+                sp_notifications: Some(0x1000),
+                vm_notifications: Some(0xdead_beef_1234_1234),
+                spm_notifications: Some(0x2000),
+                hypervisor_notifications: Some(0x1234_5678)
+            },
+            SuccessArgs::Args32([0x1000, 0, 0x1234_1234, 0xdead_beef, 0x2000, 0x1234_5678]),
+            NotificationGetFlags {
+                sp_bitmap_id: true,
+                vm_bitmap_id: true,
+                spm_bitmap_id: true,
+                hyp_bitmap_id: true
+            }
+        );
+    }
+
+    #[test]
+    fn ffa_notification_info_get_serde() {
+        test_regs_serde!(
+            Interface::NotificationInfoGet { is_32bit: true },
+            [0x84000083]
+        );
+        test_regs_serde!(
+            Interface::NotificationInfoGet { is_32bit: false },
+            [0xC4000083]
+        );
+        test_args_serde!(
+            SuccessArgs::Args32([0b1001_0001_0000_0001, 0xbbbb_cccc, 0xaaaa, 0, 0, 0]),
+            SuccessArgsNotificationInfoGet {
+                more_pending_notifications: true,
+                list_count: 2,
+                id_counts: [1, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+                ids: [0xcccc, 0xbbbb, 0xaaaa, 0, 0, 0, 0, 0, 0, 0]
+            }
+        );
+    }
+
+    #[test]
+    fn log_chars_empty() {
+        assert!(ConsoleLogChars64 {
+            char_cnt: 0,
+            char_lists: [0; 16]
+        }
+        .empty())
+    }
+
+    #[test]
+    fn log_chars_push() {
+        let mut console = ConsoleLogChars64 {
+            char_cnt: 0,
+            char_lists: [0; 16],
+        };
+
+        assert_eq!(console.push("hello world!".as_bytes()), 12);
+
+        assert_eq!(console.char_cnt, 12);
+        assert_eq!(&console.bytes()[0..12], "hello world!".as_bytes());
+        assert!(!console.empty());
+    }
+
+    #[test]
+    fn log_chars_full() {
+        let mut console = ConsoleLogChars64 {
+            char_cnt: 0,
+            char_lists: [0; 16],
+        };
+
+        assert_eq!(console.push(&[97; 128]), 128);
+
+        assert!(console.full());
+    }
+
+    #[test]
+    fn success_args_invalid_variants() {
+        assert!(SuccessArgs::Args32([0; 6]).try_get_args64_2().is_err());
+        assert!(SuccessArgs::Args64([0; 6]).try_get_args64_2().is_err());
+
+        assert!(SuccessArgs::Args64([0; 6]).try_get_args32().is_err());
+        assert!(SuccessArgs::Args64_2([0; 16]).try_get_args32().is_err());
+
+        assert!(SuccessArgs::Args32([0; 6]).try_get_args64().is_err());
+        assert!(SuccessArgs::Args64_2([0; 16]).try_get_args64().is_err());
+    }
+
+    #[test]
+    fn ffa_el3_intr_handle_serde() {
+        test_regs_serde!(Interface::El3IntrHandle, [0x8400008C]);
+    }
+
+    #[test]
+    fn ffa_secondary_ep_regs32() {
+        test_regs_serde!(
+            Interface::SecondaryEpRegister {
+                entrypoint: SecondaryEpRegisterAddr::Addr32(0xdead_beef)
+            },
+            [0x84000087, 0xdead_beef]
+        );
+    }
+
+    #[test]
+    fn ffa_secondary_ep_regs64() {
+        test_regs_serde!(
+            Interface::SecondaryEpRegister {
+                entrypoint: SecondaryEpRegisterAddr::Addr64(0x1234_5678_90ab_cdef)
+            },
+            [0xC4000087, 0x1234_5678_90ab_cdef]
         );
     }
 }
