@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "uuid",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.12.1",
+    cargo_pkg_version: "1.18.1",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
@@ -31,7 +31,7 @@ rust_library {
     ],
     rustlibs: [
         "libatomic_rust",
-        "libgetrandom-0.2",
+        "libgetrandom",
         "libserde",
     ],
     apex_available: [
@@ -48,7 +48,7 @@ rust_test {
     host_supported: true,
     crate_name: "uuid",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.12.1",
+    cargo_pkg_version: "1.18.1",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -67,7 +67,7 @@ rust_test {
     rustlibs: [
         "libatomic_rust",
         "libbincode",
-        "libgetrandom-0.2",
+        "libgetrandom",
         "libserde",
         "libserde_json",
         "libserde_test",
@@ -83,7 +83,7 @@ rust_library_rlib {
     defaults: ["rust_baremetal_defaults"],
     crate_name: "uuid",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.12.1",
+    cargo_pkg_version: "1.18.1",
     crate_root: "src/lib.rs",
     edition: "2018",
     apex_available: [

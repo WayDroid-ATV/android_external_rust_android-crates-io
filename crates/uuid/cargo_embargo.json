@@ -1,8 +1,4 @@
 {
-  "module_name_overrides": {
-    "libgetrandom": "libgetrandom-0.2"
-  },
-  "run_cargo": false,
   "package": {
     "uuid": {
       "dep_blocklist": [
@@ -14,6 +10,7 @@
     {
       "tests": true,
       "features": [
+        "rng",
         "serde",
         "std",
         "v1",
