@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "arm_ffa",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.1",
+    cargo_pkg_version: "0.4.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
@@ -27,7 +27,6 @@ rust_library {
         "libuuid",
         "libzerocopy",
     ],
-    proc_macros: ["libzerocopy_derive"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

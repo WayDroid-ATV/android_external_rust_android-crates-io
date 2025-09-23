@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.82"
 name = "arm-ffa"
-version = "0.3.1"
+version = "0.4.0"
 authors = [
     "Balint Dobszay <balint.dobszay@arm.com>",
     "Imre Kis <imre.kis@arm.com>",
@@ -47,19 +47,17 @@ name = "arm_ffa"
 path = "src/lib.rs"
 
 [dependencies.num_enum]
-version = "0.7"
+version = "0.7.4"
 default-features = false
 
 [dependencies.thiserror]
-version = "2.0.3"
+version = "2.0.16"
 default-features = false
 
 [dependencies.uuid]
-version = "1.10"
+version = "1.18.1"
 default-features = false
 
 [dependencies.zerocopy]
-version = "0.8"
-
-[dependencies.zerocopy-derive]
-version = "0.8"
+version = "0.8.27"
+features = ["derive"]
