@@ -145,7 +145,7 @@ impl Library {
     ///     **awesome_variable = 42.0;
     /// };
     /// ```
-    pub unsafe fn get<T>(&self, symbol: &[u8]) -> Result<Symbol<T>, Error> {
+    pub unsafe fn get<T>(&self, symbol: &[u8]) -> Result<Symbol<'_, T>, Error> {
         self.0.get(symbol).map(|from| Symbol::from_raw(from, self))
     }
 
@@ -261,7 +261,6 @@ impl<'lib, T> Symbol<'lib, T> {
     /// was loaded from.
     pub unsafe fn try_as_raw_ptr(self) -> Option<*mut raw::c_void> {
         Some(
-            #[allow(unused_unsafe)] // 1.56.0 compat
             unsafe {
                 // SAFE: the calling function has the same soundness invariants as this callee.
                 self.into_raw()
@@ -317,4 +316,3 @@ impl<T> fmt::Debug for Symbol<'_, T> {
 
 unsafe impl<T: Send> Send for Symbol<'_, T> {}
 unsafe impl<T: Sync> Sync for Symbol<'_, T> {}
-
