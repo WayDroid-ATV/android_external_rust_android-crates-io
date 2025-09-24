@@ -1,0 +1,53 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 933d4b115..3641a7a2d 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -869,11 +869,11 @@ features = [
+ default-features = false
+ 
+ [target."cfg(windows)".dependencies.windows-sys]
+-version = "0.59"
++version = "0.61"
+ optional = true
+ 
+ [target."cfg(windows)".dev-dependencies.windows-sys]
+-version = "0.59"
++version = "0.61"
+ features = [
+     "Win32_Foundation",
+     "Win32_Security_Authorization",
+diff --git a/src/process/windows.rs b/src/process/windows.rs
+index c49df36b1..138cf6cca 100644
+--- a/src/process/windows.rs
++++ b/src/process/windows.rs
+@@ -34,7 +34,7 @@ use std::task::{Context, Poll};
+ 
+ use windows_sys::{
+     Win32::Foundation::{
+-        DuplicateHandle, BOOLEAN, DUPLICATE_SAME_ACCESS, HANDLE, INVALID_HANDLE_VALUE,
++        DuplicateHandle, DUPLICATE_SAME_ACCESS, HANDLE, INVALID_HANDLE_VALUE,
+     },
+     Win32::System::Threading::{
+         GetCurrentProcess, RegisterWaitForSingleObject, UnregisterWaitEx, INFINITE,
+@@ -163,7 +163,7 @@ impl Drop for Waiting {
+     }
+ }
+ 
+-unsafe extern "system" fn callback(ptr: *mut std::ffi::c_void, _timer_fired: BOOLEAN) {
++unsafe extern "system" fn callback(ptr: *mut std::ffi::c_void, _timer_fired: bool) {
+     let complete = &mut *(ptr as *mut Option<oneshot::Sender<()>>);
+     let _ = complete.take().unwrap().send(());
+ }
+diff --git a/src/signal/windows/sys.rs b/src/signal/windows/sys.rs
+index 5831e33a3..8d81ad75f 100644
+--- a/src/signal/windows/sys.rs
++++ b/src/signal/windows/sys.rs
+@@ -4,7 +4,7 @@ use std::sync::Once;
+ use crate::signal::registry::{globals, EventId, EventInfo, Init, Storage};
+ use crate::signal::RxFuture;
+ 
+-use windows_sys::Win32::Foundation::BOOL;
++use windows_sys::core::BOOL;
+ use windows_sys::Win32::System::Console as console;
+ 
+ pub(super) fn ctrl_break() -> io::Result<RxFuture> {
