@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libgenco_macros",
     crate_name: "genco_macros",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.17.10",
+    cargo_pkg_version: "0.18.1",
     crate_root: "src/lib.rs",
     edition: "2018",
     rustlibs: [

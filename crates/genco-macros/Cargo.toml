@@ -11,11 +11,12 @@
 
 [package]
 edition = "2018"
-rust-version = "1.66"
+rust-version = "1.88"
 name = "genco-macros"
-version = "0.17.10"
+version = "0.18.1"
 authors = ["John-John Tedro <udoprog@tedro.se>"]
 build = "build.rs"
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -54,4 +55,4 @@ features = ["full"]
 [lints.rust.unexpected_cfgs]
 level = "warn"
 priority = 0
-check-cfg = ["cfg(proc_macro_span)"]
+check-cfg = ["cfg(proc_macro_span, has_proc_macro_span)"]
