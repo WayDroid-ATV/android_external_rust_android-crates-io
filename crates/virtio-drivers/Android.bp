@@ -27,7 +27,7 @@ rust_library_rlib {
         "liblog_rust_nostd",
         "libsafe_mmio",
         "libthiserror_nostd",
-        "libzerocopy_nostd",
+        "libzerocopy",
     ],
     proc_macros: ["libenumn"],
     apex_available: [
@@ -59,7 +59,7 @@ rust_test {
         "liblog_rust_nostd",
         "libsafe_mmio",
         "libthiserror_nostd",
-        "libzerocopy_nostd",
+        "libzerocopy",
     ],
     proc_macros: ["libenumn"],
 }

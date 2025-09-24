@@ -14,9 +14,6 @@
         "derive",
         "simd"
       ],
-      "module_name_overrides": {
-        "libzerocopy": "libzerocopy_nostd"
-      },
       "package": {
         "zerocopy": {
           "alloc": true,

@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "libzerocopy",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "zerocopy",
     cargo_env_compat: true,
@@ -45,46 +46,15 @@ rust_library {
     recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-}
-
-rust_library_rlib {
-    name: "libzerocopy_nostd",
-    defaults: ["rust_baremetal_defaults"],
-    crate_name: "zerocopy",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.8.27",
-    crate_root: "src/lib.rs",
-    edition: "2021",
-    features: [
-        "alloc",
-        "derive",
-        "simd",
-        "zerocopy-derive",
-    ],
-    cfgs: [
-        "zerocopy_aarch64_simd_1_59_0",
-        "zerocopy_core_error_1_81_0",
-        "zerocopy_diagnostic_on_unimplemented_1_78_0",
-        "zerocopy_generic_bounds_in_const_fn_1_61_0",
-        "zerocopy_panic_in_const_and_vec_try_reserve_1_57_0",
-        "zerocopy_target_has_atomics_1_60_0",
-    ],
-    proc_macros: ["libzerocopy_derive"],
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-    prefer_rlib: true,
-    no_stdlibs: true,
-    stdlibs: [
-        "liballoc.rust_sysroot",
-        "libcompiler_builtins.rust_sysroot",
-        "libcore.rust_sysroot",
-    ],
-    product_available: true,
-    recovery_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
+    no_std: {
+        features: [
+            "alloc",
+            "derive",
+            "simd",
+            "zerocopy-derive",
+        ],
+        enabled: true,
+    },
 }
 
 rust_library_rlib {
