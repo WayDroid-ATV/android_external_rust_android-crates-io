@@ -25,7 +25,7 @@ rust_library_rlib {
         "libbitflags",
         "libsafe_mmio",
         "libthiserror",
-        "libzerocopy_nostd",
+        "libzerocopy",
     ],
     apex_available: [
         "//apex_available:platform",

@@ -18,8 +18,7 @@
     {
       "module_name_overrides": {
         "liblog": "liblog_rust_nostd",
-        "libthiserror": "libthiserror_nostd",
-        "libzerocopy": "libzerocopy_nostd"
+        "libthiserror": "libthiserror_nostd"
       }
     },
     {
