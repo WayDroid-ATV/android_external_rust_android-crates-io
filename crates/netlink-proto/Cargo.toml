@@ -10,10 +10,10 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
+edition = "2021"
 rust-version = "1.75"
 name = "netlink-proto"
-version = "0.11.5"
+version = "0.12.0"
 authors = ["Corentin Henry <corentinhenry@gmail.com>"]
 build = false
 autolib = false
@@ -64,7 +64,7 @@ version = "0.3"
 version = "0.4.8"
 
 [dependencies.netlink-packet-core]
-version = "0.7.0"
+version = "0.8.0"
 
 [dependencies.netlink-sys]
 version = "0.8.4"
@@ -84,7 +84,7 @@ version = "0.8.2"
 version = "0.5.0"
 
 [dev-dependencies.netlink-packet-route]
-version = "0.18.1"
+version = "0.25.0"
 
 [dev-dependencies.tokio]
 version = "1.0.1"
