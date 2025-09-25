@@ -22,7 +22,8 @@ use crate::{
     iana,
     iana::EnumI64,
     util::{cbor_type_error, to_cbor_array, ValueTryAs},
-    Algorithm, CborSerializable, CoseError, CoseSignature, Label, RegisteredLabel, Result,
+    Algorithm, CborSerializable, CoseError, CoseSignature, Label, RegisteredLabelWithPrivate,
+    Result,
 };
 use alloc::{collections::BTreeSet, string::String, vec, vec::Vec};
 
@@ -55,7 +56,7 @@ pub struct Header {
     /// Cryptographic algorithm to use
     pub alg: Option<Algorithm>,
     /// Critical headers to be understood
-    pub crit: Vec<RegisteredLabel<iana::HeaderParameter>>,
+    pub crit: Vec<RegisteredLabelWithPrivate<iana::HeaderParameter>>,
     /// Content type of the payload
     pub content_type: Option<ContentType>,
     /// Key identifier.
@@ -121,7 +122,7 @@ impl AsCborValue for Header {
                         }
                         for v in a {
                             headers.crit.push(
-                                RegisteredLabel::<iana::HeaderParameter>::from_cbor_value(v)?,
+                                RegisteredLabelWithPrivate::<iana::HeaderParameter>::from_cbor_value(v)?,
                             );
                         }
                     }
@@ -262,21 +263,29 @@ impl HeaderBuilder {
 
     /// Set the algorithm.
     #[must_use]
-    pub fn algorithm(mut self, alg: iana::Algorithm) -> Self {
-        self.0.alg = Some(Algorithm::Assigned(alg));
+    pub fn algorithm(self, alg: iana::Algorithm) -> Self {
+        self.algorithm_label(alg.into())
+    }
+
+    /// Set the algorithm.
+    #[must_use]
+    pub fn algorithm_label(mut self, label: RegisteredLabelWithPrivate<iana::Algorithm>) -> Self {
+        self.0.alg = Some(label);
         self
     }
 
     /// Add a critical header.
     #[must_use]
-    pub fn add_critical(mut self, param: iana::HeaderParameter) -> Self {
-        self.0.crit.push(RegisteredLabel::Assigned(param));
-        self
+    pub fn add_critical(self, param: iana::HeaderParameter) -> Self {
+        self.add_critical_label(param.into())
     }
 
     /// Add a critical header.
     #[must_use]
-    pub fn add_critical_label(mut self, label: RegisteredLabel<iana::HeaderParameter>) -> Self {
+    pub fn add_critical_label(
+        mut self,
+        label: RegisteredLabelWithPrivate<iana::HeaderParameter>,
+    ) -> Self {
         self.0.crit.push(label);
         self
     }

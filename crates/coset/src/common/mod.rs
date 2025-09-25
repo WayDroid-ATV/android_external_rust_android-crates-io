@@ -101,12 +101,12 @@ impl std::error::Error for CoseError {}
 impl CoseError {
     fn fmt_msg(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            CoseError::DecodeFailed(e) => write!(f, "decode CBOR failure: {}", e),
+            CoseError::DecodeFailed(e) => write!(f, "decode CBOR failure: {e}"),
             CoseError::DuplicateMapKey => write!(f, "duplicate map key"),
             CoseError::EncodeFailed => write!(f, "encode CBOR failure"),
             CoseError::ExtraneousData => write!(f, "extraneous data in CBOR input"),
             CoseError::OutOfRangeIntegerValue => write!(f, "out of range integer value"),
-            CoseError::UnexpectedItem(got, want) => write!(f, "got {}, expected {}", got, want),
+            CoseError::UnexpectedItem(got, want) => write!(f, "got {got}, expected {want}"),
             CoseError::UnregisteredIanaValue => write!(f, "expected recognized IANA value"),
             CoseError::UnregisteredIanaNonPrivateValue => {
                 write!(f, "expected value in IANA or private use range")
@@ -295,6 +295,12 @@ pub enum RegisteredLabel<T: EnumI64> {
     Text(String),
 }
 
+impl<T: EnumI64> From<T> for RegisteredLabel<T> {
+    fn from(val: T) -> Self {
+        Self::Assigned(val)
+    }
+}
+
 impl<T: EnumI64> CborSerializable for RegisteredLabel<T> {}
 
 /// Manual implementation of [`Ord`] to ensure that CBOR canonical ordering is respected.
@@ -350,6 +356,12 @@ pub enum RegisteredLabelWithPrivate<T: EnumI64 + WithPrivateRange> {
     PrivateUse(i64),
     Assigned(T),
     Text(String),
+}
+
+impl<T: EnumI64 + WithPrivateRange> From<T> for RegisteredLabelWithPrivate<T> {
+    fn from(val: T) -> Self {
+        Self::Assigned(val)
+    }
 }
 
 impl<T: EnumI64 + WithPrivateRange> CborSerializable for RegisteredLabelWithPrivate<T> {}

@@ -12,12 +12,13 @@
 [package]
 edition = "2018"
 name = "coset"
-version = "0.3.8"
+version = "0.4.0"
 authors = [
     "David Drysdale <drysdale@google.com>",
     "Paul Crowley <paulcrowley@google.com>",
 ]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -32,17 +33,21 @@ categories = ["cryptography"]
 license = "Apache-2.0"
 repository = "https://github.com/google/coset"
 
+[features]
+default = []
+std = []
+
 [lib]
 name = "coset"
 path = "src/lib.rs"
 
 [[example]]
-name = "signature"
-path = "examples/signature.rs"
-
-[[example]]
 name = "cwt"
 path = "examples/cwt.rs"
+
+[[example]]
+name = "signature"
+path = "examples/signature.rs"
 
 [dependencies.ciborium]
 version = "^0.2.1"
@@ -54,7 +59,3 @@ features = ["alloc"]
 
 [dev-dependencies.hex]
 version = "^0.4.2"
-
-[features]
-default = []
-std = []
