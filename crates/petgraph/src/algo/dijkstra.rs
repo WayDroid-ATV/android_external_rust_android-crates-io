@@ -1,7 +1,10 @@
-use std::collections::hash_map::Entry::{Occupied, Vacant};
-use std::collections::{BinaryHeap, HashMap};
+use alloc::collections::BinaryHeap;
+use core::hash::Hash;
 
-use std::hash::Hash;
+use hashbrown::hash_map::{
+    Entry::{Occupied, Vacant},
+    HashMap,
+};
 
 use crate::algo::Measure;
 use crate::scored::MinScored;
@@ -12,20 +15,33 @@ use crate::visit::{EdgeRef, IntoEdges, VisitMap, Visitable};
 /// Compute the length of the shortest path from `start` to every reachable
 /// node.
 ///
-/// The graph should be `Visitable` and implement `IntoEdges`. The function
-/// `edge_cost` should return the cost for a particular edge, which is used
+/// The function `edge_cost` should return the cost for a particular edge, which is used
 /// to compute path costs. Edge costs must be non-negative.
 ///
 /// If `goal` is not `None`, then the algorithm terminates once the `goal` node's
 /// cost is calculated.
 ///
-/// Returns a `HashMap` that maps `NodeId` to path cost.
+/// # Arguments
+/// * `graph`: weighted graph.
+/// * `start`: the start node.
+/// * `goal`: optional *goal* node.
+/// * `edge_cost`: closure that returns cost of a particular edge.
+///
+/// # Returns
+/// * `HashMap`: [`struct@hashbrown::HashMap`] that maps `NodeId` to path cost.
+///
+/// # Complexity
+/// * Time complexity: **O((|V|+|E|)log(|V|))**.
+/// * Auxiliary space: **O(|V|+|E|)**.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
+///
 /// # Example
 /// ```rust
 /// use petgraph::Graph;
 /// use petgraph::algo::dijkstra;
 /// use petgraph::prelude::*;
-/// use std::collections::HashMap;
+/// use hashbrown::HashMap;
 ///
 /// let mut graph: Graph<(), (), Directed> = Graph::new();
 /// let a = graph.add_node(()); // node with no weight
