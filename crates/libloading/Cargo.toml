@@ -11,9 +11,9 @@
 
 [package]
 edition = "2015"
-rust-version = "1.56.0"
+rust-version = "1.71.0"
 name = "libloading"
-version = "0.8.8"
+version = "0.8.9"
 authors = ["Simonas Kazlauskas <libloading@kazlauskas.me>"]
 build = false
 autolib = false
@@ -74,11 +74,11 @@ version = "1.1"
 [target."cfg(unix)".dependencies.cfg-if]
 version = "1"
 
-[target."cfg(windows)".dependencies.windows-targets]
-version = ">=0.48, <0.54"
+[target."cfg(windows)".dependencies.windows-link]
+version = "0.2"
 
 [target."cfg(windows)".dev-dependencies.windows-sys]
-version = ">=0.52,<0.60"
+version = "0.61"
 features = ["Win32_Foundation"]
 
 [lints.rust.unexpected_cfgs]

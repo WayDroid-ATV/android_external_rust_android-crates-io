@@ -1,17 +1,17 @@
 name: "libloading"
 description: "Bindings around the platform\'s dynamic library loading primitives with greatly improved memory safety."
 third_party {
-  version: "0.8.8"
+  version: "0.8.9"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 5
-    day: 28
+    month: 9
+    day: 23
   }
   homepage: "https://crates.io/crates/libloading"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/libloading/libloading-0.8.8.crate"
-    version: "0.8.8"
+    value: "https://static.crates.io/crates/libloading/libloading-0.8.9.crate"
+    version: "0.8.9"
   }
 }
