@@ -1,7 +1,7 @@
 extern crate petgraph;
 
+use core::hash::Hash;
 use std::collections::HashSet;
-use std::hash::Hash;
 
 use petgraph::prelude::*;
 use petgraph::EdgeType;
@@ -14,15 +14,19 @@ use petgraph::algo::{
 };
 
 use petgraph::graph::node_index as n;
-use petgraph::graph::IndexType;
+use petgraph::graph::{GraphError, IndexType};
 
 use petgraph::algo::{astar, dijkstra, DfsSpace};
 use petgraph::visit::{
-    IntoEdges, IntoEdgesDirected, IntoNeighbors, IntoNodeIdentifiers, NodeFiltered, Reversed, Topo,
-    VisitMap, Walker,
+    IntoEdges, IntoEdgesDirected, IntoNodeIdentifiers, NodeFiltered, Reversed, Topo, VisitMap,
+    Walker,
 };
 
 use petgraph::dot::Dot;
+
+#[cfg(feature = "stable_graph")]
+#[cfg(test)]
+use petgraph::visit::IntoNeighbors;
 
 fn set<I>(iter: I) -> HashSet<I::Item>
 where
@@ -393,6 +397,32 @@ fn update_edge() {
 }
 
 #[test]
+fn try_update_edge() {
+    {
+        let mut gr = Graph::new();
+        let a = gr.add_node("a");
+        let b = gr.add_node("b");
+        let e = gr.try_update_edge(a, b, 1).unwrap();
+        let f = gr.try_update_edge(a, b, 2).unwrap();
+        let _ = gr.try_update_edge(b, a, 3).unwrap();
+        assert_eq!(gr.edge_count(), 2);
+        assert_eq!(e, f);
+        assert_eq!(*gr.edge_weight(f).unwrap(), 2);
+    }
+
+    {
+        let mut gr = Graph::new_undirected();
+        let a = gr.add_node("a");
+        let b = gr.add_node("b");
+        let e = gr.try_update_edge(a, b, 1).unwrap();
+        let f = gr.try_update_edge(b, a, 2).unwrap();
+        assert_eq!(gr.edge_count(), 1);
+        assert_eq!(e, f);
+        assert_eq!(*gr.edge_weight(f).unwrap(), 2);
+    }
+}
+
+#[test]
 fn dijk() {
     let mut g = Graph::new_undirected();
     let a = g.add_node("A");
@@ -702,7 +732,7 @@ fn test_toposort() {
     let e = gr.add_node("E");
     let f = gr.add_node("F");
     let g = gr.add_node("G");
-    gr.extend_with_edges(&[
+    gr.extend_with_edges([
         (a, b, 7.),
         (a, d, 5.),
         (d, b, 9.),
@@ -801,7 +831,7 @@ fn assert_sccs_eq(
 
 #[test]
 fn scc() {
-    let gr: Graph<(), ()> = Graph::from_edges(&[
+    let gr: Graph<(), ()> = Graph::from_edges([
         (6, 0),
         (0, 3),
         (3, 6),
@@ -871,7 +901,7 @@ fn scc() {
 
     // Kosaraju bug from PR #60
     let mut gr = Graph::<(), ()>::new();
-    gr.extend_with_edges(&[(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)]);
+    gr.extend_with_edges([(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)]);
     gr.add_node(());
     // no order for the disconnected one
     assert_sccs_eq(
@@ -883,7 +913,7 @@ fn scc() {
 
 #[test]
 fn tarjan_scc() {
-    let gr: Graph<(), ()> = Graph::from_edges(&[
+    let gr: Graph<(), ()> = Graph::from_edges([
         (6, 0),
         (0, 3),
         (3, 6),
@@ -951,7 +981,7 @@ fn tarjan_scc() {
 
     // Kosaraju bug from PR #60
     let mut gr = Graph::<(), ()>::new();
-    gr.extend_with_edges(&[(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)]);
+    gr.extend_with_edges([(0, 0), (1, 0), (2, 0), (2, 1), (2, 2)]);
     gr.add_node(());
     // no order for the disconnected one
     let mut result = Vec::new();
@@ -965,7 +995,7 @@ fn tarjan_scc() {
 
 #[test]
 fn condensation() {
-    let gr: Graph<(), ()> = Graph::from_edges(&[
+    let gr: Graph<(), ()> = Graph::from_edges([
         (6, 0),
         (0, 3),
         (3, 6),
@@ -1044,6 +1074,7 @@ fn oob_index() {
     let a = gr.add_node(0);
     let b = gr.add_node(1);
     gr.remove_node(a);
+    #[allow(clippy::no_effect)]
     gr[b];
 }
 
@@ -1623,7 +1654,7 @@ fn map_filter_map() {
 fn from_edges() {
     let n = NodeIndex::new;
     let gr =
-        Graph::<(), (), Undirected>::from_edges(&[(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]);
+        Graph::<(), (), Undirected>::from_edges([(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]);
     assert_eq!(gr.node_count(), 4);
     assert_eq!(gr.edge_count(), 6);
     assert_eq!(gr.neighbors(n(0)).count(), 3);
@@ -1635,7 +1666,7 @@ fn from_edges() {
 
 #[test]
 fn retain() {
-    let mut gr = Graph::<i32, i32, Undirected>::from_edges(&[
+    let mut gr = Graph::<i32, i32, Undirected>::from_edges([
         (0, 1, 2),
         (1, 1, 1),
         (0, 2, 0),
@@ -1689,7 +1720,7 @@ fn neighbors_selfloops() {
     let a = gr.add_node("a");
     let b = gr.add_node("b");
     let c = gr.add_node("c");
-    gr.extend_with_edges(&[(a, a), (a, b), (c, a), (a, a)]);
+    gr.extend_with_edges([(a, a), (a, b), (c, a), (a, a)]);
 
     let out_edges = [a, a, b];
     let in_edges = [a, a, c];
@@ -1738,7 +1769,7 @@ fn neighbors_selfloops() {
     let a = gr.add_node("a");
     let b = gr.add_node("b");
     let c = gr.add_node("c");
-    gr.extend_with_edges(&[(a, a), (a, b), (c, a)]);
+    gr.extend_with_edges([(a, a), (a, b), (c, a)]);
 
     let out_edges = [a, b, c];
     let in_edges = [a, b, c];
@@ -1760,7 +1791,9 @@ fn neighbors_selfloops() {
     assert_eq!(&seen_undir, &undir_edges);
 }
 
-fn degree<'a, G>(g: G, node: G::NodeId) -> usize
+#[cfg(feature = "stable_graph")]
+#[cfg(test)]
+fn degree<G>(g: G, node: G::NodeId) -> usize
 where
     G: IntoNeighbors,
     G::NodeId: PartialEq,
@@ -1777,7 +1810,7 @@ where
 #[cfg(feature = "graphmap")]
 #[test]
 fn degree_sequence() {
-    let mut gr = Graph::<usize, (), Undirected>::from_edges(&[
+    let mut gr = Graph::<usize, (), Undirected>::from_edges([
         (0, 1),
         (1, 2),
         (1, 3),
@@ -1841,6 +1874,7 @@ fn neighbor_order() {
 fn dot() {
     // test alternate formatting
     #[derive(Debug)]
+    #[allow(unused)]
     struct Record {
         a: i32,
         b: &'static str,
@@ -2036,7 +2070,7 @@ fn dfs_visit() {
     use petgraph::visit::DfsEvent::*;
     use petgraph::visit::{depth_first_search, Time};
     use petgraph::visit::{VisitMap, Visitable};
-    let gr: Graph<(), ()> = Graph::from_edges(&[
+    let gr: Graph<(), ()> = Graph::from_edges([
         (0, 5),
         (0, 2),
         (0, 3),
@@ -2138,7 +2172,7 @@ fn filtered_post_order() {
     use petgraph::visit::NodeFiltered;
 
     let mut gr: Graph<(), ()> =
-        Graph::from_edges(&[(0, 2), (1, 2), (0, 3), (1, 4), (2, 4), (4, 5), (3, 5)]);
+        Graph::from_edges([(0, 2), (1, 2), (0, 3), (1, 4), (2, 4), (4, 5), (3, 5)]);
     // map reachable nodes
     let mut dfs = Dfs::new(&gr, n(0));
     while dfs.next(&gr).is_some() {}
@@ -2215,11 +2249,12 @@ fn filter_elements() {
     let mut g = DiGraph::<_, _>::from_elements(elements.iter().cloned());
     println!("{:#?}", g);
     assert!(g.contains_edge(n(1), n(5)));
-    let g2 =
-        DiGraph::<_, _>::from_elements(elements.iter().cloned().filter_elements(|elt| match elt {
-            Node { ref weight } if **weight == "B" => false,
-            _ => true,
-        }));
+    let g2 = DiGraph::<_, _>::from_elements(
+        elements
+            .iter()
+            .cloned()
+            .filter_elements(|elt| !matches!(elt, Node { ref weight } if **weight == "B")),
+    );
     println!("{:#?}", g2);
     g.remove_node(n(1));
     assert!(is_isomorphic_matching(
@@ -2236,7 +2271,7 @@ fn test_edge_filtered() {
     use petgraph::visit::EdgeFiltered;
     use petgraph::visit::IntoEdgeReferences;
 
-    let gr = UnGraph::<(), _>::from_edges(&[
+    let gr = UnGraph::<(), _>::from_edges([
         // cycle
         (0, 1, 7),
         (1, 2, 9),
@@ -2449,4 +2484,29 @@ fn test_dominators_simple_fast() {
         None,
         "nodes that aren't reachable from the root do not have an idom"
     );
+}
+
+#[test]
+fn test_try_add_node() {
+    let mut graph = Graph::<(), (), Directed, u8>::with_capacity(256, 0);
+    for i in 0..255 {
+        assert_eq!(graph.try_add_node(()), Ok(i.into()));
+    }
+    assert_eq!(graph.try_add_node(()), Err(GraphError::NodeIxLimit));
+}
+
+#[test]
+fn test_try_add_edge() {
+    let mut graph = Graph::<(), (), Directed, u8>::with_capacity(1, 512);
+    let a = graph.try_add_node(()).unwrap();
+
+    assert_eq!(
+        graph.try_add_edge(a, 10.into(), ()),
+        Err(GraphError::NodeOutBounds)
+    );
+    for i in 0..255 {
+        assert_eq!(graph.try_add_edge(a, a, ()), Ok(i.into()));
+    }
+
+    assert_eq!(graph.try_add_edge(a, a, ()), Err(GraphError::EdgeIxLimit));
 }

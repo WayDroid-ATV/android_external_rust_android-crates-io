@@ -4,22 +4,31 @@
 //! so that they are generally applicable. For now, some of these still require
 //! the `Graph` type.
 
+pub mod articulation_points;
 pub mod astar;
 pub mod bellman_ford;
+pub mod bridges;
+pub mod coloring;
 pub mod dijkstra;
 pub mod dominators;
 pub mod feedback_arc_set;
 pub mod floyd_warshall;
 pub mod ford_fulkerson;
 pub mod isomorphism;
+pub mod johnson;
 pub mod k_shortest_path;
 pub mod matching;
+pub mod maximal_cliques;
 pub mod min_spanning_tree;
 pub mod page_rank;
 pub mod simple_paths;
+pub mod spfa;
+#[cfg(feature = "stable_graph")]
+pub mod steiner_tree;
 pub mod tred;
 
-use std::num::NonZeroUsize;
+use alloc::{vec, vec::Vec};
+use core::num::NonZeroUsize;
 
 use crate::prelude::*;
 
@@ -34,6 +43,8 @@ use crate::visit::Walker;
 
 pub use astar::astar;
 pub use bellman_ford::{bellman_ford, find_negative_cycle};
+pub use bridges::bridges;
+pub use coloring::dsatur_coloring;
 pub use dijkstra::dijkstra;
 pub use feedback_arc_set::greedy_feedback_arc_set;
 pub use floyd_warshall::floyd_warshall;
@@ -42,15 +53,37 @@ pub use isomorphism::{
     is_isomorphic, is_isomorphic_matching, is_isomorphic_subgraph, is_isomorphic_subgraph_matching,
     subgraph_isomorphisms_iter,
 };
+pub use johnson::johnson;
 pub use k_shortest_path::k_shortest_path;
 pub use matching::{greedy_matching, maximum_matching, Matching};
-pub use min_spanning_tree::min_spanning_tree;
+pub use maximal_cliques::maximal_cliques;
+pub use min_spanning_tree::{min_spanning_tree, min_spanning_tree_prim};
 pub use page_rank::page_rank;
 pub use simple_paths::all_simple_paths;
+pub use spfa::spfa;
+#[cfg(feature = "stable_graph")]
+pub use steiner_tree::steiner_tree;
+
+#[cfg(feature = "rayon")]
+pub use johnson::parallel_johnson;
 
 /// \[Generic\] Return the number of connected components of the graph.
 ///
 /// For a directed graph, this is the *weakly* connected components.
+///
+/// # Arguments
+/// * `g`: an input graph.
+///
+/// # Returns
+/// * `usize`: the number of connected components if `g` is undirected
+///   or number of *weakly* connected components if `g` is directed.
+///
+/// # Complexity
+/// * Time complexity: amortized **O(|E| + |V|log|V|)**.
+/// * Auxiliary space: **O(|V|)**.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
+///
 /// # Example
 /// ```rust
 /// use petgraph::Graph;
@@ -90,14 +123,15 @@ pub fn connected_components<G>(g: G) -> usize
 where
     G: NodeCompactIndexable + IntoEdgeReferences,
 {
-    let mut vertex_sets = UnionFind::new(g.node_bound());
+    let mut node_sets = UnionFind::new(g.node_bound());
     for edge in g.edge_references() {
         let (a, b) = (edge.source(), edge.target());
 
-        // union the two vertices of the edge
-        vertex_sets.union(g.to_index(a), g.to_index(b));
+        // union the two nodes of the edge
+        node_sets.union(g.to_index(a), g.to_index(b));
     }
-    let mut labels = vertex_sets.into_labeling();
+
+    let mut labels = node_sets.into_labeling();
     labels.sort_unstable();
     labels.dedup();
     labels.len()
@@ -106,6 +140,19 @@ where
 /// \[Generic\] Return `true` if the input graph contains a cycle.
 ///
 /// Always treats the input graph as if undirected.
+///
+/// # Arguments:
+/// `g`: an input graph that always treated as undirected.
+///
+/// # Returns
+/// `true`: if the input graph contains a cycle.
+/// `false`: otherwise.
+///
+/// # Complexity
+/// * Time complexity: amortized **O(|E|)**.
+/// * Auxiliary space: **O(|V|)**.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
 pub fn is_cyclic_undirected<G>(g: G) -> bool
 where
     G: NodeIndexable + IntoEdgeReferences,
@@ -114,7 +161,7 @@ where
     for edge in g.edge_references() {
         let (a, b) = (edge.source(), edge.target());
 
-        // union the two vertices of the edge
+        // union the two nodes of the edge
         //  -- if they were already the same, then we have a cycle
         if !edge_sets.union(g.to_index(a), g.to_index(b)) {
             return true;
@@ -125,15 +172,28 @@ where
 
 /// \[Generic\] Perform a topological sort of a directed graph.
 ///
-/// If the graph was acyclic, return a vector of nodes in topological order:
-/// each node is ordered before its successors.
-/// Otherwise, it will return a `Cycle` error. Self loops are also cycles.
+/// `toposort` returns `Err` on graphs with cycles.
+/// To handle graphs with cycles, use the one of scc algorithms or
+/// [`DfsPostOrder`](struct@crate::visit::DfsPostOrder)
+///   instead of this function.
 ///
-/// To handle graphs with cycles, use the scc algorithms or `DfsPostOrder`
-/// instead of this function.
+/// The implementation is iterative.
 ///
-/// If `space` is not `None`, it is used instead of creating a new workspace for
-/// graph traversal. The implementation is iterative.
+/// # Arguments
+/// * `g`: an acyclic directed graph.
+/// * `space`: optional [`DfsSpace`]. If `space` is not `None`,
+///   it is used instead of creating a new workspace for graph traversal.
+///
+/// # Returns
+/// * `Ok`: a vector of nodes in topological order: each node is ordered before its successors
+///   (if the graph was acyclic).
+/// * `Err`: [`Cycle`] if the graph was not acyclic. Self loops are also cycles this case.
+///
+/// # Complexity
+/// * Time complexity: **O(|V| + |E|)**.
+/// * Auxiliary space: **O(|V|)**.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
 pub fn toposort<G>(
     g: G,
     space: Option<&mut DfsSpace<G::NodeId, G::Map>>,
@@ -193,8 +253,20 @@ where
 
 /// \[Generic\] Return `true` if the input directed graph contains a cycle.
 ///
-/// This implementation is recursive; use `toposort` if an alternative is
-/// needed.
+/// This implementation is recursive; use [`toposort`] if an alternative is needed.
+///
+/// # Arguments:
+/// `g`: a directed graph.
+///
+/// # Returns
+/// `true`: if the input graph contains a cycle.
+/// `false`: otherwise.
+///
+/// # Complexity
+/// * Time complexity: **O(|V| + |E|)**.
+/// * Auxiliary space: **O(|V|)**.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
 pub fn is_cyclic_directed<G>(g: G) -> bool
 where
     G: IntoNodeIdentifiers + IntoNeighbors + Visitable,
@@ -263,8 +335,23 @@ where
 ///
 /// If `from` and `to` are equal, this function returns true.
 ///
-/// If `space` is not `None`, it is used instead of creating a new workspace for
-/// graph traversal.
+/// # Arguments:
+/// * `g`: an input graph.
+/// * `from`: the first node of a desired path.
+/// * `to`: the last node of a desired path.
+/// * `space`: optional [`DfsSpace`]. If `space` is not `None`,
+///   it is used instead of creating a new workspace for graph traversal.
+///
+/// # Returns
+/// * `true`: if there exists a path starting at `from` and reaching
+///   `to` or `from` and `to` are equal.
+/// * `false`: otherwise.
+///
+/// # Complexity
+/// * Time complexity: **O(|V| + |E|)**.
+/// * Auxiliary space: **O(|V|)** or **O(1)** if `space` was provided.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
 pub fn has_path_connecting<G>(
     g: G,
     from: G::NodeId,
@@ -292,15 +379,25 @@ where
 
 /// \[Generic\] Compute the *strongly connected components* using [Kosaraju's algorithm][1].
 ///
-/// [1]: https://en.wikipedia.org/wiki/Kosaraju%27s_algorithm
+/// This implementation is iterative and does two passes over the nodes.
 ///
+/// # Arguments
+/// * `g`: a directed or undirected graph.
+///
+/// # Returns
 /// Return a vector where each element is a strongly connected component (scc).
 /// The order of node ids within each scc is arbitrary, but the order of
 /// the sccs is their postorder (reverse topological sort).
 ///
 /// For an undirected graph, the sccs are simply the connected components.
 ///
-/// This implementation is iterative and does two passes over the nodes.
+/// # Complexity
+/// * Time complexity: **O(|V| + |E|)**.
+/// * Auxiliary space: **O(|V|)**.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
+///
+/// [1]: https://en.wikipedia.org/wiki/Kosaraju%27s_algorithm
 pub fn kosaraju_scc<G>(g: G) -> Vec<Vec<G::NodeId>>
 where
     G: IntoNeighborsDirected + Visitable + IntoNodeIdentifiers,
@@ -368,8 +465,8 @@ impl<N> TarjanScc<N> {
     /// Creates a new `TarjanScc`
     pub fn new() -> Self {
         TarjanScc {
-            index: 1,                        // Invariant: index < componentcount at all times.
-            componentcount: std::usize::MAX, // Will hold if componentcount is initialized to number of nodes - 1 or higher.
+            index: 1,                   // Invariant: index < componentcount at all times.
+            componentcount: usize::MAX, // Will hold if componentcount is initialized to number of nodes - 1 or higher.
             nodes: Vec::new(),
             stack: Vec::new(),
         }
@@ -488,24 +585,34 @@ impl<N> TarjanScc<N> {
             rindex > self.componentcount,
             "Given node has been visited but not yet assigned to a component."
         );
-        std::usize::MAX - rindex
+        usize::MAX - rindex
     }
 }
 
 /// \[Generic\] Compute the *strongly connected components* using [Tarjan's algorithm][1].
 ///
-/// [1]: https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
-/// [2]: https://homepages.ecs.vuw.ac.nz/~djp/files/P05.pdf
+/// This implementation is recursive and does one pass over the nodes. It is based on
+/// [A Space-Efficient Algorithm for Finding Strongly Connected Components][2] by David J. Pierce,
+/// to provide a memory-efficient implementation of [Tarjan's algorithm][1].
 ///
+/// # Arguments
+/// * `g`: a directed or undirected graph.
+///
+/// # Returns
 /// Return a vector where each element is a strongly connected component (scc).
 /// The order of node ids within each scc is arbitrary, but the order of
 /// the sccs is their postorder (reverse topological sort).
 ///
 /// For an undirected graph, the sccs are simply the connected components.
 ///
-/// This implementation is recursive and does one pass over the nodes. It is based on
-/// [A Space-Efficient Algorithm for Finding Strongly Connected Components][2] by David J. Pierce,
-/// to provide a memory-efficient implementation of [Tarjan's algorithm][1].
+/// # Complexity
+/// * Time complexity: **O(|V| + |E|)**.
+/// * Auxiliary space: **O(|V|)**.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
+///
+/// [1]: https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
+/// [2]: https://www.researchgate.net/publication/283024636_A_space-efficient_algorithm_for_finding_strongly_connected_components
 pub fn tarjan_scc<G>(g: G) -> Vec<Vec<G::NodeId>>
 where
     G: IntoNodeIdentifiers + IntoNeighbors + NodeIndexable,
@@ -520,9 +627,21 @@ where
 
 /// [Graph] Condense every strongly connected component into a single node and return the result.
 ///
-/// If `make_acyclic` is true, self-loops and multi edges are ignored, guaranteeing that
-/// the output is acyclic.
-/// # Example
+/// # Arguments
+/// * `g`: an input [`Graph`].
+/// * `make_acyclic`: if `true`, self-loops and multi edges are ignored, guaranteeing that
+///   the output is acyclic.
+///
+/// # Returns
+/// Returns a `Graph` with nodes `Vec<N>` representing strongly connected components.
+///
+/// # Complexity
+/// * Time complexity: **O(|V| + |E|)**.
+/// * Auxiliary space: **O(|V| + |E|)**.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
+///
+/// # Examples
 /// ```rust
 /// use petgraph::Graph;
 /// use petgraph::algo::condensation;
@@ -639,7 +758,7 @@ where
 
 /// An algorithm error: a cycle was found in the graph.
 #[derive(Clone, Debug, PartialEq)]
-pub struct Cycle<N>(N);
+pub struct Cycle<N>(pub(crate) N);
 
 impl<N> Cycle<N> {
     /// Return a node id that participates in the cycle
@@ -655,22 +774,40 @@ impl<N> Cycle<N> {
 #[derive(Clone, Debug, PartialEq)]
 pub struct NegativeCycle(pub ());
 
-/// Return `true` if the graph is bipartite. A graph is bipartite if its nodes can be divided into
-/// two disjoint and indepedent sets U and V such that every edge connects U to one in V. This
-/// algorithm implements 2-coloring algorithm based on the BFS algorithm.
+/// Return `true` if the graph\* is bipartite.
 ///
+/// A graph is bipartite if its nodes can be divided into
+/// two disjoint and indepedent sets U and V such that every edge connects U to one in V.
+///
+/// This algorithm implements 2-coloring algorithm based on the BFS algorithm.
 /// Always treats the input graph as if undirected.
+///
+/// \* The algorithm checks only the subgraph that is reachable from the `start`.
+///
+/// # Arguments
+/// * `g`: an input graph.
+/// * `start`: some node of the graph.
+///
+/// # Returns
+/// * `true`: if the subgraph accessible from the start node is bipartite.
+/// * `false`: if such a subgraph is not bipartite.
+///
+/// # Complexity
+/// * Time complexity: **O(|V| + |E|)**.
+/// * Auxiliary space: **O(|V|)**.
+///
+/// where **|V|** is the number of nodes and **|E|** is the number of edges.
 pub fn is_bipartite_undirected<G, N, VM>(g: G, start: N) -> bool
 where
     G: GraphRef + Visitable<NodeId = N, Map = VM> + IntoNeighbors<NodeId = N>,
-    N: Copy + PartialEq + std::fmt::Debug,
+    N: Copy + PartialEq + core::fmt::Debug,
     VM: VisitMap<N>,
 {
     let mut red = g.visit_map();
     red.visit(start);
     let mut blue = g.visit_map();
 
-    let mut stack = ::std::collections::VecDeque::new();
+    let mut stack = ::alloc::collections::VecDeque::new();
     stack.push_front(start);
 
     while let Some(node) = stack.pop_front() {
@@ -710,8 +847,8 @@ where
     true
 }
 
-use std::fmt::Debug;
-use std::ops::Add;
+use core::fmt::Debug;
+use core::ops::Add;
 
 /// Associated data that can be used for measures (such as length).
 pub trait Measure: Debug + PartialOrd + Add<Self, Output = Self> + Default + Clone {}
@@ -722,6 +859,8 @@ impl<M> Measure for M where M: Debug + PartialOrd + Add<M, Output = M> + Default
 pub trait FloatMeasure: Measure + Copy {
     fn zero() -> Self;
     fn infinite() -> Self;
+    fn from_f32(val: f32) -> Self;
+    fn from_f64(val: f64) -> Self;
 }
 
 impl FloatMeasure for f32 {
@@ -730,6 +869,12 @@ impl FloatMeasure for f32 {
     }
     fn infinite() -> Self {
         1. / 0.
+    }
+    fn from_f32(val: f32) -> Self {
+        val
+    }
+    fn from_f64(val: f64) -> Self {
+        val as f32
     }
 }
 
@@ -740,12 +885,20 @@ impl FloatMeasure for f64 {
     fn infinite() -> Self {
         1. / 0.
     }
+    fn from_f32(val: f32) -> Self {
+        val as f64
+    }
+    fn from_f64(val: f64) -> Self {
+        val
+    }
 }
 
-pub trait BoundedMeasure: Measure + std::ops::Sub<Self, Output = Self> {
+pub trait BoundedMeasure: Measure + core::ops::Sub<Self, Output = Self> {
     fn min() -> Self;
     fn max() -> Self;
     fn overflowing_add(self, rhs: Self) -> (Self, bool);
+    fn from_f32(val: f32) -> Self;
+    fn from_f64(val: f64) -> Self;
 }
 
 macro_rules! impl_bounded_measure_integer(
@@ -753,15 +906,23 @@ macro_rules! impl_bounded_measure_integer(
         $(
             impl BoundedMeasure for $t {
                 fn min() -> Self {
-                    std::$t::MIN
+                    $t::MIN
                 }
 
                 fn max() -> Self {
-                    std::$t::MAX
+                    $t::MAX
                 }
 
                 fn overflowing_add(self, rhs: Self) -> (Self, bool) {
                     self.overflowing_add(rhs)
+                }
+
+                fn from_f32(val: f32) -> Self {
+                    val as $t
+                }
+
+                fn from_f64(val: f64) -> Self {
+                    val as $t
                 }
             }
         )*
@@ -775,21 +936,29 @@ macro_rules! impl_bounded_measure_float(
         $(
             impl BoundedMeasure for $t {
                 fn min() -> Self {
-                    std::$t::MIN
+                    $t::MIN
                 }
 
                 fn max() -> Self {
-                    std::$t::MAX
+                    $t::MAX
                 }
 
                 fn overflowing_add(self, rhs: Self) -> (Self, bool) {
                     // for an overflow: a + b > max: both values need to be positive and a > max - b must be satisfied
-                    let overflow = self > Self::default() && rhs > Self::default() && self > std::$t::MAX - rhs;
+                    let overflow = self > Self::default() && rhs > Self::default() && self > $t::MAX - rhs;
 
                     // for an underflow: a + b < min: overflow can not happen and both values must be negative and a < min - b must be satisfied
-                    let underflow = !overflow && self < Self::default() && rhs < Self::default() && self < std::$t::MIN - rhs;
+                    let underflow = !overflow && self < Self::default() && rhs < Self::default() && self < $t::MIN - rhs;
 
                     (self + rhs, overflow || underflow)
+                }
+
+                fn from_f32(val: f32) -> Self {
+                    val as $t
+                }
+
+                fn from_f64(val: f64) -> Self {
+                    val as $t
                 }
             }
         )*
@@ -802,15 +971,17 @@ impl_bounded_measure_float!(f32, f64);
 /// and with a default measure of proximity.  
 pub trait UnitMeasure:
     Measure
-    + std::ops::Sub<Self, Output = Self>
-    + std::ops::Mul<Self, Output = Self>
-    + std::ops::Div<Self, Output = Self>
-    + std::iter::Sum
+    + core::ops::Sub<Self, Output = Self>
+    + core::ops::Mul<Self, Output = Self>
+    + core::ops::Div<Self, Output = Self>
+    + core::iter::Sum
 {
     fn zero() -> Self;
     fn one() -> Self;
     fn from_usize(nb: usize) -> Self;
     fn default_tol() -> Self;
+    fn from_f32(val: f32) -> Self;
+    fn from_f64(val: f64) -> Self;
 }
 
 macro_rules! impl_unit_measure(
@@ -832,6 +1003,13 @@ macro_rules! impl_unit_measure(
                     1e-6 as $t
                 }
 
+                fn from_f32(val: f32) -> Self {
+                    val as $t
+                }
+
+                fn from_f64(val: f64) -> Self {
+                    val as $t
+                }
             }
 
         )*
@@ -854,7 +1032,7 @@ macro_rules! impl_positive_measure(
                     0 as $t
                 }
                 fn max() -> Self {
-                    std::$t::MAX
+                    $t::MAX
                 }
             }
 

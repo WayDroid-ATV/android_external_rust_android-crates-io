@@ -18,17 +18,19 @@ rust_library {
     host_supported: true,
     crate_name: "petgraph",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.6.5",
+    cargo_pkg_version: "0.8.2",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2021",
     features: [
         "default",
         "graphmap",
         "matrix_graph",
         "stable_graph",
+        "std",
     ],
     rustlibs: [
         "libfixedbitset",
+        "libhashbrown",
         "libindexmap",
     ],
     apex_available: [
