@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use proc_macro2::{Span, TokenStream};
-use quote::{format_ident, quote, ToTokens};
+use quote::{ToTokens as _, format_ident, quote};
 use syn::{
-    parse_quote, spanned::Spanned, token::Colon, visit_mut::VisitMut, Error, FnArg,
-    GenericArgument, Ident, ImplItem, ItemImpl, Pat, PatIdent, PatType, Path, PathArguments,
-    Result, ReturnType, Signature, Token, Type, TypePath, TypeReference,
+    Error, FnArg, GenericArgument, Ident, ImplItem, ItemImpl, Pat, PatIdent, PatType, Path,
+    PathArguments, Result, ReturnType, Signature, Token, Type, TypePath, TypeReference,
+    parse_quote, spanned::Spanned as _, token::Colon, visit_mut::VisitMut as _,
 };
 
-use crate::utils::{ReplaceReceiver, SliceExt};
+use crate::utils::{ReplaceReceiver, SliceExt as _};
 
 pub(crate) fn attribute(args: &TokenStream, mut input: ItemImpl) -> TokenStream {
     let res = (|| -> Result<()> {
@@ -91,11 +91,7 @@ fn validate_impl(item: &ItemImpl) -> Result<()> {
         }
         ImplItem::Fn(method) => {
             validate_sig(&method.sig)?;
-            if i == 0 {
-                Ok(())
-            } else {
-                bail!(method, "duplicate definitions with name `drop`")
-            }
+            if i == 0 { Ok(()) } else { bail!(method, "duplicate definitions with name `drop`") }
         }
         _ => unreachable!("unexpected ImplItem"),
     })
@@ -106,17 +102,13 @@ fn validate_impl(item: &ItemImpl) -> Result<()> {
 /// The correct signature is: `(mut) self: (<path>::)Pin<&mut Self>`
 fn validate_sig(sig: &Signature) -> Result<()> {
     fn get_ty_path(ty: &Type) -> Option<&Path> {
-        if let Type::Path(TypePath { qself: None, path }) = ty {
-            Some(path)
-        } else {
-            None
-        }
+        if let Type::Path(TypePath { qself: None, path }) = ty { Some(path) } else { None }
     }
 
     const INVALID_ARGUMENT: &str = "method `drop` must take an argument `self: Pin<&mut Self>`";
 
     if sig.ident != "drop" {
-        bail!(sig.ident, "method `{}` is not a member of trait `PinnedDrop", sig.ident);
+        bail!(sig.ident, "method `{}` is not a member of trait `PinnedDrop`", sig.ident);
     }
 
     if let ReturnType::Type(_, ty) = &sig.output {
@@ -136,7 +128,7 @@ fn validate_sig(sig: &Signature) -> Result<()> {
         // (mut) self: <path>
         if let Some(path) = get_ty_path(&arg.ty) {
             let ty =
-                path.segments.last().expect("Type paths should always have at least one segment");
+                path.segments.last().expect("type paths should always have at least one segment");
             if let PathArguments::AngleBracketed(args) = &ty.arguments {
                 // (mut) self: (<path>::)<ty><&mut <elem>..>
                 if let Some(GenericArgument::Type(Type::Reference(TypeReference {
@@ -231,6 +223,7 @@ fn expand_impl(item: &mut ItemImpl) {
 
     method.block.stmts = parse_quote! {
         #[allow(
+            clippy::missing_const_for_fn,
             clippy::needless_pass_by_value, // This lint does not warn the receiver.
             clippy::single_call_fn
         )]

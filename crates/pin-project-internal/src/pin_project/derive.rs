@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use proc_macro2::{Delimiter, Group, Span, TokenStream};
-use quote::{format_ident, quote, quote_spanned, ToTokens};
+use quote::{ToTokens as _, format_ident, quote, quote_spanned};
 use syn::{
-    parse_quote, punctuated::Punctuated, token, visit_mut::VisitMut, Attribute, Error, Field,
-    Fields, FieldsNamed, FieldsUnnamed, Generics, Ident, Index, Item, Lifetime, LifetimeParam,
-    Meta, Result, Token, Type, Variant, Visibility, WhereClause,
+    Attribute, Error, Field, Fields, FieldsNamed, FieldsUnnamed, Generics, Ident, Index, Item,
+    Lifetime, LifetimeParam, Meta, Result, Token, Type, Variant, Visibility, WhereClause,
+    parse_quote, punctuated::Punctuated, token, visit_mut::VisitMut as _,
 };
 
 use super::{
-    args::{parse_args, Args, ProjReplace, UnpinImpl},
     PIN,
+    args::{Args, ProjReplace, UnpinImpl, parse_args},
 };
 use crate::utils::{
-    determine_lifetime_name, determine_visibility, insert_lifetime_and_bound, ReplaceReceiver,
-    SliceExt, Variants,
+    ReplaceReceiver, SliceExt as _, Variants, determine_lifetime_name, determine_visibility,
+    insert_lifetime_and_bound,
 };
 
 pub(super) fn parse_derive(input: TokenStream) -> Result<TokenStream> {
@@ -89,6 +89,8 @@ impl GenerateTokens {
             #[allow(
                 unused_qualifications,
                 #allowed_lints
+                clippy::elidable_lifetime_names,
+                clippy::missing_const_for_fn,
                 clippy::needless_lifetimes,
                 clippy::semicolon_if_nothing_returned,
                 clippy::use_self,
@@ -848,6 +850,7 @@ fn make_unpin_impl(cx: &Context<'_>) -> TokenStream {
     }
 }
 
+#[allow(clippy::doc_overindented_list_items)]
 /// Creates `Drop` implementation for the original type.
 ///
 /// The kind of `Drop` impl generated depends on `pinned_drop` field:
@@ -971,7 +974,6 @@ fn make_proj_impl(
     });
     let mut project_ref = Some(quote! {
         #allow_dead_code
-        #[allow(clippy::missing_const_for_fn)]
         #[inline]
         #vis fn project_ref<#lifetime>(
             self: _pin_project::__private::Pin<&#lifetime Self>,
