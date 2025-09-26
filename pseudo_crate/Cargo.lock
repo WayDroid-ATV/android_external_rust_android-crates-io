@@ -178,7 +178,7 @@ dependencies = [
  "ciborium-ll",
  "cidr",
  "clang-sys",
- "clap 4.5.47",
+ "clap 4.5.48",
  "clap_builder",
  "clap_complete",
  "clap_derive",
@@ -1154,7 +1154,7 @@ dependencies = [
  "bitflags 2.9.4",
  "cexpr",
  "clang-sys",
- "clap 4.5.47",
+ "clap 4.5.48",
  "clap_complete",
  "itertools 0.13.0",
  "log",
@@ -1567,9 +1567,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.47"
+version = "4.5.48"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7eac00902d9d136acd712710d71823fb8ac8004ca445a89e73a41d45aa712931"
+checksum = "e2134bb3ea021b78629caa971416385309e0131b351b25e01dc16fb54e1b5fae"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1577,9 +1577,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.47"
+version = "4.5.48"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ad9bbf750e73b5884fb8a211a9424a1906c1e156724260fdae972f31d70e1d6"
+checksum = "c2ba64afa3c0a6df7fa517765e31314e983f51dda798ffba27b988194fb65dc9"
 dependencies = [
  "anstream",
  "anstyle",
@@ -1593,7 +1593,7 @@ version = "4.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5a2d6eec27fce550d708b2be5d798797e5a55b246b323ef36924a0001996352"
 dependencies = [
- "clap 4.5.47",
+ "clap 4.5.48",
 ]
 
 [[package]]
@@ -1868,7 +1868,7 @@ dependencies = [
  "anes 0.1.6",
  "cast",
  "ciborium",
- "clap 4.5.47",
+ "clap 4.5.48",
  "criterion-plot",
  "itertools 0.13.0",
  "num-traits",
@@ -4605,7 +4605,7 @@ version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6d8de370f98a6cb8a4606618e53e802f93b094ddec0f96988eaec2c27e6e9ce7"
 dependencies = [
- "clap 4.5.47",
+ "clap 4.5.48",
  "termcolor",
  "threadpool",
 ]
