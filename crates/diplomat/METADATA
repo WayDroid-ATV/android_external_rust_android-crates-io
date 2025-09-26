@@ -1,17 +1,17 @@
 name: "diplomat"
 description: "The diplomat FFI generation macro"
 third_party {
-  version: "0.12.0"
+  version: "0.13.0"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 8
-    day: 25
+    month: 9
+    day: 26
   }
   homepage: "https://crates.io/crates/diplomat"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/diplomat/diplomat-0.12.0.crate"
-    version: "0.12.0"
+    value: "https://static.crates.io/crates/diplomat/diplomat-0.13.0.crate"
+    version: "0.13.0"
   }
 }
