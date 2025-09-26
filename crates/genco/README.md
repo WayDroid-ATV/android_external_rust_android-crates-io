@@ -31,9 +31,9 @@ This project solves the following language-specific concerns:
 
 <br>
 
-To support line changes during [whitespace detection], we depend on the
-nightly [`proc_macro_span` feature]. On stable we can only detect column
-changes.
+To support line changes during [whitespace detection], we depend on span
+information which was made available in Rust `1.88`. Before that, we relied
+on a nightly [`proc_macro_span` feature] to work.
 
 *Until this is stabilized* and you want fully functional whitespace
 detection you must build and run projects using genco with a `nightly`
@@ -64,6 +64,9 @@ The following are languages which have built-in support in genco.
 
 * [☕ <b>Java</b>][java]<br>
   <small>[Example][java-example]</small>
+
+* [🧬 <b>Kotlin</b>][kotlin]<br>
+  <small>[Example][kotlin-example]</small>
 
 * [🎼 <b>C#</b>][c#]<br>
   <small>[Example][c#-example]</small>
@@ -141,6 +144,8 @@ fn main() {
 [interpolate]: https://docs.rs/genco/latest/genco/macro.quote.html#quoted-string-interpolation
 [java-example]: https://github.com/udoprog/genco/blob/master/examples/java.rs
 [java]: https://docs.rs/genco/latest/genco/lang/java/index.html
+[kotlin-example]: https://github.com/udoprog/genco/blob/master/examples/kotlin.rs
+[kotlin]: https://docs.rs/genco/latest/genco/lang/kotlin/index.html
 [js-example]: https://github.com/udoprog/genco/blob/master/examples/js.rs
 [js]: https://docs.rs/genco/latest/genco/lang/js/index.html
 [Open an issue!]: https://github.com/udoprog/genco/issues/new
