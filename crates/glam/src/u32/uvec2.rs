@@ -14,15 +14,11 @@ pub const fn uvec2(x: u32, y: u32) -> UVec2 {
 }
 
 /// A 2-dimensional vector.
-#[cfg_attr(not(target_arch = "spirv"), derive(Hash))]
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(feature = "cuda", repr(align(8)))]
-#[cfg_attr(not(target_arch = "spirv"), repr(C))]
-#[cfg_attr(target_arch = "spirv", repr(simd))]
+#[repr(C)]
+#[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct UVec2 {
     pub x: u32,
     pub y: u32,
@@ -1337,7 +1333,6 @@ impl Rem<UVec2> for &u32 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[u32; 2]> for UVec2 {
     #[inline]
     fn as_ref(&self) -> &[u32; 2] {
@@ -1345,7 +1340,6 @@ impl AsRef<[u32; 2]> for UVec2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[u32; 2]> for UVec2 {
     #[inline]
     fn as_mut(&mut self) -> &mut [u32; 2] {

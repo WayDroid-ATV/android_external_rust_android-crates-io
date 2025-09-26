@@ -17,14 +17,10 @@ pub const fn u8vec3(x: u8, y: u8, z: u8) -> U8Vec3 {
 }
 
 /// A 3-dimensional vector.
-#[cfg_attr(not(target_arch = "spirv"), derive(Hash))]
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
-#[cfg_attr(not(target_arch = "spirv"), repr(C))]
-#[cfg_attr(target_arch = "spirv", repr(simd))]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[repr(C)]
+#[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct U8Vec3 {
     pub x: u8,
     pub y: u8,
@@ -1464,7 +1460,6 @@ impl Rem<U8Vec3> for &u8 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[u8; 3]> for U8Vec3 {
     #[inline]
     fn as_ref(&self) -> &[u8; 3] {
@@ -1472,7 +1467,6 @@ impl AsRef<[u8; 3]> for U8Vec3 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[u8; 3]> for U8Vec3 {
     #[inline]
     fn as_mut(&mut self) -> &mut [u8; 3] {

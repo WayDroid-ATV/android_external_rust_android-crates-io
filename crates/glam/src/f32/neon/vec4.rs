@@ -27,10 +27,7 @@ pub const fn vec4(x: f32, y: f32, z: f32, w: f32) -> Vec4 {
 ///
 /// This type is 16 byte aligned.
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[repr(transparent)]
 pub struct Vec4(pub(crate) float32x4_t);
 
@@ -1700,7 +1697,6 @@ impl Rem<Vec4> for &f32 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f32; 4]> for Vec4 {
     #[inline]
     fn as_ref(&self) -> &[f32; 4] {
@@ -1708,7 +1704,6 @@ impl AsRef<[f32; 4]> for Vec4 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f32; 4]> for Vec4 {
     #[inline]
     fn as_mut(&mut self) -> &mut [f32; 4] {

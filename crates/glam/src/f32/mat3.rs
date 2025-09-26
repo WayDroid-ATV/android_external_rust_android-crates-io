@@ -42,10 +42,7 @@ pub const fn mat3(x_axis: Vec3, y_axis: Vec3, z_axis: Vec3) -> Mat3 {
 /// vectors respectively. These methods assume that `Self` contains a valid affine
 /// transform.
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[repr(C)]
 pub struct Mat3 {
     pub x_axis: Vec3,
@@ -1157,7 +1154,6 @@ impl PartialEq for Mat3 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f32; 9]> for Mat3 {
     #[inline]
     fn as_ref(&self) -> &[f32; 9] {
@@ -1165,7 +1161,6 @@ impl AsRef<[f32; 9]> for Mat3 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f32; 9]> for Mat3 {
     #[inline]
     fn as_mut(&mut self) -> &mut [f32; 9] {

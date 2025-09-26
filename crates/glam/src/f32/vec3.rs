@@ -15,12 +15,9 @@ pub const fn vec3(x: f32, y: f32, z: f32) -> Vec3 {
 
 /// A 3-dimensional vector.
 #[derive(Clone, Copy, PartialEq)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
-#[cfg_attr(not(target_arch = "spirv"), repr(C))]
-#[cfg_attr(target_arch = "spirv", repr(simd))]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[repr(C)]
+#[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
@@ -1908,7 +1905,6 @@ impl Rem<Vec3> for &f32 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f32; 3]> for Vec3 {
     #[inline]
     fn as_ref(&self) -> &[f32; 3] {
@@ -1916,7 +1912,6 @@ impl AsRef<[f32; 3]> for Vec3 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f32; 3]> for Vec3 {
     #[inline]
     fn as_mut(&mut self) -> &mut [f32; 3] {

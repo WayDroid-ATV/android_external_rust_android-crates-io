@@ -41,10 +41,7 @@ pub const fn quat(x: f32, y: f32, z: f32, w: f32) -> Quat {
 ///
 /// This type is 16 byte aligned.
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[repr(transparent)]
 pub struct Quat(pub(crate) float32x4_t);
 
@@ -1247,7 +1244,6 @@ impl PartialEq for Quat {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f32; 4]> for Quat {
     #[inline]
     fn as_ref(&self) -> &[f32; 4] {

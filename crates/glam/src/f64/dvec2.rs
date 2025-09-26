@@ -15,13 +15,10 @@ pub const fn dvec2(x: f64, y: f64) -> DVec2 {
 
 /// A 2-dimensional vector.
 #[derive(Clone, Copy, PartialEq)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(feature = "cuda", repr(align(16)))]
-#[cfg_attr(not(target_arch = "spirv"), repr(C))]
-#[cfg_attr(target_arch = "spirv", repr(simd))]
+#[repr(C)]
+#[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct DVec2 {
     pub x: f64,
     pub y: f64,
@@ -1762,7 +1759,6 @@ impl Rem<DVec2> for &f64 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f64; 2]> for DVec2 {
     #[inline]
     fn as_ref(&self) -> &[f64; 2] {
@@ -1770,7 +1766,6 @@ impl AsRef<[f64; 2]> for DVec2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f64; 2]> for DVec2 {
     #[inline]
     fn as_mut(&mut self) -> &mut [f64; 2] {

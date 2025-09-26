@@ -86,7 +86,7 @@ defined in `std`. For example:
 
 ```toml
 [dependencies]
-glam = { version = "0.30.5", default-features = false, features = ["libm"] }
+glam = { version = "0.30.8", default-features = false, features = ["libm"] }
 ```
 
 To support both `std` and `no_std` builds in project, you can use the following
@@ -100,7 +100,7 @@ std = ["glam/std"]
 libm = ["glam/libm"]
 
 [dependencies]
-glam = { version = "0.30.5", default-features = false }
+glam = { version = "0.30.8", default-features = false }
 ```
 
 Alternatively, you can use the `nostd-libm` feature. This will always include a
@@ -116,7 +116,7 @@ std = ["glam/std"]
 libm = ["glam/libm"]
 
 [dependencies]
-glam = { version = "0.30.5", default-features = false, features = ["nostd-libm"] }
+glam = { version = "0.30.8", default-features = false, features = ["nostd-libm"] }
 ```
 
 ### Optional features
@@ -135,6 +135,7 @@ glam = { version = "0.30.5", default-features = false, features = ["nostd-libm"]
   without the `scalar-math` feature. It should work between all other builds of
   `glam`.  Endian conversion is currently not supported
 * [`bytecheck`] - to perform archive validation when using the `rkyv` feature
+* [`encase`] - `encase` trait implementations for `glam` types.
 
 [`approx`]: https://docs.rs/approx
 [`bytemuck`]: https://docs.rs/bytemuck
@@ -145,6 +146,7 @@ glam = { version = "0.30.5", default-features = false, features = ["nostd-libm"]
 [`speedy`]: https://docs.rs/speedy
 [`rkyv`]: https://github.com/rkyv/rkyv
 [`bytecheck`]: https://github.com/rkyv/bytecheck
+[`encase`]: https://github.com/teoxoy/encase
 
 ### Feature gates
 

@@ -14,15 +14,11 @@ pub const fn usizevec2(x: usize, y: usize) -> USizeVec2 {
 }
 
 /// A 2-dimensional vector.
-#[cfg_attr(not(target_arch = "spirv"), derive(Hash))]
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(feature = "cuda", repr(align(16)))]
-#[cfg_attr(not(target_arch = "spirv"), repr(C))]
-#[cfg_attr(target_arch = "spirv", repr(simd))]
+#[repr(C)]
+#[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct USizeVec2 {
     pub x: usize,
     pub y: usize,
@@ -1295,7 +1291,6 @@ impl Rem<USizeVec2> for &usize {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[usize; 2]> for USizeVec2 {
     #[inline]
     fn as_ref(&self) -> &[usize; 2] {
@@ -1303,7 +1298,6 @@ impl AsRef<[usize; 2]> for USizeVec2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[usize; 2]> for USizeVec2 {
     #[inline]
     fn as_mut(&mut self) -> &mut [usize; 2] {

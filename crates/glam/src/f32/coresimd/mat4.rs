@@ -50,10 +50,7 @@ pub const fn mat4(x_axis: Vec4, y_axis: Vec4, z_axis: Vec4, w_axis: Vec4) -> Mat
 /// The resulting perspective project can be use to transform 3D vectors as points with
 /// perspective correction using the [`Self::project_point3()`] convenience method.
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[repr(C)]
 pub struct Mat4 {
     pub x_axis: Vec4,
@@ -1851,7 +1848,6 @@ impl PartialEq for Mat4 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f32; 16]> for Mat4 {
     #[inline]
     fn as_ref(&self) -> &[f32; 16] {
@@ -1859,7 +1855,6 @@ impl AsRef<[f32; 16]> for Mat4 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f32; 16]> for Mat4 {
     #[inline]
     fn as_mut(&mut self) -> &mut [f32; 16] {
