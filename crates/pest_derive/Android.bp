@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libpest_derive",
     crate_name: "pest_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.8.1",
+    cargo_pkg_version: "2.8.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
