@@ -11,11 +11,12 @@
 
 [package]
 edition = "2018"
-rust-version = "1.66"
+rust-version = "1.88"
 name = "genco"
-version = "0.17.10"
+version = "0.18.1"
 authors = ["John-John Tedro <udoprog@tedro.se>"]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -31,6 +32,14 @@ keywords = [
 categories = ["template-engine"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/udoprog/genco"
+
+[features]
+alloc = []
+default = [
+    "std",
+    "alloc",
+]
+std = []
 
 [lib]
 name = "genco"
@@ -59,6 +68,10 @@ path = "examples/java.rs"
 [[example]]
 name = "js"
 path = "examples/js.rs"
+
+[[example]]
+name = "kotlin"
+path = "examples/kotlin.rs"
 
 [[example]]
 name = "nix"
@@ -105,7 +118,7 @@ name = "test_token_gen"
 path = "tests/test_token_gen.rs"
 
 [dependencies.genco-macros]
-version = "=0.17.10"
+version = "0.18.1"
 
 [dependencies.relative-path]
 version = "1.2.0"
@@ -118,11 +131,3 @@ version = "1.0.31"
 
 [dev-dependencies.rand]
 version = "0.7.3"
-
-[features]
-alloc = []
-default = [
-    "std",
-    "alloc",
-]
-std = []
