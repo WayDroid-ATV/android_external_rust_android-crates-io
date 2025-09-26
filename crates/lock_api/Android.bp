@@ -36,3 +36,9 @@ rust_library {
     vendor_available: true,
     min_sdk_version: "29",
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_lock_api",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}
