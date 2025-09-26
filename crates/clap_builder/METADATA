@@ -1,17 +1,17 @@
 name: "clap_builder"
 description: "A simple to use, efficient, and full-featured Command Line Argument Parser"
 third_party {
-  version: "4.5.47"
+  version: "4.5.48"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
     month: 9
-    day: 11
+    day: 24
   }
   homepage: "https://crates.io/crates/clap_builder"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/clap_builder/clap_builder-4.5.47.crate"
-    version: "4.5.47"
+    value: "https://static.crates.io/crates/clap_builder/clap_builder-4.5.48.crate"
+    version: "4.5.48"
   }
 }
