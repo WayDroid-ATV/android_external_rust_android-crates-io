@@ -10,9 +10,9 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
+edition = "2024"
 name = "ipp"
-version = "5.3.1"
+version = "5.3.2"
 authors = ["Dmitry Pankratov <dmitry@pankratov.net>"]
 build = false
 autolib = false
@@ -32,6 +32,14 @@ keywords = [
 ]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/ancwrd1/ipp.rs"
+resolver = "2"
+
+[package.metadata.docs.rs]
+features = [
+    "async-client-tls",
+    "client-tls",
+    "serde",
+]
 
 [features]
 async = [
