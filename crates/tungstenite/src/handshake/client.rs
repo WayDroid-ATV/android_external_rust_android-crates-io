@@ -19,6 +19,7 @@ use super::{
 };
 use crate::{
     error::{Error, ProtocolError, Result, SubProtocolError, UrlError},
+    handshake::version_as_str,
     protocol::{Role, WebSocket, WebSocketConfig},
 };
 
@@ -112,9 +113,9 @@ pub fn generate_request(mut request: Request) -> Result<(Vec<u8>, String)> {
     let mut req = Vec::new();
     write!(
         req,
-        "GET {path} {version:?}\r\n",
+        "GET {path} {version}\r\n",
         path = request.uri().path_and_query().ok_or(Error::Url(UrlError::NoPathOrQuery))?.as_str(),
-        version = request.version()
+        version = version_as_str(request.version())?,
     )
     .unwrap();
 
@@ -129,7 +130,7 @@ pub fn generate_request(mut request: Request) -> Result<(Vec<u8>, String)> {
         .get(KEY_HEADERNAME)
         .ok_or_else(|| {
             Error::Protocol(ProtocolError::InvalidHeader(
-                HeaderName::from_bytes(KEY_HEADERNAME.as_bytes()).unwrap(),
+                HeaderName::from_bytes(KEY_HEADERNAME.as_bytes()).unwrap().into(),
             ))
         })?
         .to_str()?
@@ -146,7 +147,7 @@ pub fn generate_request(mut request: Request) -> Result<(Vec<u8>, String)> {
     for &header in &WEBSOCKET_HEADERS {
         let value = headers.remove(header).ok_or_else(|| {
             Error::Protocol(ProtocolError::InvalidHeader(
-                HeaderName::from_bytes(header.as_bytes()).unwrap(),
+                HeaderName::from_bytes(header.as_bytes()).unwrap().into(),
             ))
         })?;
         write!(
@@ -162,16 +163,16 @@ pub fn generate_request(mut request: Request) -> Result<(Vec<u8>, String)> {
 
     // Now we must ensure that the headers that we've written once are not anymore present in the map.
     // If they do, then the request is invalid (some headers are duplicated there for some reason).
-    let insensitive: Vec<String> =
-        WEBSOCKET_HEADERS.iter().map(|h| h.to_ascii_lowercase()).collect();
+    let websocket_headers_contains =
+        |name| WEBSOCKET_HEADERS.iter().any(|h| h.eq_ignore_ascii_case(name));
+
     for (k, v) in headers {
         let mut name = k.as_str();
 
         // We have already written the necessary headers once (above) and removed them from the map.
         // If we encounter them again, then the request is considered invalid and error is returned.
-        // Note that we can't use `.contains()`, since `&str` does not coerce to `&String` in Rust.
-        if insensitive.iter().any(|x| x == name) {
-            return Err(Error::Protocol(ProtocolError::InvalidHeader(k.clone())));
+        if websocket_headers_contains(name) {
+            return Err(Error::Protocol(ProtocolError::InvalidHeader(k.clone().into())));
         }
 
         // Relates to the issue of some servers treating headers in a case-sensitive way, please see:
@@ -223,7 +224,7 @@ impl VerifyData {
         // 1. If the status code received from the server is not 101, the
         // client handles the response per HTTP [RFC2616] procedures. (RFC 6455)
         if response.status() != StatusCode::SWITCHING_PROTOCOLS {
-            return Err(Error::Http(response));
+            return Err(Error::Http(response.into()));
         }
 
         let headers = response.headers();

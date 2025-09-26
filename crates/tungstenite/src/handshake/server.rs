@@ -20,6 +20,7 @@ use super::{
 };
 use crate::{
     error::{Error, ProtocolError, Result},
+    handshake::version_as_str,
     protocol::{Role, WebSocket, WebSocketConfig},
 };
 
@@ -97,8 +98,8 @@ pub fn create_response_with_body<T1, T2>(
 pub fn write_response<T>(mut w: impl io::Write, response: &HttpResponse<T>) -> Result<()> {
     writeln!(
         w,
-        "{version:?} {status}\r",
-        version = response.version(),
+        "{version} {status}\r",
+        version = version_as_str(response.version())?,
         status = response.status()
     )?;
 
@@ -280,7 +281,7 @@ impl<S: Read + Write, C: Callback> HandshakeRole for ServerHandshake<S, C> {
 
                     let (parts, body) = err.into_parts();
                     let body = body.map(|b| b.as_bytes().to_vec());
-                    return Err(Error::Http(http::Response::from_parts(parts, body)));
+                    return Err(Error::Http(http::Response::from_parts(parts, body).into()));
                 } else {
                     debug!("Server handshake done.");
                     let websocket = WebSocket::from_raw_socket(stream, Role::Server, self.config);
