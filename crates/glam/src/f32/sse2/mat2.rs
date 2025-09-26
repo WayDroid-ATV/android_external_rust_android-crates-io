@@ -29,10 +29,7 @@ pub const fn mat2(x_axis: Vec2, y_axis: Vec2) -> Mat2 {
 ///
 /// This type is 16 byte aligned.
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[repr(transparent)]
 pub struct Mat2(pub(crate) __m128);
 
@@ -802,7 +799,6 @@ impl PartialEq for Mat2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f32; 4]> for Mat2 {
     #[inline]
     fn as_ref(&self) -> &[f32; 4] {
@@ -810,7 +806,6 @@ impl AsRef<[f32; 4]> for Mat2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f32; 4]> for Mat2 {
     #[inline]
     fn as_mut(&mut self) -> &mut [f32; 4] {

@@ -47,10 +47,7 @@ pub const fn dmat4(x_axis: DVec4, y_axis: DVec4, z_axis: DVec4, w_axis: DVec4) -
 /// The resulting perspective project can be use to transform 3D vectors as points with
 /// perspective correction using the [`Self::project_point3()`] convenience method.
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(feature = "cuda", repr(align(16)))]
 #[repr(C)]
 pub struct DMat4 {
@@ -1711,7 +1708,6 @@ impl PartialEq for DMat4 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f64; 16]> for DMat4 {
     #[inline]
     fn as_ref(&self) -> &[f64; 16] {
@@ -1719,7 +1715,6 @@ impl AsRef<[f64; 16]> for DMat4 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f64; 16]> for DMat4 {
     #[inline]
     fn as_mut(&mut self) -> &mut [f64; 16] {

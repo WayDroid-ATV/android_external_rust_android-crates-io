@@ -15,13 +15,10 @@ pub const fn vec2(x: f32, y: f32) -> Vec2 {
 
 /// A 2-dimensional vector.
 #[derive(Clone, Copy, PartialEq)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(feature = "cuda", repr(align(8)))]
-#[cfg_attr(not(target_arch = "spirv"), repr(C))]
-#[cfg_attr(target_arch = "spirv", repr(simd))]
+#[repr(C)]
+#[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct Vec2 {
     pub x: f32,
     pub y: f32,
@@ -1762,7 +1759,6 @@ impl Rem<Vec2> for &f32 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f32; 2]> for Vec2 {
     #[inline]
     fn as_ref(&self) -> &[f32; 2] {
@@ -1770,7 +1766,6 @@ impl AsRef<[f32; 2]> for Vec2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f32; 2]> for Vec2 {
     #[inline]
     fn as_mut(&mut self) -> &mut [f32; 2] {

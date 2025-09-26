@@ -26,12 +26,9 @@ pub const fn dquat(x: f64, y: f64, z: f64, w: f64) -> DQuat {
 /// floating point "error creep" which can occur when successive quaternion
 /// operations are applied.
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
-#[cfg_attr(not(target_arch = "spirv"), repr(C))]
-#[cfg_attr(target_arch = "spirv", repr(simd))]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[repr(C)]
+#[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct DQuat {
     pub x: f64,
     pub y: f64,
@@ -1148,7 +1145,6 @@ impl PartialEq for DQuat {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f64; 4]> for DQuat {
     #[inline]
     fn as_ref(&self) -> &[f64; 4] {

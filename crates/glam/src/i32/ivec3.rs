@@ -17,14 +17,10 @@ pub const fn ivec3(x: i32, y: i32, z: i32) -> IVec3 {
 }
 
 /// A 3-dimensional vector.
-#[cfg_attr(not(target_arch = "spirv"), derive(Hash))]
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
-#[cfg_attr(not(target_arch = "spirv"), repr(C))]
-#[cfg_attr(target_arch = "spirv", repr(simd))]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[repr(C)]
+#[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct IVec3 {
     pub x: i32,
     pub y: i32,
@@ -1602,7 +1598,6 @@ impl Rem<IVec3> for &i32 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[i32; 3]> for IVec3 {
     #[inline]
     fn as_ref(&self) -> &[i32; 3] {
@@ -1610,7 +1605,6 @@ impl AsRef<[i32; 3]> for IVec3 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[i32; 3]> for IVec3 {
     #[inline]
     fn as_mut(&mut self) -> &mut [i32; 3] {

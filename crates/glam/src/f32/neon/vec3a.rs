@@ -31,10 +31,7 @@ pub const fn vec3a(x: f32, y: f32, z: f32) -> Vec3A {
 ///
 /// This type is 16 byte aligned.
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[repr(transparent)]
 pub struct Vec3A(pub(crate) float32x4_t);
 
@@ -1843,7 +1840,6 @@ impl Rem<Vec3A> for &f32 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f32; 3]> for Vec3A {
     #[inline]
     fn as_ref(&self) -> &[f32; 3] {
@@ -1851,7 +1847,6 @@ impl AsRef<[f32; 3]> for Vec3A {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f32; 3]> for Vec3A {
     #[inline]
     fn as_mut(&mut self) -> &mut [f32; 3] {

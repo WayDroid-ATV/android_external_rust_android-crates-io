@@ -14,15 +14,11 @@ pub const fn i16vec2(x: i16, y: i16) -> I16Vec2 {
 }
 
 /// A 2-dimensional vector.
-#[cfg_attr(not(target_arch = "spirv"), derive(Hash))]
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(feature = "cuda", repr(align(4)))]
-#[cfg_attr(not(target_arch = "spirv"), repr(C))]
-#[cfg_attr(target_arch = "spirv", repr(simd))]
+#[repr(C)]
+#[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct I16Vec2 {
     pub x: i16,
     pub y: i16,
@@ -1487,7 +1483,6 @@ impl Rem<I16Vec2> for &i16 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[i16; 2]> for I16Vec2 {
     #[inline]
     fn as_ref(&self) -> &[i16; 2] {
@@ -1495,7 +1490,6 @@ impl AsRef<[i16; 2]> for I16Vec2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[i16; 2]> for I16Vec2 {
     #[inline]
     fn as_mut(&mut self) -> &mut [i16; 2] {

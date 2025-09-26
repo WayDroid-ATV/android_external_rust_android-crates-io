@@ -14,14 +14,8 @@ pub const fn mat2(x_axis: Vec2, y_axis: Vec2) -> Mat2 {
 
 /// A 2x2 column major matrix.
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
-#[cfg_attr(
-    not(any(feature = "scalar-math", target_arch = "spirv")),
-    repr(align(16))
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(not(feature = "scalar-math"), repr(align(16)))]
 #[cfg_attr(feature = "cuda", repr(align(8)))]
 #[repr(C)]
 pub struct Mat2 {
@@ -766,7 +760,6 @@ impl PartialEq for Mat2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f32; 4]> for Mat2 {
     #[inline]
     fn as_ref(&self) -> &[f32; 4] {
@@ -774,7 +767,6 @@ impl AsRef<[f32; 4]> for Mat2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f32; 4]> for Mat2 {
     #[inline]
     fn as_mut(&mut self) -> &mut [f32; 4] {

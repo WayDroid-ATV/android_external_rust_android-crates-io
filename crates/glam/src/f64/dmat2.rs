@@ -14,10 +14,7 @@ pub const fn dmat2(x_axis: DVec2, y_axis: DVec2) -> DMat2 {
 
 /// A 2x2 column major matrix.
 #[derive(Clone, Copy)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(feature = "cuda", repr(align(16)))]
 #[repr(C)]
 pub struct DMat2 {
@@ -732,7 +729,6 @@ impl PartialEq for DMat2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[f64; 4]> for DMat2 {
     #[inline]
     fn as_ref(&self) -> &[f64; 4] {
@@ -740,7 +736,6 @@ impl AsRef<[f64; 4]> for DMat2 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[f64; 4]> for DMat2 {
     #[inline]
     fn as_mut(&mut self) -> &mut [f64; 4] {

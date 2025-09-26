@@ -18,15 +18,11 @@ pub const fn u16vec4(x: u16, y: u16, z: u16, w: u16) -> U16Vec4 {
 }
 
 /// A 4-dimensional vector.
-#[cfg_attr(not(target_arch = "spirv"), derive(Hash))]
-#[derive(Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(
-    all(feature = "bytemuck", not(target_arch = "spirv")),
-    derive(bytemuck::Pod, bytemuck::Zeroable)
-)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[cfg_attr(feature = "cuda", repr(align(8)))]
-#[cfg_attr(not(target_arch = "spirv"), repr(C))]
-#[cfg_attr(target_arch = "spirv", repr(simd))]
+#[repr(C)]
+#[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct U16Vec4 {
     pub x: u16,
     pub y: u16,
@@ -1555,7 +1551,6 @@ impl Rem<U16Vec4> for &u16 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsRef<[u16; 4]> for U16Vec4 {
     #[inline]
     fn as_ref(&self) -> &[u16; 4] {
@@ -1563,7 +1558,6 @@ impl AsRef<[u16; 4]> for U16Vec4 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl AsMut<[u16; 4]> for U16Vec4 {
     #[inline]
     fn as_mut(&mut self) -> &mut [u16; 4] {
