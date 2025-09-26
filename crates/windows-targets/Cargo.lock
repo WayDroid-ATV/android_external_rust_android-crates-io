@@ -4,13 +4,13 @@ version = 3
 
 [[package]]
 name = "windows-link"
-version = "0.1.3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e6ad25900d524eaabdbbb96d20b4311e1e7ae1699af4fb28c17ae66c80d798a"
+checksum = "45e46c0661abb7180e7b9c281db115305d49ca1709ab8242adf09666d2173c65"
 
 [[package]]
 name = "windows-targets"
-version = "0.53.3"
+version = "0.53.4"
 dependencies = [
  "windows-link",
  "windows_aarch64_gnullvm",

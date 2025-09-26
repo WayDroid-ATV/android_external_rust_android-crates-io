@@ -17,7 +17,7 @@ rust_library_host {
     name: "libwindows_targets",
     crate_name: "windows_targets",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.53.3",
+    cargo_pkg_version: "0.53.4",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
