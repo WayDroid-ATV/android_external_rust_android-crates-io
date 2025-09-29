@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.70"
+rust-version = "1.75"
 name = "crates-index"
-version = "3.10.0"
+version = "3.11.0"
 authors = [
     "Corey Farwell <coreyf@rwell.org>",
     "Kornel <kornel@geekhood.net>",
@@ -118,7 +118,7 @@ version = "0.2.0"
 optional = true
 
 [dependencies.gix]
-version = "0.72.1"
+version = "0.73.0"
 features = [
     "max-performance-safe",
     "blocking-network-client",
@@ -172,7 +172,12 @@ features = ["serde"]
 version = "2.0.0"
 
 [dependencies.toml]
-version = "0.8.0"
+version = "0.9.0"
+features = [
+    "parse",
+    "serde",
+]
+default-features = false
 
 [dev-dependencies.bytesize]
 version = "1.2.0"

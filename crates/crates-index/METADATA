@@ -1,17 +1,17 @@
 name: "crates-index"
 description: "Library for retrieving and interacting with the crates.io index"
 third_party {
-  version: "3.10.0"
+  version: "3.11.0"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 5
-    day: 28
+    month: 9
+    day: 27
   }
   homepage: "https://crates.io/crates/crates-index"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/crates-index/crates-index-3.10.0.crate"
-    version: "3.10.0"
+    value: "https://static.crates.io/crates/crates-index/crates-index-3.11.0.crate"
+    version: "3.11.0"
   }
 }
