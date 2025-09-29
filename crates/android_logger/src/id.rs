@@ -1,6 +1,3 @@
-#[cfg(default_log_impl)]
-use super::log_ffi;
-
 /// Possible identifiers of a specific buffer of Android logging system for
 /// logging a message.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

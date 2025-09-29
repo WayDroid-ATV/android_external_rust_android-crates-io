@@ -1,11 +1,5 @@
-#[cfg(default_log_impl)]
-use {
-    crate as log,
-    super::log_ffi,
-};
-
-use super::arrays::slice_assume_init_ref;
-use super::{LOGGING_MSG_MAX_LEN, LogId, android_log, uninit_array};
+use crate::arrays::slice_assume_init_ref;
+use crate::{LOGGING_MSG_MAX_LEN, LogId, android_log, uninit_array};
 use log::Level;
 #[cfg(target_os = "android")]
 use log_ffi::LogPriority;

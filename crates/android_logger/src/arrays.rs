@@ -1,4 +1,4 @@
-use super::LOGGING_TAG_MAX_LEN;
+use crate::LOGGING_TAG_MAX_LEN;
 use std::ffi::CStr;
 use std::mem::MaybeUninit;
 
