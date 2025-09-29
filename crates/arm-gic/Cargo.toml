@@ -12,7 +12,7 @@
 [package]
 edition = "2024"
 name = "arm-gic"
-version = "0.6.1"
+version = "0.7.0"
 authors = [
     "Andrew Walbran <qwandor@google.com>",
     "Fritz Stracke <fritz.stracke@rwth-aachen.de>",
