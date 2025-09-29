@@ -18,7 +18,7 @@ rust_library_host {
     host_cross_supported: false,
     crate_name: "pdl_compiler",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.1",
+    cargo_pkg_version: "0.4.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -51,7 +51,7 @@ rust_binary_host {
     host_cross_supported: false,
     crate_name: "pdlc",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.1",
+    cargo_pkg_version: "0.4.2",
     crate_root: "src/main.rs",
     edition: "2021",
     features: [
