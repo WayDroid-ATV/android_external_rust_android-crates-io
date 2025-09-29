@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.56"
 name = "darling_macro"
-version = "0.21.2"
+version = "0.21.3"
 authors = ["Ted Driggs <ted.driggs@outlook.com>"]
 build = false
 autolib = false
@@ -35,7 +35,7 @@ path = "src/lib.rs"
 proc-macro = true
 
 [dependencies.darling_core]
-version = "=0.21.2"
+version = "=0.21.3"
 
 [dependencies.quote]
 version = "1.0.18"
