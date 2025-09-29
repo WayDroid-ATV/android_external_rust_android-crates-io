@@ -10,6 +10,14 @@ use self::registers::{Gicc, Gicd, GicdCtlr};
 use crate::{IntId, Trigger};
 use core::ptr::NonNull;
 use safe_mmio::{UniqueMmioPointer, field, field_shared};
+use thiserror::Error;
+
+/// An error which may be returned from operations on a GIC Redistributor.
+#[derive(Error, Debug, Clone, Copy, Eq, PartialEq)]
+pub enum Error {
+    #[error("Cannot enable interrupt {0:?}")]
+    CannotEnable(IntId),
+}
 
 /// Driver for an Arm Generic Interrupt Controller version 2.
 #[derive(Debug)]
@@ -56,7 +64,7 @@ impl GicV2<'_> {
     }
 
     /// Enables or disables the interrupt with the given ID.
-    pub fn enable_interrupt(&mut self, intid: IntId, enable: bool) -> Result<(), ()> {
+    pub fn enable_interrupt(&mut self, intid: IntId, enable: bool) -> Result<(), Error> {
         let index = (intid.0 / 32) as usize;
         let bit = 1 << (intid.0 % 32);
 
@@ -69,7 +77,7 @@ impl GicV2<'_> {
                 & bit)
                 == 0
             {
-                return Err(());
+                return Err(Error::CannotEnable(intid));
             }
         } else {
             field!(self.gicd, icenabler).get(index).unwrap().write(bit);
@@ -99,6 +107,11 @@ impl GicV2<'_> {
     /// Only interrupts with a higher priority (numerically lower) will be signalled.
     pub fn set_priority_mask(&mut self, min_priority: u8) {
         field!(self.gicc, pmr).write(min_priority as u32);
+    }
+
+    /// Gets the priority mask for the current CPU core.
+    pub fn get_priority_mask(&mut self) -> u8 {
+        field!(self.gicc, pmr).read() as u8
     }
 
     /// Sets the priority of the interrupt with the given ID.

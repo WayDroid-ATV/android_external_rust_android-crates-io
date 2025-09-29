@@ -13,28 +13,33 @@
 //! ```no_run
 //! use arm_gic::{
 //!     IntId,
+//!     UniqueMmioPointer,
 //!     gicv3::{
-//!         GicV3, SgiTarget, SgiTargetGroup,
+//!         GicCpuInterface, GicV3, SgiTarget, SgiTargetGroup,
 //!         registers::{Gicd, GicrSgi},
 //!     },
 //!     irq_enable,
 //! };
+//! use core::ptr::NonNull;
 //!
 //! // Base addresses of the GICv3 distributor and redistributor.
 //! const GICD_BASE_ADDRESS: *mut Gicd = 0x800_0000 as _;
 //! const GICR_BASE_ADDRESS: *mut GicrSgi = 0x80A_0000 as _;
 //!
+//! let gicd = unsafe { UniqueMmioPointer::new(NonNull::new(GICD_BASE_ADDRESS).unwrap()) };
+//! let gicr = unsafe { NonNull::new(GICR_BASE_ADDRESS).unwrap() };
+//!
 //! // Initialise the GIC.
-//! let mut gic = unsafe { GicV3::new(GICD_BASE_ADDRESS, GICR_BASE_ADDRESS, 1, false) };
+//! let mut gic = unsafe { GicV3::new(gicd, gicr, 1, false) };
 //! gic.setup(0);
 //!
 //! // Configure an SGI and then send it to ourself.
 //! let sgi_intid = IntId::sgi(3);
-//! GicV3::set_priority_mask(0xff);
+//! GicCpuInterface::set_priority_mask(0xff);
 //! gic.set_interrupt_priority(sgi_intid, Some(0), 0x80);
 //! gic.enable_interrupt(sgi_intid, Some(0), true);
 //! irq_enable();
-//! GicV3::send_sgi(
+//! GicCpuInterface::send_sgi(
 //!     sgi_intid,
 //!     SgiTarget::List {
 //!         affinity3: 0,
@@ -54,6 +59,8 @@ pub mod gicv2;
 pub mod gicv3;
 #[cfg(any(test, feature = "fakes", target_arch = "aarch64", target_arch = "arm"))]
 mod sysreg;
+
+pub use safe_mmio::UniqueMmioPointer;
 
 #[cfg(feature = "fakes")]
 pub use sysreg::fake as sysreg_fake;
@@ -183,14 +190,55 @@ impl IntId {
         Self::PPI_START <= self.0 && self.0 < Self::SPI_START
     }
 
-    /// Returns whether this interrupt ID is private to a core, i.e. it is an SGI or PPI.
-    pub const fn is_private(self) -> bool {
-        self.is_sgi() || self.is_ppi()
+    /// Returns whether this interrupt ID is for an Extended Private Peripheral Interrupt.
+    pub const fn is_eppi(self) -> bool {
+        Self::EPPI_START <= self.0 && self.0 < Self::EPPI_END
     }
 
     /// Returns whether this interrupt ID is for a Shared Peripheral Interrupt.
     pub const fn is_spi(self) -> bool {
         Self::SPI_START <= self.0 && self.0 < Self::SPECIAL_START
+    }
+
+    /// Returns whether this interrupt ID is for an Extended Shared Peripheral Interrupt.
+    pub const fn is_espi(self) -> bool {
+        Self::ESPI_START <= self.0 && self.0 < Self::ESPI_END
+    }
+
+    /// Returns whether this interrupt ID is private to a core, i.e. it is an SGI, PPI or EPPI.
+    pub const fn is_private(self) -> bool {
+        self.is_sgi() || self.is_ppi() || self.is_eppi()
+    }
+
+    /// Returns SGI index or `None` if it is not an SGI interrupt ID.
+    pub const fn sgi_index(self) -> Option<u32> {
+        if self.is_sgi() {
+            Some(self.0 - Self::SGI_START)
+        } else {
+            None
+        }
+    }
+
+    /// Maps SGI, PPI and EPPI interrupt IDs into a continuous index range starting from 0,
+    /// making it ideal for indexing redistributor registers.
+    pub const fn private_index(self) -> Option<usize> {
+        if self.is_sgi() || self.is_ppi() {
+            Some(self.0 as usize)
+        } else if self.is_eppi() {
+            // EPPI
+            Some((self.0 - IntId::EPPI_START + IntId::SGI_COUNT + IntId::PPI_COUNT) as usize)
+        } else {
+            None
+        }
+    }
+
+    /// Returns ESPI index or `None` if it is not an ESPI interrupt ID.
+    pub const fn espi_index(self) -> Option<usize> {
+        if self.is_espi() {
+            Some((self.0 - Self::ESPI_START) as usize)
+        } else {
+            None
+        }
     }
 
     // TODO: Change this to return a Range<IntId> once core::iter::Step is stabilised.
