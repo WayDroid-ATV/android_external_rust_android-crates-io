@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "pdl-runtime"
-version = "0.4.1"
+version = "0.4.2"
 authors = [
     "Henri Chataing <henrichataing@google.com>",
     "David de Jesus Duarte <licorne@google.com>",
