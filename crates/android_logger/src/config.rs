@@ -1,18 +1,4 @@
-#[cfg(default_log_impl)]
-use {
-    crate as log,
-    super::log_ffi,
-};
-#[cfg(default_log_impl)]
-mod env_filter {
-    #[derive(Debug)]
-    pub struct Filter;
-    impl Filter {
-        pub fn matches(&self, _: &crate::Record) -> bool { true }
-    }
-}
-
-use super::{FormatFn, LogId};
+use crate::{FormatFn, LogId};
 use log::{Level, LevelFilter, Record};
 use std::ffi::CString;
 use std::fmt;

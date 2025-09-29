@@ -63,9 +63,6 @@
 //! )
 //! ```
 
-#[cfg(default_log_impl)]
-use crate as log;
-
 #[cfg(target_os = "android")]
 extern crate android_log_sys as log_ffi;
 
@@ -75,10 +72,9 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::sync::OnceLock;
 
-use self::arrays::{fill_tag_bytes, uninit_array};
-use self::platform_log_writer::PlatformLogWriter;
+use crate::arrays::{fill_tag_bytes, uninit_array};
+use crate::platform_log_writer::PlatformLogWriter;
 pub use config::Config;
-#[cfg(not(default_log_impl))]
 pub use env_filter::{Builder as FilterBuilder, Filter};
 pub use id::LogId;
 
@@ -239,11 +235,5 @@ pub fn init_once(config: Config) {
         log::debug!("android_logger: log::set_logger failed: {}", err);
     } else if let Some(level) = log_level {
         log::set_max_level(level);
-    }
-    // On Android, log crate is patched to default to LevelFilter::Trace rather than Off. Preserve
-    // the existing "android_logger default level is Off" behavior by explicitly setting the level.
-    #[cfg(target_os = "android")]
-    if log_level.is_none() {
-        log::set_max_level(log::LevelFilter::Off);
     }
 }
