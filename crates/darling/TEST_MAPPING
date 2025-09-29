@@ -82,6 +82,9 @@
       "name": "darling_test_tests_newtype"
     },
     {
+      "name": "darling_test_tests_override_callable"
+    },
+    {
       "name": "darling_test_tests_skip"
     },
     {

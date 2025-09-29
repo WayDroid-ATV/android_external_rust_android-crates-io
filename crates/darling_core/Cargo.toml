@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.56"
 name = "darling_core"
-version = "0.21.2"
+version = "0.21.3"
 authors = ["Ted Driggs <ted.driggs@outlook.com>"]
 build = false
 autolib = false
