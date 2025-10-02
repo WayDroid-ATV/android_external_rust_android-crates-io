@@ -2,14 +2,12 @@
 
 use std::fmt::Debug;
 
-use anyhow::Context;
-use netlink_packet_utils::DecodeError;
-
 use crate::{
+    done::DONE_HEADER_LEN,
     payload::{NLMSG_DONE, NLMSG_ERROR, NLMSG_NOOP, NLMSG_OVERRUN},
-    DoneBuffer, DoneMessage, Emitable, ErrorBuffer, ErrorMessage,
-    NetlinkBuffer, NetlinkDeserializable, NetlinkHeader, NetlinkPayload,
-    NetlinkSerializable, Parseable,
+    DecodeError, DoneBuffer, DoneMessage, Emitable, ErrorBuffer, ErrorContext,
+    ErrorMessage, NetlinkBuffer, NetlinkDeserializable, NetlinkHeader,
+    NetlinkPayload, NetlinkSerializable, Parseable,
 };
 
 /// Represent a netlink message.
@@ -40,7 +38,8 @@ where
 {
     /// Parse the given buffer as a netlink message
     pub fn deserialize(buffer: &[u8]) -> Result<Self, DecodeError> {
-        let netlink_buffer = NetlinkBuffer::new_checked(&buffer)?;
+        let netlink_buffer = NetlinkBuffer::new_checked(&buffer)
+            .context("failed deserializing NetlinkMessage")?;
         <Self as Parseable<NetlinkBuffer<&&[u8]>>>::parse(&netlink_buffer)
     }
 }
@@ -83,40 +82,50 @@ where
     }
 }
 
-impl<'buffer, B, I> Parseable<NetlinkBuffer<&'buffer B>> for NetlinkMessage<I>
+impl<B, I> Parseable<NetlinkBuffer<&B>> for NetlinkMessage<I>
 where
-    B: AsRef<[u8]> + 'buffer,
+    B: AsRef<[u8]>,
     I: NetlinkDeserializable,
 {
-    fn parse(buf: &NetlinkBuffer<&'buffer B>) -> Result<Self, DecodeError> {
+    fn parse(buf: &NetlinkBuffer<&B>) -> Result<Self, DecodeError> {
         use self::NetlinkPayload::*;
 
         let header =
-            <NetlinkHeader as Parseable<NetlinkBuffer<&'buffer B>>>::parse(buf)
-                .context("failed to parse netlink header")?;
+            <NetlinkHeader as Parseable<NetlinkBuffer<&B>>>::parse(buf)
+                .context("failed parsing NetlinkHeader")?;
 
         let bytes = buf.payload();
         let payload = match header.message_type {
             NLMSG_ERROR => {
                 let msg = ErrorBuffer::new_checked(&bytes)
                     .and_then(|buf| ErrorMessage::parse(&buf))
-                    .context("failed to parse NLMSG_ERROR")?;
+                    .context("failed parsing NLMSG_ERROR")?;
                 Error(msg)
             }
             NLMSG_NOOP => Noop,
             NLMSG_DONE => {
-                let msg = DoneBuffer::new_checked(&bytes)
-                    .and_then(|buf| DoneMessage::parse(&buf))
-                    .context("failed to parse NLMSG_DONE")?;
+                // Linux kernel allows zero sized of NLMSG_DONE
+                let msg = if bytes.is_empty() {
+                    DoneBuffer::new_checked(&[0u8; DONE_HEADER_LEN])
+                        .and_then(|buf| DoneMessage::parse(&buf))
+                        .context("failed to parse NLMSG_DONE")?
+                } else {
+                    DoneBuffer::new_checked(&bytes)
+                        .and_then(|buf| DoneMessage::parse(&buf))
+                        .context("failed to parse NLMSG_DONE")?
+                };
                 Done(msg)
             }
             NLMSG_OVERRUN => Overrun(bytes.to_vec()),
-            message_type => {
-                let inner_msg = I::deserialize(&header, bytes).context(
-                    format!("Failed to parse message with type {message_type}"),
-                )?;
-                InnerMessage(inner_msg)
-            }
+            message_type => match I::deserialize(&header, bytes) {
+                Err(e) => {
+                    return Err(format!(
+                        "Failed to parse message with type {message_type}: {e}"
+                    )
+                    .into())
+                }
+                Ok(inner_msg) => InnerMessage(inner_msg),
+            },
         };
         Ok(NetlinkMessage { header, payload })
     }
@@ -238,8 +247,7 @@ mod tests {
     #[test]
     fn test_error() {
         // SAFETY: value is non-zero.
-        const ERROR_CODE: NonZeroI32 =
-            unsafe { NonZeroI32::new_unchecked(-8765) };
+        const ERROR_CODE: NonZeroI32 = NonZeroI32::new(-8765).unwrap();
 
         let header = NetlinkHeader::default();
         let error_msg = ErrorMessage {

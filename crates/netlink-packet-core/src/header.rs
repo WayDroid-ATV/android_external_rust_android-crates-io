@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-use netlink_packet_utils::DecodeError;
-
-use crate::{buffer::NETLINK_HEADER_LEN, Emitable, NetlinkBuffer, Parseable};
+use crate::{
+    buffer::NETLINK_HEADER_LEN, DecodeError, Emitable, NetlinkBuffer, Parseable,
+};
 
 /// A Netlink header representation. A netlink header has the following
 /// structure:
@@ -54,10 +54,8 @@ impl Emitable for NetlinkHeader {
     }
 }
 
-impl<'a, T: AsRef<[u8]> + ?Sized> Parseable<NetlinkBuffer<&'a T>>
-    for NetlinkHeader
-{
-    fn parse(buf: &NetlinkBuffer<&'a T>) -> Result<NetlinkHeader, DecodeError> {
+impl<T: AsRef<[u8]> + ?Sized> Parseable<NetlinkBuffer<&T>> for NetlinkHeader {
+    fn parse(buf: &NetlinkBuffer<&T>) -> Result<NetlinkHeader, DecodeError> {
         Ok(NetlinkHeader {
             length: buf.length(),
             message_type: buf.message_type(),
@@ -111,7 +109,7 @@ mod tests {
             port_number: 0,
         };
         assert_eq!(repr.buffer_len(), 16);
-        let mut buf = vec![0; 16];
+        let mut buf = [0; 16];
         repr.emit(&mut buf[..]);
         assert_eq!(&buf[..], &IP_LINK_SHOW_PKT[..16]);
     }

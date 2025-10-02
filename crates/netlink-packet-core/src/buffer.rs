@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-use byteorder::{ByteOrder, NativeEndian};
-use netlink_packet_utils::DecodeError;
-
-use crate::{Field, Rest};
+use crate::{
+    emit_u16, emit_u32, parse_u16, parse_u32, DecodeError, ErrorContext, Field,
+    Rest,
+};
 
 const LENGTH: Field = 0..4;
 const MESSAGE_TYPE: Field = 4..6;
@@ -158,7 +158,7 @@ impl<T: AsRef<[u8]>> NetlinkBuffer<T> {
     /// ```
     pub fn new_checked(buffer: T) -> Result<NetlinkBuffer<T>, DecodeError> {
         let packet = Self::new(buffer);
-        packet.check_buffer_length()?;
+        packet.check_buffer_length().context("invalid netlink buffer length")?;
         Ok(packet)
     }
 
@@ -214,7 +214,7 @@ impl<T: AsRef<[u8]>> NetlinkBuffer<T> {
     /// This panic is the underlying storage is too small (see [`new_checked()`](struct.NetlinkBuffer.html#method.new_checked))
     pub fn length(&self) -> u32 {
         let data = self.buffer.as_ref();
-        NativeEndian::read_u32(&data[LENGTH])
+        parse_u32(&data[LENGTH]).unwrap()
     }
 
     /// Return the `type` field
@@ -224,7 +224,7 @@ impl<T: AsRef<[u8]>> NetlinkBuffer<T> {
     /// This panic is the underlying storage is too small (see [`new_checked()`](struct.NetlinkBuffer.html#method.new_checked))
     pub fn message_type(&self) -> u16 {
         let data = self.buffer.as_ref();
-        NativeEndian::read_u16(&data[MESSAGE_TYPE])
+        parse_u16(&data[MESSAGE_TYPE]).unwrap()
     }
 
     /// Return the `flags` field
@@ -234,7 +234,7 @@ impl<T: AsRef<[u8]>> NetlinkBuffer<T> {
     /// This panic is the underlying storage is too small (see [`new_checked()`](struct.NetlinkBuffer.html#method.new_checked))
     pub fn flags(&self) -> u16 {
         let data = self.buffer.as_ref();
-        NativeEndian::read_u16(&data[FLAGS])
+        parse_u16(&data[FLAGS]).unwrap()
     }
 
     /// Return the `sequence_number` field
@@ -244,7 +244,7 @@ impl<T: AsRef<[u8]>> NetlinkBuffer<T> {
     /// This panic is the underlying storage is too small (see [`new_checked()`](struct.NetlinkBuffer.html#method.new_checked))
     pub fn sequence_number(&self) -> u32 {
         let data = self.buffer.as_ref();
-        NativeEndian::read_u32(&data[SEQUENCE_NUMBER])
+        parse_u32(&data[SEQUENCE_NUMBER]).unwrap()
     }
 
     /// Return the `port_number` field
@@ -254,7 +254,7 @@ impl<T: AsRef<[u8]>> NetlinkBuffer<T> {
     /// This panic is the underlying storage is too small (see [`new_checked()`](struct.NetlinkBuffer.html#method.new_checked))
     pub fn port_number(&self) -> u32 {
         let data = self.buffer.as_ref();
-        NativeEndian::read_u32(&data[PORT_NUMBER])
+        parse_u32(&data[PORT_NUMBER]).unwrap()
     }
 }
 
@@ -267,7 +267,7 @@ impl<T: AsRef<[u8]> + AsMut<[u8]>> NetlinkBuffer<T> {
     /// [`new_checked()`](struct.NetlinkBuffer.html#method.new_checked))
     pub fn set_length(&mut self, value: u32) {
         let data = self.buffer.as_mut();
-        NativeEndian::write_u32(&mut data[LENGTH], value)
+        emit_u32(&mut data[LENGTH], value).unwrap()
     }
 
     /// Set the packet header `message_type` field
@@ -278,7 +278,7 @@ impl<T: AsRef<[u8]> + AsMut<[u8]>> NetlinkBuffer<T> {
     /// [`new_checked()`](struct.NetlinkBuffer.html#method.new_checked))
     pub fn set_message_type(&mut self, value: u16) {
         let data = self.buffer.as_mut();
-        NativeEndian::write_u16(&mut data[MESSAGE_TYPE], value)
+        emit_u16(&mut data[MESSAGE_TYPE], value).unwrap()
     }
 
     /// Set the packet header `flags` field
@@ -289,7 +289,7 @@ impl<T: AsRef<[u8]> + AsMut<[u8]>> NetlinkBuffer<T> {
     /// [`new_checked()`](struct.NetlinkBuffer.html#method.new_checked))
     pub fn set_flags(&mut self, value: u16) {
         let data = self.buffer.as_mut();
-        NativeEndian::write_u16(&mut data[FLAGS], value)
+        emit_u16(&mut data[FLAGS], value).unwrap()
     }
 
     /// Set the packet header `sequence_number` field
@@ -300,7 +300,7 @@ impl<T: AsRef<[u8]> + AsMut<[u8]>> NetlinkBuffer<T> {
     /// [`new_checked()`](struct.NetlinkBuffer.html#method.new_checked))
     pub fn set_sequence_number(&mut self, value: u32) {
         let data = self.buffer.as_mut();
-        NativeEndian::write_u32(&mut data[SEQUENCE_NUMBER], value)
+        emit_u32(&mut data[SEQUENCE_NUMBER], value).unwrap()
     }
 
     /// Set the packet header `port_number` field
@@ -311,7 +311,7 @@ impl<T: AsRef<[u8]> + AsMut<[u8]>> NetlinkBuffer<T> {
     /// [`new_checked()`](struct.NetlinkBuffer.html#method.new_checked))
     pub fn set_port_number(&mut self, value: u32) {
         let data = self.buffer.as_mut();
-        NativeEndian::write_u32(&mut data[PORT_NUMBER], value)
+        emit_u32(&mut data[PORT_NUMBER], value).unwrap()
     }
 }
 
@@ -331,7 +331,7 @@ impl<'a, T: AsRef<[u8]> + ?Sized> NetlinkBuffer<&'a T> {
     }
 }
 
-impl<'a, T: AsRef<[u8]> + AsMut<[u8]> + ?Sized> NetlinkBuffer<&'a mut T> {
+impl<T: AsRef<[u8]> + AsMut<[u8]> + ?Sized> NetlinkBuffer<&mut T> {
     /// Return a mutable pointer to the payload.
     ///
     /// # Panic

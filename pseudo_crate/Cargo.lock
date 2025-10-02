@@ -387,7 +387,7 @@ dependencies = [
  "mockall_double",
  "moveit",
  "named-lock",
- "netlink-packet-core 0.7.0",
+ "netlink-packet-core 0.8.1",
  "netlink-packet-route",
  "netlink-packet-utils",
  "netlink-proto 0.12.0",
