@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{Error, Write};
 
 use clap::{Arg, ArgAction, Command, ValueHint};
 
@@ -15,14 +15,18 @@ impl Generator for Zsh {
     }
 
     fn generate(&self, cmd: &Command, buf: &mut dyn Write) {
+        self.try_generate(cmd, buf)
+            .expect("failed to write completion file");
+    }
+
+    fn try_generate(&self, cmd: &Command, buf: &mut dyn Write) -> Result<(), Error> {
         let bin_name = cmd
             .get_bin_name()
             .expect("crate::generate should have set the bin_name");
 
-        w!(
+        write!(
             buf,
-            format!(
-                "#compdef {name}
+            "#compdef {name}
 
 autoload -U is-at-least
 
@@ -49,13 +53,11 @@ else
     compdef _{name} {name}
 fi
 ",
-                name = bin_name,
-                initial_args = get_args_of(cmd, None),
-                subcommands = get_subcommands_of(cmd),
-                subcommand_details = subcommand_details(cmd)
-            )
-            .as_bytes()
-        );
+            name = bin_name,
+            initial_args = get_args_of(cmd, None),
+            subcommands = get_subcommands_of(cmd),
+            subcommand_details = subcommand_details(cmd)
+        )
     }
 }
 
@@ -110,12 +112,15 @@ _{bin_name_underscore}_commands() {{
     ret.push(parent_text);
 
     // Next we start looping through all the children, grandchildren, etc.
-    let mut all_subcommands = utils::all_subcommands(p);
+    let mut all_subcommand_bins: Vec<_> = utils::all_subcommands(p)
+        .into_iter()
+        .map(|(_sc_name, bin_name)| bin_name)
+        .collect();
 
-    all_subcommands.sort();
-    all_subcommands.dedup();
+    all_subcommand_bins.sort();
+    all_subcommand_bins.dedup();
 
-    for (_, ref bin_name) in &all_subcommands {
+    for bin_name in &all_subcommand_bins {
         debug!("subcommand_details:iter: bin_name={bin_name}");
 
         ret.push(format!(
@@ -319,7 +324,7 @@ fn parser_of<'cmd>(parent: &'cmd Command, bin_name: &str) -> Option<&'cmd Comman
 fn get_args_of(parent: &Command, p_global: Option<&Command>) -> String {
     debug!("get_args_of");
 
-    let mut segments = vec![String::from("_arguments \"${_arguments_options[@]}\" \\")];
+    let mut segments = vec![String::from("_arguments \"${_arguments_options[@]}\" : \\")];
     let opts = write_opts_of(parent, p_global);
     let flags = write_flags_of(parent, p_global);
     let positionals = write_positionals_of(parent);
@@ -348,7 +353,11 @@ fn get_args_of(parent: &Command, p_global: Option<&Command>) -> String {
 
         let subcommand_text = format!("\"*::: :->{name}\" \\", name = parent.get_name());
         segments.push(subcommand_text);
-    };
+    } else if parent.is_allow_external_subcommands_set() {
+        // If the command has an external subcommand value parser, we need to
+        // add a catch-all for the subcommand. Otherwise there would be no autocompletion whatsoever.
+        segments.push(String::from("\"*::external_command:_default\" \\"));
+    }
 
     segments.push(String::from("&& ret=0"));
     segments.join("\n")
@@ -395,10 +404,8 @@ fn value_completion(arg: &Arg) -> Option<String> {
         // NB! If you change this, please also update the table in `ValueHint` documentation.
         Some(
             match arg.get_value_hint() {
-                ValueHint::Unknown => {
-                    return None;
-                }
-                ValueHint::Other => "( )",
+                ValueHint::Unknown => "_default",
+                ValueHint::Other => "",
                 ValueHint::AnyPath => "_files",
                 ValueHint::FilePath => "_files",
                 ValueHint::DirPath => "_files -/",
@@ -670,7 +677,7 @@ fn write_positionals_of(p: &Command) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::shells::zsh::{escape_help, escape_value};
+    use super::{escape_help, escape_value};
 
     #[test]
     fn test_escape_value() {

@@ -18,7 +18,11 @@ pub fn all_subcommands(cmd: &Command) -> Vec<(String, String)> {
 
 /// Finds the subcommand [`clap::Command`] from the given [`clap::Command`] with the given path.
 ///
+/// <div class="warning">
+///
 /// **NOTE:** `path` should not contain the root `bin_name`.
+///
+/// </div>
 pub fn find_subcommand_with_path<'cmd>(p: &'cmd Command, path: Vec<&str>) -> &'cmd Command {
     let mut cmd = p;
 
@@ -47,8 +51,15 @@ pub fn subcommands(p: &Command) -> Vec<(String, String)> {
             sc.get_name(),
             sc_bin_name
         );
-
         subcmds.push((sc.get_name().to_string(), sc_bin_name.to_string()));
+
+        for alias in sc.get_visible_aliases() {
+            debug!(
+                "subcommands:iter: alias={}, bin_name={}",
+                alias, sc_bin_name
+            );
+            subcmds.push((alias.to_string(), sc_bin_name.to_string()));
+        }
     }
 
     subcmds

@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{Error, Write};
 
 use clap::builder::StyledStr;
 use clap::Command;
@@ -16,13 +16,19 @@ impl Generator for Elvish {
     }
 
     fn generate(&self, cmd: &Command, buf: &mut dyn Write) {
+        self.try_generate(cmd, buf)
+            .expect("failed to write completion file");
+    }
+
+    fn try_generate(&self, cmd: &Command, buf: &mut dyn Write) -> Result<(), Error> {
         let bin_name = cmd
             .get_bin_name()
             .expect("crate::generate should have set the bin_name");
 
         let subcommands_cases = generate_inner(cmd, "");
 
-        let result = format!(
+        write!(
+            buf,
             r#"
 use builtin;
 use str;
@@ -46,9 +52,7 @@ set edit:completion:arg-completer[{bin_name}] = {{|@words|
     $completions[$command]
 }}
 "#,
-        );
-
-        w!(buf, result.as_bytes());
+        )
     }
 }
 
@@ -67,10 +71,13 @@ fn escape_help<T: ToString>(help: Option<&StyledStr>, data: T) -> String {
 fn generate_inner(p: &Command, previous_command_name: &str) -> String {
     debug!("generate_inner");
 
-    let command_name = if previous_command_name.is_empty() {
-        p.get_bin_name().expect(INTERNAL_ERROR_MSG).to_string()
+    let command_names = if previous_command_name.is_empty() {
+        vec![p.get_bin_name().expect(INTERNAL_ERROR_MSG).to_string()]
     } else {
-        format!("{};{}", previous_command_name, &p.get_name())
+        p.get_name_and_visible_aliases()
+            .into_iter()
+            .map(|name| format!("{previous_command_name};{name}"))
+            .collect()
     };
 
     let mut completions = String::new();
@@ -113,23 +120,29 @@ fn generate_inner(p: &Command, previous_command_name: &str) -> String {
     }
 
     for subcommand in p.get_subcommands() {
-        let data = &subcommand.get_name();
-        let tooltip = escape_help(subcommand.get_about(), data);
+        for name in subcommand.get_name_and_visible_aliases() {
+            let tooltip = escape_help(subcommand.get_about(), name);
 
-        completions.push_str(&preamble);
-        completions.push_str(format!("{data} '{tooltip}'").as_str());
+            completions.push_str(&preamble);
+            completions.push_str(format!("{name} '{tooltip}'").as_str());
+        }
     }
 
-    let mut subcommands_cases = format!(
-        r"
+    let mut subcommands_cases = String::new();
+    for command_name in &command_names {
+        subcommands_cases.push_str(&format!(
+            r"
         &'{}'= {{{}
         }}",
-        &command_name, completions
-    );
+            &command_name, completions
+        ));
+    }
 
     for subcommand in p.get_subcommands() {
-        let subcommand_subcommands_cases = generate_inner(subcommand, &command_name);
-        subcommands_cases.push_str(&subcommand_subcommands_cases);
+        for command_name in &command_names {
+            let subcommand_subcommands_cases = generate_inner(subcommand, command_name);
+            subcommands_cases.push_str(&subcommand_subcommands_cases);
+        }
     }
 
     subcommands_cases
