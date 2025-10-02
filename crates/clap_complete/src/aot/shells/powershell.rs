@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{Error, Write};
 
 use clap::builder::StyledStr;
 use clap::{Arg, Command};
@@ -16,13 +16,19 @@ impl Generator for PowerShell {
     }
 
     fn generate(&self, cmd: &Command, buf: &mut dyn Write) {
+        self.try_generate(cmd, buf)
+            .expect("failed to write completion file");
+    }
+
+    fn try_generate(&self, cmd: &Command, buf: &mut dyn Write) -> Result<(), Error> {
         let bin_name = cmd
             .get_bin_name()
             .expect("crate::generate should have set the bin_name");
 
         let subcommands_cases = generate_inner(cmd, "");
 
-        let result = format!(
+        write!(
+            buf,
             r#"
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
@@ -51,31 +57,35 @@ Register-ArgumentCompleter -Native -CommandName '{bin_name}' -ScriptBlock {{
         Sort-Object -Property ListItemText
 }}
 "#
-        );
-
-        w!(buf, result.as_bytes());
+        )
     }
 }
 
 // Escape string inside single quotes
 fn escape_string(string: &str) -> String {
-    string.replace('\'', "''")
+    string.replace('\'', "''").replace('’', "'’")
 }
 
 fn escape_help<T: ToString>(help: Option<&StyledStr>, data: T) -> String {
-    match help {
-        Some(help) => escape_string(&help.to_string().replace('\n', " ")),
-        _ => data.to_string(),
+    if let Some(help) = help {
+        let help_str = help.to_string();
+        if !help_str.is_empty() {
+            return escape_string(&help_str.replace('\n', " "));
+        }
     }
+    data.to_string()
 }
 
 fn generate_inner(p: &Command, previous_command_name: &str) -> String {
     debug!("generate_inner");
 
-    let command_name = if previous_command_name.is_empty() {
-        p.get_bin_name().expect(INTERNAL_ERROR_MSG).to_string()
+    let command_names = if previous_command_name.is_empty() {
+        vec![p.get_bin_name().expect(INTERNAL_ERROR_MSG).to_string()]
     } else {
-        format!("{};{}", previous_command_name, &p.get_name())
+        p.get_name_and_visible_aliases()
+            .into_iter()
+            .map(|name| format!("{previous_command_name};{name}"))
+            .collect()
     };
 
     let mut completions = String::new();
@@ -90,27 +100,30 @@ fn generate_inner(p: &Command, previous_command_name: &str) -> String {
     }
 
     for subcommand in p.get_subcommands() {
-        let data = &subcommand.get_name();
-        let tooltip = escape_help(subcommand.get_about(), data);
-
-        completions.push_str(&preamble);
-        completions.push_str(
-            format!("'{data}', '{data}', [CompletionResultType]::ParameterValue, '{tooltip}')")
-                .as_str(),
-        );
+        for name in subcommand.get_name_and_visible_aliases() {
+            let tooltip = escape_help(subcommand.get_about(), name);
+            completions.push_str(&preamble);
+            completions.push_str(&format!(
+                "'{name}', '{name}', [CompletionResultType]::ParameterValue, '{tooltip}')"
+            ));
+        }
     }
 
-    let mut subcommands_cases = format!(
-        r"
-        '{}' {{{}
+    let mut subcommands_cases = String::new();
+    for command_name in &command_names {
+        subcommands_cases.push_str(&format!(
+            r"
+        '{command_name}' {{{completions}
             break
-        }}",
-        &command_name, completions
-    );
+        }}"
+        ));
+    }
 
     for subcommand in p.get_subcommands() {
-        let subcommand_subcommands_cases = generate_inner(subcommand, &command_name);
-        subcommands_cases.push_str(&subcommand_subcommands_cases);
+        for command_name in &command_names {
+            let subcommand_subcommands_cases = generate_inner(subcommand, command_name);
+            subcommands_cases.push_str(&subcommand_subcommands_cases);
+        }
     }
 
     subcommands_cases
@@ -124,7 +137,7 @@ fn generate_aliases(completions: &mut String, preamble: &String, arg: &Arg) {
         for alias in aliases {
             let _ = write!(
                 completions,
-                "{preamble}'-{alias}', '{alias}{}', [CompletionResultType]::ParameterName, '{tooltip}')",
+                "{preamble}'-{alias}', '-{alias}{}', [CompletionResultType]::ParameterName, '{tooltip}')",
                 // make PowerShell realize there is a difference between `-s` and `-S`
                 if alias.is_uppercase() { " " } else { "" },
             );
@@ -135,7 +148,7 @@ fn generate_aliases(completions: &mut String, preamble: &String, arg: &Arg) {
         for alias in aliases {
             let _ = write!(
                 completions,
-                "{preamble}'--{alias}', '{alias}', [CompletionResultType]::ParameterName, '{tooltip}')"
+                "{preamble}'--{alias}', '--{alias}', [CompletionResultType]::ParameterName, '{tooltip}')"
             );
         }
     }
