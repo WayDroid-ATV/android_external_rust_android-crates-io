@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.64"
 name = "petgraph"
-version = "0.8.2"
+version = "0.8.3"
 authors = [
     "bluss",
     "mitchmindtree",
@@ -37,9 +37,6 @@ categories = ["data-structures"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/petgraph/petgraph"
 
-[package.metadata.cargo-semver-checks.lints]
-trait_newly_sealed = "allow"
-
 [package.metadata.docs.rs]
 features = [
     "rayon",
@@ -49,6 +46,9 @@ features = [
 
 [package.metadata.release]
 no-dev-version = true
+
+[package.metadata.cargo-semver-checks.lints]
+trait_newly_sealed = "allow"
 
 [features]
 all = [
@@ -74,6 +74,12 @@ dot_parser = [
 generate = []
 graphmap = []
 matrix_graph = []
+quickcheck = [
+    "std",
+    "dep:quickcheck",
+    "graphmap",
+    "stable_graph",
+]
 rayon = [
     "std",
     "dep:rayon",
@@ -104,6 +110,10 @@ path = "tests/articulation_points.rs"
 [[test]]
 name = "coloring"
 path = "tests/coloring.rs"
+
+[[test]]
+name = "dinics"
+path = "tests/dinics.rs"
 
 [[test]]
 name = "floyd_warshall"
@@ -190,6 +200,10 @@ name = "articulation_points"
 path = "benches/articulation_points.rs"
 
 [[bench]]
+name = "astar"
+path = "benches/astar.rs"
+
+[[bench]]
 name = "bellman_ford"
 path = "benches/bellman_ford.rs"
 
@@ -204,6 +218,10 @@ path = "benches/coloring.rs"
 [[bench]]
 name = "dijkstra"
 path = "benches/dijkstra.rs"
+
+[[bench]]
+name = "dinics"
+path = "benches/dinics.rs"
 
 [[bench]]
 name = "feedback_arc_set"
@@ -270,6 +288,10 @@ name = "serialize"
 path = "benches/serialize.rs"
 
 [[bench]]
+name = "simple_paths"
+path = "benches/simple_paths.rs"
+
+[[bench]]
 name = "spfa"
 path = "benches/spfa.rs"
 
@@ -295,6 +317,11 @@ default-features = false
 
 [dependencies.hashbrown]
 version = "^0.15.0"
+features = [
+    "default-hasher",
+    "inline-more",
+]
+default-features = false
 
 [dependencies.indexmap]
 version = "2.5.0"

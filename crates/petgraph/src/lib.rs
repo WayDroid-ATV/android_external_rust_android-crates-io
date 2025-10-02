@@ -4,7 +4,7 @@
 Graphs are collections of nodes, and edges between nodes. `petgraph`
 provides several [graph types](index.html#graph-types) (each differing in the
 tradeoffs taken in their internal representation),
-[algorithms](./algo/index.html#functions) on those graphs, and functionality to
+[algorithms](./algo/index.html) on those graphs, and functionality to
 [output graphs](./dot/struct.Dot.html) in
 [`Graphviz`](https://www.graphviz.org/) format. Both nodes and edges
 can have arbitrary associated data, and edges may be either directed or undirected.
@@ -235,7 +235,7 @@ usage and lack of some features that other graph types provide. For all the grap
 internal structure and feature set, please refer to [Graph Types](#graph-types).
 
 ```
-#[cfg(feature = "StableGraph")]
+#[cfg(feature = "stable_graph")]
 {
 use petgraph::graph::UnGraph;
 use petgraph::stable_graph::StableUnGraph;
@@ -281,7 +281,7 @@ that can be applied to them. For example, given a graph, one can compute shortes
 minimum spanning trees, or even compute the maximal cliques of a graph.
 
 Generally, algorithms are found in the [`algo`] module, except for algorithms like
-depth-/breadth-first-search, which can be found in the [visit] module. All of them should include
+depth-/breadth-first-search, which can be found in the [`visit`] module. All of them should include
 an example of how to use them. For example, to compute the minimum spanning tree of a graph, one can use the
 [`min_spanning_tree`](algo/min_spanning_tree/fn.min_spanning_tree.html) function.
 
@@ -436,27 +436,32 @@ println!("Enhanced DOT format:\n{:?}", fancy_dot);
 
 # Crate features
 
+`petgraph` is built with these features enabled by default:
+
+* **graphmap** -
+  Enables [`GraphMap`](./graphmap/struct.GraphMap.html).
+* **stable_graph** -
+  Enables [`StableGraph`](./stable_graph/struct.StableGraph.html).
+* **matrix_graph** -
+  Enables [`MatrixGraph`](./matrix_graph/struct.MatrixGraph.html).
+* **std** -
+  Enables the Rust Standard Library. Disabling the `std` feature makes it possible to use `petgraph` in `no_std` contexts.
+
+Optionally, the following features can be enabled:
+
 * **serde-1** -
-  Defaults off. Enables serialization for ``Graph, StableGraph, GraphMap`` using
+  Enables serialization for ``Graph, StableGraph, GraphMap`` using
   [`serde 1.0`](https://crates.io/crates/serde). May require a more recent version
   of Rust than petgraph alone.
-* **graphmap** -
-  Defaults on. Enables [`GraphMap`](./graphmap/struct.GraphMap.html).
-* **stable_graph** -
-  Defaults on. Enables [`StableGraph`](./stable_graph/struct.StableGraph.html).
-* **matrix_graph** -
-  Defaults on. Enables [`MatrixGraph`](./matrix_graph/struct.MatrixGraph.html).
 * **rayon** -
-  Defaults off. Enables parallel versions of iterators and algorithms using
+  Enables parallel versions of iterators and algorithms using
   [`rayon`](https://docs.rs/rayon/latest/rayon/) crate. Requires the `std` feature.
-* **std** -
-  Defaults on. Enables the Rust Standard Library. Disabling the `std` feature makes it possible to use `petgraph` in `no_std` contexts.
-* **generate** -
-  Defaults off. Enables graph generators.
-* **unstable** -
-  Defaults off. Enables unstable crate features (currently only `generate`).
 * **dot_parser** -
-  Defaults off. Enables building [`Graph`](./graph/struct.Graph.html) and [`StableGraph`](./stable_graph/struct.StableGraph.html) from [DOT/Graphviz](https://www.graphviz.org/doc/info/lang.html) descriptions. Imports can be made statically or dynamically (i.e. at compile time or at runtime).
+  Enables building [`Graph`](./graph/struct.Graph.html) and [`StableGraph`](./stable_graph/struct.StableGraph.html) from [DOT/Graphviz](https://www.graphviz.org/doc/info/lang.html) descriptions. Imports can be made statically or dynamically (i.e. at compile time or at runtime).
+* **unstable** -
+  Enables unstable crate features (currently only `generate`).
+* **generate** -
+  Enables graph generators. The API of functionality behind this flag is subject to change at any time.
 */
 #![doc(html_root_url = "https://docs.rs/petgraph/0.4/")]
 #![no_std]
@@ -515,7 +520,6 @@ mod quickcheck;
 mod serde_utils;
 mod traits_graph;
 pub mod unionfind;
-mod util;
 
 pub mod operator;
 pub mod prelude;
