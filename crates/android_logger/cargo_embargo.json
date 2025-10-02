@@ -5,12 +5,33 @@
     "android_logger": {
       "host_supported": false,
       "add_toplevel_block": "cargo_embargo_toplevel.bp.fragment",
-      "add_module_block": "cargo_embargo_targets.bp.fragment",
       "dep_blocklist": [
         "libandroid_log_sys",
         "libenv_filer"
       ]
     }
   },
-  "run_cargo": false
+  "run_cargo": false,
+  "variants": [
+    {
+      "package": {
+        "android_logger": {
+          "add_module_block": "cargo_embargo_targets.bp.fragment"
+        }
+      }
+    },
+    {
+      "module_name_overrides": {
+        "libandroid_logger": "libandroid_logger_max_level_info",
+        "libenv_filter": "libenv_filter_max_level_info",
+        "liblog": "liblog_rust_max_level_info"
+      },
+      "tests": false,
+      "package": {
+        "android_logger": {
+          "add_module_block": "cargo_embargo_targets_max_level_info.bp.fragment"
+        }
+      }
+    }
+  ]
 }

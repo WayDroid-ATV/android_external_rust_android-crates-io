@@ -191,6 +191,45 @@ rust_library {
 
 }
 
+rust_library {
+    name: "libandroid_logger_max_level_info",
+    crate_name: "android_logger",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.15.1",
+    crate_root: "src/lib.rs",
+    edition: "2021",
+    features: [
+        "default",
+        "regex",
+    ],
+    rustlibs: [
+        "libenv_filter_max_level_info",
+        "liblog_rust_max_level_info",
+    ],
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    product_available: true,
+    vendor_available: true,
+    min_sdk_version: "29",
+    target: {
+        host: {
+            rustlibs: [
+                "libenv_filter_max_level_info",
+                "liblog_rust_max_level_info",
+            ],
+        },
+        android: {
+            rustlibs: [
+                "libandroid_log_sys",
+                "liblog_rust_max_level_info",
+            ],
+        },
+    },
+
+}
+
 filegroup {
     name: "android_logger_srcs",
     srcs: [
