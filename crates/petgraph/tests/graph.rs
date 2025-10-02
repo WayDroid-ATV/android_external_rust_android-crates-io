@@ -18,8 +18,8 @@ use petgraph::graph::{GraphError, IndexType};
 
 use petgraph::algo::{astar, dijkstra, DfsSpace};
 use petgraph::visit::{
-    IntoEdges, IntoEdgesDirected, IntoNodeIdentifiers, NodeFiltered, Reversed, Topo, VisitMap,
-    Walker,
+    IntoEdges, IntoEdgesDirected, IntoNodeIdentifiers, NodeFiltered, NodeIndexable, Reversed, Topo,
+    VisitMap, Walker,
 };
 
 use petgraph::dot::Dot;
@@ -183,11 +183,11 @@ fn selfloop() {
     assert!(gr.find_edge(b, a).is_none());
     assert!(gr.find_edge_undirected(b, a).is_some());
     assert!(gr.find_edge(a, a).is_some());
-    println!("{:?}", gr);
+    println!("{gr:?}");
 
     gr.remove_edge(sed);
     assert!(gr.find_edge(a, a).is_none());
-    println!("{:?}", gr);
+    println!("{gr:?}");
 }
 
 #[test]
@@ -440,7 +440,7 @@ fn dijk() {
     g.add_edge(b, f, 15);
     g.add_edge(c, f, 11);
     g.add_edge(e, f, 6);
-    println!("{:?}", g);
+    println!("{g:?}");
     for no in Bfs::new(&g, a).iter(&g) {
         println!("Visit {:?} = {:?}", no, g.node_weight(no));
     }
@@ -501,7 +501,7 @@ fn test_astar_manhattan_heuristic() {
     let b = g.add_node((2., 0.));
     let c = g.add_node((1., 1.));
     let d = g.add_node((0., 2.));
-    let e = g.add_node((3., 3.));
+    let e = g.add_node((3., 2.));
     let f = g.add_node((4., 2.));
     let _ = g.add_node((5., 5.)); // no path to node
     g.add_edge(a, b, 2.);
@@ -512,15 +512,16 @@ fn test_astar_manhattan_heuristic() {
     g.add_edge(e, f, 1.);
     g.add_edge(d, e, 1.);
 
-    let heuristic_for = |f: NodeIndex| {
+    let heuristic_for = |goal: NodeIndex| {
         let g = &g;
         move |node: NodeIndex| -> f32 {
             let (x1, y1): (f32, f32) = g[node];
-            let (x2, y2): (f32, f32) = g[f];
+            let (x2, y2): (f32, f32) = g[goal];
 
             (x2 - x1).abs() + (y2 - y1).abs()
         }
     };
+
     let path = astar(
         &g,
         a,
@@ -529,20 +530,25 @@ fn test_astar_manhattan_heuristic() {
         heuristic_for(f),
     );
 
+    // Find expected optimal path with A*
     assert_eq!(path, Some((6., vec![a, d, e, f])));
 
-    // check against dijkstra
+    // Find all shortest paths with Dijkstra
     let dijkstra_run = dijkstra(&g, a, None, |e| *e.weight());
+    std::println!("Dijkstra: {dijkstra_run:?}");
 
-    for end in g.node_indices() {
-        let astar_path = astar(
-            &g,
-            a,
-            |finish| finish == end,
-            |e| *e.weight(),
-            heuristic_for(end),
+    // Search for all goals and compare against Dijkstra's cost.
+    for goal in g.node_indices() {
+        let heuristic = heuristic_for(goal);
+        let cost = *dijkstra_run.get(&goal).unwrap_or(&f32::INFINITY);
+        let h: f32 = heuristic(goal);
+        assert!(
+            h <= cost,
+            "Heuristic must be admissible. ({goal:?}) g={cost}, h={h}."
         );
-        assert_eq!(dijkstra_run.get(&end).cloned(), astar_path.map(|t| t.0));
+
+        let astar_path = astar(&g, a, |n| n == goal, |e| *e.weight(), heuristic);
+        assert_eq!(astar_path.map(|t| t.0), dijkstra_run.get(&goal).cloned());
     }
 }
 
@@ -614,7 +620,7 @@ fn test_generate_undirected() {
         let mut n = 0;
         while let Some(g) = gen.next_ref() {
             n += 1;
-            println!("{:?}", g);
+            println!("{g:?}");
         }
 
         assert_eq!(n, 1 << nedges);
@@ -672,8 +678,7 @@ fn test_generate_dag() {
         for gr in &graphs {
             assert!(
                 !petgraph::algo::is_cyclic_directed(gr),
-                "Assertion failed: {:?} acyclic",
-                gr
+                "Assertion failed: {gr:?} acyclic",
             );
         }
     }
@@ -712,12 +717,10 @@ fn assert_is_topo_order<N, E>(gr: &Graph<N, E, Directed>, order: &[NodeIndex]) {
         let b = edge.target();
         let ai = order.iter().position(|x| *x == a).unwrap();
         let bi = order.iter().position(|x| *x == b).unwrap();
-        println!("Check that {:?} is before {:?}", a, b);
+        println!("Check that {a:?} is before {b:?}");
         assert!(
             ai < bi,
-            "Topo order: assertion that node {:?} is before {:?} failed",
-            a,
-            b
+            "Topo order: assertion that node {a:?} is before {b:?} failed"
         );
     }
 }
@@ -755,7 +758,7 @@ fn test_toposort() {
     gr.add_edge(i, j, 1.);
 
     let order = petgraph::algo::toposort(&gr, None).unwrap();
-    println!("{:?}", order);
+    println!("{order:?}");
     assert_eq!(order.len(), gr.node_count());
 
     assert_is_topo_order(&gr, &order);
@@ -1018,8 +1021,7 @@ fn condensation() {
     assert!(cond.edge_count() == 2);
     assert!(
         !petgraph::algo::is_cyclic_directed(&cond),
-        "Assertion failed: {:?} acyclic",
-        cond
+        "Assertion failed: {cond:?} acyclic"
     );
 
     // make_acyclic = false
@@ -1170,7 +1172,7 @@ fn test_weight_iterators() {
         *ew = -*ew;
     }
     for (index, edge) in gr.raw_edges().iter().enumerate() {
-        assert_eq!(edge.weight, -1. * old[EdgeIndex::new(index)]);
+        assert_eq!(edge.weight, -old[EdgeIndex::new(index)]);
     }
 }
 
@@ -1263,7 +1265,7 @@ fn index_twice_mut() {
                 .fold(0., |a, b| a + b);
             assert_eq!(s, gr[ni]);
         }
-        println!("Sum {:?}: {:?}", dir, gr);
+        println!("Sum {dir:?}: {gr:?}");
     }
 }
 
@@ -1327,7 +1329,7 @@ fn test_edge_iterators_directed() {
     let mut reversed_gr = gr.clone();
     reversed_gr.reverse();
 
-    println!("{:#?}", gr);
+    println!("{gr:#?}");
     for i in gr.node_indices() {
         // Compare against reversed graphs two different ways: using .reverse() and Reversed.
         itertools::assert_equal(gr.edges_directed(i, Incoming), reversed_gr.edges(i));
@@ -1506,7 +1508,7 @@ fn toposort_generic() {
         assert_eq!(gr[nx].1, index);
         index += 1.;
     }
-    println!("{:?}", gr);
+    println!("{gr:?}");
     assert_is_topo_order(&gr, &order);
 
     {
@@ -1539,7 +1541,7 @@ fn toposort_generic() {
         while let Some(nx) = topo.next(&gr) {
             order.push(nx);
         }
-        println!("{:?}", gr);
+        println!("{gr:?}");
         assert_is_topo_order(&gr, &order);
     }
     let mut gr2 = gr.clone();
@@ -1597,7 +1599,49 @@ fn test_has_path() {
 }
 
 #[test]
-fn map_filter_map() {
+fn test_map() {
+    let mut g = Graph::new_undirected();
+    let a = g.add_node("A");
+    let b = g.add_node("B");
+    let c = g.add_node("C");
+    let ab = g.add_edge(a, b, 7);
+    let bc = g.add_edge(b, c, 14);
+    let ca = g.add_edge(c, a, 9);
+
+    let g2 = g.map(|_, name| format!("map-{name}"), |_, weight| weight * 2);
+    assert_eq!(g2.node_count(), 3);
+    assert_eq!(g2.node_weight(a).map(|s| &**s), Some("map-A"));
+    assert_eq!(g2.node_weight(b).map(|s| &**s), Some("map-B"));
+    assert_eq!(g2.node_weight(c).map(|s| &**s), Some("map-C"));
+    assert_eq!(g2.edge_count(), 3);
+    assert_eq!(g2.edge_weight(ab), Some(&14));
+    assert_eq!(g2.edge_weight(bc), Some(&28));
+    assert_eq!(g2.edge_weight(ca), Some(&18));
+}
+
+#[test]
+fn test_map_owned() {
+    let mut g = Graph::new_undirected();
+    let a = g.add_node("A");
+    let b = g.add_node("B");
+    let c = g.add_node("C");
+    let ab = g.add_edge(a, b, 7);
+    let bc = g.add_edge(b, c, 14);
+    let ca = g.add_edge(c, a, 9);
+
+    let g2 = g.map_owned(|_, name| format!("map-{name}"), |_, weight| weight * 2);
+    assert_eq!(g2.node_count(), 3);
+    assert_eq!(g2.node_weight(a).map(|s| &**s), Some("map-A"));
+    assert_eq!(g2.node_weight(b).map(|s| &**s), Some("map-B"));
+    assert_eq!(g2.node_weight(c).map(|s| &**s), Some("map-C"));
+    assert_eq!(g2.edge_count(), 3);
+    assert_eq!(g2.edge_weight(ab), Some(&14));
+    assert_eq!(g2.edge_weight(bc), Some(&28));
+    assert_eq!(g2.edge_weight(ca), Some(&18));
+}
+
+#[test]
+fn test_filter_map() {
     let mut g = Graph::new_undirected();
     let a = g.add_node("A");
     let b = g.add_node("B");
@@ -1614,7 +1658,7 @@ fn map_filter_map() {
     g.add_edge(b, f, 15);
     g.add_edge(c, f, 11);
     g.add_edge(e, f, 6);
-    println!("{:?}", g);
+    println!("{g:?}");
 
     let g2 = g.filter_map(
         |_, name| Some(*name),
@@ -1623,6 +1667,11 @@ fn map_filter_map() {
     assert_eq!(g2.edge_count(), 4);
     for edge in g2.raw_edges() {
         assert!(edge.weight >= 10);
+    }
+    assert_eq!(g2.node_count(), g.node_count());
+    // Check if node indices are compatible
+    for i in g.node_indices() {
+        assert_eq!(g2.node_weight(i), g.node_weight(i));
     }
 
     let g3 = g.filter_map(
@@ -1634,6 +1683,65 @@ fn map_filter_map() {
             assert!(target != a);
             assert!(source != e);
             assert!(target != e);
+            Some(weight)
+        },
+    );
+    assert_eq!(g3.node_count(), g.node_count() - 2);
+    assert_eq!(g3.edge_count(), g.edge_count() - 5);
+    assert_graph_consistent(&g3);
+
+    let mut g4 = g.clone();
+    g4.retain_edges(|gr, i| {
+        let (s, t) = gr.edge_endpoints(i).unwrap();
+        !(s == a || s == e || t == a || t == e)
+    });
+    assert_eq!(g4.edge_count(), g.edge_count() - 5);
+    assert_graph_consistent(&g4);
+}
+
+#[test]
+fn test_filter_map_owned() {
+    let mut g = Graph::new_undirected();
+    let a = g.add_node("A".to_owned());
+    let b = g.add_node("B".to_owned());
+    let c = g.add_node("C".to_owned());
+    let d = g.add_node("D".to_owned());
+    let e = g.add_node("E".to_owned());
+    let f = g.add_node("F".to_owned());
+    g.add_edge(a, b, 7);
+    g.add_edge(c, a, 9);
+    g.add_edge(a, d, 14);
+    g.add_edge(b, c, 10);
+    g.add_edge(d, c, 2);
+    g.add_edge(d, e, 9);
+    g.add_edge(b, f, 15);
+    g.add_edge(c, f, 11);
+    g.add_edge(e, f, 6);
+    println!("{g:?}");
+
+    let g2 = g.clone().filter_map_owned(
+        |_, name| Some(name),
+        |_, weight| if weight >= 10 { Some(weight) } else { None },
+    );
+    assert_eq!(g2.edge_count(), 4);
+    for edge in g2.raw_edges() {
+        assert!(edge.weight >= 10);
+    }
+    assert_eq!(g2.node_count(), g.node_count());
+    // Check if node indices are compatible
+    for i in g.node_indices() {
+        assert_eq!(g2.node_weight(i), g.node_weight(i));
+    }
+
+    let g3 = g.clone().filter_map_owned(
+        |i, name| if i == a || i == e { None } else { Some(name) },
+        |i, weight| {
+            let (source, target) = g.edge_endpoints(i).unwrap();
+            // don't map edges from a removed node
+            assert_ne!(source, a);
+            assert_ne!(target, a);
+            assert_ne!(source, e);
+            assert_ne!(target, e);
             Some(weight)
         },
     );
@@ -1912,14 +2020,14 @@ fn filtered() {
     g.add_edge(b, f, 15);
     g.add_edge(c, f, 11);
     g.add_edge(e, f, 6);
-    println!("{:?}", g);
+    println!("{g:?}");
 
     let filt = NodeFiltered(&g, |n: NodeIndex| n != c && n != e);
 
     let mut dfs = DfsPostOrder::new(&filt, a);
     let mut po = Vec::new();
     while let Some(nx) = dfs.next(&filt) {
-        println!("Next: {:?}", nx);
+        println!("Next: {nx:?}");
         po.push(nx);
     }
     assert_eq!(set(po), set(g.node_identifiers().filter(|n| (filt.1)(*n))));
@@ -2088,13 +2196,13 @@ fn dfs_visit() {
     let mut has_tree_edge = gr.visit_map();
     let mut edges = HashSet::new();
     depth_first_search(&gr, Some(n(0)), |evt| {
-        println!("Event: {:?}", evt);
+        println!("Event: {evt:?}");
         match evt {
             Discover(n, t) => discover_time[n.index()] = t,
             Finish(n, t) => finish_time[n.index()] = t,
             TreeEdge(u, v) => {
                 // v is an ancestor of u
-                assert!(has_tree_edge.visit(v), "Two tree edges to {:?}!", v);
+                assert!(has_tree_edge.visit(v), "Two tree edges to {v:?}!");
                 assert!(discover_time[v.index()] == invalid_time);
                 assert!(discover_time[u.index()] != invalid_time);
                 assert!(finish_time[u.index()] == invalid_time);
@@ -2118,8 +2226,8 @@ fn dfs_visit() {
         edges,
         set(gr.edge_references().map(|e| (e.source(), e.target())))
     );
-    println!("{:?}", discover_time);
-    println!("{:?}", finish_time);
+    println!("{discover_time:?}");
+    println!("{finish_time:?}");
 
     // find path from 0 to 4
     let mut predecessor = vec![NodeIndex::end(); gr.node_count()];
@@ -2247,7 +2355,7 @@ fn filter_elements() {
         },
     ];
     let mut g = DiGraph::<_, _>::from_elements(elements.iter().cloned());
-    println!("{:#?}", g);
+    println!("{g:#?}");
     assert!(g.contains_edge(n(1), n(5)));
     let g2 = DiGraph::<_, _>::from_elements(
         elements
@@ -2255,7 +2363,7 @@ fn filter_elements() {
             .cloned()
             .filter_elements(|elt| !matches!(elt, Node { ref weight } if **weight == "B")),
     );
-    println!("{:#?}", g2);
+    println!("{g2:#?}");
     g.remove_node(n(1));
     assert!(is_isomorphic_matching(
         &g,
@@ -2509,4 +2617,629 @@ fn test_try_add_edge() {
     }
 
     assert_eq!(graph.try_add_edge(a, a, ()), Err(GraphError::EdgeIxLimit));
+}
+
+/// Test that the order of neighbors returned by `neighbors` is correct.
+/// See `neighbors` docs for more details.
+#[test]
+fn test_neighbors_iteration_order() {
+    // The test graph looks like this:
+    //      5
+    //      |
+    //      v
+    // 0 -> 1 -> 3
+    // |    |
+    // v    v
+    // 2    4
+    let g = Graph::<(), (), Directed>::from_edges([(0, 1), (0, 2), (1, 4), (1, 3), (5, 1)]);
+
+    let neighbors_0_dir: Vec<_> = g.neighbors(NodeIndexable::from_index(&g, 0)).collect();
+    let neighbors_1_dir: Vec<_> = g.neighbors(NodeIndexable::from_index(&g, 1)).collect();
+
+    assert_eq!(
+        neighbors_0_dir,
+        vec![
+            NodeIndexable::from_index(&g, 2),
+            NodeIndexable::from_index(&g, 1)
+        ]
+    );
+    assert_eq!(
+        neighbors_1_dir,
+        vec![
+            NodeIndexable::from_index(&g, 3),
+            NodeIndexable::from_index(&g, 4)
+        ]
+    );
+
+    let g = Graph::<(), (), Undirected>::from_edges([(0, 1), (0, 2), (1, 4), (1, 3), (5, 1)]);
+
+    let neighbors_0_undir: Vec<_> = g.neighbors(NodeIndexable::from_index(&g, 0)).collect();
+    let neighbors_1_undir: Vec<_> = g.neighbors(NodeIndexable::from_index(&g, 1)).collect();
+
+    assert_eq!(
+        neighbors_0_undir,
+        vec![
+            NodeIndexable::from_index(&g, 2),
+            NodeIndexable::from_index(&g, 1)
+        ]
+    );
+    assert_eq!(
+        neighbors_1_undir,
+        vec![
+            NodeIndexable::from_index(&g, 3),
+            NodeIndexable::from_index(&g, 4),
+            NodeIndexable::from_index(&g, 5),
+            NodeIndexable::from_index(&g, 0)
+        ]
+    );
+}
+
+/// Test that the order of neighbors returned by `neighbors_directed` is correct.
+/// See `neighbors_directed` docs for more details.
+#[test]
+fn test_neighbors_directed_iteration_order() {
+    // The test graph looks like this:
+    //      5
+    //      |
+    //      v
+    // 0 -> 1 -> 3
+    // |    |
+    // v    v
+    // 2    4
+    let g = Graph::<(), (), Directed>::from_edges([(0, 1), (0, 2), (1, 4), (1, 3), (5, 1)]);
+
+    let neighbors_0_outgoing_dir: Vec<_> = g
+        .neighbors_directed(NodeIndexable::from_index(&g, 0), Outgoing)
+        .collect();
+    let neighbors_0_incoming_dir: Vec<_> = g
+        .neighbors_directed(NodeIndexable::from_index(&g, 0), Incoming)
+        .collect();
+    let neighbors_1_outgoing_dir: Vec<_> = g
+        .neighbors_directed(NodeIndexable::from_index(&g, 1), Outgoing)
+        .collect();
+    let neighbors_1_incoming_dir: Vec<_> = g
+        .neighbors_directed(NodeIndexable::from_index(&g, 1), Incoming)
+        .collect();
+
+    assert_eq!(
+        neighbors_0_outgoing_dir,
+        vec![
+            NodeIndexable::from_index(&g, 2),
+            NodeIndexable::from_index(&g, 1)
+        ]
+    );
+    assert_eq!(neighbors_0_incoming_dir, vec![]);
+    assert_eq!(
+        neighbors_1_outgoing_dir,
+        vec![
+            NodeIndexable::from_index(&g, 3),
+            NodeIndexable::from_index(&g, 4)
+        ]
+    );
+    assert_eq!(
+        neighbors_1_incoming_dir,
+        vec![
+            NodeIndexable::from_index(&g, 5),
+            NodeIndexable::from_index(&g, 0)
+        ]
+    );
+
+    let g = Graph::<(), (), Undirected>::from_edges([(0, 1), (0, 2), (1, 4), (1, 3), (5, 1)]);
+
+    let neighbors_0_outgoing_undir: Vec<_> = g
+        .neighbors_directed(NodeIndexable::from_index(&g, 0), Outgoing)
+        .collect();
+    let neighbors_0_incoming_undir: Vec<_> = g
+        .neighbors_directed(NodeIndexable::from_index(&g, 0), Incoming)
+        .collect();
+    let neighbors_1_outgoing_undir: Vec<_> = g
+        .neighbors_directed(NodeIndexable::from_index(&g, 1), Outgoing)
+        .collect();
+    let neighbors_1_incoming_undir: Vec<_> = g
+        .neighbors_directed(NodeIndexable::from_index(&g, 1), Incoming)
+        .collect();
+
+    assert_eq!(
+        neighbors_0_outgoing_undir,
+        vec![
+            NodeIndexable::from_index(&g, 2),
+            NodeIndexable::from_index(&g, 1)
+        ]
+    );
+    assert_eq!(
+        neighbors_0_incoming_undir,
+        vec![
+            NodeIndexable::from_index(&g, 2),
+            NodeIndexable::from_index(&g, 1)
+        ]
+    );
+    assert_eq!(
+        neighbors_1_outgoing_undir,
+        vec![
+            NodeIndexable::from_index(&g, 3),
+            NodeIndexable::from_index(&g, 4),
+            NodeIndexable::from_index(&g, 5),
+            NodeIndexable::from_index(&g, 0)
+        ]
+    );
+    assert_eq!(
+        neighbors_1_incoming_undir,
+        vec![
+            NodeIndexable::from_index(&g, 3),
+            NodeIndexable::from_index(&g, 4),
+            NodeIndexable::from_index(&g, 5),
+            NodeIndexable::from_index(&g, 0)
+        ]
+    );
+}
+
+/// Test that the order of neighbors returned by `neighbors_undirected` is correct.
+/// See `neighbors_undirected` docs for more details.
+#[test]
+fn test_neighbors_undirected_iteration_order() {
+    // The test graph looks like this:
+    //      5
+    //      |
+    //      v
+    // 0 -> 1 -> 3
+    // |    |
+    // v    v
+    // 2    4
+    let g = Graph::<(), (), Directed>::from_edges([(0, 1), (0, 2), (1, 4), (1, 3), (5, 1)]);
+
+    let neighbors_0_outgoing_dir: Vec<_> = g
+        .neighbors_undirected(NodeIndexable::from_index(&g, 0))
+        .collect();
+    let neighbors_0_incoming_dir: Vec<_> = g
+        .neighbors_undirected(NodeIndexable::from_index(&g, 0))
+        .collect();
+    let neighbors_1_outgoing_dir: Vec<_> = g
+        .neighbors_undirected(NodeIndexable::from_index(&g, 1))
+        .collect();
+    let neighbors_1_incoming_dir: Vec<_> = g
+        .neighbors_undirected(NodeIndexable::from_index(&g, 1))
+        .collect();
+
+    assert_eq!(
+        neighbors_0_outgoing_dir,
+        vec![
+            NodeIndexable::from_index(&g, 2),
+            NodeIndexable::from_index(&g, 1)
+        ]
+    );
+    assert_eq!(
+        neighbors_0_incoming_dir,
+        vec![
+            NodeIndexable::from_index(&g, 2),
+            NodeIndexable::from_index(&g, 1)
+        ]
+    );
+    assert_eq!(
+        neighbors_1_outgoing_dir,
+        vec![
+            NodeIndexable::from_index(&g, 3),
+            NodeIndexable::from_index(&g, 4),
+            NodeIndexable::from_index(&g, 5),
+            NodeIndexable::from_index(&g, 0)
+        ]
+    );
+    assert_eq!(
+        neighbors_1_incoming_dir,
+        vec![
+            NodeIndexable::from_index(&g, 3),
+            NodeIndexable::from_index(&g, 4),
+            NodeIndexable::from_index(&g, 5),
+            NodeIndexable::from_index(&g, 0)
+        ]
+    );
+
+    let g = Graph::<(), (), Undirected>::from_edges([(0, 1), (0, 2), (1, 4), (1, 3), (5, 1)]);
+
+    let neighbors_0_outgoing_undir: Vec<_> = g
+        .neighbors_undirected(NodeIndexable::from_index(&g, 0))
+        .collect();
+    let neighbors_0_incoming_undir: Vec<_> = g
+        .neighbors_undirected(NodeIndexable::from_index(&g, 0))
+        .collect();
+    let neighbors_1_outgoing_undir: Vec<_> = g
+        .neighbors_undirected(NodeIndexable::from_index(&g, 1))
+        .collect();
+    let neighbors_1_incoming_undir: Vec<_> = g
+        .neighbors_undirected(NodeIndexable::from_index(&g, 1))
+        .collect();
+
+    assert_eq!(
+        neighbors_0_outgoing_undir,
+        vec![
+            NodeIndexable::from_index(&g, 2),
+            NodeIndexable::from_index(&g, 1)
+        ]
+    );
+    assert_eq!(
+        neighbors_0_incoming_undir,
+        vec![
+            NodeIndexable::from_index(&g, 2),
+            NodeIndexable::from_index(&g, 1)
+        ]
+    );
+    assert_eq!(
+        neighbors_1_outgoing_undir,
+        vec![
+            NodeIndexable::from_index(&g, 3),
+            NodeIndexable::from_index(&g, 4),
+            NodeIndexable::from_index(&g, 5),
+            NodeIndexable::from_index(&g, 0)
+        ]
+    );
+    assert_eq!(
+        neighbors_1_incoming_undir,
+        vec![
+            NodeIndexable::from_index(&g, 3),
+            NodeIndexable::from_index(&g, 4),
+            NodeIndexable::from_index(&g, 5),
+            NodeIndexable::from_index(&g, 0)
+        ]
+    );
+}
+
+/// Test that the order of neighbors returned by `edges` is correct.
+/// See `edges` docs for more details.
+#[test]
+fn test_edges_iteration_order() {
+    // The test graph looks like this:
+    //      5
+    //      |
+    //      v
+    // 0 -> 1 -> 3
+    // |    |
+    // v    v
+    // 2    4
+    let g = Graph::<(), (), Directed>::from_edges([(0, 1), (0, 2), (1, 4), (1, 3), (5, 1)]);
+
+    let edges_0_dir: Vec<_> = g
+        .edges(NodeIndexable::from_index(&g, 0))
+        .map(|r| r.id())
+        .collect();
+    let edges_1_dir: Vec<_> = g
+        .edges(NodeIndexable::from_index(&g, 1))
+        .map(|r| r.id())
+        .collect();
+
+    assert_eq!(
+        edges_0_dir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 2)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 1)
+            )
+            .unwrap()
+        ]
+    );
+    assert_eq!(
+        edges_1_dir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 3)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 4)
+            )
+            .unwrap(),
+        ]
+    );
+
+    let g = Graph::<(), (), Undirected>::from_edges([(0, 1), (0, 2), (1, 4), (1, 3), (5, 1)]);
+
+    let edges_0_undir: Vec<_> = g
+        .edges(NodeIndexable::from_index(&g, 0))
+        .map(|r| r.id())
+        .collect();
+    let edges_1_undir: Vec<_> = g
+        .edges(NodeIndexable::from_index(&g, 1))
+        .map(|r| r.id())
+        .collect();
+
+    assert_eq!(
+        edges_0_undir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 2)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 1)
+            )
+            .unwrap(),
+        ]
+    );
+
+    assert_eq!(
+        edges_1_undir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 3)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 4)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 5)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 0)
+            )
+            .unwrap()
+        ]
+    );
+}
+
+/// Test that the order of neighbors returned by `edges_directed` is correct.
+/// See `edges_directed` docs for more details.
+#[test]
+fn test_edges_directed_iteration_order() {
+    // The test graph looks like this:
+    //      5
+    //      |
+    //      v
+    // 0 -> 1 -> 3
+    // |    |
+    // v    v
+    // 2    4
+    let g = Graph::<(), (), Directed>::from_edges([(0, 1), (0, 2), (1, 4), (1, 3), (5, 1)]);
+
+    let edges_directed_0_outgoing_dir: Vec<_> = g
+        .edges_directed(NodeIndexable::from_index(&g, 0), Outgoing)
+        .map(|r| r.id())
+        .collect();
+    let edges_directed_0_incoming_dir: Vec<_> = g
+        .edges_directed(NodeIndexable::from_index(&g, 0), Incoming)
+        .map(|r| r.id())
+        .collect();
+    let edges_directed_1_outgoing_dir: Vec<_> = g
+        .edges_directed(NodeIndexable::from_index(&g, 1), Outgoing)
+        .map(|r| r.id())
+        .collect();
+    let edges_directed_1_incoming_dir: Vec<_> = g
+        .edges_directed(NodeIndexable::from_index(&g, 1), Incoming)
+        .map(|r| r.id())
+        .collect();
+
+    assert_eq!(
+        edges_directed_0_outgoing_dir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 2)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 1)
+            )
+            .unwrap()
+        ]
+    );
+    assert_eq!(edges_directed_0_incoming_dir, vec![]);
+    assert_eq!(
+        edges_directed_1_outgoing_dir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 3)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 4)
+            )
+            .unwrap()
+        ]
+    );
+    assert_eq!(
+        edges_directed_1_incoming_dir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 5),
+                NodeIndexable::from_index(&g, 1)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 1)
+            )
+            .unwrap()
+        ]
+    );
+
+    let g = Graph::<(), (), Undirected>::from_edges([(0, 1), (0, 2), (1, 4), (1, 3), (5, 1)]);
+
+    let edges_directed_0_outgoing_undir: Vec<_> = g
+        .edges_directed(NodeIndexable::from_index(&g, 0), Outgoing)
+        .map(|r| r.id())
+        .collect();
+    let edges_directed_0_incoming_undir: Vec<_> = g
+        .edges_directed(NodeIndexable::from_index(&g, 0), Incoming)
+        .map(|r| r.id())
+        .collect();
+    let edges_directed_1_outgoing_undir: Vec<_> = g
+        .edges_directed(NodeIndexable::from_index(&g, 1), Outgoing)
+        .map(|r| r.id())
+        .collect();
+    let edges_directed_1_incoming_undir: Vec<_> = g
+        .edges_directed(NodeIndexable::from_index(&g, 1), Incoming)
+        .map(|r| r.id())
+        .collect();
+
+    assert_eq!(
+        edges_directed_0_outgoing_undir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 2)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 1)
+            )
+            .unwrap()
+        ]
+    );
+    assert_eq!(
+        edges_directed_0_incoming_undir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 2)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 0),
+                NodeIndexable::from_index(&g, 1)
+            )
+            .unwrap()
+        ]
+    );
+    assert_eq!(
+        edges_directed_1_outgoing_undir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 3)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 4)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 5)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 0)
+            )
+            .unwrap()
+        ]
+    );
+    assert_eq!(
+        edges_directed_1_incoming_undir,
+        vec![
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 3)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 4)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 5)
+            )
+            .unwrap(),
+            g.find_edge(
+                NodeIndexable::from_index(&g, 1),
+                NodeIndexable::from_index(&g, 0)
+            )
+            .unwrap()
+        ]
+    );
+}
+
+/// Test that the order of neighbors returned by `edges_connecting` is correct.
+/// See `edges_connecting` docs for more details.
+#[test]
+fn test_edges_connecting_iteration_order() {
+    let mut g = Graph::<(), u8, Directed>::new();
+
+    let node_zero = g.add_node(());
+    let node_one = g.add_node(());
+
+    // Edges from node_zero to node_one
+    let edge_zero = g.add_edge(node_zero, node_one, 1);
+    let edge_one = g.add_edge(node_zero, node_one, 2);
+    let edge_two = g.add_edge(node_zero, node_one, 3);
+
+    // Edges from node_one to node_zero
+    let edge_three = g.add_edge(node_one, node_zero, 4);
+    let edge_four = g.add_edge(node_one, node_zero, 5);
+    let edge_five = g.add_edge(node_one, node_zero, 6);
+
+    let edges_connecting_one_to_two: Vec<_> = g
+        .edges_connecting(node_zero, node_one)
+        .map(|r| r.id())
+        .collect();
+
+    assert_eq!(
+        edges_connecting_one_to_two,
+        vec![edge_two, edge_one, edge_zero]
+    );
+
+    let edges_connecting_two_to_one: Vec<_> = g
+        .edges_connecting(node_one, node_zero)
+        .map(|r| r.id())
+        .collect();
+
+    assert_eq!(
+        edges_connecting_two_to_one,
+        vec![edge_five, edge_four, edge_three]
+    );
+
+    let mut g = Graph::<(), u8, _>::new_undirected();
+
+    let node_zero = g.add_node(());
+    let node_one = g.add_node(());
+
+    // Edges from node_zero to node_one
+    let edge_zero = g.add_edge(node_zero, node_one, 1);
+    let edge_one = g.add_edge(node_zero, node_one, 2);
+    let edge_two = g.add_edge(node_zero, node_one, 3);
+
+    // Edges from node_one to node_zero
+    let edge_three = g.add_edge(node_one, node_zero, 4);
+    let edge_four = g.add_edge(node_one, node_zero, 5);
+    let edge_five = g.add_edge(node_one, node_zero, 6);
+
+    let edges_connecting_one_to_two: Vec<_> = g
+        .edges_connecting(node_zero, node_one)
+        .map(|r| r.id())
+        .collect();
+
+    assert_eq!(
+        edges_connecting_one_to_two,
+        vec![edge_two, edge_one, edge_zero, edge_five, edge_four, edge_three]
+    );
+
+    let edges_connecting_two_to_one: Vec<_> = g
+        .edges_connecting(node_one, node_zero)
+        .map(|r| r.id())
+        .collect();
+
+    assert_eq!(
+        edges_connecting_two_to_one,
+        vec![edge_five, edge_four, edge_three, edge_two, edge_one, edge_zero]
+    );
 }
