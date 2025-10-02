@@ -1,0 +1,14 @@
+target: {
+    host: {
+        rustlibs: [
+            "libenv_filter_max_level_info",
+            "liblog_rust_max_level_info",
+        ],
+    },
+    android: {
+        rustlibs: [
+            "libandroid_log_sys",
+            "liblog_rust_max_level_info",
+        ],
+    },
+}
