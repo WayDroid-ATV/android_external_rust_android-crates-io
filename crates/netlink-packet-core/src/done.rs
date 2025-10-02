@@ -2,14 +2,14 @@
 
 use std::mem::size_of;
 
-use byteorder::{ByteOrder, NativeEndian};
-use netlink_packet_utils::DecodeError;
-
-use crate::{Emitable, Field, Parseable, Rest};
+use crate::{
+    emit_i32, parse_i32, DecodeError, Emitable, ErrorContext, Field, Parseable,
+    Rest,
+};
 
 const CODE: Field = 0..4;
 const EXTENDED_ACK: Rest = 4..;
-const DONE_HEADER_LEN: usize = EXTENDED_ACK.start;
+pub(crate) const DONE_HEADER_LEN: usize = EXTENDED_ACK.start;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[non_exhaustive]
@@ -29,7 +29,9 @@ impl<T: AsRef<[u8]>> DoneBuffer<T> {
 
     pub fn new_checked(buffer: T) -> Result<Self, DecodeError> {
         let packet = Self::new(buffer);
-        packet.check_buffer_length()?;
+        packet
+            .check_buffer_length()
+            .context("invalid DoneBuffer length")?;
         Ok(packet)
     }
 
@@ -37,8 +39,8 @@ impl<T: AsRef<[u8]>> DoneBuffer<T> {
         let len = self.buffer.as_ref().len();
         if len < DONE_HEADER_LEN {
             Err(format!(
-                "invalid DoneBuffer: length is {len} but DoneBuffer are \
-                at least {DONE_HEADER_LEN} bytes"
+                "invalid DoneBuffer: length is {len} but DoneBuffer are at \
+                 least {DONE_HEADER_LEN} bytes"
             )
             .into())
         } else {
@@ -49,7 +51,7 @@ impl<T: AsRef<[u8]>> DoneBuffer<T> {
     /// Return the error code
     pub fn code(&self) -> i32 {
         let data = self.buffer.as_ref();
-        NativeEndian::read_i32(&data[CODE])
+        parse_i32(&data[CODE]).unwrap()
     }
 }
 
@@ -61,7 +63,7 @@ impl<'a, T: AsRef<[u8]> + ?Sized> DoneBuffer<&'a T> {
     }
 }
 
-impl<'a, T: AsRef<[u8]> + AsMut<[u8]> + ?Sized> DoneBuffer<&'a mut T> {
+impl<T: AsRef<[u8]> + AsMut<[u8]> + ?Sized> DoneBuffer<&mut T> {
     /// Return a mutable pointer to the extended ack attributes.
     pub fn extended_ack_mut(&mut self) -> &mut [u8] {
         let data = self.buffer.as_mut();
@@ -73,7 +75,7 @@ impl<T: AsRef<[u8]> + AsMut<[u8]>> DoneBuffer<T> {
     /// set the error code field
     pub fn set_code(&mut self, value: i32) {
         let data = self.buffer.as_mut();
-        NativeEndian::write_i32(&mut data[CODE], value)
+        emit_i32(&mut data[CODE], value).unwrap();
     }
 }
 
@@ -97,10 +99,8 @@ impl Emitable for DoneMessage {
     }
 }
 
-impl<'buffer, T: AsRef<[u8]> + 'buffer> Parseable<DoneBuffer<&'buffer T>>
-    for DoneMessage
-{
-    fn parse(buf: &DoneBuffer<&'buffer T>) -> Result<DoneMessage, DecodeError> {
+impl<T: AsRef<[u8]>> Parseable<DoneBuffer<&T>> for DoneMessage {
+    fn parse(buf: &DoneBuffer<&T>) -> Result<DoneMessage, DecodeError> {
         Ok(DoneMessage {
             code: buf.code(),
             extended_ack: buf.extended_ack().to_vec(),

@@ -1,17 +1,17 @@
 name: "netlink-packet-core"
 description: "netlink packet types"
 third_party {
-  version: "0.7.0"
+  version: "0.8.1"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 3
-    day: 13
+    month: 10
+    day: 2
   }
   homepage: "https://crates.io/crates/netlink-packet-core"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/netlink-packet-core/netlink-packet-core-0.7.0.crate"
-    version: "0.7.0"
+    value: "https://static.crates.io/crates/netlink-packet-core/netlink-packet-core-0.8.1.crate"
+    version: "0.8.1"
   }
 }
