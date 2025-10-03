@@ -1,0 +1,13 @@
+diff --git a/src/macros.rs b/src/macros.rs
+index d0a55fa2f..bf8f59a3a 100644
+--- a/src/macros.rs
++++ b/src/macros.rs
+@@ -78,7 +78,7 @@ macro_rules! prelude {
+             #[allow(unused_imports)]
+             pub(crate) use ::core::{fmt, hash, iter, mem};
+             #[allow(unused_imports)]
+-            pub(crate) use mem::{align_of, align_of_val, size_of, size_of_val};
++            pub(crate) use ::core::mem::{align_of, align_of_val, size_of, size_of_val};
+ 
+             // Commonly used types defined in this crate
+             #[allow(unused_imports)]
