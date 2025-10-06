@@ -10,9 +10,6 @@ MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_ADD_IMPLICIT_DEPS := false
 MODULE_RUST_EDITION := 2021
-MODULE_RUSTFLAGS += \
-	--cfg 'has_const_fn_trait_bound'
-
 MODULE_LIBRARY_DEPS := \
 	$(call FIND_CRATE,scopeguard) \
 	trusty/user/base/lib/libcompiler_builtins-rust \
