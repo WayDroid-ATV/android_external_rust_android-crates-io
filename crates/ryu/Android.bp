@@ -46,8 +46,8 @@ rust_test {
     edition: "2018",
     rustlibs: [
         "libnum_cpus",
-        "librand-0.8",
-        "librand_xorshift-0.3",
+        "librand",
+        "librand_xorshift",
         "libryu",
     ],
 }
@@ -67,8 +67,8 @@ rust_test {
     edition: "2018",
     rustlibs: [
         "libnum_cpus",
-        "librand-0.8",
-        "librand_xorshift-0.3",
+        "librand",
+        "librand_xorshift",
         "libryu",
     ],
 }
@@ -88,8 +88,8 @@ rust_test {
     edition: "2018",
     rustlibs: [
         "libnum_cpus",
-        "librand-0.8",
-        "librand_xorshift-0.3",
+        "librand",
+        "librand_xorshift",
         "libryu",
     ],
 }
@@ -109,8 +109,8 @@ rust_test {
     edition: "2018",
     rustlibs: [
         "libnum_cpus",
-        "librand-0.8",
-        "librand_xorshift-0.3",
+        "librand",
+        "librand_xorshift",
         "libryu",
     ],
 }
@@ -130,8 +130,8 @@ rust_test {
     edition: "2018",
     rustlibs: [
         "libnum_cpus",
-        "librand-0.8",
-        "librand_xorshift-0.3",
+        "librand",
+        "librand_xorshift",
         "libryu",
     ],
 }
@@ -151,8 +151,8 @@ rust_test {
     edition: "2018",
     rustlibs: [
         "libnum_cpus",
-        "librand-0.8",
-        "librand_xorshift-0.3",
+        "librand",
+        "librand_xorshift",
         "libryu",
     ],
 }
@@ -172,8 +172,8 @@ rust_test {
     edition: "2018",
     rustlibs: [
         "libnum_cpus",
-        "librand-0.8",
-        "librand_xorshift-0.3",
+        "librand",
+        "librand_xorshift",
         "libryu",
     ],
 }
@@ -193,8 +193,8 @@ rust_test {
     edition: "2018",
     rustlibs: [
         "libnum_cpus",
-        "librand-0.8",
-        "librand_xorshift-0.3",
+        "librand",
+        "librand_xorshift",
         "libryu",
     ],
 }
