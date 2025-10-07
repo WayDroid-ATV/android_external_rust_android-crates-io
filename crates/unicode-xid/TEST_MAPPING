@@ -1,16 +1,7 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/zeroize"
-    },
-    {
-      "path": "external/uwb/src"
-    },
-    {
-      "path": "system/keymint/derive"
-    },
-    {
-      "path": "system/keymint/hal"
+      "path": "external/rust/android-crates-io/crates/unicode-xid"
     }
   ],
   "presubmit": [

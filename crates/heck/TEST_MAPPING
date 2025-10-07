@@ -1,40 +1,22 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/argh"
+      "path": "external/rust/android-crates-io/crates/clap_derive"
     },
     {
-      "path": "external/rust/android-crates-io/crates/libsqlite3-sys"
+      "path": "external/rust/android-crates-io/crates/enum-as-inner"
     },
     {
-      "path": "packages/modules/Virtualization/apkdmverity"
+      "path": "external/rust/android-crates-io/crates/handlebars"
     },
     {
-      "path": "packages/modules/Virtualization/authfs"
+      "path": "external/rust/android-crates-io/crates/pdl-compiler"
     },
     {
-      "path": "packages/modules/Virtualization/avmd"
+      "path": "external/rust/android-crates-io/crates/strum_macros"
     },
     {
-      "path": "packages/modules/Virtualization/encryptedstore"
-    },
-    {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
-    },
-    {
-      "path": "packages/modules/Virtualization/vm"
-    },
-    {
-      "path": "packages/modules/Virtualization/zipfuse"
-    },
-    {
-      "path": "system/security/diced"
-    },
-    {
-      "path": "system/security/keystore2"
-    },
-    {
-      "path": "system/security/keystore2/legacykeystore"
+      "path": "system/zygote/zygote-proc-macros"
     }
   ],
   "postsubmit": [

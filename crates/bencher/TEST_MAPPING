@@ -1,6 +1,9 @@
 {
   "imports": [
     {
+      "path": "external/rust/android-crates-io/crates/arrayvec"
+    },
+    {
       "path": "external/rust/android-crates-io/crates/crc32fast"
     },
     {

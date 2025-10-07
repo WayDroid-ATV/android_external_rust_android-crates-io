@@ -4,7 +4,10 @@
       "path": "external/rust/android-crates-io/crates/serde-xml-rs"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
+      "path": "external/rust/android-crates-io/crates/xml-rs"
+    },
+    {
+      "path": "packages/modules/SdkExtensions/sdk-extensions-info-test"
     }
   ],
   "postsubmit": [

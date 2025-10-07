@@ -1,16 +1,10 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/libsqlite3-sys"
+      "path": "external/rust/android-crates-io/crates/minimal-lexical"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
-    },
-    {
-      "path": "system/security/keystore2"
-    },
-    {
-      "path": "system/security/keystore2/legacykeystore"
+      "path": "external/rust/android-crates-io/crates/nom"
     }
   ],
   "presubmit": [

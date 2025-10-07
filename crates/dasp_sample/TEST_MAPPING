@@ -1,4 +1,9 @@
 {
+  "imports": [
+    {
+      "path": "external/rust/android-crates-io/crates/dasp_sample"
+    }
+  ],
   "postsubmit": [
     {
       "name": "dasp_sample_test_src_lib"

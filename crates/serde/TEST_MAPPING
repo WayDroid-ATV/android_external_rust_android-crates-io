@@ -1,127 +1,127 @@
 {
   "imports": [
     {
-      "path": "external/avb/rust"
+      "path": "external/rust/android-crates-io/crates/axum"
     },
     {
-      "path": "external/rust/android-crates-io/crates/anes"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/argh"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/arrayvec"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/async-stream"
-    },
-    {
-      "path": "external/rust/crates/bitflags/1.3.2"
+      "path": "external/rust/android-crates-io/crates/bincode"
     },
     {
       "path": "external/rust/android-crates-io/crates/bytes"
     },
     {
+      "path": "external/rust/android-crates-io/crates/camino"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/cargo-platform"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/cargo_metadata"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/cargo_toml"
+    },
+    {
       "path": "external/rust/android-crates-io/crates/chrono"
     },
     {
-      "path": "external/rust/android-crates-io/crates/coset"
+      "path": "external/rust/android-crates-io/crates/ciborium"
     },
     {
-      "path": "external/rust/android-crates-io/crates/debug_tree"
+      "path": "external/rust/android-crates-io/crates/cidr"
     },
     {
-      "path": "external/rust/android-crates-io/crates/either"
+      "path": "external/rust/android-crates-io/crates/config"
     },
     {
-      "path": "external/rust/android-crates-io/crates/futures-util"
+      "path": "external/rust/android-crates-io/crates/crates-index"
     },
     {
-      "path": "external/rust/android-crates-io/crates/grpcio-sys"
+      "path": "external/rust/android-crates-io/crates/criterion"
     },
     {
-      "path": "external/rust/android-crates-io/crates/hashbrown"
+      "path": "external/rust/android-crates-io/crates/csv"
     },
     {
-      "path": "external/rust/android-crates-io/crates/hashlink"
+      "path": "external/rust/android-crates-io/crates/dc_bundle"
     },
     {
-      "path": "external/rust/android-crates-io/crates/http-body"
+      "path": "external/rust/android-crates-io/crates/dc_layout"
     },
     {
-      "path": "external/rust/android-crates-io/crates/httparse"
+      "path": "external/rust/android-crates-io/crates/diplomat_core"
     },
     {
-      "path": "external/rust/android-crates-io/crates/httpdate"
+      "path": "external/rust/android-crates-io/crates/handlebars"
     },
     {
-      "path": "external/rust/android-crates-io/crates/jni"
+      "path": "external/rust/android-crates-io/crates/hex"
     },
     {
-      "path": "external/rust/android-crates-io/crates/oneshot-uniffi"
+      "path": "external/rust/android-crates-io/crates/indexmap"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/litemap"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/macaddr"
     },
     {
       "path": "external/rust/android-crates-io/crates/p9"
     },
     {
-      "path": "external/rust/android-crates-io/crates/parking_lot"
+      "path": "external/rust/android-crates-io/crates/pdl-compiler"
     },
     {
-      "path": "external/rust/android-crates-io/crates/protobuf-json-mapping"
+      "path": "external/rust/android-crates-io/crates/potential_utf"
     },
     {
-      "path": "external/rust/android-crates-io/crates/rand_chacha"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/rand_xorshift"
+      "path": "external/rust/android-crates-io/crates/semver"
     },
     {
       "path": "external/rust/android-crates-io/crates/serde-xml-rs"
     },
     {
+      "path": "external/rust/android-crates-io/crates/serde_bytes"
+    },
+    {
       "path": "external/rust/android-crates-io/crates/serde_cbor"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/serde_derive"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/serde_json"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/serde_spanned"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/serde_test"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/serde_yaml"
     },
     {
       "path": "external/rust/android-crates-io/crates/slab"
     },
     {
-      "path": "external/rust/android-crates-io/crates/spin"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/thread_local"
+      "path": "external/rust/android-crates-io/crates/smol_str"
     },
     {
       "path": "external/rust/android-crates-io/crates/tinytemplate"
     },
     {
-      "path": "external/rust/android-crates-io/crates/tinyvec"
+      "path": "external/rust/android-crates-io/crates/toml"
     },
     {
-      "path": "external/rust/android-crates-io/crates/tokio"
+      "path": "external/rust/android-crates-io/crates/toml_datetime"
     },
     {
-      "path": "external/rust/android-crates-io/crates/tokio-io-timeout"
+      "path": "external/rust/android-crates-io/crates/toml_edit"
     },
     {
-      "path": "external/rust/android-crates-io/crates/tokio-test"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/tower-layer"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/twox-hash"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/unicode-bidi"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/unicode-xid"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/uniffi_core"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/uniffi_meta"
+      "path": "external/rust/android-crates-io/crates/uguid"
     },
     {
       "path": "external/rust/android-crates-io/crates/url"
@@ -133,88 +133,97 @@
       "path": "external/rust/android-crates-io/crates/webpki"
     },
     {
-      "path": "external/uwb/src"
+      "path": "external/rust/android-crates-io/crates/yoke"
     },
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "external/rust/android-crates-io/crates/zerotrie"
     },
     {
-      "path": "packages/modules/Virtualization/apkdmverity"
+      "path": "external/rust/android-crates-io/crates/zerovec"
     },
     {
-      "path": "packages/modules/Virtualization/authfs"
+      "path": "external/rust/android-crates-io/extra_versions/crates/bitflags"
     },
     {
-      "path": "packages/modules/Virtualization/encryptedstore"
+      "path": "external/rust/beto-rust/betosync"
     },
     {
-      "path": "packages/modules/Virtualization/libs/apexutil"
+      "path": "external/rust/crates/vhost-device-vsock"
+    },
+    {
+      "path": "external/rust/pica"
+    },
+    {
+      "path": "external/rust/rutabaga_gfx"
+    },
+    {
+      "path": "packages/modules/Virtualization/android/virtmgr"
+    },
+    {
+      "path": "packages/modules/Virtualization/android/virtualizationservice"
+    },
+    {
+      "path": "packages/modules/Virtualization/android/vm"
+    },
+    {
+      "path": "packages/modules/Virtualization/guest/microdroid_manager"
+    },
+    {
+      "path": "packages/modules/Virtualization/guest/service_vm/requests"
     },
     {
       "path": "packages/modules/Virtualization/libs/apkverify"
     },
     {
-      "path": "packages/modules/Virtualization/libs/bssl"
+      "path": "packages/modules/Virtualization/libs/bssl/error"
     },
     {
-      "path": "packages/modules/Virtualization/libs/devicemapper"
+      "path": "packages/modules/Virtualization/libs/cborutil"
     },
     {
-      "path": "packages/modules/Virtualization/microdroid_manager"
+      "path": "packages/modules/Virtualization/libs/dice/open_dice"
     },
     {
-      "path": "packages/modules/Virtualization/pvmfw"
+      "path": "packages/modules/Virtualization/libs/libmicrodroid_payload_metadata/config"
     },
     {
-      "path": "packages/modules/Virtualization/rialto"
+      "path": "packages/modules/Virtualization/libs/libservice_vm_comm"
     },
     {
-      "path": "packages/modules/Virtualization/service_vm/client_vm_csr"
+      "path": "packages/modules/Virtualization/libs/vmconfig"
     },
     {
-      "path": "packages/modules/Virtualization/service_vm/comm"
+      "path": "system/core/init/libprefetch/prefetch"
     },
     {
-      "path": "packages/modules/Virtualization/service_vm/requests"
+      "path": "system/desktop/ec/src/libec"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
+      "path": "system/desktop/fingerprint/hal"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationservice"
+      "path": "system/desktop/security/pinweaver/storage"
     },
     {
-      "path": "packages/modules/Virtualization/vm"
+      "path": "system/extras/profcollectd/libprofcollectd"
     },
     {
-      "path": "packages/modules/Virtualization/zipfuse"
-    },
-    {
-      "path": "system/apex/libs/libapexsupport"
-    },
-    {
-      "path": "system/authgraph/core"
-    },
-    {
-      "path": "system/authgraph/wire"
-    },
-    {
-      "path": "system/keymint/derive"
-    },
-    {
-      "path": "system/keymint/hal"
-    },
-    {
-      "path": "system/keymint/ta"
-    },
-    {
-      "path": "system/libfmq"
+      "path": "system/secure_element/omapi"
     },
     {
       "path": "system/security/keystore2"
     },
     {
-      "path": "system/security/keystore2/legacykeystore"
+      "path": "system/security/keystore2/test_utils"
+    },
+    {
+      "path": "system/security/keystore2/tests"
+    },
+    {
+      "path": "system/security/keystore2/tests/legacy_blobs"
+    },
+    {
+      "path": "system/tools/aidl/scripts/redundancy_check"
     },
     {
       "path": "tools/asuite/adevice"

@@ -1,19 +1,10 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/android_logger"
+      "path": "external/rust/android-crates-io/crates/bindgen-cli"
     },
     {
-      "path": "external/rust/android-crates-io/crates/cast"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/crc32fast"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/flate2"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/libsqlite3-sys"
+      "path": "external/rust/android-crates-io/crates/bindgen/android/bindgen_cmd"
     },
     {
       "path": "external/rust/android-crates-io/crates/mio"
@@ -22,40 +13,52 @@
       "path": "external/rust/android-crates-io/crates/quickcheck"
     },
     {
-      "path": "external/rust/android-crates-io/crates/regex"
+      "path": "external/rust/crates/v4l2r/ffi"
     },
     {
-      "path": "external/uwb/src"
+      "path": "external/rust/crates/v4l2r/lib"
     },
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "external/rust/crates/vhost-device-vsock"
     },
     {
-      "path": "packages/modules/Virtualization/authfs"
+      "path": "external/rust/pica"
     },
     {
-      "path": "packages/modules/Virtualization/encryptedstore"
+      "path": "packages/modules/Nfc/libnfc-nci/tools/casimir"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
+      "path": "packages/modules/Uwb/libuwb-uci/src"
     },
     {
-      "path": "packages/modules/Virtualization/vm"
+      "path": "packages/modules/Virtualization/android/vm"
     },
     {
-      "path": "packages/modules/Virtualization/zipfuse"
+      "path": "packages/modules/Virtualization/tests/vm_accessor/accessor"
+    },
+    {
+      "path": "system/cros-codecs"
+    },
+    {
+      "path": "system/desktop/security/gscutil"
+    },
+    {
+      "path": "system/desktop/security/pinweaver/storage"
+    },
+    {
+      "path": "system/gatekeeper/rust/tests"
+    },
+    {
+      "path": "system/keymint/tests"
+    },
+    {
+      "path": "system/libueventd-rs"
     },
     {
       "path": "system/logging/rust"
     },
     {
-      "path": "system/security/keystore2"
-    },
-    {
-      "path": "system/security/keystore2/legacykeystore"
-    },
-    {
-      "path": "system/security/keystore2/selinux"
+      "path": "tools/netsim"
     }
   ],
   "presubmit": [

@@ -1,0 +1,13 @@
+{
+  "imports": [
+    {
+      "path": "external/rust/android-crates-io/crates/mls-rs"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/mls-rs-core"
+    },
+    {
+      "path": "system/security/mls/mls-rs-crypto-boringssl"
+    }
+  ]
+}

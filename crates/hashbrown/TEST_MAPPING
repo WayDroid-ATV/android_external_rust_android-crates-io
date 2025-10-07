@@ -1,13 +1,16 @@
 {
   "imports": [
     {
+      "path": "external/rust/android-crates-io/crates/dashmap"
+    },
+    {
       "path": "external/rust/android-crates-io/crates/hashlink"
     },
     {
-      "path": "system/security/keystore2"
+      "path": "external/rust/android-crates-io/crates/tokio-util"
     },
     {
-      "path": "system/security/keystore2/legacykeystore"
+      "path": "tools/security/fuzzing/orphans/hashbrown"
     }
   ]
 }

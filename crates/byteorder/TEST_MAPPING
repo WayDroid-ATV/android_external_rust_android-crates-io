@@ -1,37 +1,40 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/hashlink"
+      "path": "external/rust/android-crates-io/crates/fxhash"
     },
     {
-      "path": "external/rust/android-crates-io/crates/virtio-drivers"
+      "path": "external/rust/android-crates-io/crates/netlink-packet-core"
     },
     {
-      "path": "external/rust/android-crates-io/crates/zerocopy"
+      "path": "external/rust/android-crates-io/crates/netlink-packet-route"
     },
     {
-      "path": "packages/modules/Virtualization/apkdmverity"
+      "path": "external/rust/android-crates-io/crates/netlink-packet-utils"
     },
     {
-      "path": "packages/modules/Virtualization/avmd"
+      "path": "external/rust/android-crates-io/crates/zip"
     },
     {
-      "path": "packages/modules/Virtualization/libs/apexutil"
+      "path": "external/rust/android-crates-io/extra_versions/crates/zerocopy"
+    },
+    {
+      "path": "external/rust/crates/vhost-device-vsock"
+    },
+    {
+      "path": "packages/modules/Virtualization/guest/microdroid_manager"
     },
     {
       "path": "packages/modules/Virtualization/libs/apkverify"
     },
     {
-      "path": "packages/modules/Virtualization/microdroid_manager"
+      "path": "packages/modules/Virtualization/libs/apkzip"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
+      "path": "packages/modules/Virtualization/libs/dice/driver"
     },
     {
-      "path": "packages/modules/Virtualization/vm"
-    },
-    {
-      "path": "packages/modules/Virtualization/zipfuse"
+      "path": "system/cros-codecs"
     }
   ]
 }

@@ -2,6 +2,9 @@
   "imports": [
     {
       "path": "external/rust/android-crates-io/crates/lru-cache"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/yaml-rust"
     }
   ]
 }

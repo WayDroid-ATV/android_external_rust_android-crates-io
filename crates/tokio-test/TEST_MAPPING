@@ -1,10 +1,13 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/async-stream"
+      "path": "external/rust/android-crates-io/crates/tokio"
     },
     {
-      "path": "external/rust/android-crates-io/crates/tokio"
+      "path": "external/rust/android-crates-io/crates/tokio-test"
+    },
+    {
+      "path": "packages/modules/Bluetooth/system/rust"
     }
   ],
   "presubmit": [

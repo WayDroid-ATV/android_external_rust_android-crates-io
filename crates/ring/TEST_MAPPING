@@ -4,10 +4,16 @@
       "path": "external/rust/android-crates-io/crates/quiche"
     },
     {
+      "path": "external/rust/android-crates-io/crates/ring"
+    },
+    {
       "path": "external/rust/android-crates-io/crates/webpki"
     },
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "system/desktop/security/gscutil"
+    },
+    {
+      "path": "tools/asuite/adevice"
     }
   ],
   "presubmit": [

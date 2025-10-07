@@ -1,6 +1,9 @@
 {
   "imports": [
     {
+      "path": "external/rust/android-crates-io/crates/crossbeam-queue"
+    },
+    {
       "path": "external/rust/android-crates-io/crates/vulkano"
     }
   ],

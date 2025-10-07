@@ -10,7 +10,7 @@
       "path": "external/rust/android-crates-io/crates/flate2"
     },
     {
-      "path": "external/rust/android-crates-io/crates/regex"
+      "path": "external/rust/android-crates-io/crates/zlib-rs"
     }
   ],
   "presubmit": [

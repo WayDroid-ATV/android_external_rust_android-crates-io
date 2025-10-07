@@ -1,10 +1,7 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/gdbstub_arch"
-    },
-    {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
+      "path": "external/rust/android-crates-io/crates/gdbstub"
     }
   ],
   "presubmit": [

@@ -1,16 +1,10 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/base64"
+      "path": "external/flashrom/util/flashrom_tester"
     },
     {
-      "path": "external/rust/android-crates-io/crates/tinytemplate"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/tinyvec"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/unicode-xid"
+      "path": "tools/asuite/adevice"
     }
   ]
 }

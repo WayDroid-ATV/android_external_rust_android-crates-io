@@ -1,19 +1,22 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/base64"
+      "path": "external/rust/android-crates-io/crates/criterion"
     },
     {
-      "path": "external/rust/android-crates-io/crates/bitflags"
+      "path": "external/rust/android-crates-io/crates/handlebars"
     },
     {
-      "path": "external/rust/android-crates-io/crates/tinytemplate"
+      "path": "external/rust/android-crates-io/extra_versions/crates/bitflags"
     },
     {
-      "path": "external/rust/android-crates-io/crates/tinyvec"
+      "path": "system/core/init/libprefetch/prefetch"
     },
     {
-      "path": "external/rust/android-crates-io/crates/unicode-xid"
+      "path": "system/usb_info_tools/dumpsys_to_lsusb"
+    },
+    {
+      "path": "tools/asuite/adevice"
     }
   ]
 }

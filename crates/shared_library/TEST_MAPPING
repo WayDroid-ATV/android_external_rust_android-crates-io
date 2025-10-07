@@ -1,7 +1,0 @@
-{
-  "imports": [
-    {
-      "path": "external/rust/android-crates-io/crates/vulkano"
-    }
-  ]
-}

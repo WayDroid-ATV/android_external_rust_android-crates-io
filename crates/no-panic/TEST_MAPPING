@@ -1,7 +1,1 @@
-{
-  "imports": [
-    {
-      "path": "external/rust/android-crates-io/crates/libm"
-    }
-  ]
-}
+{}

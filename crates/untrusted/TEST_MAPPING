@@ -1,16 +1,13 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/quiche"
-    },
-    {
       "path": "external/rust/android-crates-io/crates/ring"
     },
     {
-      "path": "external/rust/android-crates-io/crates/webpki"
+      "path": "external/rust/android-crates-io/crates/untrusted"
     },
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "external/rust/android-crates-io/crates/webpki"
     }
   ],
   "presubmit": [

@@ -1,16 +1,22 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/quiche"
+      "path": "external/rust/android-crates-io/crates/buddy_system_allocator"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/lazy_static"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/mls-rs"
     },
     {
       "path": "external/rust/android-crates-io/crates/ring"
     },
     {
-      "path": "external/rust/android-crates-io/crates/webpki"
+      "path": "packages/modules/Virtualization/guest/vmbase_example"
     },
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "packages/modules/Virtualization/libs/libvmbase"
     }
   ],
   "presubmit": [
