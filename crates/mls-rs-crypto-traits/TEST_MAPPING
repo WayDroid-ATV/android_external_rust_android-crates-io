@@ -1,0 +1,7 @@
+{
+  "imports": [
+    {
+      "path": "system/security/mls/mls-rs-crypto-boringssl"
+    }
+  ]
+}

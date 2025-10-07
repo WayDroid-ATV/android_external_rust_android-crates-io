@@ -4,28 +4,19 @@
       "path": "external/rust/android-crates-io/crates/flate2"
     },
     {
-      "path": "packages/modules/Virtualization/apkdmverity"
+      "path": "external/rust/android-crates-io/crates/png"
     },
     {
-      "path": "packages/modules/Virtualization/avmd"
+      "path": "external/rust/android-crates-io/crates/zip"
     },
     {
-      "path": "packages/modules/Virtualization/libs/apexutil"
+      "path": "external/rust/android-crates-io/crates/zlib-rs"
     },
     {
-      "path": "packages/modules/Virtualization/libs/apkverify"
+      "path": "system/core/init/libprefetch/prefetch"
     },
     {
-      "path": "packages/modules/Virtualization/microdroid_manager"
-    },
-    {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
-    },
-    {
-      "path": "packages/modules/Virtualization/vm"
-    },
-    {
-      "path": "packages/modules/Virtualization/zipfuse"
+      "path": "system/cros-codecs"
     }
   ],
   "presubmit": [

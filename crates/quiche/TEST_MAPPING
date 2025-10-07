@@ -1,7 +1,7 @@
 {
   "imports": [
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "packages/modules/DnsResolver/rust/src/doh/tests/doh_frontend"
     }
   ],
   "presubmit": [

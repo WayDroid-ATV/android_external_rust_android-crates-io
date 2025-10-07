@@ -1,4 +1,12 @@
 {
+  "imports": [
+    {
+      "path": "external/rust/android-crates-io/crates/clap_builder"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/strsim"
+    }
+  ],
   "postsubmit": [
     {
       "name": "strsim_test_src_lib"

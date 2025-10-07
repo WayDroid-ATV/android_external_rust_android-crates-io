@@ -1,4 +1,12 @@
 {
+  "imports": [
+    {
+      "path": "external/rust/android-crates-io/crates/inotify"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/maplit"
+    }
+  ],
   "postsubmit": [
     {
       "name": "maplit_test_src_lib"

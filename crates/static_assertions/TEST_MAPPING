@@ -1,46 +1,28 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/tokio"
+      "path": "packages/modules/Virtualization/guest/pvmfw"
     },
     {
-      "path": "packages/modules/Virtualization/apkdmverity"
+      "path": "packages/modules/Virtualization/libs/libfdt"
     },
     {
-      "path": "packages/modules/Virtualization/authfs"
+      "path": "packages/modules/Virtualization/libs/libvm_payload"
     },
     {
-      "path": "packages/modules/Virtualization/encryptedstore"
+      "path": "packages/modules/Virtualization/libs/libvmbase"
     },
     {
-      "path": "packages/modules/Virtualization/libs/capabilities"
+      "path": "system/cros-codecs"
     },
     {
-      "path": "packages/modules/Virtualization/libs/devicemapper"
+      "path": "system/extras/libatrace_rust"
     },
     {
-      "path": "packages/modules/Virtualization/microdroid_manager"
+      "path": "system/zygote/zygote"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
-    },
-    {
-      "path": "packages/modules/Virtualization/vm"
-    },
-    {
-      "path": "packages/modules/Virtualization/zipfuse"
-    },
-    {
-      "path": "system/security/diced"
-    },
-    {
-      "path": "system/security/keystore2"
-    },
-    {
-      "path": "system/security/keystore2/legacykeystore"
-    },
-    {
-      "path": "system/security/keystore2/src/crypto"
+      "path": "system/zygote/zygote-sys"
     }
   ]
 }

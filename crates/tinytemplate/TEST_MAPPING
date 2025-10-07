@@ -1,13 +1,7 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/base64"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/tinyvec"
-    },
-    {
-      "path": "external/rust/android-crates-io/crates/unicode-xid"
+      "path": "external/rust/android-crates-io/crates/criterion"
     }
   ],
   "presubmit": [

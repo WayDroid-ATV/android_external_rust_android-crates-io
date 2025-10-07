@@ -1,13 +1,13 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/quiche"
+      "path": "external/rust/android-crates-io/crates/icu_capi"
     },
     {
-      "path": "external/rust/android-crates-io/crates/url"
+      "path": "external/rust/android-crates-io/crates/icu_properties"
     },
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "external/rust/android-crates-io/crates/idna"
     }
   ],
   "presubmit": [

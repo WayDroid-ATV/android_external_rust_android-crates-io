@@ -4,13 +4,7 @@
       "path": "external/rust/android-crates-io/crates/num-bigint"
     },
     {
-      "path": "packages/modules/Virtualization/authfs"
-    },
-    {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
-    },
-    {
-      "path": "packages/modules/Virtualization/zipfuse"
+      "path": "tools/rootcanal/rust"
     }
   ]
 }

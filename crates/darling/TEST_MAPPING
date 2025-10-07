@@ -1,4 +1,15 @@
 {
+  "imports": [
+    {
+      "path": "external/rust/android-crates-io/crates/darling"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/derive_builder_core"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/mls-rs-codec-derive"
+    }
+  ],
   "postsubmit": [
     {
       "name": "darling_test_tests_accrue_errors"

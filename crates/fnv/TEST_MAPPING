@@ -1,13 +1,16 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/hashbrown"
+      "path": "external/rust/android-crates-io/crates/darling_core"
     },
     {
-      "path": "external/rust/android-crates-io/crates/vulkano"
+      "path": "external/rust/android-crates-io/crates/h2"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
+      "path": "external/rust/android-crates-io/crates/http"
+    },
+    {
+      "path": "external/rust/android-crates-io/extra_versions/crates/http"
     }
   ],
   "presubmit": [

@@ -1,13 +1,25 @@
 {
   "imports": [
     {
-      "path": "packages/modules/Virtualization/authfs"
+      "path": "external/flashrom/util/flashrom_tester"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
+      "path": "system/core/init/libprefetch/prefetch"
     },
     {
-      "path": "packages/modules/Virtualization/zipfuse"
+      "path": "system/cros-codecs"
+    },
+    {
+      "path": "system/extras/profcollectd/libprofcollectd"
+    },
+    {
+      "path": "system/security/keystore2/watchdog"
+    },
+    {
+      "path": "tools/netsim"
+    },
+    {
+      "path": "tools/security/remote_provisioning/hwtrust"
     }
   ]
 }

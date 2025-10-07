@@ -1,4 +1,15 @@
 {
+  "imports": [
+    {
+      "path": "external/rust/android-crates-io/crates/drm"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/gbm"
+    },
+    {
+      "path": "system/cros-codecs"
+    }
+  ],
   "postsubmit": [
     {
       "name": "drm-fourcc_test_src_lib"

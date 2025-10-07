@@ -1,4 +1,15 @@
 {
+  "imports": [
+    {
+      "path": "external/rust/android-crates-io/crates/httparse"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/hyper"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/ippusb"
+    }
+  ],
   "postsubmit": [
     {
       "name": "httparse_test_src_lib"

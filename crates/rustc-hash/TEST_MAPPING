@@ -1,13 +1,13 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/libsqlite3-sys"
+      "path": "external/rust/android-crates-io/crates/bindgen"
     },
     {
-      "path": "system/security/keystore2"
+      "path": "external/rust/android-crates-io/crates/crates-index"
     },
     {
-      "path": "system/security/keystore2/legacykeystore"
+      "path": "external/rust/android-crates-io/crates/hashlink"
     }
   ]
 }

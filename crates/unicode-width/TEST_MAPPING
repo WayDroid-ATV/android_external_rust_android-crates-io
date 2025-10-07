@@ -1,16 +1,16 @@
 {
   "imports": [
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
+      "path": "external/rust/android-crates-io/crates/annotate-snippets"
     },
     {
-      "path": "system/security/diced"
+      "path": "external/rust/android-crates-io/crates/codespan-reporting"
     },
     {
-      "path": "system/security/keystore2"
+      "path": "external/rust/android-crates-io/crates/miette"
     },
     {
-      "path": "system/security/keystore2/legacykeystore"
+      "path": "external/rust/android-crates-io/crates/unicode-width"
     }
   ],
   "presubmit": [

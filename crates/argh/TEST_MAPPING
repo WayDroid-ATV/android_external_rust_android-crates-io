@@ -1,7 +1,19 @@
 {
   "imports": [
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
+      "path": "external/rust/android-crates-io/crates/argh"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/pdl-compiler"
+    },
+    {
+      "path": "packages/modules/Nfc/libnfc-nci/tools/casimir"
+    },
+    {
+      "path": "system/core/init/libprefetch/prefetch"
+    },
+    {
+      "path": "system/cros-codecs"
     }
   ],
   "presubmit": [

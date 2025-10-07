@@ -4,22 +4,103 @@
       "path": "external/rust/android-crates-io/crates/async-stream"
     },
     {
+      "path": "external/rust/android-crates-io/crates/debug_tree"
+    },
+    {
       "path": "external/rust/android-crates-io/crates/futures-util"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/h2"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/http-body"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/hyper"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/hyper-timeout"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/inotify"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/ipp"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/ippusb"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/netlink-sys"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/rtnetlink"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/tokio"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/tokio-io-timeout"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/tokio-openssl"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/tokio-stream"
     },
     {
       "path": "external/rust/android-crates-io/crates/tokio-test"
     },
     {
-      "path": "external/uwb/src"
+      "path": "external/rust/android-crates-io/crates/tokio-util"
     },
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "external/rust/android-crates-io/crates/tonic"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/tower"
+    },
+    {
+      "path": "external/rust/pica"
+    },
+    {
+      "path": "packages/modules/Bluetooth/system/rust"
+    },
+    {
+      "path": "packages/modules/Connectivity/remoteauth/service/jni"
+    },
+    {
+      "path": "packages/modules/DnsResolver/rust/src/doh/tests/doh_frontend"
+    },
+    {
+      "path": "packages/modules/Nfc/libnfc-nci/src/rust"
+    },
+    {
+      "path": "packages/modules/Nfc/libnfc-nci/src/rust/test"
+    },
+    {
+      "path": "packages/modules/Nfc/libnfc-nci/tools/casimir"
+    },
+    {
+      "path": "packages/modules/Uwb/libuwb-uci/src"
+    },
+    {
+      "path": "packages/modules/Uwb/service/uci/jni"
+    },
+    {
+      "path": "system/libueventd-rs"
     },
     {
       "path": "system/security/keystore2"
     },
     {
-      "path": "system/security/keystore2/legacykeystore"
+      "path": "system/security/keystore2/rkpd_client"
+    },
+    {
+      "path": "system/security/prng_seeder"
+    },
+    {
+      "path": "system/tools/aidl"
     }
   ],
   "presubmit": [

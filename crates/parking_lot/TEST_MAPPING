@@ -1,6 +1,21 @@
 {
   "imports": [
     {
+      "path": "external/rust/android-crates-io/crates/grpcio"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/named-lock"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/parking_lot"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/selinux"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/tracing-subscriber"
+    },
+    {
       "path": "external/rust/android-crates-io/crates/vulkano"
     }
   ],

@@ -1,13 +1,16 @@
 {
   "imports": [
     {
-      "path": "external/rust/android-crates-io/crates/anyhow"
-    },
-    {
       "path": "external/rust/android-crates-io/crates/async-stream"
     },
     {
-      "path": "external/rust/android-crates-io/crates/futures-channel"
+      "path": "external/rust/android-crates-io/crates/axum"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/axum-core"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/futures"
     },
     {
       "path": "external/rust/android-crates-io/crates/futures-executor"
@@ -16,28 +19,31 @@
       "path": "external/rust/android-crates-io/crates/futures-test"
     },
     {
-      "path": "external/rust/android-crates-io/crates/tokio"
+      "path": "external/rust/android-crates-io/crates/grpcio"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/h2"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/hyper"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/inotify"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/ipp"
     },
     {
       "path": "external/rust/android-crates-io/crates/tokio-test"
     },
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "external/rust/android-crates-io/crates/tokio-util"
     },
     {
-      "path": "packages/modules/Virtualization/authfs"
+      "path": "external/rust/android-crates-io/crates/tower"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
-    },
-    {
-      "path": "packages/modules/Virtualization/zipfuse"
-    },
-    {
-      "path": "system/security/keystore2"
-    },
-    {
-      "path": "system/security/keystore2/legacykeystore"
+      "path": "tools/netsim"
     }
   ],
   "presubmit": [

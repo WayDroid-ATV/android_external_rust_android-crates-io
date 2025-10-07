@@ -4,7 +4,7 @@
       "path": "external/rust/android-crates-io/crates/quiche"
     },
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "external/rust/android-crates-io/crates/url"
     }
   ],
   "presubmit": [

@@ -4,31 +4,40 @@
       "path": "external/rust/android-crates-io/crates/anyhow"
     },
     {
+      "path": "external/rust/android-crates-io/crates/debug_tree"
+    },
+    {
       "path": "external/rust/android-crates-io/crates/futures-channel"
     },
     {
       "path": "external/rust/android-crates-io/crates/futures-executor"
     },
     {
+      "path": "external/rust/android-crates-io/crates/mls-rs"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/netlink-proto"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/netlink-sys"
+    },
+    {
+      "path": "external/rust/android-crates-io/crates/rtnetlink"
+    },
+    {
       "path": "external/rust/android-crates-io/crates/tokio"
     },
     {
-      "path": "packages/modules/DnsResolver"
+      "path": "external/rust/pica"
     },
     {
-      "path": "packages/modules/Virtualization/authfs"
+      "path": "packages/modules/Nfc/libnfc-nci/tools/casimir"
     },
     {
-      "path": "packages/modules/Virtualization/virtualizationmanager"
+      "path": "system/libueventd-rs"
     },
     {
-      "path": "packages/modules/Virtualization/zipfuse"
-    },
-    {
-      "path": "system/security/keystore2"
-    },
-    {
-      "path": "system/security/keystore2/legacykeystore"
+      "path": "tools/netsim"
     }
   ]
 }
