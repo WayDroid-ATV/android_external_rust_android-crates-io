@@ -1,0 +1,20 @@
+{
+  "apex_available": [
+    "//apex_available:platform",
+    "com.android.virt"
+  ],
+  "module_name_overrides": {
+    "libx86_64": "libx86_64_rust_nostd",
+    "libbit_field": "libbit_field_nostd"
+  },
+  "package": {
+    "x86_64": {
+      "host_supported": false,
+      "no_std": true,
+      "add_module_block": "cargo2android_module.bp.fragment"
+    }
+  },
+  "run_cargo": false,
+  "generate_rulesmk": true,
+  "min_sdk_version": "29"
+}

@@ -1,0 +1,17 @@
+name: "volatile"
+description: "A simple volatile wrapper type"
+third_party {
+  version: "0.4.6"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 9
+    day: 23
+  }
+  homepage: "https://crates.io/crates/volatile"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/volatile/volatile-0.4.6.crate"
+    version: "0.4.6"
+  }
+}
