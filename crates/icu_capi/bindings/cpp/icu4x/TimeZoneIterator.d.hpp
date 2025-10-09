@@ -8,6 +8,7 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <cstdlib>
 #include "../diplomat_runtime.hpp"
 
 namespace icu4x {
@@ -23,9 +24,15 @@ namespace capi {
 } // namespace
 
 namespace icu4x {
+/**
+ * See the [Rust documentation for `TimeZoneIter`](https://docs.rs/icu/2.0.0/icu/time/zone/iana/struct.TimeZoneIter.html) for more information.
+ */
 class TimeZoneIterator {
 public:
 
+  /**
+   * See the [Rust documentation for `next`](https://docs.rs/icu/2.0.0/icu/time/zone/iana/struct.TimeZoneIter.html#method.next) for more information.
+   */
   inline std::unique_ptr<icu4x::TimeZone> next();
 
   inline const icu4x::capi::TimeZoneIterator* AsFFI() const;

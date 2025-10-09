@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "libstatic_assertions",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "static_assertions",
     cargo_env_compat: true,
@@ -29,6 +30,9 @@ rust_library {
     recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    no_std: {
+        enabled: true,
+    },
 }
 
 dirgroup {

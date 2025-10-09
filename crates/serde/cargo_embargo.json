@@ -28,9 +28,6 @@
         "alloc",
         "derive"
       ],
-      "module_name_overrides": {
-        "libserde": "libserde_nostd"
-      },
       "package": {
         "serde": {
           "alloc": true,

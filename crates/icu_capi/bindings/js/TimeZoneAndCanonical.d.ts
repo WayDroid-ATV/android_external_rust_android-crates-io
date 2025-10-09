@@ -4,10 +4,13 @@ import type { pointer, codepoint } from "./diplomat-runtime.d.ts";
 
 
 
+/**
+ * See the [Rust documentation for `TimeZoneAndCanonical`](https://docs.rs/icu/2.0.0/icu/time/zone/iana/struct.TimeZoneAndCanonical.html) for more information.
+ */
 export class TimeZoneAndCanonical {
-    
-    get timeZone() : TimeZone;
-    
-    get canonical() : string;
-    
+    get timeZone(): TimeZone;
+    get canonical(): string;
+    /** @internal */
+    constructor();
+
 }

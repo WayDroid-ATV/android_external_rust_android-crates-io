@@ -21,7 +21,7 @@ rust_library_rlib {
     cargo_pkg_version: "0.2.2",
     crate_root: "src/lib.rs",
     edition: "2024",
-    rustlibs: ["libthiserror_nostd"],
+    rustlibs: ["libthiserror"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -39,7 +39,6 @@ rust_library_rlib {
 
 rust_test {
     name: "smccc_test_src_lib",
-    defaults: ["rust_baremetal_defaults"],
     crate_name: "smccc",
     cargo_env_compat: true,
     cargo_pkg_version: "0.2.2",
@@ -47,7 +46,7 @@ rust_test {
     test_suites: ["general-tests"],
     auto_gen_config: true,
     edition: "2024",
-    rustlibs: ["libthiserror_nostd"],
+    rustlibs: ["libthiserror"],
 }
 
 dirgroup {

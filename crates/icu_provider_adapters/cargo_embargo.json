@@ -3,5 +3,15 @@
   "recovery_available": true,
   "vendor_ramdisk_available": true,
   "native_bridge_supported": true,
+  "variants": [
+    {},
+    {
+      "package": {
+        "icu_provider_adapters": {
+          "no_std": true
+        }
+      }
+    }
+  ],
   "min_sdk_version": "29"
 }

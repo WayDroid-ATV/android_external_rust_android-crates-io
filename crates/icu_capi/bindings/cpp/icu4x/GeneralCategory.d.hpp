@@ -8,6 +8,7 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <cstdlib>
 #include "../diplomat_runtime.hpp"
 
 namespace icu4x {
@@ -50,12 +51,15 @@ namespace capi {
       GeneralCategory_ModifierSymbol = 26,
       GeneralCategory_OtherSymbol = 27,
     };
-    
+
     typedef struct GeneralCategory_option {union { GeneralCategory ok; }; bool is_ok; } GeneralCategory_option;
 } // namespace capi
 } // namespace
 
 namespace icu4x {
+/**
+ * See the [Rust documentation for `GeneralCategory`](https://docs.rs/icu/2.0.0/icu/properties/props/enum.GeneralCategory.html) for more information.
+ */
 class GeneralCategory {
 public:
   enum Value {
@@ -98,16 +102,42 @@ public:
   // Prevent usage as boolean value
   explicit operator bool() const = delete;
 
+  /**
+   * See the [Rust documentation for `for_char`](https://docs.rs/icu/2.0.0/icu/properties/props/trait.EnumeratedProperty.html#tymethod.for_char) for more information.
+   */
   inline static icu4x::GeneralCategory for_char(char32_t ch);
 
-  inline std::optional<std::string_view> long_name();
+  /**
+   * Convert to an integer using the ICU4C integer mappings for `General_Category`
+   * Get the "long" name of this property value (returns empty if property value is unknown)
+   *
+   * See the [Rust documentation for `get`](https://docs.rs/icu/2.0.0/icu/properties/struct.PropertyNamesLongBorrowed.html#method.get) for more information.
+   */
+  inline std::optional<std::string_view> long_name() const;
 
-  inline std::optional<std::string_view> short_name();
+  /**
+   * Get the "short" name of this property value (returns empty if property value is unknown)
+   *
+   * See the [Rust documentation for `get`](https://docs.rs/icu/2.0.0/icu/properties/struct.PropertyNamesShortBorrowed.html#method.get) for more information.
+   */
+  inline std::optional<std::string_view> short_name() const;
 
-  inline uint8_t to_integer_value();
+  /**
+   * Convert to an integer value usable with ICU4C and CodePointMapData
+   */
+  inline uint8_t to_integer_value() const;
 
-  inline icu4x::GeneralCategoryGroup to_group();
+  /**
+   * Produces a GeneralCategoryGroup mask that can represent a group of general categories
+   *
+   * See the [Rust documentation for `GeneralCategoryGroup`](https://docs.rs/icu/2.0.0/icu/properties/props/struct.GeneralCategoryGroup.html) for more information.
+   */
+  inline icu4x::GeneralCategoryGroup to_group() const;
 
+  /**
+   * Convert from an integer using the ICU4C integer mappings for `General_Category`
+   * Convert from an integer value from ICU4C or CodePointMapData
+   */
   inline static std::optional<icu4x::GeneralCategory> from_integer_value(uint8_t other);
 
   inline icu4x::capi::GeneralCategory AsFFI() const;

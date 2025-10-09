@@ -8,6 +8,7 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <cstdlib>
 #include "../diplomat_runtime.hpp"
 
 
@@ -17,12 +18,15 @@ namespace capi {
       CollatorNumericOrdering_Off = 0,
       CollatorNumericOrdering_On = 1,
     };
-    
+
     typedef struct CollatorNumericOrdering_option {union { CollatorNumericOrdering ok; }; bool is_ok; } CollatorNumericOrdering_option;
 } // namespace capi
 } // namespace
 
 namespace icu4x {
+/**
+ * See the [Rust documentation for `CollationNumericOrdering`](https://docs.rs/icu/2.0.0/icu/collator/preferences/enum.CollationNumericOrdering.html) for more information.
+ */
 class CollatorNumericOrdering {
 public:
   enum Value {

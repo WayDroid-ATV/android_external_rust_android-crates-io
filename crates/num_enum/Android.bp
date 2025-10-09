@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "libnum_enum",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "num_enum",
     cargo_env_compat: true,
@@ -36,4 +37,8 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    no_std: {
+        features: [],
+        enabled: true,
+    },
 }

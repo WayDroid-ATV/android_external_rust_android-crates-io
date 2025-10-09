@@ -8,6 +8,7 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <cstdlib>
 #include "../diplomat_runtime.hpp"
 
 namespace icu4x {
@@ -56,12 +57,15 @@ namespace capi {
       IndicSyllabicCategory_VowelIndependent = 35,
       IndicSyllabicCategory_ReorderingKiller = 36,
     };
-    
+
     typedef struct IndicSyllabicCategory_option {union { IndicSyllabicCategory ok; }; bool is_ok; } IndicSyllabicCategory_option;
 } // namespace capi
 } // namespace
 
 namespace icu4x {
+/**
+ * See the [Rust documentation for `IndicSyllabicCategory`](https://docs.rs/icu/2.0.0/icu/properties/props/struct.IndicSyllabicCategory.html) for more information.
+ */
 class IndicSyllabicCategory {
 public:
   enum Value {
@@ -111,10 +115,23 @@ public:
   // Prevent usage as boolean value
   explicit operator bool() const = delete;
 
+  /**
+   * See the [Rust documentation for `for_char`](https://docs.rs/icu/2.0.0/icu/properties/props/trait.EnumeratedProperty.html#tymethod.for_char) for more information.
+   */
   inline static icu4x::IndicSyllabicCategory for_char(char32_t ch);
 
-  inline uint8_t to_integer_value();
+  /**
+   * Convert to an integer value usable with ICU4C and CodePointMapData
+   *
+   * See the [Rust documentation for `to_icu4c_value`](https://docs.rs/icu/2.0.0/icu/properties/props/struct.IndicSyllabicCategory.html#method.to_icu4c_value) for more information.
+   */
+  inline uint8_t to_integer_value() const;
 
+  /**
+   * Convert from an integer value from ICU4C or CodePointMapData
+   *
+   * See the [Rust documentation for `from_icu4c_value`](https://docs.rs/icu/2.0.0/icu/properties/props/struct.IndicSyllabicCategory.html#method.from_icu4c_value) for more information.
+   */
   inline static std::optional<icu4x::IndicSyllabicCategory> from_integer_value(uint8_t other);
 
   inline icu4x::capi::IndicSyllabicCategory AsFFI() const;

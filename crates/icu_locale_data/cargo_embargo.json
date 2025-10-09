@@ -5,7 +5,7 @@
   "native_bridge_supported": true,
   "min_sdk_version": "29",
   "package": {
-      "icu_locale_data": {
+    "icu_locale_data": {
       "extra_srcs": [
           "data/locale_likely_subtags_extended_v1.rs.data",
           "data/locale_exemplar_characters_auxiliary_v1.rs.data",
@@ -18,7 +18,17 @@
           "data/locale_likely_subtags_language_v1.rs.data",
           "data/locale_exemplar_characters_numbers_v1.rs.data",
           "data/locale_exemplar_characters_main_v1.rs.data"
-        ]
+      ]
+    }
+  },
+  "variants": [
+    {},
+    {
+      "package": {
+        "icu_locale_data": {
+          "no_std": true
+        }
       }
-   }
+    }
+  ]
 }

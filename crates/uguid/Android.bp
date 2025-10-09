@@ -27,7 +27,7 @@ rust_library_rlib {
     ],
     rustlibs: [
         "libbytemuck_nostd",
-        "libserde_nostd",
+        "libserde",
     ],
     apex_available: [
         "//apex_available:platform",

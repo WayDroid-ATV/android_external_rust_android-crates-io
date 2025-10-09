@@ -24,8 +24,7 @@
         "libder": "libder_nostd",
         "libpkcs1": "libpkcs1_nostd",
         "libpkcs8": "libpkcs8_nostd",
-        "libspki": "libspki_nostd",
-        "libzeroize": "libzeroize_nostd"
+        "libspki": "libspki_nostd"
       },
       "package": {
         "pkcs1": {

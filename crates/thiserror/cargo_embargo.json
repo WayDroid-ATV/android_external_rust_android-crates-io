@@ -12,9 +12,6 @@
     {
       "features": [],
       "generate_rulesmk": true,
-      "module_name_overrides": {
-        "libthiserror": "libthiserror_nostd"
-      },
       "package": {
         "thiserror": {
           "force_rlib": true,

@@ -1,4 +1,11 @@
+defaults: ["rust_baremetal_nostd_defaults"],
 srcs: [":android_logger_srcs"],
+no_std: {
+    enabled: true,
+    features: [],
+    cfgs: [],
+    rustlibs: [],
+},
 target: {
     android: {
         cfgs: ["default_log_impl"],

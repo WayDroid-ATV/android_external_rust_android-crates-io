@@ -72,7 +72,7 @@ rust_library_rlib {
     rustlibs: [
         "libconst_oid_nostd",
         "libflagset_nostd",
-        "libzeroize_nostd",
+        "libzeroize",
     ],
     proc_macros: ["libder_derive"],
     apex_available: [
@@ -81,11 +81,6 @@ rust_library_rlib {
     ],
     prefer_rlib: true,
     no_stdlibs: true,
-    stdlibs: [
-        "liballoc.rust_sysroot",
-        "libcompiler_builtins.rust_sysroot",
-        "libcore.rust_sysroot",
-    ],
     product_available: true,
     vendor_available: true,
     min_sdk_version: "apex_inherit",

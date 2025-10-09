@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.81"
+rust-version = "1.82"
 name = "icu_provider_adapters"
-version = "2.0.0-beta2"
+version = "2.0.0"
 authors = ["The ICU4X Project Developers"]
 build = false
 include = [
@@ -25,6 +25,7 @@ include = [
     "Cargo.toml",
     "LICENSE",
     "README.md",
+    "build.rs",
 ]
 autolib = false
 autobins = false
@@ -52,11 +53,11 @@ optional = true
 default-features = false
 
 [dependencies.icu_locale]
-version = "~2.0.0-beta2"
+version = "~2.0.0"
 default-features = false
 
 [dependencies.icu_provider]
-version = "2.0.0-beta2"
+version = "2.0.0"
 features = ["alloc"]
 default-features = false
 

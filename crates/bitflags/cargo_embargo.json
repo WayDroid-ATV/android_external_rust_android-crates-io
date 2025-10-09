@@ -8,6 +8,17 @@
       "rulesmk_patch": "patches/rules.mk.diff"
     }
   },
+  "variants": [
+    {},
+    {
+      "package": {
+        "bitflags": {
+	  "no_std": true
+	}
+      },
+      "generate_rulesmk": false
+    }
+  ],
   "run_cargo": false,
   "generate_rulesmk": true
 }

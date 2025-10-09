@@ -24,9 +24,7 @@
     {
       "module_name_overrides": {
         "libder": "libder_nostd",
-        "libpkcs8": "libpkcs8_nostd",
-        "libsec1": "libsec1_nostd",
-        "libzeroize": "libzeroize_nostd"
+        "libpkcs8": "libpkcs8_nostd"
       },
       "package": {
         "sec1": {

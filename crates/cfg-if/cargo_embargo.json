@@ -11,7 +11,7 @@
         }
       },
       "tests": false,
-      "generate_androidbp": false,
+      "generate_androidbp": true,
       "generate_rulesmk": true
     }
   ]

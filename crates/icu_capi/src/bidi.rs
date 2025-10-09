@@ -11,7 +11,7 @@ pub mod ffi {
     use core::fmt::Write;
 
     #[cfg(feature = "buffer_provider")]
-    use crate::{errors::ffi::DataError, provider::ffi::DataProvider};
+    use crate::unstable::{errors::ffi::DataError, provider::ffi::DataProvider};
 
     pub enum BidiDirection {
         Ltr,
@@ -21,13 +21,12 @@ pub mod ffi {
 
     #[diplomat::opaque]
     /// An ICU4X Bidi object, containing loaded bidi data
-    #[diplomat::rust_link(icu::properties::bidi::BidiClassAdapter, Struct)]
     #[diplomat::rust_link(icu::properties::props::BidiClass, Struct)]
+    #[diplomat::attr(demo_gen, disable)] // TODO needs custom page
     pub struct Bidi(pub icu_properties::CodePointMapData<icu_properties::props::BidiClass>);
 
     impl Bidi {
         /// Creates a new [`Bidi`] from locale data using compiled data.
-        #[diplomat::rust_link(icu::properties::bidi::BidiClassAdapter::new, FnInStruct)]
         #[diplomat::attr(auto, constructor)]
         #[cfg(feature = "compiled_data")]
         pub fn create() -> Box<Bidi> {
@@ -37,7 +36,6 @@ pub mod ffi {
         }
 
         /// Creates a new [`Bidi`] from locale data, and a particular data source.
-        #[diplomat::rust_link(icu::properties::bidi::BidiClassAdapter::new, FnInStruct)]
         #[diplomat::attr(all(supports = fallible_constructors, supports = named_constructors), named_constructor = "with_provider")]
         #[cfg(feature = "buffer_provider")]
         pub fn create_with_provider(provider: &DataProvider) -> Result<Box<Bidi>, DataError> {
@@ -117,7 +115,7 @@ pub mod ffi {
         /// Check if a Level returned by level_at is an RTL level.
         ///
         /// Invalid levels (numbers greater than 125) will be assumed LTR
-        #[diplomat::rust_link(unicode_bidi::Level::is_rtl, FnInStruct)]
+        #[diplomat::rust_link(unicode_bidi::level::Level::is_rtl, FnInStruct)]
         pub fn level_is_rtl(level: u8) -> bool {
             unicode_bidi::Level::new(level)
                 .unwrap_or_else(|_| unicode_bidi::Level::ltr())
@@ -127,7 +125,7 @@ pub mod ffi {
         /// Check if a Level returned by level_at is an LTR level.
         ///
         /// Invalid levels (numbers greater than 125) will be assumed LTR
-        #[diplomat::rust_link(unicode_bidi::Level::is_ltr, FnInStruct)]
+        #[diplomat::rust_link(unicode_bidi::level::Level::is_ltr, FnInStruct)]
         pub fn level_is_ltr(level: u8) -> bool {
             unicode_bidi::Level::new(level)
                 .unwrap_or_else(|_| unicode_bidi::Level::ltr())
@@ -135,13 +133,13 @@ pub mod ffi {
         }
 
         /// Get a basic RTL Level value
-        #[diplomat::rust_link(unicode_bidi::Level::rtl, FnInStruct)]
+        #[diplomat::rust_link(unicode_bidi::level::Level::rtl, FnInStruct)]
         pub fn level_rtl() -> u8 {
             unicode_bidi::Level::rtl().number()
         }
 
         /// Get a simple LTR Level value
-        #[diplomat::rust_link(unicode_bidi::Level::ltr, FnInStruct)]
+        #[diplomat::rust_link(unicode_bidi::level::Level::ltr, FnInStruct)]
         pub fn level_ltr() -> u8 {
             unicode_bidi::Level::ltr().number()
         }
@@ -153,6 +151,7 @@ pub mod ffi {
     ///
     /// Produced by `reorder_visual()` on [`Bidi`].
     #[diplomat::opaque]
+    #[diplomat::attr(demo_gen, disable)] // TODO needs custom page
     pub struct ReorderedIndexMap(pub Vec<usize>);
 
     impl ReorderedIndexMap {
@@ -186,6 +185,7 @@ pub mod ffi {
     /// An object containing bidi information for a given string, produced by `for_text()` on `Bidi`
     #[diplomat::rust_link(unicode_bidi::BidiInfo, Struct)]
     #[diplomat::opaque]
+    #[diplomat::attr(demo_gen, disable)] // TODO needs custom page
     pub struct BidiInfo<'text>(pub unicode_bidi::BidiInfo<'text>);
 
     impl<'text> BidiInfo<'text> {
@@ -225,6 +225,7 @@ pub mod ffi {
 
     /// Bidi information for a single processed paragraph
     #[diplomat::opaque]
+    #[diplomat::attr(demo_gen, disable)] // TODO needs custom page
     pub struct BidiParagraph<'info>(pub unicode_bidi::Paragraph<'info, 'info>);
 
     impl<'info> BidiParagraph<'info> {
@@ -270,7 +271,7 @@ pub mod ffi {
         /// Reorder a line based on display order. The ranges are specified relative to the source text and must be contained
         /// within this paragraph's range.
         #[diplomat::rust_link(unicode_bidi::Paragraph::level_at, FnInStruct)]
-        #[diplomat::attr(demo_gen, disable)]
+        #[diplomat::attr(demo_gen, disable)] // TODO needs custom page
         pub fn reorder_line(
             &self,
             range_start: usize,

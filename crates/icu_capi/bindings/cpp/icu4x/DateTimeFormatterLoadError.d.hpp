@@ -8,6 +8,7 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <cstdlib>
 #include "../diplomat_runtime.hpp"
 
 
@@ -15,9 +16,10 @@ namespace icu4x {
 namespace capi {
     enum DateTimeFormatterLoadError {
       DateTimeFormatterLoadError_Unknown = 0,
+      DateTimeFormatterLoadError_InvalidDateFields = 2049,
       DateTimeFormatterLoadError_UnsupportedLength = 2051,
-      DateTimeFormatterLoadError_DuplicateField = 2057,
-      DateTimeFormatterLoadError_TypeTooSpecific = 2058,
+      DateTimeFormatterLoadError_ConflictingField = 2057,
+      DateTimeFormatterLoadError_FormatterTooSpecific = 2058,
       DateTimeFormatterLoadError_DataMarkerNotFound = 1,
       DateTimeFormatterLoadError_DataIdentifierNotFound = 2,
       DateTimeFormatterLoadError_DataInvalidRequest = 3,
@@ -27,19 +29,23 @@ namespace capi {
       DateTimeFormatterLoadError_DataCustom = 7,
       DateTimeFormatterLoadError_DataIo = 8,
     };
-    
+
     typedef struct DateTimeFormatterLoadError_option {union { DateTimeFormatterLoadError ok; }; bool is_ok; } DateTimeFormatterLoadError_option;
 } // namespace capi
 } // namespace
 
 namespace icu4x {
+/**
+ * Additional information: [1](https://docs.rs/icu/2.0.0/icu/datetime/enum.DateTimeFormatterLoadError.html), [2](https://docs.rs/icu/2.0.0/icu/datetime/pattern/enum.PatternLoadError.html), [3](https://docs.rs/icu_provider/2.0.0/icu_provider/struct.DataError.html), [4](https://docs.rs/icu_provider/2.0.0/icu_provider/enum.DataErrorKind.html)
+ */
 class DateTimeFormatterLoadError {
 public:
   enum Value {
     Unknown = 0,
+    InvalidDateFields = 2049,
     UnsupportedLength = 2051,
-    DuplicateField = 2057,
-    TypeTooSpecific = 2058,
+    ConflictingField = 2057,
+    FormatterTooSpecific = 2058,
     DataMarkerNotFound = 1,
     DataIdentifierNotFound = 2,
     DataInvalidRequest = 3,

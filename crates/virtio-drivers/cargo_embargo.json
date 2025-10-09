@@ -15,12 +15,7 @@
   "tests": true,
   "vendor_available": false,
   "variants": [
-    {
-      "module_name_overrides": {
-        "liblog": "liblog_rust_nostd",
-        "libthiserror": "libthiserror_nostd"
-      }
-    },
+    {},
     {
       "generate_androidbp": false,
       "generate_rulesmk": true,

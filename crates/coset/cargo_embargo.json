@@ -10,11 +10,6 @@
     },
     {
       "features": [],
-      "module_name_overrides": {
-        "libciborium": "libciborium_nostd",
-        "libciborium_io": "libciborium_io_nostd",
-        "libcoset": "libcoset_nostd"
-      },
       "package": {
         "coset": {
           "alloc": true,

@@ -8,9 +8,9 @@
 pub mod ffi {
     use alloc::boxed::Box;
 
-    use crate::locale_core::ffi::Locale;
+    use crate::unstable::locale_core::ffi::Locale;
     #[cfg(feature = "buffer_provider")]
-    use crate::{errors::ffi::DataError, provider::ffi::DataProvider};
+    use crate::unstable::{errors::ffi::DataError, provider::ffi::DataProvider};
 
     #[diplomat::rust_link(icu::locale::TransformResult, Enum)]
     #[diplomat::enum_convert(icu_locale::TransformResult)]
@@ -22,6 +22,7 @@ pub mod ffi {
     /// A locale canonicalizer.
     #[diplomat::rust_link(icu::locale::LocaleCanonicalizer, Struct)]
     #[diplomat::opaque]
+    #[diplomat::demo(custom_func = "../../../tools/web-demo/custom/LocaleCanonicalizer.mjs")]
     pub struct LocaleCanonicalizer(icu_locale::LocaleCanonicalizer);
 
     impl LocaleCanonicalizer {

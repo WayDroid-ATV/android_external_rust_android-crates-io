@@ -6,9 +6,6 @@
       "no_std": true
     }
   },
-  "module_name_overrides": {
-    "libthiserror": "libthiserror_nostd"
-  },
   "tests": true,
   "run_cargo": false,
   "generate_rulesmk": true,

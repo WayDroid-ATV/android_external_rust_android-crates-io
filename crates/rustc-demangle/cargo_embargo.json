@@ -1,5 +1,7 @@
 {
-  "features": ["std"],
+  "features": [
+    "std"
+  ],
   "apex_available": [
     "//apex_available:platform",
     "com.android.runtime",
@@ -18,6 +20,18 @@
       "extra_srcs": [
         "src/v0-large-test-symbols/early-recursion-limit"
       ]
-    } 
-  }
+    }
+  },
+  "variants": [
+    {},
+    {
+      "features": [],
+      "tests": false,
+      "package": {
+        "rustc-demangle": {
+          "no_std": true
+        }
+      }
+    }
+  ]
 }

@@ -10,6 +10,7 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <cstdlib>
 #include "../diplomat_runtime.hpp"
 #include "CodePointRangeIterator.hpp"
 #include "CodePointSetData.hpp"
@@ -21,80 +22,84 @@
 namespace icu4x {
 namespace capi {
     extern "C" {
-    
+
     uint8_t icu4x_CodePointMapData8_get_mv1(const icu4x::capi::CodePointMapData8* self, char32_t cp);
-    
+
     icu4x::capi::CodePointRangeIterator* icu4x_CodePointMapData8_iter_ranges_for_value_mv1(const icu4x::capi::CodePointMapData8* self, uint8_t value);
-    
+
     icu4x::capi::CodePointRangeIterator* icu4x_CodePointMapData8_iter_ranges_for_value_complemented_mv1(const icu4x::capi::CodePointMapData8* self, uint8_t value);
-    
+
     icu4x::capi::CodePointRangeIterator* icu4x_CodePointMapData8_iter_ranges_for_group_mv1(const icu4x::capi::CodePointMapData8* self, icu4x::capi::GeneralCategoryGroup group);
-    
+
     icu4x::capi::CodePointSetData* icu4x_CodePointMapData8_get_set_for_value_mv1(const icu4x::capi::CodePointMapData8* self, uint8_t value);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_general_category_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_general_category_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_general_category_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_general_category_with_provider_mv1_result icu4x_CodePointMapData8_create_general_category_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_bidi_class_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_bidi_class_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_bidi_class_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_bidi_class_with_provider_mv1_result icu4x_CodePointMapData8_create_bidi_class_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_east_asian_width_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_east_asian_width_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_east_asian_width_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_east_asian_width_with_provider_mv1_result icu4x_CodePointMapData8_create_east_asian_width_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_hangul_syllable_type_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_hangul_syllable_type_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_hangul_syllable_type_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_hangul_syllable_type_with_provider_mv1_result icu4x_CodePointMapData8_create_hangul_syllable_type_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_indic_syllabic_category_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_indic_syllabic_category_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_indic_syllabic_category_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_indic_syllabic_category_with_provider_mv1_result icu4x_CodePointMapData8_create_indic_syllabic_category_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_line_break_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_line_break_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_line_break_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_line_break_with_provider_mv1_result icu4x_CodePointMapData8_create_line_break_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_grapheme_cluster_break_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_grapheme_cluster_break_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_grapheme_cluster_break_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_grapheme_cluster_break_with_provider_mv1_result icu4x_CodePointMapData8_create_grapheme_cluster_break_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_word_break_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_word_break_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_word_break_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_word_break_with_provider_mv1_result icu4x_CodePointMapData8_create_word_break_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_sentence_break_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_sentence_break_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_sentence_break_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_sentence_break_with_provider_mv1_result icu4x_CodePointMapData8_create_sentence_break_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_joining_type_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_joining_type_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_joining_type_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_joining_type_with_provider_mv1_result icu4x_CodePointMapData8_create_joining_type_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
+
     icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_canonical_combining_class_mv1(void);
-    
+
     typedef struct icu4x_CodePointMapData8_create_canonical_combining_class_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_canonical_combining_class_with_provider_mv1_result;
     icu4x_CodePointMapData8_create_canonical_combining_class_with_provider_mv1_result icu4x_CodePointMapData8_create_canonical_combining_class_with_provider_mv1(const icu4x::capi::DataProvider* provider);
-    
-    
+
+    icu4x::capi::CodePointMapData8* icu4x_CodePointMapData8_create_vertical_orientation_mv1(void);
+
+    typedef struct icu4x_CodePointMapData8_create_vertical_orientation_with_provider_mv1_result {union {icu4x::capi::CodePointMapData8* ok; icu4x::capi::DataError err;}; bool is_ok;} icu4x_CodePointMapData8_create_vertical_orientation_with_provider_mv1_result;
+    icu4x_CodePointMapData8_create_vertical_orientation_with_provider_mv1_result icu4x_CodePointMapData8_create_vertical_orientation_with_provider_mv1(const icu4x::capi::DataProvider* provider);
+
     void icu4x_CodePointMapData8_destroy_mv1(CodePointMapData8* self);
-    
+
     } // extern "C"
 } // namespace capi
 } // namespace
 
-inline uint8_t icu4x::CodePointMapData8::get(char32_t cp) const {
+inline uint8_t icu4x::CodePointMapData8::operator[](char32_t cp) const {
   auto result = icu4x::capi::icu4x_CodePointMapData8_get_mv1(this->AsFFI(),
     cp);
   return result;
@@ -231,6 +236,16 @@ inline std::unique_ptr<icu4x::CodePointMapData8> icu4x::CodePointMapData8::creat
 
 inline diplomat::result<std::unique_ptr<icu4x::CodePointMapData8>, icu4x::DataError> icu4x::CodePointMapData8::create_canonical_combining_class_with_provider(const icu4x::DataProvider& provider) {
   auto result = icu4x::capi::icu4x_CodePointMapData8_create_canonical_combining_class_with_provider_mv1(provider.AsFFI());
+  return result.is_ok ? diplomat::result<std::unique_ptr<icu4x::CodePointMapData8>, icu4x::DataError>(diplomat::Ok<std::unique_ptr<icu4x::CodePointMapData8>>(std::unique_ptr<icu4x::CodePointMapData8>(icu4x::CodePointMapData8::FromFFI(result.ok)))) : diplomat::result<std::unique_ptr<icu4x::CodePointMapData8>, icu4x::DataError>(diplomat::Err<icu4x::DataError>(icu4x::DataError::FromFFI(result.err)));
+}
+
+inline std::unique_ptr<icu4x::CodePointMapData8> icu4x::CodePointMapData8::create_vertical_orientation() {
+  auto result = icu4x::capi::icu4x_CodePointMapData8_create_vertical_orientation_mv1();
+  return std::unique_ptr<icu4x::CodePointMapData8>(icu4x::CodePointMapData8::FromFFI(result));
+}
+
+inline diplomat::result<std::unique_ptr<icu4x::CodePointMapData8>, icu4x::DataError> icu4x::CodePointMapData8::create_vertical_orientation_with_provider(const icu4x::DataProvider& provider) {
+  auto result = icu4x::capi::icu4x_CodePointMapData8_create_vertical_orientation_with_provider_mv1(provider.AsFFI());
   return result.is_ok ? diplomat::result<std::unique_ptr<icu4x::CodePointMapData8>, icu4x::DataError>(diplomat::Ok<std::unique_ptr<icu4x::CodePointMapData8>>(std::unique_ptr<icu4x::CodePointMapData8>(icu4x::CodePointMapData8::FromFFI(result.ok)))) : diplomat::result<std::unique_ptr<icu4x::CodePointMapData8>, icu4x::DataError>(diplomat::Err<icu4x::DataError>(icu4x::DataError::FromFFI(result.err)));
 }
 

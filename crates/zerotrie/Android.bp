@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "libzerotrie",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "zerotrie",
     cargo_env_compat: true,
@@ -49,6 +50,9 @@ rust_library {
     ramdisk_available: true,
     min_sdk_version: "29",
     sdk_version: "29",
+    no_std: {
+        enabled: true,
+    },
     target: {
         linux_bionic: {
             enabled: true,
