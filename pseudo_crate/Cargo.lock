@@ -461,6 +461,7 @@ dependencies = [
  "rand_chacha 0.9.0",
  "rand_core 0.9.3",
  "rand_xorshift",
+ "raw-cpuid",
  "rayon",
  "rayon-core",
  "read-fonts",
@@ -595,6 +596,7 @@ dependencies = [
  "virtio-vsock",
  "vm-memory",
  "vmm-sys-util 0.15.0",
+ "volatile",
  "vsock",
  "vsprintf",
  "vulkano",
@@ -618,6 +620,7 @@ dependencies = [
  "writeable",
  "wyz",
  "x509-cert",
+ "x86_64",
  "xml-rs",
  "yaml-rust",
  "yoke",
@@ -6373,6 +6376,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "raw-cpuid"
+version = "11.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "498cd0dc59d73224351ee52a95fee0f1a617a2eae0e7d9d720cc622c73a54186"
+dependencies = [
+ "bitflags 2.9.4",
+]
+
+[[package]]
 name = "rayon"
 version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8536,6 +8548,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "volatile"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "442887c63f2c839b346c192d047a7c87e73d0689c9157b00b53dcc27dd5ea793"
+
+[[package]]
 name = "vsock"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9418,6 +9436,18 @@ dependencies = [
  "der",
  "spki",
  "tls_codec",
+]
+
+[[package]]
+name = "x86_64"
+version = "0.15.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f042214de98141e9c8706e8192b73f56494087cc55ebec28ce10f26c5c364ae"
+dependencies = [
+ "bit_field",
+ "bitflags 2.9.4",
+ "rustversion",
+ "volatile",
 ]
 
 [[package]]

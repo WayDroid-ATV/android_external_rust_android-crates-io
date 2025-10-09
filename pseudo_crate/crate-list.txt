@@ -351,6 +351,7 @@ rand
 rand_chacha
 rand_core
 rand_xorshift
+raw-cpuid
 rayon
 rayon-core
 read-fonts
@@ -490,6 +491,7 @@ virtio-queue
 virtio-vsock
 vm-memory
 vmm-sys-util
+volatile
 vsock
 vsprintf
 vulkano
@@ -513,6 +515,7 @@ winnow
 writeable
 wyz
 x509-cert
+x86_64
 xml-rs
 yaml-rust
 yoke
