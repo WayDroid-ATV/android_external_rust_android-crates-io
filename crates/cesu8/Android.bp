@@ -41,8 +41,7 @@ rust_library {
     edition: "2015",
     apex_available: [
         "//apex_available:platform",
-        "com.android.uwb",
-        "com.android.virt",
+        "//apex_available:anyapex",
     ],
     product_available: true,
     vendor_available: true,
