@@ -9,7 +9,7 @@ pub mod ffi {
     use alloc::boxed::Box;
 
     #[cfg(feature = "buffer_provider")]
-    use crate::{errors::ffi::DataError, provider::ffi::DataProvider};
+    use crate::unstable::{errors::ffi::DataError, provider::ffi::DataProvider};
 
     #[diplomat::opaque]
     #[diplomat::rust_link(icu::normalizer::ComposingNormalizer, Struct)]
@@ -148,17 +148,8 @@ pub mod ffi {
             FnInStruct
         )]
         #[diplomat::rust_link(
-            icu::normalizer::ComposingNormalizerBorrowed::is_normalized_utf8_up_to,
-            FnInStruct
-        )]
-        #[diplomat::rust_link(
             icu::normalizer::ComposingNormalizerBorrowed::split_normalized,
             FnInStruct
-        )]
-        #[diplomat::rust_link(
-            icu::normalizer::ComposingNormalizerBorrowed::is_normalized_up_to,
-            FnInStruct,
-            hidden
         )]
         #[diplomat::attr(not(supports = utf8_strings), disable)]
         #[diplomat::attr(*, rename = "is_normalized_up_to")]
@@ -169,10 +160,6 @@ pub mod ffi {
         /// Return the index a slice of potentially-invalid UTF-16 is normalized up to
         #[diplomat::rust_link(
             icu::normalizer::ComposingNormalizerBorrowed::split_normalized_utf16,
-            FnInStruct
-        )]
-        #[diplomat::rust_link(
-            icu::normalizer::ComposingNormalizerBorrowed::is_normalized_utf16_up_to,
             FnInStruct
         )]
         #[diplomat::attr(not(supports = utf8_strings), rename = "is_normalized_up_to")]
@@ -297,6 +284,8 @@ pub mod ffi {
             FnInStruct,
             hidden
         )]
+        #[diplomat::attr(not(supports = utf8_strings), disable)]
+        #[diplomat::attr(*, rename = "is_normalized")]
         pub fn is_normalized(&self, s: &DiplomatStr) -> bool {
             self.0.as_borrowed().is_normalized_utf8(s)
         }
@@ -309,6 +298,8 @@ pub mod ffi {
             icu::normalizer::DecomposingNormalizerBorrowed::is_normalized_utf16,
             FnInStruct
         )]
+        #[diplomat::attr(not(supports = utf8_strings), rename = "is_normalized")]
+        #[diplomat::attr(supports = utf8_strings, rename = "is_normalized16")]
         pub fn is_normalized_utf16(&self, s: &DiplomatStr16) -> bool {
             self.0.as_borrowed().is_normalized_utf16(s)
         }
@@ -319,18 +310,11 @@ pub mod ffi {
             FnInStruct
         )]
         #[diplomat::rust_link(
-            icu::normalizer::DecomposingNormalizerBorrowed::is_normalized_utf8_up_to,
-            FnInStruct
-        )]
-        #[diplomat::rust_link(
             icu::normalizer::DecomposingNormalizerBorrowed::split_normalized,
             FnInStruct
         )]
-        #[diplomat::rust_link(
-            icu::normalizer::DecomposingNormalizerBorrowed::is_normalized_up_to,
-            FnInStruct,
-            hidden
-        )]
+        #[diplomat::attr(not(supports = utf8_strings), disable)]
+        #[diplomat::attr(*, rename = "is_normalized_up_to")]
         pub fn is_normalized_up_to(&self, s: &DiplomatStr) -> usize {
             self.0.as_borrowed().split_normalized_utf8(s).0.len()
         }
@@ -340,10 +324,8 @@ pub mod ffi {
             icu::normalizer::DecomposingNormalizerBorrowed::split_normalized_utf16,
             FnInStruct
         )]
-        #[diplomat::rust_link(
-            icu::normalizer::DecomposingNormalizerBorrowed::is_normalized_utf16_up_to,
-            FnInStruct
-        )]
+        #[diplomat::attr(not(supports = utf8_strings), rename = "is_normalized_up_to")]
+        #[diplomat::attr(supports = utf8_strings, rename = "is_normalized16_up_to")]
         pub fn is_normalized_utf16_up_to(&self, s: &DiplomatStr16) -> usize {
             self.0.as_borrowed().split_normalized_utf16(s).0.len()
         }

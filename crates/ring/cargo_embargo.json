@@ -126,24 +126,6 @@
         "libring_core_0_17_2_test": "libring-test"
       },
       "tests": true
-    },
-    {
-      "features": [
-      ],
-      "module_name_overrides": {
-        "libgetrandom": "libgetrandom-0.2",
-        "libring_core_0_17_2_": "libring-core",
-        "libring_core_0_17_2_test": "libring-test",
-        "libring": "libring_nostd",
-        "libspin": "libspin_nostd"
-      },
-      "package": {
-        "ring": {
-          "force_rlib": true,
-          "host_supported": false,
-          "no_std": true
-        }
-      }
     }
   ]
 }

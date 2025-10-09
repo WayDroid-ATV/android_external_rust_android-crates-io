@@ -15,13 +15,18 @@ license {
 
 rust_library {
     name: "libicu_provider",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "icu_provider",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.0.0-beta2",
+    cargo_pkg_version: "2.0.0",
     crate_root: "src/lib.rs",
     edition: "2021",
-    features: ["alloc"],
+    features: [
+        "alloc",
+        "baked",
+        "zerotrie",
+    ],
     rustlibs: [
         "libicu_locale_core",
         "libstable_deref_trait",
@@ -29,6 +34,7 @@ rust_library {
         "libwriteable",
         "libyoke",
         "libzerofrom",
+        "libzerotrie",
         "libzerovec",
     ],
     proc_macros: ["libdisplaydoc"],
@@ -44,6 +50,9 @@ rust_library {
     ramdisk_available: true,
     min_sdk_version: "29",
     sdk_version: "29",
+    no_std: {
+        enabled: true,
+    },
     target: {
         linux_bionic: {
             enabled: true,

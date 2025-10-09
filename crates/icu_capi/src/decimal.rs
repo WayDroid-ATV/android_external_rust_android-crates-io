@@ -9,10 +9,10 @@ pub mod ffi {
     use alloc::boxed::Box;
 
     #[cfg(any(feature = "compiled_data", feature = "buffer_provider"))]
-    use crate::locale_core::ffi::Locale;
+    use crate::unstable::locale_core::ffi::Locale;
     #[cfg(feature = "buffer_provider")]
-    use crate::provider::ffi::DataProvider;
-    use crate::{errors::ffi::DataError, fixed_decimal::ffi::Decimal};
+    use crate::unstable::provider::ffi::DataProvider;
+    use crate::unstable::{errors::ffi::DataError, fixed_decimal::ffi::Decimal};
     use icu_decimal::options::DecimalFormatterOptions;
     #[cfg(any(feature = "compiled_data", feature = "buffer_provider"))]
     use icu_decimal::DecimalFormatterPreferences;
@@ -22,7 +22,7 @@ pub mod ffi {
     #[diplomat::opaque]
     /// An ICU4X Decimal Format object, capable of formatting a [`Decimal`] as a string.
     #[diplomat::rust_link(icu::decimal::DecimalFormatter, Struct)]
-    #[diplomat::rust_link(icu::datetime::FormattedDecimal, Struct, hidden)]
+    #[diplomat::rust_link(icu::decimal::FormattedDecimal, Struct, hidden)]
     pub struct DecimalFormatter(pub icu_decimal::DecimalFormatter);
 
     #[diplomat::rust_link(icu::decimal::options::GroupingStrategy, Enum)]
@@ -77,7 +77,7 @@ pub mod ffi {
         }
 
         /// Creates a new [`DecimalFormatter`] from preconstructed locale data.
-        #[diplomat::rust_link(icu::decimal::provider::DecimalSymbolsV2, Struct)]
+        #[diplomat::rust_link(icu::decimal::provider::DecimalSymbolsV1, Struct)]
         #[allow(clippy::too_many_arguments)]
         pub fn create_with_manual_data(
             plus_sign_prefix: &DiplomatStr,
@@ -109,7 +109,7 @@ pub mod ffi {
             }
 
             use icu_decimal::provider::{
-                DecimalDigitsV1, DecimalSymbolStrsBuilder, DecimalSymbols, DecimalSymbolsV2,
+                DecimalDigitsV1, DecimalSymbolStrsBuilder, DecimalSymbols, DecimalSymbolsV1,
                 GroupingSizes,
             };
             let mut new_digits = ['\0'; 10];
@@ -142,11 +142,11 @@ pub mod ffi {
             options.grouping_strategy = grouping_strategy.map(Into::into);
 
             struct Provider(RefCell<Option<DecimalSymbols<'static>>>, [char; 10]);
-            impl DataProvider<DecimalSymbolsV2> for Provider {
+            impl DataProvider<DecimalSymbolsV1> for Provider {
                 fn load(
                     &self,
                     _req: icu_provider::DataRequest,
-                ) -> Result<icu_provider::DataResponse<DecimalSymbolsV2>, icu_provider::DataError>
+                ) -> Result<icu_provider::DataResponse<DecimalSymbolsV1>, icu_provider::DataError>
                 {
                     Ok(DataResponse {
                         metadata: Default::default(),
@@ -192,7 +192,6 @@ pub mod ffi {
         #[diplomat::rust_link(icu::decimal::DecimalFormatter::format, FnInStruct)]
         #[diplomat::rust_link(icu::decimal::DecimalFormatter::format_to_string, FnInStruct, hidden)]
         #[diplomat::rust_link(icu::decimal::FormattedDecimal, Struct, hidden)]
-        #[diplomat::rust_link(icu::decimal::FormattedDecimal::write_to, FnInStruct, hidden)]
         #[diplomat::rust_link(icu::decimal::FormattedDecimal::to_string, FnInStruct, hidden)]
         pub fn format(&self, value: &Decimal, write: &mut diplomat_runtime::DiplomatWrite) {
             let _infallible = self.0.format(&value.0).write_to(write);

@@ -8,6 +8,7 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <cstdlib>
 #include "../diplomat_runtime.hpp"
 #include "BidiPairedBracketType.d.hpp"
 
@@ -24,18 +25,24 @@ namespace capi {
       bool mirrored;
       icu4x::capi::BidiPairedBracketType paired_bracket_type;
     };
-    
+
     typedef struct BidiMirroringGlyph_option {union { BidiMirroringGlyph ok; }; bool is_ok; } BidiMirroringGlyph_option;
 } // namespace capi
 } // namespace
 
 
 namespace icu4x {
+/**
+ * See the [Rust documentation for `BidiMirroringGlyph`](https://docs.rs/icu/2.0.0/icu/properties/props/struct.BidiMirroringGlyph.html) for more information.
+ */
 struct BidiMirroringGlyph {
   std::optional<char32_t> mirroring_glyph;
   bool mirrored;
   icu4x::BidiPairedBracketType paired_bracket_type;
 
+  /**
+   * See the [Rust documentation for `for_char`](https://docs.rs/icu/2.0.0/icu/properties/props/trait.EnumeratedProperty.html#tymethod.for_char) for more information.
+   */
   inline static icu4x::BidiMirroringGlyph for_char(char32_t ch);
 
   inline icu4x::capi::BidiMirroringGlyph AsFFI() const;

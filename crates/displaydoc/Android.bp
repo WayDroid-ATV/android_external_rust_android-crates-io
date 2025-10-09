@@ -20,10 +20,6 @@ rust_proc_macro {
     cargo_pkg_version: "0.2.5",
     crate_root: "src/lib.rs",
     edition: "2021",
-    features: [
-        "default",
-        "std",
-    ],
     rustlibs: [
         "libproc_macro2",
         "libquote",

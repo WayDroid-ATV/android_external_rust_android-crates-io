@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "libdiplomat_runtime",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "diplomat_runtime",
     cargo_env_compat: true,
@@ -32,4 +33,7 @@ rust_library {
     vendor_ramdisk_available: true,
     ramdisk_available: true,
     min_sdk_version: "29",
+    no_std: {
+        enabled: true,
+    },
 }

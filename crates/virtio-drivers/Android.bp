@@ -24,9 +24,9 @@ rust_library_rlib {
     features: ["alloc"],
     rustlibs: [
         "libbitflags",
-        "liblog_rust_nostd",
+        "liblog_rust",
         "libsafe_mmio",
-        "libthiserror_nostd",
+        "libthiserror",
         "libzerocopy",
     ],
     proc_macros: ["libenumn"],
@@ -45,7 +45,6 @@ rust_library_rlib {
 
 rust_test {
     name: "virtio-drivers_test_src_lib",
-    defaults: ["rust_baremetal_defaults"],
     crate_name: "virtio_drivers",
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.0",
@@ -56,9 +55,9 @@ rust_test {
     features: ["alloc"],
     rustlibs: [
         "libbitflags",
-        "liblog_rust_nostd",
+        "liblog_rust",
         "libsafe_mmio",
-        "libthiserror_nostd",
+        "libthiserror",
         "libzerocopy",
     ],
     proc_macros: ["libenumn"],

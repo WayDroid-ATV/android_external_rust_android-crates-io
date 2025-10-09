@@ -9,9 +9,9 @@ pub mod ffi {
     use alloc::boxed::Box;
 
     #[cfg(feature = "buffer_provider")]
-    use crate::provider::ffi::DataProvider;
+    use crate::unstable::provider::ffi::DataProvider;
     #[cfg(any(feature = "compiled_data", feature = "buffer_provider"))]
-    use crate::{errors::ffi::DataError, locale_core::ffi::Locale};
+    use crate::unstable::{errors::ffi::DataError, locale_core::ffi::Locale};
 
     #[diplomat::opaque]
     /// A set of "exemplar characters" for a given locale.
@@ -59,6 +59,7 @@ pub mod ffi {
         )]
         #[diplomat::attr(all(supports = fallible_constructors, supports = named_constructors), named_constructor = "main")]
         #[cfg(feature = "compiled_data")]
+        #[diplomat::demo(default_constructor)]
         pub fn create_main(locale: &Locale) -> Result<Box<ExemplarCharacters>, DataError> {
             let locale = locale.to_datalocale();
             Ok(Box::new(ExemplarCharacters(

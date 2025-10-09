@@ -63,7 +63,7 @@ rust_library_rlib {
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
-        "libciborium_io_nostd",
+        "libciborium_io",
         "libhalf_nostd",
     ],
     apex_available: [
@@ -72,11 +72,6 @@ rust_library_rlib {
     ],
     prefer_rlib: true,
     no_stdlibs: true,
-    stdlibs: [
-        "liballoc.rust_sysroot",
-        "libcompiler_builtins.rust_sysroot",
-        "libcore.rust_sysroot",
-    ],
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",

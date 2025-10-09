@@ -3,14 +3,13 @@ import wasm from "./diplomat-wasm.mjs";
 import * as diplomatRuntime from "./diplomat-runtime.mjs";
 
 
-/** Priority mode for the ICU4X fallback algorithm.
-*
-*See the [Rust documentation for `LocaleFallbackPriority`](https://docs.rs/icu/latest/icu/locale/fallback/enum.LocaleFallbackPriority.html) for more information.
-*/
 
-
+/**
+ * Priority mode for the ICU4X fallback algorithm.
+ *
+ * See the [Rust documentation for `LocaleFallbackPriority`](https://docs.rs/icu/2.0.0/icu/locale/fallback/enum.LocaleFallbackPriority.html) for more information.
+ */
 export class LocaleFallbackPriority {
-    
     #value = undefined;
 
     static #values = new Map([
@@ -21,7 +20,7 @@ export class LocaleFallbackPriority {
     static getAllEntries() {
         return LocaleFallbackPriority.#values.entries();
     }
-    
+
     #internalConstructor(value) {
         if (arguments.length > 1 && arguments[0] === diplomatRuntime.internalConstructor) {
             // We pass in two internalConstructor arguments to create *new*
@@ -47,15 +46,17 @@ export class LocaleFallbackPriority {
         throw TypeError(value + " is not a LocaleFallbackPriority and does not correspond to any of its enumerator values.");
     }
 
+    /** @internal */
     static fromValue(value) {
         return new LocaleFallbackPriority(value);
     }
 
-    get value() {
+    get value(){
         return [...LocaleFallbackPriority.#values.keys()][this.#value];
     }
 
-    get ffiValue() {
+    /** @internal */
+    get ffiValue(){
         return this.#value;
     }
     static #objectValues = [
@@ -65,6 +66,7 @@ export class LocaleFallbackPriority {
 
     static Language = LocaleFallbackPriority.#objectValues[0];
     static Region = LocaleFallbackPriority.#objectValues[1];
+
 
     constructor(value) {
         return this.#internalConstructor(...arguments)

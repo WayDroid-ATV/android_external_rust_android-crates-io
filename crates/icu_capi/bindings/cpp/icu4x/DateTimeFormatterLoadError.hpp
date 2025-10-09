@@ -10,14 +10,14 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <cstdlib>
 #include "../diplomat_runtime.hpp"
 
 
 namespace icu4x {
 namespace capi {
     extern "C" {
-    
-    
+
     } // extern "C"
 } // namespace capi
 } // namespace
@@ -29,9 +29,10 @@ inline icu4x::capi::DateTimeFormatterLoadError icu4x::DateTimeFormatterLoadError
 inline icu4x::DateTimeFormatterLoadError icu4x::DateTimeFormatterLoadError::FromFFI(icu4x::capi::DateTimeFormatterLoadError c_enum) {
   switch (c_enum) {
     case icu4x::capi::DateTimeFormatterLoadError_Unknown:
+    case icu4x::capi::DateTimeFormatterLoadError_InvalidDateFields:
     case icu4x::capi::DateTimeFormatterLoadError_UnsupportedLength:
-    case icu4x::capi::DateTimeFormatterLoadError_DuplicateField:
-    case icu4x::capi::DateTimeFormatterLoadError_TypeTooSpecific:
+    case icu4x::capi::DateTimeFormatterLoadError_ConflictingField:
+    case icu4x::capi::DateTimeFormatterLoadError_FormatterTooSpecific:
     case icu4x::capi::DateTimeFormatterLoadError_DataMarkerNotFound:
     case icu4x::capi::DateTimeFormatterLoadError_DataIdentifierNotFound:
     case icu4x::capi::DateTimeFormatterLoadError_DataInvalidRequest:
@@ -42,7 +43,7 @@ inline icu4x::DateTimeFormatterLoadError icu4x::DateTimeFormatterLoadError::From
     case icu4x::capi::DateTimeFormatterLoadError_DataIo:
       return static_cast<icu4x::DateTimeFormatterLoadError::Value>(c_enum);
     default:
-      abort();
+      std::abort();
   }
 }
 #endif // icu4x_DateTimeFormatterLoadError_HPP

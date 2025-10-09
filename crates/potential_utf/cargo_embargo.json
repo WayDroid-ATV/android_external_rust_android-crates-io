@@ -15,5 +15,15 @@
     }
   },
   "sdk_version": "29",
-  "min_sdk_version": "29"
+  "min_sdk_version": "29",
+  "variants": [
+    {},
+    {
+      "package": {
+        "potential_utf": {
+          "no_std": true
+        }
+      }
+    }
+  ]
 }

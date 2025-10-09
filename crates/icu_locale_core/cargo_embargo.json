@@ -12,6 +12,16 @@
       "add_module_block": "icu4x_bionic_dep.bp.fragment"
     }
   },
+  "variants": [
+    {},
+    {
+      "package": {
+        "icu_locale_core": {
+          "no_std": true
+        }
+      }
+    }
+  ],
   "sdk_version": "29",
   "min_sdk_version": "29"
 }

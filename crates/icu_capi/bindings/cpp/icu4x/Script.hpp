@@ -10,27 +10,27 @@
 #include <memory>
 #include <functional>
 #include <optional>
+#include <cstdlib>
 #include "../diplomat_runtime.hpp"
 
 
 namespace icu4x {
 namespace capi {
     extern "C" {
-    
+
     icu4x::capi::Script icu4x_Script_for_char_mv1(char32_t ch);
-    
+
     typedef struct icu4x_Script_long_name_mv1_result {union {diplomat::capi::DiplomatStringView ok; }; bool is_ok;} icu4x_Script_long_name_mv1_result;
     icu4x_Script_long_name_mv1_result icu4x_Script_long_name_mv1(icu4x::capi::Script self);
-    
+
     typedef struct icu4x_Script_short_name_mv1_result {union {diplomat::capi::DiplomatStringView ok; }; bool is_ok;} icu4x_Script_short_name_mv1_result;
     icu4x_Script_short_name_mv1_result icu4x_Script_short_name_mv1(icu4x::capi::Script self);
-    
+
     uint16_t icu4x_Script_to_integer_value_mv1(icu4x::capi::Script self);
-    
+
     typedef struct icu4x_Script_from_integer_value_mv1_result {union {icu4x::capi::Script ok; }; bool is_ok;} icu4x_Script_from_integer_value_mv1_result;
     icu4x_Script_from_integer_value_mv1_result icu4x_Script_from_integer_value_mv1(uint16_t other);
-    
-    
+
     } // extern "C"
 } // namespace capi
 } // namespace
@@ -208,7 +208,7 @@ inline icu4x::Script icu4x::Script::FromFFI(icu4x::capi::Script c_enum) {
     case icu4x::capi::Script_ZanabazarSquare:
       return static_cast<icu4x::Script::Value>(c_enum);
     default:
-      abort();
+      std::abort();
   }
 }
 
@@ -217,17 +217,17 @@ inline icu4x::Script icu4x::Script::for_char(char32_t ch) {
   return icu4x::Script::FromFFI(result);
 }
 
-inline std::optional<std::string_view> icu4x::Script::long_name() {
+inline std::optional<std::string_view> icu4x::Script::long_name() const {
   auto result = icu4x::capi::icu4x_Script_long_name_mv1(this->AsFFI());
   return result.is_ok ? std::optional<std::string_view>(std::string_view(result.ok.data, result.ok.len)) : std::nullopt;
 }
 
-inline std::optional<std::string_view> icu4x::Script::short_name() {
+inline std::optional<std::string_view> icu4x::Script::short_name() const {
   auto result = icu4x::capi::icu4x_Script_short_name_mv1(this->AsFFI());
   return result.is_ok ? std::optional<std::string_view>(std::string_view(result.ok.data, result.ok.len)) : std::nullopt;
 }
 
-inline uint16_t icu4x::Script::to_integer_value() {
+inline uint16_t icu4x::Script::to_integer_value() const {
   auto result = icu4x::capi::icu4x_Script_to_integer_value_mv1(this->AsFFI());
   return result;
 }

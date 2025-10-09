@@ -5,7 +5,6 @@
    "host_supported": false
   }
  },
- "module_name_overrides": { "libthiserror": "libthiserror_nostd" },
  "run_cargo": false,
  "min_sdk_version": "29",
  "tests": false

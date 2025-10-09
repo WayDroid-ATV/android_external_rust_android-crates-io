@@ -22,7 +22,7 @@ index 5828d25..9ab660e 100644
  [lib]
  name = "rustc_demangle"
 -crate-type = ["staticlib", "cdylib"]
-+crate-type = ["staticlib"]
++crate-type = ["lib"]
  [dependencies.rustc-demangle]
  version = "0.1.16"
 -- 

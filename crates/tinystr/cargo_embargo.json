@@ -13,5 +13,15 @@
     }
   },
   "sdk_version": "29",
-  "min_sdk_version": "29"
+  "min_sdk_version": "29",
+  "variants": [
+    {},
+    {
+      "package": {
+        "tinystr": {
+          "no_std": true
+        }
+      }
+    }
+  ]
 }

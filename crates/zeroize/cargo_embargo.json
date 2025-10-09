@@ -9,9 +9,6 @@
       "tests": true
     },
     {
-      "module_name_overrides": {
-        "libzeroize": "libzeroize_nostd"
-      },
       "package": {
         "zeroize": {
           "alloc": true,

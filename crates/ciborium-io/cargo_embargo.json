@@ -12,9 +12,6 @@
       "features": [
         "alloc"
       ],
-      "module_name_overrides": {
-        "libciborium_io": "libciborium_io_nostd"
-      },
       "package": {
         "ciborium-io": {
           "alloc": true,

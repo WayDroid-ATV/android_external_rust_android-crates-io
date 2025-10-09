@@ -6,7 +6,6 @@
   ],
   "module_name_overrides": {
     "libbytemuck": "libbytemuck_nostd",
-    "libserde": "libserde_nostd",
     "libuguid": "libuguid_nostd"
   },
   "package": {

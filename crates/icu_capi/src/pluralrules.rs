@@ -9,12 +9,12 @@ pub mod ffi {
     use alloc::boxed::Box;
 
     #[cfg(any(feature = "compiled_data", feature = "buffer_provider"))]
-    use crate::errors::ffi::DataError;
-    use crate::errors::ffi::FixedDecimalParseError;
+    use crate::unstable::errors::ffi::DataError;
+    use crate::unstable::errors::ffi::DecimalParseError;
     #[cfg(any(feature = "compiled_data", feature = "buffer_provider"))]
-    use crate::locale_core::ffi::Locale;
+    use crate::unstable::locale_core::ffi::Locale;
     #[cfg(feature = "buffer_provider")]
-    use crate::provider::ffi::DataProvider;
+    use crate::unstable::provider::ffi::DataProvider;
 
     #[diplomat::rust_link(icu::plurals::PluralCategory, Enum)]
     #[diplomat::enum_convert(icu_plurals::PluralCategory)]
@@ -51,6 +51,7 @@ pub mod ffi {
         #[diplomat::rust_link(icu::plurals::PluralRulesOptions::with_type, FnInStruct, hidden)]
         #[diplomat::attr(all(supports = fallible_constructors, supports = named_constructors), named_constructor = "cardinal")]
         #[cfg(feature = "compiled_data")]
+        #[diplomat::demo(default_constructor)]
         pub fn create_cardinal(locale: &Locale) -> Result<Box<PluralRules>, DataError> {
             let prefs = icu_plurals::PluralRulesPreferences::from(&locale.0);
             Ok(Box::new(PluralRules(
@@ -127,7 +128,7 @@ pub mod ffi {
         /// Construct for a given string representing a number
         #[diplomat::rust_link(icu::plurals::PluralOperands::from_str, FnInStruct)]
         #[diplomat::attr(all(supports = fallible_constructors, supports = named_constructors), named_constructor)]
-        pub fn from_string(s: &DiplomatStr) -> Result<Box<PluralOperands>, FixedDecimalParseError> {
+        pub fn from_string(s: &DiplomatStr) -> Result<Box<PluralOperands>, DecimalParseError> {
             Ok(Box::new(PluralOperands(icu_plurals::PluralOperands::from(
                 &fixed_decimal::Decimal::try_from_utf8(s)?,
             ))))
@@ -147,7 +148,8 @@ pub mod ffi {
         /// Retains at most 18 digits each from the integer and fraction parts.
         #[cfg(feature = "decimal")]
         #[diplomat::attr(auto, named_constructor)]
-        pub fn from_fixed_decimal(x: &crate::fixed_decimal::ffi::Decimal) -> Box<Self> {
+        #[diplomat::demo(default_constructor)]
+        pub fn from_fixed_decimal(x: &crate::unstable::fixed_decimal::ffi::Decimal) -> Box<Self> {
             Box::new(Self((&x.0).into()))
         }
     }

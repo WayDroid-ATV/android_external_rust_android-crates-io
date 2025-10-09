@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "librustc_demangle",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "rustc_demangle",
     cargo_env_compat: true,
@@ -36,6 +37,10 @@ rust_library {
     vendor_ramdisk_available: true,
     ramdisk_available: true,
     min_sdk_version: "S",
+    no_std: {
+        features: [],
+        enabled: true,
+    },
 }
 
 rust_test {

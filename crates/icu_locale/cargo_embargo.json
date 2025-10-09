@@ -2,6 +2,16 @@
   "features": [
     "compiled_data"
   ],
+  "variants": [
+    {},
+    {
+      "package": {
+        "icu_locale": {
+          "no_std": true
+        }
+      }
+    }
+  ],
   "ramdisk_available": true,
   "recovery_available": true,
   "vendor_ramdisk_available": true,

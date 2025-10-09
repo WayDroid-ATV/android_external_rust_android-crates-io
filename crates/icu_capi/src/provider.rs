@@ -8,9 +8,10 @@
 #[cfg(feature = "buffer_provider")]
 pub mod ffi {
     use alloc::boxed::Box;
+    use diplomat_runtime::DiplomatByte;
     use icu_provider::buf::BufferProvider;
 
-    use crate::errors::ffi::DataError;
+    use crate::unstable::errors::ffi::DataError;
 
     #[diplomat::opaque]
     /// An ICU4X data provider, capable of loading ICU4X data keys from some source.
@@ -73,7 +74,10 @@ pub mod ffi {
         }
 
         /// Constructs a `BlobDataProvider` and returns it as an [`DataProvider`].
-        #[diplomat::rust_link(icu_provider_blob::BlobDataProvider, Struct)]
+        #[diplomat::rust_link(
+            icu_provider_blob::BlobDataProvider::try_new_from_static_blob,
+            FnInStruct
+        )]
         #[diplomat::attr(all(supports = fallible_constructors, supports = named_constructors), named_constructor)]
         #[diplomat::attr(not(supports = static_slices), disable)]
         pub fn from_byte_slice(
@@ -84,17 +88,39 @@ pub mod ffi {
             )))))
         }
 
+        #[diplomat::rust_link(icu_provider_blob::BlobDataProvider::try_new_from_blob, FnInStruct)]
+        #[diplomat::attr(all(supports = fallible_constructors, supports = named_constructors), named_constructor)]
+        #[diplomat::attr(supports = static_slices, disable)]
+        #[diplomat::attr(*, rename = "from_byte_slice")]
+        pub fn from_owned_byte_slice(
+            blob: Box<[DiplomatByte]>,
+        ) -> Result<Box<DataProvider>, DataError> {
+            Ok(Box::new(DataProvider(Some(Box::new(
+                icu_provider_blob::BlobDataProvider::try_new_from_blob(blob)?,
+            )))))
+        }
+
         /// Creates a provider that tries the current provider and then, if the current provider
         /// doesn't support the data key, another provider `other`.
         ///
         /// This takes ownership of the `other` provider, leaving an empty provider in its place.
         #[diplomat::rust_link(icu_provider_adapters::fork::ForkByMarkerProvider, Typedef)]
         #[diplomat::rust_link(
+            icu_provider_adapters::fork::ForkByMarkerProvider::new,
+            FnInTypedef,
+            hidden
+        )]
+        #[diplomat::rust_link(
+            icu_provider_adapters::fork::ForkByMarkerProvider::new_with_predicate,
+            FnInTypedef,
+            hidden
+        )]
+        #[diplomat::rust_link(
             icu_provider_adapters::fork::predicates::MarkerNotFoundPredicate,
             Struct,
             hidden
         )]
-        pub fn fork_by_key(&mut self, other: &mut DataProvider) -> Result<(), DataError> {
+        pub fn fork_by_marker(&mut self, other: &mut DataProvider) -> Result<(), DataError> {
             *self = match (core::mem::take(&mut self.0), core::mem::take(&mut other.0)) {
                 (None, _) | (_, None) => Err(icu_provider::DataError::custom(
                     "This provider has been destroyed",
@@ -140,7 +166,7 @@ pub mod ffi {
         #[cfg(feature = "locale")]
         pub fn enable_locale_fallback_with(
             &mut self,
-            fallbacker: &crate::fallbacker::ffi::LocaleFallbacker,
+            fallbacker: &crate::unstable::fallbacker::ffi::LocaleFallbacker,
         ) -> Result<(), DataError> {
             *self = match core::mem::take(&mut self.0) {
                 None => Err(icu_provider::DataError::custom(

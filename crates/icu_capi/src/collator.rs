@@ -11,9 +11,9 @@ pub mod ffi {
     use alloc::boxed::Box;
 
     #[cfg(feature = "buffer_provider")]
-    use crate::provider::ffi::DataProvider;
+    use crate::unstable::provider::ffi::DataProvider;
     #[cfg(any(feature = "compiled_data", feature = "buffer_provider"))]
-    use crate::{errors::ffi::DataError, locale_core::ffi::Locale};
+    use crate::unstable::{errors::ffi::DataError, locale_core::ffi::Locale};
     use diplomat_runtime::DiplomatOption;
 
     #[diplomat::opaque]
@@ -29,7 +29,6 @@ pub mod ffi {
         pub alternate_handling: DiplomatOption<CollatorAlternateHandling>,
         pub max_variable: DiplomatOption<CollatorMaxVariable>,
         pub case_level: DiplomatOption<CollatorCaseLevel>,
-        pub backward_second_level: DiplomatOption<CollatorBackwardSecondLevel>,
     }
 
     // Note the flipped order of the words `Collator` and `Resolved`, because
@@ -45,7 +44,6 @@ pub mod ffi {
         pub max_variable: CollatorMaxVariable,
         pub case_level: CollatorCaseLevel,
         pub numeric: CollatorNumericOrdering,
-        pub backward_second_level: CollatorBackwardSecondLevel,
     }
 
     #[diplomat::rust_link(icu::collator::options::Strength, Enum)]
@@ -67,7 +65,7 @@ pub mod ffi {
         Shifted = 1,
     }
 
-    #[diplomat::rust_link(icu::collator::options::CaseFirst, Enum)]
+    #[diplomat::rust_link(icu::collator::preferences::CollationCaseFirst, Enum)]
     #[derive(Eq, PartialEq, Debug, PartialOrd, Ord)]
     pub enum CollatorCaseFirst {
         Off = 0,
@@ -93,17 +91,9 @@ pub mod ffi {
         On = 1,
     }
 
-    #[diplomat::rust_link(icu::collator::options::NumericOrdering, Enum)]
+    #[diplomat::rust_link(icu::collator::preferences::CollationNumericOrdering, Enum)]
     #[derive(Eq, PartialEq, Debug, PartialOrd, Ord)]
     pub enum CollatorNumericOrdering {
-        Off = 0,
-        On = 1,
-    }
-
-    #[diplomat::rust_link(icu::collator::options::BackwardSecondLevel, Enum)]
-    #[derive(Eq, PartialEq, Debug, PartialOrd, Ord)]
-    #[diplomat::enum_convert(icu_collator::options::BackwardSecondLevel, needs_wildcard)]
-    pub enum CollatorBackwardSecondLevel {
         Off = 0,
         On = 1,
     }
@@ -114,7 +104,7 @@ pub mod ffi {
         #[diplomat::rust_link(icu::collator::CollatorBorrowed::try_new, FnInStruct, hidden)]
         #[diplomat::rust_link(icu::collator::CollatorPreferences, Struct, hidden)]
         #[diplomat::rust_link(icu::collator::CollatorPreferences::extend, FnInStruct, hidden)]
-        #[diplomat::attr(all(supports = fallible_constructors, supports = named_constructors), named_constructor = "with_provider")]
+        #[diplomat::attr(supports = fallible_constructors, constructor)]
         #[diplomat::attr(supports = non_exhaustive_structs, rename = "create")]
         #[cfg(feature = "compiled_data")]
         pub fn create_v1(
@@ -131,7 +121,7 @@ pub mod ffi {
         #[diplomat::rust_link(icu::collator::Collator::try_new, FnInStruct)]
         #[diplomat::rust_link(icu::collator::CollatorBorrowed::try_new, FnInStruct, hidden)]
         #[diplomat::rust_link(icu::collator::CollatorPreferences, Struct, hidden)]
-        #[diplomat::attr(supports = fallible_constructors, constructor)]
+        #[diplomat::attr(all(supports = fallible_constructors, supports = named_constructors), named_constructor = "with_provider")]
         #[diplomat::attr(supports = non_exhaustive_structs, rename = "create_with_provider")]
         #[cfg(feature = "buffer_provider")]
         pub fn create_v1_with_provider(
@@ -194,7 +184,6 @@ impl From<ffi::CollatorOptionsV1> for CollatorOptions {
         result.alternate_handling = options.alternate_handling.into_converted_option();
         result.max_variable = options.max_variable.into_converted_option();
         result.case_level = options.case_level.into_converted_option();
-        result.backward_second_level = options.backward_second_level.into_converted_option();
 
         result
     }
@@ -209,7 +198,6 @@ impl From<ResolvedCollatorOptions> for ffi::CollatorResolvedOptionsV1 {
             max_variable: options.max_variable.into(),
             case_level: options.case_level.into(),
             numeric: options.numeric.into(),
-            backward_second_level: options.backward_second_level.into(),
         }
     }
 }

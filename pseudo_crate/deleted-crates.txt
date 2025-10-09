@@ -1,3 +1,4 @@
+icu_provider_baked
 icu_provider_macros
 instant
 oneshot-uniffi

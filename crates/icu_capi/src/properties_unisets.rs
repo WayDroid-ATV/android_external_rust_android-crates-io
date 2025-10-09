@@ -11,7 +11,7 @@ pub mod ffi {
     use icu_properties::props::BasicEmoji;
 
     #[cfg(feature = "buffer_provider")]
-    use crate::{errors::ffi::DataError, provider::ffi::DataProvider};
+    use crate::unstable::{errors::ffi::DataError, provider::ffi::DataProvider};
 
     #[diplomat::opaque]
     /// An ICU4X Unicode Set Property object, capable of querying whether a code point is contained in a set based on a Unicode property.
@@ -47,6 +47,7 @@ pub mod ffi {
         #[diplomat::rust_link(icu::properties::props::BasicEmoji, Struct)]
         #[diplomat::attr(auto, named_constructor = "basic")]
         #[cfg(feature = "compiled_data")]
+        #[diplomat::demo(default_constructor)]
         pub fn create_basic() -> Box<EmojiSetData> {
             Box::new(EmojiSetData(
                 icu_properties::EmojiSetData::new::<BasicEmoji>().static_to_owned(),

@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "libciborium",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "ciborium",
     cargo_env_compat: true,
@@ -37,35 +38,15 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-}
-
-rust_library_rlib {
-    name: "libciborium_nostd",
-    defaults: ["rust_baremetal_defaults"],
-    crate_name: "ciborium",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.2.2",
-    crate_root: "src/lib.rs",
-    edition: "2021",
-    rustlibs: [
-        "libciborium_io_nostd",
-        "libciborium_ll_nostd",
-        "libserde_nostd",
-    ],
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-    prefer_rlib: true,
-    no_stdlibs: true,
-    stdlibs: [
-        "liballoc.rust_sysroot",
-        "libcompiler_builtins.rust_sysroot",
-        "libcore.rust_sysroot",
-    ],
-    product_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
+    no_std: {
+        features: [],
+        rustlibs: [
+            "libciborium_io",
+            "libciborium_ll_nostd",
+            "libserde",
+        ],
+        enabled: true,
+    },
 }
 
 dirgroup {
