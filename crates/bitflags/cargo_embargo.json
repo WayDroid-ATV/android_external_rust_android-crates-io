@@ -5,7 +5,8 @@
       "dep_blocklist": [
         "libtrybuild"
       ],
-      "rulesmk_patch": "patches/rules.mk.diff"
+      "rulesmk_patch": "patches/rules.mk.diff",
+      "target_windows": true
     }
   },
   "variants": [
