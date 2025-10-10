@@ -27,6 +27,7 @@ use std::{fs, io};
 pub use toml::Value;
 
 /// Dependencies. The keys in this map are not always crate names, this can be overriden by the `package` field, and there may be multiple copies of the same crate.
+///
 /// Optional dependencies may create implicit features, see the [`features`] module for dealing with this.
 pub type DepsSet = BTreeMap<String, Dependency>;
 /// Config target (see [`parse_cfg`](https://lib.rs/parse_cfg) crate) + deps for the target.
@@ -386,7 +387,7 @@ impl<Metadata> Manifest<Metadata> {
                     tmp = base_path;
                     err_path = Some(&tmp);
                     self._inherit_workspace(ws_manifest.workspace.as_ref(), &tmp)
-                }
+                },
                 Err(e) => {
                     err_path = if let Some(p) = ws_path_hint { tmp = p.to_owned(); Some(&tmp) } else { None };
                     Err(e)
@@ -399,8 +400,8 @@ impl<Metadata> Manifest<Metadata> {
 
         match res.and_then(|()| self.complete_from_abstract_filesystem_inner(&fs)) {
             Ok(()) => Ok(()),
-            Err(e @ Error::Workspace(_)) => return Err(e),
-            Err(e) => return Err(Error::Workspace(Box::new((e.into(), err_path.map(PathBuf::from))))),
+            Err(e @ Error::Workspace(_)) => Err(e),
+            Err(e) => Err(Error::Workspace(Box::new((e, err_path.map(PathBuf::from))))),
         }
     }
 
@@ -481,20 +482,19 @@ impl<Metadata> Manifest<Metadata> {
         maybe_inherit(package.rust_version.as_mut(), ws.rust_version.as_ref());
         package.publish.inherit(&ws.publish);
         match (&mut package.readme, &ws.readme) {
-            (r @ Inheritable::Inherited { .. }, flag @ OptionalFile::Flag(_)) => {
+            (r @ Inheritable::Inherited, flag @ OptionalFile::Flag(_)) => {
                 r.set(flag.clone());
             },
-            (r @ Inheritable::Inherited { .. }, OptionalFile::Path(path)) => {
+            (r @ Inheritable::Inherited, OptionalFile::Path(path)) => {
                 r.set(OptionalFile::Path(workspace_base_path.join(path)));
             },
             _ => {},
         }
         if let Some((f, ws)) = package.license_file.as_mut().zip(ws.license_file.as_ref()) {
-            f.set(workspace_base_path.join(ws))
+            f.set(workspace_base_path.join(ws));
         }
         Ok(())
     }
-
 
     fn complete_from_abstract_filesystem_inner(&mut self, fs: &dyn AbstractFilesystem) -> Result<(), Error> {
         let Some(package) = &self.package else { return Ok(()) };
@@ -751,8 +751,9 @@ pub struct Profiles {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bench: Option<Profile>,
 
-    /// Used for `cargo doc`
+    /// Unused
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[deprecated(note = "the `doc` profile is obsolete. `cargo doc` uses the `dev` profile")]
     pub doc: Option<Profile>,
 
     /// User-suppiled for `cargo --profile=name`
@@ -767,13 +768,12 @@ impl Profiles {
             && self.dev.is_none()
             && self.test.is_none()
             && self.bench.is_none()
-            && self.doc.is_none()
             && self.custom.is_empty()
     }
 }
 
 /// Verbosity of debug info in a [`Profile`]
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
 #[serde(try_from = "toml::Value")]
 pub enum DebugSetting {
     /// 0 or false
@@ -818,13 +818,14 @@ impl Serialize for DebugSetting {
 }
 
 /// Handling of debug symbols in a build profile
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
 #[serde(try_from = "toml::Value")]
 pub enum StripSetting {
-    /// false
+    /// Same as `strip = false`
     None,
+    /// Detailed debug is stripped, but coarse debug is preserved
     Debuginfo,
-    /// true
+    /// Stronger than the `Debuginfo` setting, same as `strip = true`
     Symbols,
 }
 
@@ -898,7 +899,7 @@ impl TryFrom<Value> for LtoSetting {
 }
 
 /// Compilation/optimization settings for a workspace
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Profile {
     /// num or z, s
@@ -1084,8 +1085,8 @@ impl Dependency {
     #[must_use]
     pub fn detail(&self) -> Option<&DependencyDetail> {
         match self {
-            Dependency::Detailed(d) => Some(d),
-            Dependency::Simple(_) | Dependency::Inherited(_) => None,
+            Self::Detailed(d) => Some(d),
+            Self::Simple(_) | Self::Inherited(_) => None,
         }
     }
 
@@ -1101,18 +1102,18 @@ impl Dependency {
     /// Makes it detailed otherwise
     pub fn try_detail_mut(&mut self) -> Result<&mut DependencyDetail, Error> {
         match self {
-            Dependency::Detailed(d) => Ok(d),
-            Dependency::Simple(ver) => {
-                *self = Dependency::Detailed(Box::new(DependencyDetail {
+            Self::Detailed(d) => Ok(d),
+            Self::Simple(ver) => {
+                *self = Self::Detailed(Box::new(DependencyDetail {
                     version: Some(ver.clone()),
                     ..Default::default()
                 }));
                 match self {
-                    Dependency::Detailed(d) => Ok(d),
+                    Self::Detailed(d) => Ok(d),
                     _ => unreachable!(),
                 }
             },
-            Dependency::Inherited(_) => Err(Error::InheritedUnknownValue),
+            Self::Inherited(_) => Err(Error::InheritedUnknownValue),
         }
     }
 
@@ -1133,9 +1134,9 @@ impl Dependency {
     #[track_caller]
     pub fn try_req(&self) -> Result<&str, Error> {
         match self {
-            Dependency::Simple(v) => Ok(v),
-            Dependency::Detailed(d) => Ok(d.version.as_deref().unwrap_or("*")),
-            Dependency::Inherited(_) =>  Err(Error::InheritedUnknownValue),
+            Self::Simple(v) => Ok(v),
+            Self::Detailed(d) => Ok(d.version.as_deref().unwrap_or("*")),
+            Self::Inherited(_) => Err(Error::InheritedUnknownValue),
         }
     }
 
@@ -1144,9 +1145,9 @@ impl Dependency {
     #[must_use]
     pub fn req_features(&self) -> &[String] {
         match self {
-            Dependency::Simple(_) => &[],
-            Dependency::Detailed(d) => &d.features,
-            Dependency::Inherited(d) => &d.features,
+            Self::Simple(_) => &[],
+            Self::Detailed(d) => &d.features,
+            Self::Inherited(d) => &d.features,
         }
     }
 
@@ -1156,9 +1157,9 @@ impl Dependency {
     #[must_use]
     pub fn optional(&self) -> bool {
         match self {
-            Dependency::Simple(_) => false,
-            Dependency::Detailed(d) => d.optional,
-            Dependency::Inherited(d) => d.optional,
+            Self::Simple(_) => false,
+            Self::Detailed(d) => d.optional,
+            Self::Inherited(d) => d.optional,
         }
     }
 
@@ -1168,8 +1169,8 @@ impl Dependency {
     #[must_use]
     pub fn package(&self) -> Option<&str> {
         match self {
-            Dependency::Detailed(d) => d.package.as_deref(),
-            Dependency::Simple(_) | Dependency::Inherited(_) => None,
+            Self::Detailed(d) => d.package.as_deref(),
+            Self::Simple(_) | Self::Inherited(_) => None,
         }
     }
 
@@ -1193,8 +1194,8 @@ impl Dependency {
     #[must_use]
     pub fn is_crates_io(&self) -> bool {
         match self {
-            Dependency::Simple(_) => true,
-            Dependency::Detailed(d) => {
+            Self::Simple(_) => true,
+            Self::Detailed(d) => {
                 // TODO: allow registry to be set to crates.io explicitly?
                 d.path.is_none() &&
                     d.registry.is_none() &&
@@ -1204,7 +1205,7 @@ impl Dependency {
                     d.branch.is_none() &&
                     d.rev.is_none()
             },
-            Dependency::Inherited(_) => panic!("data not available with workspace inheritance"),
+            Self::Inherited(_) => panic!("data not available with workspace inheritance"),
         }
     }
 }
@@ -1284,7 +1285,7 @@ pub struct DependencyDetail {
 
 impl Default for DependencyDetail {
     fn default() -> Self {
-        DependencyDetail {
+        Self {
             version: None,
             registry: None,
             registry_index: None,
@@ -1424,7 +1425,6 @@ pub struct Package<Metadata = Value> {
     pub autobins: bool,
 
     /// Discover libraries from the file system
-    ///
     #[serde(default = "default_true", skip_serializing_if = "is_true")]
     pub autolib: bool,
 
@@ -1740,6 +1740,7 @@ impl Default for OptionalFile {
 }
 
 impl OptionalFile {
+    #[must_use]
     pub fn display(&self) -> &str {
         match self {
             Self::Path(p) => p.to_str().unwrap_or("<non-utf8>"),
@@ -1780,13 +1781,13 @@ pub enum Publish {
 
 impl Publish {
     fn is_default(&self) -> bool {
-        matches!(self, Publish::Flag(flag) if *flag)
+        matches!(self, Self::Flag(flag) if *flag)
     }
 }
 
 impl Default for Publish {
     #[inline]
-    fn default() -> Self { Publish::Flag(true) }
+    fn default() -> Self { Self::Flag(true) }
 }
 
 impl PartialEq<Publish> for bool {
@@ -1977,10 +1978,10 @@ pub enum Edition {
 impl std::fmt::Display for Edition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
-            Edition::E2015 => "2015",
-            Edition::E2018 => "2018",
-            Edition::E2021 => "2021",
-            Edition::E2024 => "2024",
+            Self::E2015 => "2015",
+            Self::E2018 => "2018",
+            Self::E2021 => "2021",
+            Self::E2024 => "2024",
         })
     }
 }
@@ -1990,10 +1991,10 @@ impl Edition {
     #[must_use]
     pub fn min_rust_version_minor(self) -> u16 {
         match self {
-            Edition::E2015 => 1,
-            Edition::E2018 => 31,
-            Edition::E2021 => 56,
-            Edition::E2024 => 85,
+            Self::E2015 => 1,
+            Self::E2018 => 31,
+            Self::E2021 => 56,
+            Self::E2024 => 85,
         }
     }
 }
@@ -2019,9 +2020,9 @@ pub enum Resolver {
 impl Display for Resolver {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
-            Resolver::V1 => "1",
-            Resolver::V2 => "2",
-            Resolver::V3 => "3",
+            Self::V1 => "1",
+            Self::V2 => "2",
+            Self::V3 => "3",
         })
     }
 }
@@ -2071,7 +2072,11 @@ impl From<Lint> for LintSerdeParser {
         if orig.priority == 0 && orig.config.is_empty() {
             Self::Simple(orig.level)
         } else {
-            Self::Detailed { level: orig.level, priority: orig.priority, config: orig.config }
+            Self::Detailed {
+                level: orig.level,
+                priority: orig.priority,
+                config: orig.config,
+            }
         }
     }
 }
@@ -2109,7 +2114,6 @@ struct Rfc3416FeatureDetail {
 enum Rfc3416Feature {
     Simple(Vec<String>),
     Detailed(Rfc3416FeatureDetail),
-
 }
 
 fn feature_set<'de, D>(deserializer: D) -> Result<FeatureSet, D::Error> where D: Deserializer<'de> {
