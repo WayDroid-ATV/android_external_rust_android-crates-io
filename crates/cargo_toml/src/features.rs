@@ -377,7 +377,7 @@ impl<'a, 'c, S: BuildHasher + Default> Resolver<'c, S> {
     #[inline(never)]
     fn named_using_dep_syntax(features: &HashMap<&'a str, Feature<'a>, S>) -> HashMap<&'a str, bool, S> {
         // explicit features exist, even if their name clashes with a `dep:name`.
-        let mut named_using_dep_syntax: HashMap::<_, _, S> = features.keys().map(|&k| (k, false)).collect();
+        let mut named_using_dep_syntax: HashMap<_, _, S> = features.keys().map(|&k| (k, false)).collect();
 
         for f in features.values() {
             f.enables_deps.iter().for_each(|(&dep_key, a)| {
@@ -621,4 +621,3 @@ loop3 = ["loop1", "implied_referenced/from_loop_3"]
     assert_eq!(rd["depend"][0].0, "loop2");
     assert!(!rd.contains_key("a_dep"));
 }
-

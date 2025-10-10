@@ -75,14 +75,11 @@ impl<'a> Filesystem<'a> {
     }
 }
 
-impl<'a> AbstractFilesystem for Filesystem<'a> {
+impl AbstractFilesystem for Filesystem<'_> {
     fn file_names_in(&self, rel_path: &str) -> io::Result<HashSet<Box<str>>> {
-        Ok(read_dir(self.path.join(rel_path))?.filter_map(|entry| {
-            entry.ok().map(|e| {
-                e.file_name().to_string_lossy().into_owned().into()
-            })
-        })
-        .collect())
+        Ok(read_dir(self.path.join(rel_path))?
+            .filter_map(|entry| entry.ok().map(|e| e.file_name().to_string_lossy().into_owned().into()))
+            .collect())
     }
 
     fn parse_root_workspace(&self, path: Option<&Path>) -> Result<(Manifest<Value>, PathBuf), Error> {
@@ -128,7 +125,7 @@ fn find_workspace(path: &Path) -> Result<(Manifest<Value>, PathBuf), Error> {
         })
         .ok_or(last_error.unwrap_or_else(|| {
             let has_slash = path.to_str().is_some_and(|s| s.ends_with('/'));
-            io::Error::new(io::ErrorKind::NotFound, format!("Can't find workspace in '{}{}..'", path.display(), if has_slash {""} else {"/"})).into()
+            io::Error::new(io::ErrorKind::NotFound, format!("Can't find workspace in '{}{}..'", path.display(), if has_slash { "" } else { "/" })).into()
         }))
 }
 

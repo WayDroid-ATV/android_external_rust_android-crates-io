@@ -14,6 +14,7 @@ pub enum Inheritable<T> {
 
 impl<T> TryFrom<InheritableSerdeParser<T>> for Inheritable<T> {
     type Error = String;
+
     fn try_from(parsed: InheritableSerdeParser<T>) -> Result<Self, String> {
         match parsed {
             InheritableSerdeParser::Set(v) => Ok(Self::Set(v)),
@@ -102,7 +103,7 @@ impl<T> Inheritable<T> {
 
     /// Copy from workspace if needed
     pub fn inherit(&mut self, other: &T) where T: Clone {
-        if let Self::Inherited = self {
+        if matches!(self, Self::Inherited) {
             *self = Self::Set(other.clone());
         }
     }

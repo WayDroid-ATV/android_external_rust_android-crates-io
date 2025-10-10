@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use std::error::Error as StdErr;
+use std::path::PathBuf;
 use std::{fmt, io};
 
 /// In this crate's `Result`s.
@@ -23,10 +23,10 @@ pub enum Error {
 impl StdErr for Error {
     fn source(&self) -> Option<&(dyn StdErr + 'static)> {
         match self {
-            Error::Parse(err) => Some(err),
-            Error::Io(err) => Some(err),
-            Error::Workspace(err) => Some(&err.0),
-            Error::Other(_) | Error::InheritedUnknownValue | Error::WorkspaceIntegrity(_) => None,
+            Self::Parse(err) => Some(err),
+            Self::Io(err) => Some(err),
+            Self::Workspace(err) => Some(&err.0),
+            Self::Other(_) | Self::InheritedUnknownValue | Self::WorkspaceIntegrity(_) => None,
         }
     }
 }
@@ -34,19 +34,19 @@ impl StdErr for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::Parse(err) => err.fmt(f),
-            Error::Io(err) => err.fmt(f),
-            Error::Other(msg) => f.write_str(msg),
-            Error::WorkspaceIntegrity(s) => f.write_str(s),
-            Error::Workspace(err_path) => {
+            Self::Parse(err) => err.fmt(f),
+            Self::Io(err) => err.fmt(f),
+            Self::Other(msg) => f.write_str(msg),
+            Self::WorkspaceIntegrity(s) => f.write_str(s),
+            Self::Workspace(err_path) => {
                 f.write_str("can't load root workspace")?;
                 if let Some(path) = &err_path.1 {
-                    write!(f, " at {}", path.display())?
+                    write!(f, " at {}", path.display())?;
                 }
                 f.write_str(": ")?;
                 err_path.0.fmt(f)
-            }
-            Error::InheritedUnknownValue => f.write_str("value from workspace hasn't been set"),
+            },
+            Self::InheritedUnknownValue => f.write_str("value from workspace hasn't been set"),
         }
     }
 }
@@ -54,24 +54,24 @@ impl fmt::Display for Error {
 impl Clone for Error {
     fn clone(&self) -> Self {
         match self {
-            Error::Parse(err) => Error::Parse(err.clone()),
-            Error::Io(err) => Error::Io(io::Error::new(err.kind(), err.to_string())),
-            Error::Other(msg) => Error::Other(msg),
-            Error::WorkspaceIntegrity(msg) => Error::WorkspaceIntegrity(msg.clone()),
-            Error::Workspace(e) => Error::Workspace(e.clone()),
-            Error::InheritedUnknownValue => Error::InheritedUnknownValue,
+            Self::Parse(err) => Self::Parse(err.clone()),
+            Self::Io(err) => Self::Io(io::Error::new(err.kind(), err.to_string())),
+            Self::Other(msg) => Self::Other(msg),
+            Self::WorkspaceIntegrity(msg) => Self::WorkspaceIntegrity(msg.clone()),
+            Self::Workspace(e) => Self::Workspace(e.clone()),
+            Self::InheritedUnknownValue => Self::InheritedUnknownValue,
         }
     }
 }
 
 impl From<toml::de::Error> for Error {
     fn from(o: toml::de::Error) -> Self {
-        Error::Parse(Box::new(o))
+        Self::Parse(Box::new(o))
     }
 }
 
 impl From<io::Error> for Error {
     fn from(o: io::Error) -> Self {
-        Error::Io(o)
+        Self::Io(o)
     }
 }
