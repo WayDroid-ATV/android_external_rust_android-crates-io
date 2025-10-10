@@ -395,6 +395,7 @@ shlex
 signal-hook
 signal-hook-registry
 simd-adler32
+simple-dns
 siphasher
 skrifa
 slab
