@@ -1,0 +1,17 @@
+name: "simple-dns"
+description: "Rust implementation to parse and write DNS packets"
+third_party {
+  version: "0.11.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 10
+    day: 7
+  }
+  homepage: "https://crates.io/crates/simple-dns"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/simple-dns/simple-dns-0.11.0.crate"
+    version: "0.11.0"
+  }
+}
