@@ -1,0 +1,6 @@
+target: {
+    windows: {
+        enabled: true,
+        rustlibs: ["libwindows_sys"],
+   },
+}

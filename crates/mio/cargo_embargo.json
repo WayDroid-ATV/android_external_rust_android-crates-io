@@ -7,6 +7,11 @@
     "os-ext",
     "os-poll"
   ],
+  "package": {
+    "mio": {
+      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
+    }
+  },
   "min_sdk_version": "29",
   "run_cargo": false,
   "tests": true
