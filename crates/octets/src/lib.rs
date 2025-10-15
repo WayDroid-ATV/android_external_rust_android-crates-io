@@ -28,6 +28,9 @@
 use std::mem;
 use std::ptr;
 
+/// Maximum value that can be encoded via varint.
+pub const MAX_VAR_INT: u64 = 4_611_686_018_427_387_903;
+
 /// A specialized [`Result`] type for [`OctetsMut`] operations.
 ///
 /// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
@@ -52,6 +55,14 @@ impl std::error::Error for BufferTooShortError {
     }
 }
 
+/// Helper macro that asserts at compile time. It requires that
+/// `cond` is a const expression.
+macro_rules! static_assert {
+    ($cond:expr) => {{
+        const _: () = assert!($cond);
+    }};
+}
+
 macro_rules! peek_u {
     ($b:expr, $ty:ty, $len:expr) => {{
         let len = $len;
@@ -61,6 +72,7 @@ macro_rules! peek_u {
             return Err(BufferTooShortError);
         }
 
+        static_assert!($len <= mem::size_of::<$ty>());
         let mut out: $ty = 0;
         unsafe {
             let dst = &mut out as *mut $ty as *mut u8;
@@ -95,6 +107,7 @@ macro_rules! put_u {
 
         let dst = &mut $b.buf[$b.off..($b.off + len)];
 
+        static_assert!($len <= mem::size_of::<$ty>());
         unsafe {
             let src = &<$ty>::to_be(v) as *const $ty as *const u8;
             let off = (mem::size_of::<$ty>() - len) as isize;
@@ -235,6 +248,49 @@ impl<'a> Octets<'a> {
         self.get_bytes(len as usize)
     }
 
+    /// Decodes a Huffman-encoded value from the current offset.
+    ///
+    /// The Huffman code implemented is the one defined for HPACK (RFC7541).
+    #[cfg(feature = "huffman_hpack")]
+    pub fn get_huffman_decoded(&mut self) -> Result<Vec<u8>> {
+        use self::huffman_table::DECODE_TABLE;
+
+        const FLAG_END: u8 = 1;
+        const FLAG_SYM: u8 = 2;
+        const FLAG_ERR: u8 = 4;
+
+        // Max compression ratio is >= 0.5.
+        let mut out = Vec::with_capacity(self.cap() << 1);
+
+        let mut state = 0;
+        let mut eos = false;
+
+        while let Ok(byte) = self.get_u8() {
+            for data in [byte >> 4, byte & 0xf] {
+                let (next, sym, flags) = DECODE_TABLE[state][(data) as usize];
+
+                if flags & FLAG_ERR == FLAG_ERR {
+                    // Data followed the "end" marker.
+                    return Err(BufferTooShortError);
+                } else if flags & FLAG_SYM == FLAG_SYM {
+                    out.push(sym);
+                }
+
+                state = next;
+
+                // `eos` only correct when handling the byte & 0xf case; ignored
+                // and overwritten in the byte >> 4 case.
+                eos = flags & FLAG_END == FLAG_END;
+            }
+        }
+
+        if state == 0 && eos {
+            return Err(BufferTooShortError);
+        }
+
+        Ok(out)
+    }
+
     /// Reads `len` bytes from the current offset without copying and without
     /// advancing the buffer.
     pub fn peek_bytes(&self, len: usize) -> Result<Octets<'a>> {
@@ -311,7 +367,7 @@ impl<'a> Octets<'a> {
     }
 }
 
-impl<'a> AsRef<[u8]> for Octets<'a> {
+impl AsRef<[u8]> for Octets<'_> {
     fn as_ref(&self) -> &[u8] {
         &self.buf[self.off..]
     }
@@ -471,7 +527,7 @@ impl<'a> OctetsMut<'a> {
 
     /// Reads `len` bytes from the current offset without copying and advances
     /// the buffer.
-    pub fn get_bytes(&mut self, len: usize) -> Result<Octets> {
+    pub fn get_bytes(&mut self, len: usize) -> Result<Octets<'_>> {
         if self.cap() < len {
             return Err(BufferTooShortError);
         }
@@ -488,7 +544,7 @@ impl<'a> OctetsMut<'a> {
 
     /// Reads `len` bytes from the current offset without copying and advances
     /// the buffer.
-    pub fn get_bytes_mut(&mut self, len: usize) -> Result<OctetsMut> {
+    pub fn get_bytes_mut(&mut self, len: usize) -> Result<OctetsMut<'_>> {
         if self.cap() < len {
             return Err(BufferTooShortError);
         }
@@ -505,7 +561,7 @@ impl<'a> OctetsMut<'a> {
 
     /// Reads `len` bytes from the current offset without copying and advances
     /// the buffer, where `len` is an unsigned 8-bit integer prefix.
-    pub fn get_bytes_with_u8_length(&mut self) -> Result<Octets> {
+    pub fn get_bytes_with_u8_length(&mut self) -> Result<Octets<'_>> {
         let len = self.get_u8()?;
         self.get_bytes(len as usize)
     }
@@ -513,7 +569,7 @@ impl<'a> OctetsMut<'a> {
     /// Reads `len` bytes from the current offset without copying and advances
     /// the buffer, where `len` is an unsigned 16-bit integer prefix in network
     /// byte-order.
-    pub fn get_bytes_with_u16_length(&mut self) -> Result<Octets> {
+    pub fn get_bytes_with_u16_length(&mut self) -> Result<Octets<'_>> {
         let len = self.get_u16()?;
         self.get_bytes(len as usize)
     }
@@ -521,14 +577,14 @@ impl<'a> OctetsMut<'a> {
     /// Reads `len` bytes from the current offset without copying and advances
     /// the buffer, where `len` is an unsigned variable-length integer prefix
     /// in network byte-order.
-    pub fn get_bytes_with_varint_length(&mut self) -> Result<Octets> {
+    pub fn get_bytes_with_varint_length(&mut self) -> Result<Octets<'_>> {
         let len = self.get_varint()?;
         self.get_bytes(len as usize)
     }
 
     /// Reads `len` bytes from the current offset without copying and without
     /// advancing the buffer.
-    pub fn peek_bytes(&mut self, len: usize) -> Result<Octets> {
+    pub fn peek_bytes(&mut self, len: usize) -> Result<Octets<'_>> {
         if self.cap() < len {
             return Err(BufferTooShortError);
         }
@@ -543,7 +599,7 @@ impl<'a> OctetsMut<'a> {
 
     /// Reads `len` bytes from the current offset without copying and without
     /// advancing the buffer.
-    pub fn peek_bytes_mut(&mut self, len: usize) -> Result<OctetsMut> {
+    pub fn peek_bytes_mut(&mut self, len: usize) -> Result<OctetsMut<'_>> {
         if self.cap() < len {
             return Err(BufferTooShortError);
         }
@@ -556,8 +612,7 @@ impl<'a> OctetsMut<'a> {
         Ok(out)
     }
 
-    /// Writes `len` bytes from the current offset without copying and advances
-    /// the buffer.
+    /// Writes `v` to the current offset.
     pub fn put_bytes(&mut self, v: &[u8]) -> Result<()> {
         let len = v.len();
 
@@ -576,8 +631,72 @@ impl<'a> OctetsMut<'a> {
         Ok(())
     }
 
+    /// Writes `v` to the current offset after Huffman-encoding it.
+    ///
+    /// The Huffman code implemented is the one defined for HPACK (RFC7541).
+    #[cfg(feature = "huffman_hpack")]
+    pub fn put_huffman_encoded<const LOWER_CASE: bool>(
+        &mut self, v: &[u8],
+    ) -> Result<()> {
+        use self::huffman_table::ENCODE_TABLE;
+
+        let mut bits: u64 = 0;
+        let mut pending = 0;
+
+        for &b in v {
+            let b = if LOWER_CASE {
+                b.to_ascii_lowercase()
+            } else {
+                b
+            };
+            let (nbits, code) = ENCODE_TABLE[b as usize];
+
+            pending += nbits;
+
+            if pending < 64 {
+                // Have room for the new token
+                bits |= code << (64 - pending);
+                continue;
+            }
+
+            pending -= 64;
+            // Take only the bits that fit
+            bits |= code >> pending;
+            self.put_u64(bits)?;
+
+            bits = if pending == 0 {
+                0
+            } else {
+                code << (64 - pending)
+            };
+        }
+
+        if pending == 0 {
+            return Ok(());
+        }
+
+        bits |= u64::MAX >> pending;
+        // TODO: replace with `next_multiple_of(8)` when stable
+        pending = (pending + 7) & !7; // Round up to a byte
+        bits >>= 64 - pending;
+
+        if pending >= 32 {
+            pending -= 32;
+            self.put_u32((bits >> pending) as u32)?;
+        }
+
+        while pending > 0 {
+            pending -= 8;
+            self.put_u8((bits >> pending) as u8)?;
+        }
+
+        Ok(())
+    }
+
     /// Splits the buffer in two at the given absolute offset.
-    pub fn split_at(&mut self, off: usize) -> Result<(OctetsMut, OctetsMut)> {
+    pub fn split_at(
+        &mut self, off: usize,
+    ) -> Result<(OctetsMut<'_>, OctetsMut<'_>)> {
         if self.len() < off {
             return Err(BufferTooShortError);
         }
@@ -652,13 +771,13 @@ impl<'a> OctetsMut<'a> {
     }
 }
 
-impl<'a> AsRef<[u8]> for OctetsMut<'a> {
+impl AsRef<[u8]> for OctetsMut<'_> {
     fn as_ref(&self) -> &[u8] {
         &self.buf[self.off..]
     }
 }
 
-impl<'a> AsMut<[u8]> for OctetsMut<'a> {
+impl AsMut<[u8]> for OctetsMut<'_> {
     fn as_mut(&mut self) -> &mut [u8] {
         &mut self.buf[self.off..]
     }
@@ -673,7 +792,7 @@ pub const fn varint_len(v: u64) -> usize {
         2
     } else if v <= 1_073_741_823 {
         4
-    } else if v <= 4_611_686_018_427_387_903 {
+    } else if v <= MAX_VAR_INT {
         8
     } else {
         unreachable!()
@@ -688,6 +807,58 @@ pub const fn varint_parse_len(first: u8) -> usize {
         2 => 4,
         3 => 8,
         _ => unreachable!(),
+    }
+}
+
+/// Returns how long the Huffman encoding of the given buffer will be.
+///
+/// The Huffman code implemented is the one defined for HPACK (RFC7541).
+#[cfg(feature = "huffman_hpack")]
+pub fn huffman_encoding_len<const LOWER_CASE: bool>(src: &[u8]) -> Result<usize> {
+    use self::huffman_table::ENCODE_TABLE;
+
+    let mut bits: usize = 0;
+
+    for &b in src {
+        let b = if LOWER_CASE {
+            b.to_ascii_lowercase()
+        } else {
+            b
+        };
+
+        let (nbits, _) = ENCODE_TABLE[b as usize];
+        bits += nbits;
+    }
+
+    let mut len = bits / 8;
+
+    if bits & 7 != 0 {
+        len += 1;
+    }
+
+    if len > src.len() {
+        return Err(BufferTooShortError);
+    }
+
+    Ok(len)
+}
+
+/// The functions in this mod test the compile time assertions in the
+/// `put_u` and `peek_u` macros. If you compile this crate with
+/// `--cfg test_invalid_len_compilation_fail`, e.g., by using
+/// `cargo rustc  -- --cfg test_invalid_len_compilation_fail`
+/// You will get two compiler errors
+#[cfg(test_invalid_len_compilation_fail)]
+pub mod fails_to_compile {
+    use super::*;
+    pub fn peek_invalid_fails_to_compile(b: &mut Octets) -> Result<u8> {
+        peek_u!(b, u8, 2)
+    }
+
+    pub fn put_invalid_fails_to_compile<'a>(
+        b: &'a mut OctetsMut, v: u8,
+    ) -> Result<&'a mut [u8]> {
+        put_u!(b, u8, v, 2)
     }
 }
 
@@ -1282,3 +1453,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(feature = "huffman_hpack")]
+mod huffman_table;
