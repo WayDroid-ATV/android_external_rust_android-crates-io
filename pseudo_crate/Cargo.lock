@@ -318,6 +318,7 @@ dependencies = [
  "icu_provider_adapters",
  "ident_case",
  "idna",
+ "if-addrs",
  "image 0.25.6",
  "indexmap 1.9.3",
  "inotify",
@@ -4072,6 +4073,16 @@ checksum = "634d9b1461af396cad843f47fdba5597a4f9e6ddd4bfb6ff5d85028c25cb12f6"
 dependencies = [
  "unicode-bidi",
  "unicode-normalization",
+]
+
+[[package]]
+name = "if-addrs"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf39cc0423ee66021dc5eccface85580e4a001e0c5288bae8bea7ecb69225e90"
+dependencies = [
+ "libc 0.2.176",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
