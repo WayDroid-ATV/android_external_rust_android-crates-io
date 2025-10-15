@@ -1,0 +1,13 @@
+diff --git a/src/windows.rs b/src/windows.rs
+index 9b8895bd8..11de3c718 100644
+--- a/src/windows.rs
++++ b/src/windows.rs
+@@ -256,7 +256,7 @@ impl WindowsIfChangeNotifier {
+                 AF_UNSPEC,
+                 Some(if_change_callback),
+                 ret.tx as *const c_void,
+-                0,
++                false,
+                 &mut ret.handle,
+             )
+         };

@@ -206,6 +206,7 @@ icu_provider_baked
 icu_provider_macros
 ident_case
 idna
+if-addrs
 image
 indexmap
 inotify
