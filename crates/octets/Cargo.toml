@@ -10,11 +10,18 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
+edition = "2021"
 name = "octets"
-version = "0.3.0"
+version = "0.3.2"
 authors = ["Alessandro Ghedini <alessandro@ghedini.me>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Zero-copy abstraction for parsing and constructing network packets"
+readme = false
 keywords = [
     "quic",
     "http3",
@@ -22,3 +29,15 @@ keywords = [
 categories = ["network-programming"]
 license = "BSD-2-Clause"
 repository = "https://github.com/cloudflare/quiche"
+
+[features]
+huffman_hpack = []
+
+[lib]
+name = "octets"
+path = "src/lib.rs"
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+priority = 0
+check-cfg = ["cfg(test_invalid_len_compilation_fail)"]
