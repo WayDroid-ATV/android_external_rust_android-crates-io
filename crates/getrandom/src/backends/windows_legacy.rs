@@ -5,7 +5,7 @@
 //! RNG APIs (and why we don't use BCryptGenRandom). On versions prior to
 //! Windows 10, this implementation is secure. On Windows 10 and later, this
 //! implementation behaves identically to the windows.rs implementation, except
-//! that it forces the loading of an additonal DLL (advapi32.dll).
+//! that it forces the loading of an additional DLL (advapi32.dll).
 //!
 //! This implementation will not work on UWP targets (which lack advapi32.dll),
 //! but such targets require Windows 10, so can use the standard implementation.
@@ -13,6 +13,9 @@ use crate::Error;
 use core::{ffi::c_void, mem::MaybeUninit};
 
 pub use crate::util::{inner_u32, inner_u64};
+
+#[cfg(not(windows))]
+compile_error!("`windows_legacy` backend can be enabled only for Windows targets!");
 
 // Binding to the Windows.Win32.Security.Authentication.Identity.RtlGenRandom
 // API. Don't use windows-targets as it doesn't support Windows 7 targets.

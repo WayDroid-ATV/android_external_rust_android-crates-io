@@ -1,17 +1,17 @@
 name: "getrandom"
 description: "A small cross-platform library for retrieving random data from system source"
 third_party {
-  version: "0.3.3"
+  version: "0.3.4"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 5
-    day: 28
+    month: 10
+    day: 15
   }
   homepage: "https://crates.io/crates/getrandom"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/getrandom/getrandom-0.3.3.crate"
-    version: "0.3.3"
+    value: "https://static.crates.io/crates/getrandom/getrandom-0.3.4.crate"
+    version: "0.3.4"
   }
 }
