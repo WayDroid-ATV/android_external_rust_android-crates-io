@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.70"
 name = "tokio"
-version = "1.47.1"
+version = "1.47.2"
 authors = ["Tokio Contributors <team@tokio.rs>"]
 build = false
 autolib = false
@@ -40,24 +40,17 @@ categories = [
 license = "MIT"
 repository = "https://github.com/tokio-rs/tokio"
 
-[package.metadata.cargo_check_external_types]
-allowed_external_types = [
-    "bytes::buf::buf_impl::Buf",
-    "bytes::buf::buf_mut::BufMut",
-    "tokio_macros::*",
-]
-
 [package.metadata.docs.rs]
 all-features = true
-rustc-args = [
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
     "--cfg",
     "tokio_unstable",
     "--cfg",
     "tokio_taskdump",
 ]
-rustdoc-args = [
-    "--cfg",
-    "docsrs",
+rustc-args = [
     "--cfg",
     "tokio_unstable",
     "--cfg",
@@ -68,6 +61,13 @@ rustdoc-args = [
 features = [
     "full",
     "test-util",
+]
+
+[package.metadata.cargo_check_external_types]
+allowed_external_types = [
+    "bytes::buf::buf_impl::Buf",
+    "bytes::buf::buf_mut::BufMut",
+    "tokio_macros::*",
 ]
 
 [features]
