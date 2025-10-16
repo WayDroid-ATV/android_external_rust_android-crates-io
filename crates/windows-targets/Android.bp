@@ -25,11 +25,10 @@ rust_library_host {
         "libwindows_i686_gnullvm",
         "libwindows_x86_64_gnullvm",
     ],
-    enabled: false,
     target: {
         windows: {
             enabled: true,
         },
     },
-
+    enabled: false,
 }

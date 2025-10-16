@@ -46,11 +46,10 @@ rust_library_host {
         "Win32_System_WindowsProgramming",
     ],
     rustlibs: ["libwindows_link"],
-    enabled: false,
     target: {
         windows: {
             enabled: true,
         },
     },
-
+    enabled: false,
 }

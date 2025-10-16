@@ -8,7 +8,8 @@
     "raw-cpuid": {
       "no_std": true,
       "host_supported": false,
-      "add_module_block": "cargo2android_module.bp.fragment"
+      "add_module_block": "cargo2android_module.bp.fragment",
+      "enabled": false
     }
   },
   "run_cargo": false,

@@ -20,11 +20,10 @@ rust_library_host {
     cargo_pkg_version: "0.2.0",
     crate_root: "src/lib.rs",
     edition: "2021",
-    enabled: false,
     target: {
         windows: {
             enabled: true,
         },
     },
-
+    enabled: false,
 }

@@ -15,7 +15,6 @@ license {
 
 rust_test {
     name: "aarch64-paging_test_src_lib",
-    defaults: ["rust_baremetal_defaults"],
     host_supported: true,
     crate_name: "aarch64_paging",
     cargo_env_compat: true,
