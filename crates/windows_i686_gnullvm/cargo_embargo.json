@@ -4,7 +4,8 @@
   "package": {
     "windows_i686_gnullvm": {
       "device_supported": false,
-      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
+      "enabled": false,
+      "target_windows": true
     }
   }
 }

@@ -4,7 +4,8 @@
   "package": {
     "windows_x86_64_gnullvm": {
       "device_supported": false,
-      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
+      "enabled": false,
+      "target_windows": true
     }
   }
 }
