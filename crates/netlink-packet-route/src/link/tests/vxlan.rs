@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: MIT
 
-use std::net::{Ipv4Addr, Ipv6Addr};
-use std::str::FromStr;
-
-use netlink_packet_utils::{nla::DefaultNla, Emitable, Parseable};
-
-use crate::link::link_flag::LinkFlags;
-use crate::link::{
-    AfSpecInet, AfSpecInet6, AfSpecUnspec, Inet6CacheInfo, Inet6DevConf,
-    Inet6IfaceFlags, InetDevConf, InfoData, InfoKind, InfoVxlan, LinkAttribute,
-    LinkHeader, LinkInfo, LinkLayerType, LinkMessage, LinkMessageBuffer,
-    LinkXdp, Map, State, Stats, Stats64, XdpAttached,
+use std::{
+    net::{Ipv4Addr, Ipv6Addr},
+    str::FromStr,
 };
-use crate::AddressFamily;
+
+use netlink_packet_core::{DefaultNla, Emitable, Parseable};
+
+use crate::{
+    link::{
+        link_flag::LinkFlags, AfSpecInet, AfSpecInet6, AfSpecUnspec,
+        Inet6CacheInfo, Inet6DevConf, Inet6IfaceFlags, InetDevConf, InfoData,
+        InfoKind, InfoVxlan, LinkAttribute, LinkHeader, LinkInfo,
+        LinkLayerType, LinkMessage, LinkMessageBuffer, LinkMode, LinkXdp, Map,
+        State, Stats, Stats64, XdpAttached,
+    },
+    AddressFamily,
+};
 
 #[test]
 fn test_parsing_link_vxlan() {
@@ -139,7 +143,7 @@ fn test_parsing_link_vxlan() {
             LinkAttribute::IfName("vxlan0".into()),
             LinkAttribute::TxQueueLen(1000),
             LinkAttribute::OperState(State::Unknown),
-            LinkAttribute::Mode(0),
+            LinkAttribute::Mode(LinkMode::Default),
             LinkAttribute::Mtu(1450),
             LinkAttribute::MinMtu(68),
             LinkAttribute::MaxMtu(65535),
@@ -436,7 +440,7 @@ fn test_parsing_link_vxlan_ipv6() {
             LinkAttribute::IfName("vxlan1".into()),
             LinkAttribute::TxQueueLen(1000),
             LinkAttribute::OperState(State::Down),
-            LinkAttribute::Mode(0),
+            LinkAttribute::Mode(LinkMode::Default),
             LinkAttribute::Mtu(1430),
             LinkAttribute::MinMtu(68),
             LinkAttribute::MaxMtu(65535),

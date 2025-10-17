@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-use anyhow::Context;
-use netlink_packet_utils::{
-    traits::{Emitable, Parseable},
-    DecodeError,
-};
+use netlink_packet_core::{DecodeError, Emitable, ErrorContext, Parseable};
 
 use super::{RuleAttribute, RuleHeader, RuleMessageBuffer};
 
@@ -33,9 +29,9 @@ impl<'a, T: AsRef<[u8]> + 'a> Parseable<RuleMessageBuffer<&'a T>>
 {
     fn parse(buf: &RuleMessageBuffer<&'a T>) -> Result<Self, DecodeError> {
         let header = RuleHeader::parse(buf)
-            .context("failed to parse link message header")?;
+            .context("failed to parse rule message header")?;
         let attributes = Vec::<RuleAttribute>::parse(buf)
-            .context("failed to parse link message NLAs")?;
+            .context("failed to parse rule message NLAs")?;
         Ok(RuleMessage { header, attributes })
     }
 }
