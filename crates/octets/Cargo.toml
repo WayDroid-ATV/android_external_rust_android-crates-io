@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "octets"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Alessandro Ghedini <alessandro@ghedini.me>"]
 build = false
 autolib = false
