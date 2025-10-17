@@ -1,4 +1,4 @@
-use crate::{AcpiError, AcpiHandler, AcpiResult, PhysicalMapping};
+use crate::{AcpiError, Handler, PhysicalMapping};
 use core::{mem, ops::Range, slice, str};
 
 /// The size in bytes of the ACPI 1.0 RSDP.
@@ -22,19 +22,19 @@ const RSDP_V2_EXT_LENGTH: usize = mem::size_of::<Rsdp>() - RSDP_V1_LENGTH;
 #[derive(Clone, Copy, Debug)]
 #[repr(C, packed)]
 pub struct Rsdp {
-    signature: [u8; 8],
-    checksum: u8,
-    oem_id: [u8; 6],
-    revision: u8,
-    rsdt_address: u32,
+    pub signature: [u8; 8],
+    pub checksum: u8,
+    pub oem_id: [u8; 6],
+    pub revision: u8,
+    pub rsdt_address: u32,
 
     /*
      * These fields are only valid for ACPI Version 2.0 and greater
      */
-    length: u32,
-    xsdt_address: u64,
-    ext_checksum: u8,
-    reserved: [u8; 3],
+    pub length: u32,
+    pub xsdt_address: u64,
+    pub ext_checksum: u8,
+    _reserved: [u8; 3],
 }
 
 impl Rsdp {
@@ -52,9 +52,9 @@ impl Rsdp {
     ///     - ACPI v1.0 structures use `eb9d2d30-2d88-11d3-9a16-0090273fc14d`.
     ///     - ACPI v2.0 or later structures use `8868e871-e4f1-11d3-bc22-0080c73c8881`.
     /// You should search the entire table for the v2.0 GUID before searching for the v1.0 one.
-    pub unsafe fn search_for_on_bios<H>(handler: H) -> AcpiResult<PhysicalMapping<H, Rsdp>>
+    pub unsafe fn search_for_on_bios<H>(handler: H) -> Result<PhysicalMapping<H, Rsdp>, AcpiError>
     where
-        H: AcpiHandler,
+        H: Handler,
     {
         let rsdp_address = find_search_areas(handler.clone()).iter().find_map(|area| {
             // Map the search area for the RSDP followed by `RSDP_V2_EXT_LENGTH` bytes so an ACPI 1.0 RSDP at the
@@ -64,15 +64,14 @@ impl Rsdp {
             };
 
             let extended_area_bytes =
-                unsafe { slice::from_raw_parts(mapping.virtual_start().as_ptr(), mapping.region_length()) };
+                unsafe { slice::from_raw_parts(mapping.virtual_start.as_ptr(), mapping.region_length) };
 
             // Search `Rsdp`-sized windows at 16-byte boundaries relative to the base of the area (which is also
             // aligned to 16 bytes due to the implementation of `find_search_areas`)
             extended_area_bytes.windows(mem::size_of::<Rsdp>()).step_by(16).find_map(|maybe_rsdp_bytes_slice| {
                 let maybe_rsdp_virt_ptr = maybe_rsdp_bytes_slice.as_ptr().cast::<Rsdp>();
-                let maybe_rsdp_phys_start = maybe_rsdp_virt_ptr as usize
-                    - mapping.virtual_start().as_ptr() as usize
-                    + mapping.physical_start();
+                let maybe_rsdp_phys_start = maybe_rsdp_virt_ptr as usize - mapping.virtual_start.as_ptr() as usize
+                    + mapping.physical_start;
                 // SAFETY: `maybe_rsdp_virt_ptr` points to an aligned, readable `Rsdp`-sized value, and the `Rsdp`
                 // struct's fields are always initialized.
                 let maybe_rsdp = unsafe { &*maybe_rsdp_virt_ptr };
@@ -101,13 +100,13 @@ impl Rsdp {
     ///     1) The signature is correct
     ///     2) The checksum is correct
     ///     3) For Version 2.0+, that the extension checksum is correct
-    pub fn validate(&self) -> AcpiResult<()> {
+    pub fn validate(&self) -> Result<(), AcpiError> {
         // Check the signature
         if self.signature != RSDP_SIGNATURE {
             return Err(AcpiError::RsdpIncorrectSignature);
         }
 
-        // Check the OEM id is valid UTF8 (allows use of unwrap)
+        // Check the OEM id is valid UTF-8
         if str::from_utf8(&self.oem_id).is_err() {
             return Err(AcpiError::RsdpInvalidOemId);
         }
@@ -141,8 +140,8 @@ impl Rsdp {
         self.checksum
     }
 
-    pub fn oem_id(&self) -> &str {
-        str::from_utf8(&self.oem_id).unwrap()
+    pub fn oem_id(&self) -> Result<&str, AcpiError> {
+        str::from_utf8(&self.oem_id).map_err(|_| AcpiError::RsdpInvalidOemId)
     }
 
     pub fn revision(&self) -> u8 {
@@ -172,7 +171,7 @@ impl Rsdp {
 /// Find the areas we should search for the RSDP in.
 fn find_search_areas<H>(handler: H) -> [Range<usize>; 2]
 where
-    H: AcpiHandler,
+    H: Handler,
 {
     /*
      * Read the base address of the EBDA from its location in the BDA (BIOS Data Area). Not all BIOSs fill this out

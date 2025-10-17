@@ -10,53 +10,30 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2024"
-name = "acpi"
-version = "6.0.1"
+edition = "2021"
+name = "pci_types"
+version = "0.10.0"
 authors = ["Isaac Woods"]
 build = false
-autolib = false
 autobins = false
 autoexamples = false
 autotests = false
 autobenches = false
-description = "A pure-Rust library for interacting with ACPI"
+description = "Library with types for handling PCI devices"
 readme = "README.md"
 categories = [
     "hardware-support",
     "no-std",
 ]
 license = "MIT/Apache-2.0"
-repository = "https://github.com/rust-osdev/acpi"
-resolver = "2"
-
-[features]
-alloc = []
-aml = ["alloc"]
-default = [
-    "alloc",
-    "aml",
-]
+repository = "https://github.com/rust-osdev/pci_types"
 
 [lib]
-name = "acpi"
+name = "pci_types"
 path = "src/lib.rs"
 
 [dependencies.bit_field]
-version = "0.10.2"
+version = "0.10"
 
 [dependencies.bitflags]
 version = "2.5.0"
-
-[dependencies.byteorder]
-version = "1.5.0"
-default-features = false
-
-[dependencies.log]
-version = "0.4.20"
-
-[dependencies.pci_types]
-version = "0.10.0"
-
-[dependencies.spinning_top]
-version = "0.3.0"

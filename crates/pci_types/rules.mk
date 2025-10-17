@@ -5,25 +5,15 @@
 
 LOCAL_DIR := $(GET_LOCAL_DIR)
 MODULE := $(LOCAL_DIR)
-MODULE_CRATE_NAME := acpi
+MODULE_CRATE_NAME := pci_types
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_ADD_IMPLICIT_DEPS := false
-MODULE_RUST_EDITION := 2024
-MODULE_RUSTFLAGS += \
-	--cfg 'feature="alloc"' \
-	--cfg 'feature="aml"' \
-	--cfg 'feature="default"'
-
+MODULE_RUST_EDITION := 2021
 MODULE_LIBRARY_DEPS := \
 	$(call FIND_CRATE,bit_field) \
 	$(call FIND_CRATE,bitflags) \
-	$(call FIND_CRATE,byteorder) \
-	$(call FIND_CRATE,log) \
-	$(call FIND_CRATE,pci_types) \
-	$(call FIND_CRATE,spin) \
 	trusty/user/base/lib/libcompiler_builtins-rust \
-	trusty/user/base/lib/libcore-rust \
-	trusty/user/base/lib/liballoc-rust
+	trusty/user/base/lib/libcore-rust
 
 include make/library.mk

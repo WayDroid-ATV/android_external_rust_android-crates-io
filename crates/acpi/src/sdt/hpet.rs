@@ -1,12 +1,13 @@
 use crate::{
-    address::RawGenericAddress,
-    sdt::{SdtHeader, Signature},
     AcpiError,
-    AcpiHandler,
     AcpiTable,
     AcpiTables,
+    Handler,
+    address::RawGenericAddress,
+    sdt::{SdtHeader, Signature},
 };
 use bit_field::BitField;
+use log::warn;
 
 #[derive(Debug)]
 pub enum PageProtection {
@@ -21,8 +22,11 @@ pub enum PageProtection {
 /// Information about the High Precision Event Timer (HPET)
 #[derive(Debug)]
 pub struct HpetInfo {
-    // TODO(3.0.0): unpack these fields directly, and get rid of methods
-    pub event_timer_block_id: u32,
+    pub hardware_rev: u8,
+    pub num_comparators: u8,
+    pub main_counter_is_64bits: bool,
+    pub legacy_irq_capable: bool,
+    pub pci_vendor_id: u16,
     pub base_address: usize,
     pub hpet_number: u8,
     /// The minimum number of clock ticks that can be set without losing interrupts (for timers in Periodic Mode)
@@ -33,15 +37,21 @@ pub struct HpetInfo {
 impl HpetInfo {
     pub fn new<H>(tables: &AcpiTables<H>) -> Result<HpetInfo, AcpiError>
     where
-        H: AcpiHandler,
+        H: Handler,
     {
-        let hpet = tables.find_table::<HpetTable>()?;
+        let Some(hpet) = tables.find_table::<HpetTable>() else { Err(AcpiError::TableNotFound(Signature::HPET))? };
 
-        // Make sure the HPET is in system memory
-        assert_eq!(hpet.base_address.address_space, 0);
+        if hpet.base_address.address_space != 0 {
+            warn!("HPET reported as not in system memory; tables invalid?");
+        }
 
+        let event_timer_block_id = hpet.event_timer_block_id;
         Ok(HpetInfo {
-            event_timer_block_id: hpet.event_timer_block_id,
+            hardware_rev: event_timer_block_id.get_bits(0..8) as u8,
+            num_comparators: event_timer_block_id.get_bits(8..13) as u8,
+            main_counter_is_64bits: event_timer_block_id.get_bit(13),
+            legacy_irq_capable: event_timer_block_id.get_bit(15),
+            pci_vendor_id: event_timer_block_id.get_bits(16..32) as u16,
             base_address: hpet.base_address.address as usize,
             hpet_number: hpet.hpet_number,
             clock_tick_unit: hpet.clock_tick_unit,
@@ -54,42 +64,20 @@ impl HpetInfo {
             },
         })
     }
-
-    pub fn hardware_rev(&self) -> u8 {
-        self.event_timer_block_id.get_bits(0..8) as u8
-    }
-
-    pub fn num_comparators(&self) -> u8 {
-        self.event_timer_block_id.get_bits(8..13) as u8 + 1
-    }
-
-    pub fn main_counter_is_64bits(&self) -> bool {
-        self.event_timer_block_id.get_bit(13)
-    }
-
-    pub fn legacy_irq_capable(&self) -> bool {
-        self.event_timer_block_id.get_bit(15)
-    }
-
-    pub fn pci_vendor_id(&self) -> u16 {
-        self.event_timer_block_id.get_bits(16..32) as u16
-    }
 }
 
 #[repr(C, packed)]
 #[derive(Debug, Clone, Copy)]
 pub struct HpetTable {
-    /// The contents of the HPET's 'General Capabilities and ID register'
-    header: SdtHeader,
-    event_timer_block_id: u32,
-    base_address: RawGenericAddress,
-    hpet_number: u8,
-    clock_tick_unit: u16,
+    pub header: SdtHeader,
+    pub event_timer_block_id: u32,
+    pub base_address: RawGenericAddress,
+    pub hpet_number: u8,
+    pub clock_tick_unit: u16,
     /// Bits `0..4` specify the page protection guarantee. Bits `4..8` are reserved for OEM attributes.
-    page_protection_and_oem: u8,
+    pub page_protection_and_oem: u8,
 }
 
-/// ### Safety: Implementation properly represents a valid HPET table.
 unsafe impl AcpiTable for HpetTable {
     const SIGNATURE: Signature = Signature::HPET;
 
