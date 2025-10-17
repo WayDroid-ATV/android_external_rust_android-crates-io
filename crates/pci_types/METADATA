@@ -1,0 +1,17 @@
+name: "pci_types"
+description: "Library with types for handling PCI devices"
+third_party {
+  version: "0.10.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 9
+    day: 26
+  }
+  homepage: "https://crates.io/crates/pci_types"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/pci_types/pci_types-0.10.0.crate"
+    version: "0.10.0"
+  }
+}

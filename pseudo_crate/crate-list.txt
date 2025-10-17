@@ -309,6 +309,7 @@ parking_lot
 parking_lot_core
 paste
 pathdiff
+pci_types
 pdl-compiler
 pdl-runtime
 percent-encoding

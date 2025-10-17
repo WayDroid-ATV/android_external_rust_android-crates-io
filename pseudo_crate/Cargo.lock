@@ -22,13 +22,16 @@ dependencies = [
 
 [[package]]
 name = "acpi"
-version = "5.2.0"
+version = "6.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94476c7ef97af4c4d998b3f422c1b01d5211aad57c80ed200baf148d1f1efab6"
+checksum = "4c85d96f36022f650ee6f184f1353d077124754cecf6a3e91085a708495c6f5a"
 dependencies = [
  "bit_field",
  "bitflags 2.9.4",
+ "byteorder",
  "log",
+ "pci_types",
+ "spinning_top",
 ]
 
 [[package]]
@@ -419,6 +422,7 @@ dependencies = [
  "parking_lot_core",
  "paste",
  "pathdiff",
+ "pci_types",
  "pdl-compiler",
  "pdl-runtime",
  "percent-encoding",
@@ -5685,6 +5689,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "pci_types"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c4325c6aa3cca3373503b1527e75756f9fbfe5fd76be4b4c8a143ee47430b8e0"
+dependencies = [
+ "bit_field",
+ "bitflags 2.9.4",
+]
+
+[[package]]
 name = "pdl-compiler"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7306,6 +7320,15 @@ name = "spin"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d5fe4ccb98d9c292d56fec89a5e07da7fc4cf0dc11e156b41793132775d3e591"
+dependencies = [
+ "lock_api",
+]
+
+[[package]]
+name = "spinning_top"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d96d2d1d716fb500937168cc09353ffdc7a012be8475ac7308e1bdf0e3923300"
 dependencies = [
  "lock_api",
 ]
