@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-use std::net::Ipv6Addr;
-use std::str::FromStr;
+use std::{net::Ipv6Addr, str::FromStr};
 
-use netlink_packet_utils::{Emitable, Parseable};
+use netlink_packet_core::{Emitable, Parseable};
 
 use crate::{
     route::{
@@ -56,8 +55,8 @@ fn test_encap() {
                 RouteSeg6IpTunnel::Seg6(Seg6Header {
                     mode: Seg6Mode::Encap,
                     segments: vec![
-                        Ipv6Addr::from_str("fe80::1").unwrap().into(),
-                        Ipv6Addr::from_str("fe80::2").unwrap().into(),
+                        Ipv6Addr::from_str("fe80::1").unwrap(),
+                        Ipv6Addr::from_str("fe80::2").unwrap(),
                     ],
                 }),
             )]),
@@ -120,8 +119,8 @@ fn test_inline() {
                 RouteSeg6IpTunnel::Seg6(Seg6Header {
                     mode: Seg6Mode::Inline,
                     segments: vec![
-                        Ipv6Addr::from_str("fe80::1").unwrap().into(),
-                        Ipv6Addr::from_str("fe80::2").unwrap().into(),
+                        Ipv6Addr::from_str("fe80::1").unwrap(),
+                        Ipv6Addr::from_str("fe80::2").unwrap(),
                     ],
                 }),
             )]),

@@ -2,19 +2,19 @@
 
 use std::net::Ipv6Addr;
 
-use netlink_packet_utils::nla::DefaultNla;
-use netlink_packet_utils::{Emitable, Parseable};
+use netlink_packet_core::{DefaultNla, Emitable, Parseable};
 
-use crate::link::link_flag::LinkFlags;
-use crate::link::link_info::InfoVrfPort;
-use crate::link::{
-    AfSpecInet, AfSpecInet6, AfSpecUnspec, Icmp6Stats, Inet6CacheInfo,
-    Inet6DevConf, Inet6IfaceFlags, Inet6Stats, InetDevConf, InfoData, InfoKind,
-    InfoPortData, InfoPortKind, InfoVrf, LinkAttribute, LinkHeader, LinkInfo,
-    LinkLayerType, LinkMessage, LinkMessageBuffer, LinkXdp, Map, State, Stats,
-    Stats64, XdpAttached,
+use crate::{
+    link::{
+        af_spec::In6AddrGenMode, link_flag::LinkFlags, link_info::InfoVrfPort,
+        AfSpecInet, AfSpecInet6, AfSpecUnspec, Icmp6Stats, Inet6CacheInfo,
+        Inet6DevConf, Inet6IfaceFlags, Inet6Stats, InetDevConf, InfoData,
+        InfoKind, InfoPortData, InfoPortKind, InfoVrf, LinkAttribute,
+        LinkHeader, LinkInfo, LinkLayerType, LinkMessage, LinkMessageBuffer,
+        LinkMode, LinkXdp, Map, State, Stats, Stats64, XdpAttached,
+    },
+    AddressFamily,
 };
-use crate::AddressFamily;
 
 #[test]
 fn test_parsing_link_vrf() {
@@ -248,7 +248,7 @@ fn test_link_info_with_ifla_vrf_port_table() {
             LinkAttribute::IfName("veth20".to_string()),
             LinkAttribute::TxQueueLen(1000),
             LinkAttribute::OperState(State::Down),
-            LinkAttribute::Mode(0),
+            LinkAttribute::Mode(LinkMode::Default),
             LinkAttribute::Mtu(1500),
             LinkAttribute::MinMtu(68),
             LinkAttribute::MaxMtu(65535),
@@ -345,7 +345,7 @@ fn test_link_info_with_ifla_vrf_port_table() {
                         ..Default::default()
                     }),
                     AfSpecInet6::Token(Ipv6Addr::UNSPECIFIED),
-                    AfSpecInet6::AddrGenMode(0),
+                    AfSpecInet6::AddrGenMode(In6AddrGenMode::Eui64),
                 ]),
             ]),
         ],

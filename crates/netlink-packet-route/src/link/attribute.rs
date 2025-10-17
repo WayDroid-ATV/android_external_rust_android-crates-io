@@ -2,13 +2,10 @@
 
 use std::os::unix::io::RawFd;
 
-use anyhow::Context;
-use byteorder::{ByteOrder, NativeEndian};
-use netlink_packet_utils::{
-    nla::{DefaultNla, Nla, NlaBuffer, NlasIterator, NLA_F_NESTED},
-    parsers::{parse_i32, parse_string, parse_u32, parse_u8},
-    traits::{Emitable, Parseable, ParseableParametrized},
-    DecodeError,
+use netlink_packet_core::{
+    emit_i32, emit_u32, parse_i32, parse_string, parse_u32, parse_u8,
+    DecodeError, DefaultNla, Emitable, ErrorContext, Nla, NlaBuffer,
+    NlasIterator, Parseable, ParseableParametrized, NLA_F_NESTED,
 };
 
 #[cfg(any(
@@ -33,7 +30,7 @@ use super::{
     stats::LINK_STATS_LEN,
     stats64::LINK_STATS64_LEN,
     xdp::VecLinkXdp,
-    AfSpecBridge, AfSpecUnspec, LinkEvent, LinkExtentMask, LinkInfo,
+    AfSpecBridge, AfSpecUnspec, LinkEvent, LinkExtentMask, LinkInfo, LinkMode,
     LinkPhysId, LinkProtoInfoBridge, LinkProtoInfoInet6,
     LinkProtocolDownReason, LinkVfInfo, LinkVfPort, LinkWirelessEvent, LinkXdp,
     Map, MapBuffer, Prop, State, Stats, Stats64, Stats64Buffer, StatsBuffer,
@@ -139,7 +136,7 @@ pub enum LinkAttribute {
     Qdisc(String),
     IfAlias(String),
     PhysPortName(String),
-    Mode(u8),
+    Mode(LinkMode),
     Carrier(u8),
     ProtoDown(u8),
     Mtu(u32),
@@ -198,7 +195,8 @@ impl Nla for LinkAttribute {
             | Self::IfAlias(string)
             | Self::PhysPortName(string) => string.len() + 1,
 
-            Self::Mode(_) | Self::Carrier(_) | Self::ProtoDown(_) => 1,
+            Self::Mode(_) => 1,
+            Self::Carrier(_) | Self::ProtoDown(_) => 1,
 
             Self::Mtu(_)
             | Self::NewNetnsId(_)
@@ -264,10 +262,9 @@ impl Nla for LinkAttribute {
                 buffer[..string.len()].copy_from_slice(string.as_bytes());
                 buffer[string.len()] = 0;
             }
+            Self::Mode(v) => buffer[0] = (*v).into(),
 
-            Self::Mode(val) | Self::Carrier(val) | Self::ProtoDown(val) => {
-                buffer[0] = *val
-            }
+            Self::Carrier(val) | Self::ProtoDown(val) => buffer[0] = *val,
 
             Self::Mtu(value)
             | Self::Link(value)
@@ -285,18 +282,18 @@ impl Nla for LinkAttribute {
             | Self::GsoMaxSegs(value)
             | Self::GsoMaxSize(value)
             | Self::MinMtu(value)
-            | Self::MaxMtu(value) => NativeEndian::write_u32(buffer, *value),
+            | Self::MaxMtu(value) => emit_u32(buffer, *value).unwrap(),
 
-            Self::ExtMask(value) => NativeEndian::write_u32(
-                buffer,
-                u32::from(&VecLinkExtentMask(value.to_vec())),
-            ),
+            Self::ExtMask(value) => {
+                emit_u32(buffer, u32::from(&VecLinkExtentMask(value.to_vec())))
+                    .unwrap()
+            }
 
             Self::LinkNetNsId(v)
             | Self::NetNsFd(v)
             | Self::NewNetnsId(v)
             | Self::NewIfIndex(v)
-            | Self::IfNetnsId(v) => NativeEndian::write_i32(buffer, *v),
+            | Self::IfNetnsId(v) => emit_i32(buffer, *v).unwrap(),
             Self::Stats(nla) => nla.emit(buffer),
             Self::Map(nla) => nla.emit(buffer),
             Self::Stats64(nla) => nla.emit(buffer),
@@ -533,9 +530,9 @@ impl<'a, T: AsRef<[u8]> + ?Sized>
                 parse_string(payload)
                     .context("invalid IFLA_PHYS_PORT_NAME value")?,
             ),
-            IFLA_LINKMODE => Self::Mode(
+            IFLA_LINKMODE => Self::Mode(LinkMode::from(
                 parse_u8(payload).context("invalid IFLA_LINKMODE value")?,
-            ),
+            )),
             IFLA_CARRIER => Self::Carrier(
                 parse_u8(payload).context("invalid IFLA_CARRIER value")?,
             ),

@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
 
-use netlink_packet_utils::{nla::DefaultNla, Emitable, Parseable};
+use netlink_packet_core::{DefaultNla, Emitable, Parseable};
 
-use crate::link::link_flag::LinkFlags;
-use crate::link::{
-    AfSpecInet, AfSpecInet6, AfSpecUnspec, Icmp6Stats, Inet6CacheInfo,
-    Inet6DevConf, Inet6IfaceFlags, Inet6Stats, InetDevConf, LinkAttribute,
-    LinkHeader, LinkLayerType, LinkMessage, LinkMessageBuffer, LinkXdp, Map,
-    Prop, State, Stats, Stats64, XdpAttached,
+use crate::{
+    link::{
+        af_spec::In6AddrGenMode, link_flag::LinkFlags, AfSpecInet, AfSpecInet6,
+        AfSpecUnspec, Icmp6Stats, Inet6CacheInfo, Inet6DevConf,
+        Inet6IfaceFlags, Inet6Stats, InetDevConf, LinkAttribute, LinkHeader,
+        LinkLayerType, LinkMessage, LinkMessageBuffer, LinkMode, LinkXdp, Map,
+        Prop, State, Stats, Stats64, XdpAttached,
+    },
+    AddressFamily,
 };
-use crate::AddressFamily;
 
 // tshark capture of command `ip -s link show ens3`
 #[test]
@@ -147,7 +149,7 @@ fn test_parsing_link_statistics_on_kernel_4_18() {
             LinkAttribute::IfName("ens3".into()),
             LinkAttribute::TxQueueLen(1000),
             LinkAttribute::OperState(State::Up),
-            LinkAttribute::Mode(0),
+            LinkAttribute::Mode(LinkMode::Default),
             LinkAttribute::Mtu(1500),
             LinkAttribute::MinMtu(68),
             LinkAttribute::MaxMtu(65535),
@@ -383,7 +385,7 @@ fn test_parsing_link_statistics_on_kernel_4_18() {
                         rate_limit_host: 0,
                     }),
                     AfSpecInet6::Token(std::net::Ipv6Addr::UNSPECIFIED),
-                    AfSpecInet6::AddrGenMode(1),
+                    AfSpecInet6::AddrGenMode(In6AddrGenMode::None),
                 ]),
             ]),
             LinkAttribute::PropList(vec![Prop::AltIfName("enp0s3".into())]),
@@ -518,7 +520,7 @@ fn test_parsing_link_statistics() {
             LinkAttribute::IfName("wlan0".into()),
             LinkAttribute::TxQueueLen(1000),
             LinkAttribute::OperState(State::Up),
-            LinkAttribute::Mode(1),
+            LinkAttribute::Mode(LinkMode::Dormant),
             LinkAttribute::Mtu(1500),
             LinkAttribute::MinMtu(256),
             LinkAttribute::MaxMtu(2304),

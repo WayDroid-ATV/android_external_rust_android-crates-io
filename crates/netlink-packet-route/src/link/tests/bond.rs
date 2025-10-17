@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: MIT
 
-use netlink_packet_utils::{Emitable, Parseable};
+use netlink_packet_core::{Emitable, Parseable};
 
-use crate::link::link_flag::LinkFlags;
-use crate::link::{
-    BondArpAllTargets, BondArpValidate, BondFailOverMac, BondMode,
-    BondPortState, BondPrimaryReselect, BondXmitHashPolicy, InfoBond,
-    InfoBondPort, InfoData, InfoKind, InfoPortData, InfoPortKind,
-    LinkAttribute, LinkHeader, LinkInfo, LinkLayerType, LinkMessage,
-    LinkMessageBuffer, Map, MiiStatus, State,
+use crate::{
+    link::{
+        link_flag::LinkFlags, BondArpAllTargets, BondArpValidate,
+        BondFailOverMac, BondMode, BondPortState, BondPrimaryReselect,
+        BondXmitHashPolicy, InfoBond, InfoBondPort, InfoData, InfoKind,
+        InfoPortData, InfoPortKind, LinkAttribute, LinkHeader, LinkInfo,
+        LinkLayerType, LinkMessage, LinkMessageBuffer, LinkMode, Map,
+        MiiStatus, State,
+    },
+    AddressFamily, RouteNetlinkMessage,
 };
-use crate::{AddressFamily, RouteNetlinkMessage};
 
 #[test]
 fn test_bond_link_info() {
@@ -190,7 +192,7 @@ fn test_bond_arp_validate() {
             LinkAttribute::IfName("bond0".into()),
             LinkAttribute::TxQueueLen(1000),
             LinkAttribute::OperState(State::Down),
-            LinkAttribute::Mode(0),
+            LinkAttribute::Mode(LinkMode::Default),
             LinkAttribute::Mtu(1500),
             LinkAttribute::MinMtu(68),
             LinkAttribute::MaxMtu(65535),
