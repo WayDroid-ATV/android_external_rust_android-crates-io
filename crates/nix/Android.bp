@@ -68,6 +68,12 @@ rust_library {
                 "linux_android",
             ],
         },
+        darwin: {
+            cfgs: [
+                "apple_targets",
+                "bsd",
+            ],
+        },
     },
 
 }
