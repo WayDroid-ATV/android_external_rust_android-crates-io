@@ -10,11 +10,9 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: csharp::Tokens = quote!("start π 😊 \n \x7f end");
 //! assert_eq!("\"start \\u03c0 \\U0001f60a \\n \\x7f end\"", toks.to_string()?);
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 
 mod block_comment;
@@ -76,7 +74,7 @@ impl_lang! {
         }
     }
 
-    Import {
+    Import(Import) {
         fn format(&self, out: &mut fmt::Formatter<'_>, config: &Config, format: &Format) -> fmt::Result {
             {
                 let qualified = self.qualified || is_qualified(config, format, &self.namespace, &self.name);
@@ -177,7 +175,7 @@ impl Csharp {
     ) {
         let mut modules = BTreeSet::new();
 
-        for import in tokens.walk_imports() {
+        for import in tokens.iter_lang() {
             modules.insert((&*import.namespace, &*import.name));
         }
 

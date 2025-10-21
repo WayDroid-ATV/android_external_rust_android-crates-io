@@ -8,11 +8,9 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: dart::Tokens = quote!("start π 😊 \n \x7f ÿ $ \\ end");
 //! assert_eq!("\"start π 😊 \\n \\x7f ÿ \\$ \\\\ end\"", toks.to_string()?);
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 //!
 //! # String Interpolation in Dart
@@ -23,14 +21,12 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: dart::Tokens = quote!($[str](  Hello: $var  ));
 //! assert_eq!("\"  Hello: $var  \"", toks.to_string()?);
 //!
 //! let toks: dart::Tokens = quote!($[str](  Hello: $(a + b)  ));
 //! assert_eq!("\"  Hello: ${a + b}  \"", toks.to_string()?);
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 
 mod doc_comment;
@@ -143,7 +139,7 @@ impl_lang! {
         }
     }
 
-    Import {
+    Import(Import) {
         fn format(&self, out: &mut fmt::Formatter<'_>, _: &Config, _: &Format) -> fmt::Result {
             if let Some(alias) = &self.alias {
                 out.write_str(alias.as_ref())?;
@@ -192,7 +188,7 @@ impl Dart {
     fn imports(out: &mut Tokens, input: &Tokens, _: &Config) {
         let mut modules = BTreeSet::new();
 
-        for import in input.walk_imports() {
+        for import in input.iter_lang() {
             if &*import.path == DART_CORE {
                 continue;
             }

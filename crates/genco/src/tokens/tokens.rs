@@ -10,7 +10,8 @@
 //! ```
 #![allow(clippy::module_inception)]
 
-use core::cmp;
+use core::cmp::Ordering;
+use core::hash;
 use core::iter::FromIterator;
 use core::mem;
 use core::slice;
@@ -21,7 +22,7 @@ use alloc::vec::{self, Vec};
 
 use crate::fmt;
 use crate::lang::{Lang, LangSupportsEval};
-use crate::tokens::{FormatInto, Item, Register};
+use crate::tokens::{FormatInto, Item, Kind, Register};
 
 /// A stream of tokens.
 ///
@@ -46,7 +47,7 @@ use crate::tokens::{FormatInto, Item, Register};
 /// tokens.space();
 /// tokens.space();
 ///
-/// assert_eq!(vec![Item::Space::<()>], tokens);
+/// assert_eq!(tokens, [Item::space()]);
 ///
 /// let mut tokens = Tokens::<()>::new();
 ///
@@ -54,7 +55,7 @@ use crate::tokens::{FormatInto, Item, Register};
 /// tokens.push();
 /// tokens.push();
 ///
-/// assert_eq!(vec![Item::Push::<()>], tokens);
+/// assert_eq!(tokens, [Item::push()]);
 ///
 /// let mut tokens = Tokens::<()>::new();
 ///
@@ -63,22 +64,21 @@ use crate::tokens::{FormatInto, Item, Register};
 /// tokens.push();
 /// tokens.line();
 ///
-/// assert_eq!(vec![Item::Line::<()>], tokens);
+/// assert_eq!(tokens, [Item::line()]);
 /// ```
 ///
 /// [`space`]: Self::space
 /// [`push`]: Self::push
 /// [`line`]: Self::line
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Tokens<L = ()>
 where
     L: Lang,
 {
-    items: Vec<Item<L>>,
+    items: Vec<(usize, Item<L>)>,
     /// The last position at which we observed a language item.
     ///
-    /// This references the `position + 1` in the items vector. A position of
-    /// 0 means that there are no more items.
+    /// This references the `position + 1` in the items vector. A position of 0
+    /// means that there are no more items.
     ///
     /// This makes up a singly-linked list over all language items that you can
     /// follow.
@@ -136,13 +136,14 @@ where
     /// let tokens: Tokens<()> = quote!(foo bar baz);
     /// let mut it = tokens.iter();
     ///
-    /// assert_eq!(Some(&Item::Literal(ItemStr::Static("foo"))), it.next());
-    /// assert_eq!(Some(&Item::Space), it.next());
-    /// assert_eq!(Some(&Item::Literal(ItemStr::Static("bar"))), it.next());
-    /// assert_eq!(Some(&Item::Space), it.next());
-    /// assert_eq!(Some(&Item::Literal(ItemStr::Static("baz"))), it.next());
+    /// assert_eq!(Some(&Item::literal(ItemStr::static_("foo"))), it.next());
+    /// assert_eq!(Some(&Item::space()), it.next());
+    /// assert_eq!(Some(&Item::literal(ItemStr::static_("bar"))), it.next());
+    /// assert_eq!(Some(&Item::space()), it.next());
+    /// assert_eq!(Some(&Item::literal(ItemStr::static_("baz"))), it.next());
     /// assert_eq!(None, it.next());
     /// ```
+    #[inline]
     pub fn iter(&self) -> Iter<'_, L> {
         Iter {
             iter: self.items.iter(),
@@ -151,15 +152,15 @@ where
 
     /// Append the given tokens.
     ///
-    /// This append function takes anything implementing [FormatInto] making the
-    /// argument's behavior customizable. Most primitive types have built-in
-    /// implementations of [FormatInto] treating them as raw tokens.
+    /// This append function takes anything implementing [`FormatInto`] making
+    /// the argument's behavior customizable. Most primitive types have built-in
+    /// implementations of [`FormatInto`] treating them as raw tokens.
     ///
-    /// Most notabley, things implementing [FormatInto] can be used as arguments
-    /// for [interpolation] in the [quote!] macro.
+    /// Most notabley, things implementing [`FormatInto`] can be used as
+    /// arguments for [interpolation] in the [`quote!`] macro.
     ///
-    /// [quote!]: macro.quote.html
-    /// [interpolation]: macro.quote.html#interpolation
+    /// [`quote!`]: crate::quote
+    /// [interpolation]: crate::quote#interpolation
     ///
     /// # Examples
     ///
@@ -211,10 +212,10 @@ where
         }
     }
 
-    /// Walk over all imports.
+    /// Iterate over all registered [`Lang`] items.
     ///
     /// The order in which the imports are returned is *not* defined. So if you
-    /// need them in some particular order you need to sort them.
+    /// need them in some particular order you have to sort them.
     ///
     /// # Examples
     ///
@@ -226,12 +227,12 @@ where
     ///
     /// let tokens = quote!(foo $ty<u32, dyn $debug> baz);
     ///
-    /// for import in tokens.walk_imports() {
+    /// for import in tokens.iter_lang() {
     ///     println!("{:?}", import);
     /// }
     /// ```
-    pub fn walk_imports(&self) -> WalkImports<'_, L> {
-        WalkImports {
+    pub fn iter_lang(&self) -> IterLang<'_, L> {
+        IterLang {
             items: &self.items,
             pos: self.last_lang_item,
         }
@@ -254,8 +255,6 @@ where
     /// assert_eq!("use byteorder::WriteBytesExt as _;\n", tokens.to_file_string()?);
     /// # Ok::<_, genco::fmt::Error>(())
     /// ```
-    ///
-    /// [quote!]: macro.quote.html
     pub fn register<T>(&mut self, tokens: T)
     where
         T: Register<L>,
@@ -307,11 +306,11 @@ where
     /// # Ok::<_, genco::fmt::Error>(())
     /// ```
     pub fn space(&mut self) {
-        if let Some(Item::Space) = self.items.last() {
+        if let Some((_, Item { kind: Kind::Space })) = self.items.last() {
             return;
         }
 
-        self.items.push(Item::Space);
+        self.items.push((0, Item::space()));
     }
 
     /// Add a single push operation.
@@ -346,19 +345,23 @@ where
     /// ```
     pub fn push(&mut self) {
         let item = loop {
-            match self.items.pop() {
+            let Some((o, item)) = self.items.pop() else {
+                break None;
+            };
+
+            match &item.kind {
                 // NB: never reconfigure a line into a push.
-                Some(Item::Line) => {
-                    self.items.push(Item::Line);
+                Kind::Line => {
+                    self.items.push((o, item));
                     return;
                 }
-                Some(Item::Space | Item::Push) => continue,
-                item => break item,
+                Kind::Space | Kind::Push => continue,
+                _ => break Some((o, item)),
             }
         };
 
         self.items.extend(item);
-        self.items.push(Item::Push);
+        self.items.push((0, Item::push()));
     }
 
     /// Add a single line operation.
@@ -394,14 +397,19 @@ where
     /// ```
     pub fn line(&mut self) {
         let item = loop {
-            match self.items.pop() {
-                Some(Item::Line) | Some(Item::Push) => continue,
-                item => break item,
+            let Some((o, item)) = self.items.pop() else {
+                break None;
+            };
+
+            if matches!(item.kind, Kind::Line | Kind::Push) {
+                continue;
             }
+
+            break Some((o, item));
         };
 
         self.items.extend(item);
-        self.items.push(Item::Line);
+        self.items.push((0, Item::line()));
     }
 
     /// Increase the indentation of the token stream.
@@ -562,38 +570,36 @@ where
     ///
     /// let mut tokens = Tokens::<()>::new();
     ///
-    /// tokens.append(ItemStr::Static("foo"));
+    /// tokens.append(ItemStr::static_("foo"));
     /// tokens.space();
     /// tokens.space(); // Note: second space ignored
-    /// tokens.append(ItemStr::Static("bar"));
+    /// tokens.append(ItemStr::static_("bar"));
     ///
     /// assert_eq!(tokens, quote!(foo bar));
     /// ```
     pub(crate) fn item(&mut self, item: Item<L>) {
-        match item {
-            Item::Push => self.push(),
-            Item::Line => self.line(),
-            Item::Space => self.space(),
-            Item::Indentation(n) => self.indentation(n),
-            Item::Lang(_, item) => self.lang_item(item),
-            Item::Register(_, item) => self.lang_item_register(item),
-            other => self.items.push(other),
+        match item.kind {
+            Kind::Push => self.push(),
+            Kind::Line => self.line(),
+            Kind::Space => self.space(),
+            Kind::Indentation(n) => self.indentation(n),
+            Kind::Lang(item) => self.lang_item(item),
+            Kind::Register(item) => self.lang_item_register(item),
+            other => self.items.push((0, Item::new(other))),
         }
     }
 
     /// Add a language item directly.
     pub(crate) fn lang_item(&mut self, item: Box<L::Item>) {
         // NB: recorded position needs to be adjusted.
-        self.items
-            .push(crate::tokens::Item::Lang(self.last_lang_item, item));
+        self.items.push((self.last_lang_item, Item::lang(item)));
         self.last_lang_item = self.items.len();
     }
 
     /// Register a language item directly.
     pub(crate) fn lang_item_register(&mut self, item: Box<L::Item>) {
         // NB: recorded position needs to be adjusted.
-        self.items
-            .push(crate::tokens::Item::Register(self.last_lang_item, item));
+        self.items.push((self.last_lang_item, Item::register(item)));
         self.last_lang_item = self.items.len();
     }
 
@@ -645,19 +651,23 @@ where
     fn indentation(&mut self, mut n: i16) {
         let item = loop {
             // flush all whitespace preceeding the indentation change.
-            match self.items.pop() {
-                Some(Item::Push) => continue,
-                Some(Item::Space) => continue,
-                Some(Item::Line) => continue,
-                Some(Item::Indentation(u)) => n += u,
-                item => break item,
+            let Some((o, item)) = self.items.pop() else {
+                break None;
+            };
+
+            match &item.kind {
+                Kind::Push => continue,
+                Kind::Space => continue,
+                Kind::Line => continue,
+                Kind::Indentation(u) => n += u,
+                _ => break Some((o, item)),
             }
         };
 
         self.items.extend(item);
 
         if n != 0 {
-            self.items.push(Item::Indentation(n));
+            self.items.push((0, Item::new(Kind::Indentation(n))));
         }
     }
 }
@@ -864,40 +874,98 @@ where
     }
 }
 
-impl<L> cmp::PartialEq<Vec<Item<L>>> for Tokens<L>
+impl<L> PartialEq<Tokens<L>> for Tokens<L>
 where
     L: Lang,
+    L::Item: PartialEq,
+{
+    #[inline]
+    fn eq(&self, other: &Tokens<L>) -> bool {
+        self.items == other.items
+    }
+}
+
+impl<L> PartialEq<Vec<Item<L>>> for Tokens<L>
+where
+    L: Lang,
+    L::Item: PartialEq,
 {
     #[inline]
     fn eq(&self, other: &Vec<Item<L>>) -> bool {
-        self.items == *other
+        self == &other[..]
     }
 }
 
-impl<L> cmp::PartialEq<Tokens<L>> for Vec<Item<L>>
+impl<L> PartialEq<Tokens<L>> for Vec<Item<L>>
 where
     L: Lang,
+    L::Item: PartialEq,
 {
+    #[inline]
     fn eq(&self, other: &Tokens<L>) -> bool {
-        *self == other.items
+        other == &self[..]
     }
 }
 
-impl<L> cmp::PartialEq<[Item<L>]> for Tokens<L>
+impl<L> PartialEq<[Item<L>]> for Tokens<L>
 where
     L: Lang,
+    L::Item: PartialEq,
 {
+    #[inline]
     fn eq(&self, other: &[Item<L>]) -> bool {
-        &*self.items == other
+        self.iter().eq(other)
     }
 }
 
-impl<L> cmp::PartialEq<Tokens<L>> for [Item<L>]
+impl<L, const N: usize> PartialEq<[Item<L>; N]> for Tokens<L>
 where
     L: Lang,
+    L::Item: PartialEq,
 {
+    #[inline]
+    fn eq(&self, other: &[Item<L>; N]) -> bool {
+        self == &other[..]
+    }
+}
+
+impl<L> PartialEq<Tokens<L>> for [Item<L>]
+where
+    L: Lang,
+    L::Item: PartialEq,
+{
+    #[inline]
     fn eq(&self, other: &Tokens<L>) -> bool {
-        self == &*other.items
+        self.iter().eq(other.iter())
+    }
+}
+
+impl<L> Eq for Tokens<L>
+where
+    L: Lang,
+    L::Item: Eq,
+{
+}
+
+impl<L> PartialOrd<Tokens<L>> for Tokens<L>
+where
+    L: Lang,
+    L::Item: PartialOrd,
+{
+    #[inline]
+    fn partial_cmp(&self, other: &Tokens<L>) -> Option<Ordering> {
+        self.items.iter().partial_cmp(other.items.iter())
+    }
+}
+
+impl<L> Ord for Tokens<L>
+where
+    L: Lang,
+    L::Item: Ord,
+{
+    #[inline]
+    fn cmp(&self, other: &Tokens<L>) -> Ordering {
+        self.items.iter().cmp(other.items.iter())
     }
 }
 
@@ -908,7 +976,7 @@ pub struct IntoIter<L>
 where
     L: Lang,
 {
-    iter: vec::IntoIter<Item<L>>,
+    iter: vec::IntoIter<(usize, Item<L>)>,
 }
 
 impl<L> Iterator for IntoIter<L>
@@ -917,10 +985,12 @@ where
 {
     type Item = Item<L>;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next()
+        Some(self.iter.next()?.1)
     }
 
+    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
@@ -937,11 +1007,11 @@ where
 /// let tokens: Tokens<()> = quote!(foo bar baz);
 /// let mut it = tokens.into_iter();
 ///
-/// assert_eq!(Some(Item::Literal(ItemStr::Static("foo"))), it.next());
-/// assert_eq!(Some(Item::Space), it.next());
-/// assert_eq!(Some(Item::Literal(ItemStr::Static("bar"))), it.next());
-/// assert_eq!(Some(Item::Space), it.next());
-/// assert_eq!(Some(Item::Literal(ItemStr::Static("baz"))), it.next());
+/// assert_eq!(Some(Item::literal(ItemStr::static_("foo"))), it.next());
+/// assert_eq!(Some(Item::space()), it.next());
+/// assert_eq!(Some(Item::literal(ItemStr::static_("bar"))), it.next());
+/// assert_eq!(Some(Item::space()), it.next());
+/// assert_eq!(Some(Item::literal(ItemStr::static_("baz"))), it.next());
 /// assert_eq!(None, it.next());
 /// ```
 impl<L> IntoIterator for Tokens<L>
@@ -951,6 +1021,7 @@ where
     type Item = Item<L>;
     type IntoIter = IntoIter<L>;
 
+    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         IntoIter {
             iter: self.items.into_iter(),
@@ -965,7 +1036,7 @@ pub struct Iter<'a, L>
 where
     L: Lang,
 {
-    iter: slice::Iter<'a, Item<L>>,
+    iter: slice::Iter<'a, (usize, Item<L>)>,
 }
 
 impl<'a, L> Iterator for Iter<'a, L>
@@ -974,10 +1045,12 @@ where
 {
     type Item = &'a Item<L>;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next()
+        Some(&self.iter.next()?.1)
     }
 
+    #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
         self.iter.size_hint()
     }
@@ -998,6 +1071,7 @@ where
 impl<'a, L> FromIterator<&'a Item<L>> for Tokens<L>
 where
     L: Lang,
+    L::Item: Clone,
 {
     fn from_iter<I: IntoIterator<Item = &'a Item<L>>>(iter: I) -> Self {
         let it = iter.into_iter();
@@ -1021,18 +1095,58 @@ where
     }
 }
 
+impl<L> core::fmt::Debug for Tokens<L>
+where
+    L: Lang,
+    L::Item: core::fmt::Debug,
+{
+    #[inline]
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_list().entries(&self.items).finish()
+    }
+}
+
+impl<L> Clone for Tokens<L>
+where
+    L: Lang,
+    L::Item: Clone,
+{
+    #[inline]
+    fn clone(&self) -> Self {
+        Self {
+            items: self.items.clone(),
+            last_lang_item: self.last_lang_item,
+        }
+    }
+}
+
+impl<L> hash::Hash for Tokens<L>
+where
+    L: Lang,
+    L::Item: hash::Hash,
+{
+    #[inline]
+    fn hash<H>(&self, state: &mut H)
+    where
+        H: hash::Hasher,
+    {
+        self.items.hash(state);
+        self.last_lang_item.hash(state);
+    }
+}
+
 /// An iterator over language-specific imported items.
 ///
-/// Constructed using the [Tokens::walk_imports] method.
-pub struct WalkImports<'a, L>
+/// Constructed using the [`Tokens::iter_lang`] method.
+pub struct IterLang<'a, L>
 where
     L: Lang,
 {
-    items: &'a [Item<L>],
+    items: &'a [(usize, Item<L>)],
     pos: usize,
 }
 
-impl<'a, L> Iterator for WalkImports<'a, L>
+impl<'a, L> Iterator for IterLang<'a, L>
 where
     L: Lang,
 {
@@ -1046,16 +1160,18 @@ where
         }
 
         // NB: recorded position needs to be adjusted.
-        let item = self.items.get(pos - 1)?;
-
-        let (prev, item) = match item {
-            Item::Lang(prev, item) => (prev, item),
-            Item::Register(prev, item) => (prev, item),
-            _ => return None,
-        };
-
-        self.pos = *prev;
-        Some(item)
+        match self.items.get(pos - 1)? {
+            (
+                prev,
+                Item {
+                    kind: Kind::Lang(item) | Kind::Register(item),
+                },
+            ) => {
+                self.pos = *prev;
+                Some(item)
+            }
+            _ => None,
+        }
     }
 }
 
@@ -1082,7 +1198,7 @@ mod tests {
             type Item = Any;
         }
 
-        Import {
+        Import(Import) {
             fn format(&self, out: &mut fmt::Formatter<'_>, _: &(), _: &()) -> fmt::Result {
                 write!(out, "{}", self.0)
             }
@@ -1098,10 +1214,10 @@ mod tests {
             $(String::from("nope"))
         };
 
-        let mut output: Vec<_> = toks.walk_imports().cloned().collect();
+        let mut output: Vec<_> = toks.iter_lang().cloned().collect();
         output.sort();
 
-        let expected = vec![Any::Import(Import(1)), Any::Import(Import(2))];
+        let expected: Vec<Any> = vec![Import(1).into(), Import(2).into()];
 
         assert_eq!(expected, output);
     }

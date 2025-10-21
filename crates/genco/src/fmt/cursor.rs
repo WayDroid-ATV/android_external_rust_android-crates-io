@@ -1,6 +1,6 @@
 use crate::fmt;
 use crate::lang::Lang;
-use crate::tokens::Item;
+use crate::tokens::{Item, Kind};
 
 /// Trait for peeking items.
 pub(super) trait Parse<L>
@@ -27,13 +27,13 @@ where
 
     #[inline]
     fn peek(item: &Item<L>) -> bool {
-        matches!(item, Item::Literal(..))
+        matches!(item.kind, Kind::Literal(..))
     }
 
     #[inline]
     fn parse(item: &Item<L>) -> fmt::Result<&Self::Output> {
-        match item {
-            Item::Literal(s) => Ok(s),
+        match &item.kind {
+            Kind::Literal(s) => Ok(s),
             _ => Err(core::fmt::Error),
         }
     }
@@ -50,13 +50,13 @@ where
 
     #[inline]
     fn peek(item: &Item<L>) -> bool {
-        matches!(item, Item::CloseEval)
+        matches!(item.kind, Kind::CloseEval)
     }
 
     #[inline]
     fn parse(item: &Item<L>) -> fmt::Result<&Self::Output> {
-        match item {
-            Item::CloseEval => Ok(&()),
+        match &item.kind {
+            Kind::CloseEval => Ok(&()),
             _ => Err(core::fmt::Error),
         }
     }
@@ -67,14 +67,14 @@ pub(super) struct Cursor<'a, L>
 where
     L: Lang,
 {
-    items: &'a [Item<L>],
+    items: &'a [(usize, Item<L>)],
 }
 
 impl<'a, L> Cursor<'a, L>
 where
     L: Lang,
 {
-    pub(super) fn new(items: &'a [Item<L>]) -> Self {
+    pub(super) fn new(items: &'a [(usize, Item<L>)]) -> Self {
         Self { items }
     }
 
@@ -82,7 +82,7 @@ where
     pub(super) fn next(&mut self) -> Option<&Item<L>> {
         let (first, rest) = self.items.split_first()?;
         self.items = rest;
-        Some(first)
+        Some(&first.1)
     }
 
     #[inline]
@@ -90,7 +90,7 @@ where
     where
         P: Parse<L>,
     {
-        if let Some(item) = self.items.first() {
+        if let Some((_, item)) = self.items.first() {
             P::peek(item)
         } else {
             false
@@ -102,7 +102,7 @@ where
     where
         P: Parse<L>,
     {
-        if let Some(item) = self.items.get(1) {
+        if let Some((_, item)) = self.items.get(1) {
             P::peek(item)
         } else {
             false

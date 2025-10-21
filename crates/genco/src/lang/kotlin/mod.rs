@@ -10,11 +10,9 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: kotlin::Tokens = quote!("start π 😊 $var \n end");
 //! assert_eq!("\"start \\u03c0 \\ud83d\\ude0a \\$var \\n end\"", toks.to_string()?);
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 
 use core::fmt::Write as _;
@@ -104,7 +102,7 @@ impl_lang! {
         }
     }
 
-    Import {
+    Import(Import) {
         fn format(&self, out: &mut fmt::Formatter<'_>, config: &Config, format: &Format) -> fmt::Result {
             let file_package = config.package.as_ref().map(|p| p.as_ref());
             let imported = format.imported.get(self.name.as_ref()).map(String::as_str);
@@ -203,7 +201,7 @@ impl Kotlin {
         let mut to_import = BTreeSet::new();
         let file_package = config.package.as_ref().map(|p| p.as_ref());
 
-        for import in tokens.walk_imports() {
+        for import in tokens.iter_lang() {
             // Don't import if the type is in the current package
             if Some(import.package.as_ref()) == file_package {
                 continue;

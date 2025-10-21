@@ -7,7 +7,6 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: js::Tokens = quote! {
 //!     function foo(v) {
 //!         return v + ", World";
@@ -26,8 +25,7 @@
 //!     ],
 //!     toks.to_file_vec()?
 //! );
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 //!
 //! String quoting in JavaScript:
@@ -35,11 +33,9 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: go::Tokens = quote!("start π 😊 \n \x7f end");
 //! assert_eq!("\"start \\u03c0 \\U0001f60a \\n \\x7f end\"", toks.to_string()?);
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 
 use core::fmt::Write as _;
@@ -89,7 +85,7 @@ impl_lang! {
         }
     }
 
-    Import {
+    Import(Import) {
         fn format(&self, out: &mut fmt::Formatter<'_>, _: &Config, _: &Format) -> fmt::Result {
             if let Some(module) = self.module.rsplit(MODULE_SEP).next() {
                 out.write_str(module)?;
@@ -136,7 +132,7 @@ impl Go {
     fn imports(out: &mut Tokens, tokens: &Tokens) {
         let mut modules = BTreeSet::new();
 
-        for import in tokens.walk_imports() {
+        for import in tokens.iter_lang() {
             modules.insert(&import.module);
         }
 

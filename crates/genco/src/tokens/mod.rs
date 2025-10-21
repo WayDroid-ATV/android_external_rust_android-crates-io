@@ -1,7 +1,7 @@
 //! Utilities for working with token streams.
 //!
 //! This is typically a module you will use if you intend to provide a manual
-//! implementation of [FormatInto].
+//! implementation of [`FormatInto`].
 //!
 //! # Examples
 //!
@@ -32,7 +32,6 @@
 //!     })
 //! }
 //!
-//! # fn main() -> genco::fmt::Result {
 //! use genco::prelude::*;
 //!
 //! let tokens: java::Tokens = quote! {
@@ -52,8 +51,7 @@
 //!     ],
 //!     tokens.to_vec()?
 //! );
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 
 mod display;
@@ -71,13 +69,9 @@ pub use self::display::{display, Display};
 pub use self::format_into::FormatInto;
 pub use self::from_fn::{from_fn, FromFn};
 pub use self::item::Item;
+pub(crate) use self::item::Kind;
 pub use self::item_str::ItemStr;
 pub use self::quoted::{quoted, QuotedFn};
 pub use self::register::{register, Register, RegisterFn};
 pub use self::static_literal::static_literal;
 pub use self::tokens::Tokens;
-
-#[doc(hidden)]
-pub use self::internal::__lang_item;
-#[doc(hidden)]
-pub use self::internal::__lang_item_register;
