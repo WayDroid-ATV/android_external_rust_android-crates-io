@@ -97,6 +97,14 @@ git diff --relative=crates/foo -- crates/foo/<file1> crates/foo/<file2> > crates
 If you stage or commit the change and the patch, you should see no new changes
 when you run "regenerate".
 
+## How to delete a crate
+
+Not a typical operation. Requires a workaround.
+
+* Remove the crate from pseudo_crate/Cargo.toml
+* Remove the crate directory `crates/<name>`
+* Regenerate any other crate that still exists with `crate_tool regenerate <crate_name>`. This ensures that pseudo_crate/deleted-crates.txt is correct.
+
 ## I want to know how the sausage is made
 
 The source code for `crate_tool` is [here](https://android.googlesource.com/platform/development/+/refs/heads/main/tools/external_crates/).
