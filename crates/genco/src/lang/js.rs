@@ -7,7 +7,6 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: js::Tokens = quote! {
 //!     function foo(v) {
 //!         return v + ", World";
@@ -26,8 +25,7 @@
 //!     ],
 //!     toks.to_file_vec()?
 //! );
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 //!
 //! # String Quoting in JavaScript
@@ -39,14 +37,12 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: js::Tokens = quote!("start π 😊 \n \x7f ÿ $ \\ end");
 //! assert_eq!("\"start π 😊 \\n \\x7f ÿ $ \\\\ end\"", toks.to_string()?);
 //!
 //! let toks: js::Tokens = quote!($(quoted("start π 😊 \n \x7f ÿ $ \\ end")));
 //! assert_eq!("\"start π 😊 \\n \\x7f ÿ $ \\\\ end\"", toks.to_string()?);
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 
 use core::fmt::Write as _;
@@ -171,7 +167,7 @@ impl_lang! {
         }
     }
 
-    Import {
+    Import(Import) {
         fn format(&self, out: &mut fmt::Formatter<'_>, _: &Config, _: &Format) -> fmt::Result {
             let name = match self.kind {
                 ImportKind::Named => self.alias.as_ref().unwrap_or(&self.name),
@@ -420,7 +416,7 @@ impl JavaScript {
         let mut modules = BTreeMap::<&Module, ResolvedModule<'_>>::new();
         let mut wildcards = BTreeSet::new();
 
-        for import in tokens.walk_imports() {
+        for import in tokens.iter_lang() {
             match import.kind {
                 ImportKind::Named => {
                     let module = modules.entry(&import.module).or_default();

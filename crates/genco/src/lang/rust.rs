@@ -5,7 +5,6 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: rust::Tokens = quote! {
 //!     fn foo() -> u32 {
 //!         42
@@ -20,8 +19,7 @@
 //!     ],
 //!     toks.to_file_vec()?
 //! );
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 //!
 //! # String Quoting in Rust
@@ -32,11 +30,10 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: rust::Tokens = quote!("start π 😊 \n \x7f ÿ $ end");
 //! assert_eq!("\"start π 😊 \\n \\x7f ÿ $ end\"", toks.to_string()?);
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
+//! ```
 
 use core::fmt::Write as _;
 
@@ -103,7 +100,7 @@ impl_lang! {
         }
     }
 
-    Import {
+    Import(Import) {
         fn format(&self, out: &mut fmt::Formatter<'_>, config: &Config, _: &Format) -> fmt::Result {
             match &self.module {
                 Module::Module {
@@ -419,7 +416,7 @@ impl Rust {
 
         let mut queue = VecDeque::new();
 
-        for import in tokens.walk_imports() {
+        for import in tokens.iter_lang() {
             queue.push_back(import);
         }
 

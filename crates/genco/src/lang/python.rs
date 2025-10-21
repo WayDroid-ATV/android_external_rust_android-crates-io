@@ -7,14 +7,12 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: python::Tokens = quote!("hello \n world");
 //! assert_eq!("\"hello \\n world\"", toks.to_string()?);
 //!
 //! let toks: python::Tokens = quote!($(quoted("hello \n world")));
 //! assert_eq!("\"hello \\n world\"", toks.to_string()?);
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 
 use core::fmt::Write as _;
@@ -56,7 +54,7 @@ impl_lang! {
         }
     }
 
-    Import {
+    Import(Import) {
         fn format(&self, out: &mut fmt::Formatter<'_>, _: &Config, _: &Format) -> fmt::Result {
             if let TypeModule::Qualified { module, alias }  = &self.module {
                 out.write_str(alias.as_ref().unwrap_or(module))?;
@@ -73,7 +71,7 @@ impl_lang! {
         }
     }
 
-    ImportModule {
+    ImportModule(ImportModule) {
         fn format(&self, out: &mut fmt::Formatter<'_>, _: &Config, _: &Format) -> fmt::Result {
             let module = match &self.alias {
                 Some(alias) => alias,
@@ -292,9 +290,9 @@ impl Python {
         let mut imported_from = BTreeMap::new();
         let mut imports = BTreeSet::new();
 
-        for import in tokens.walk_imports() {
-            match import {
-                Any::Import(Import {
+        for import in tokens.iter_lang() {
+            match import.kind() {
+                AnyKind::Import(Import {
                     module,
                     alias,
                     name,
@@ -309,7 +307,7 @@ impl Python {
                             .insert((name, alias));
                     }
                 },
-                Any::ImportModule(ImportModule { module, alias }) => {
+                AnyKind::ImportModule(ImportModule { module, alias }) => {
                     imports.insert((module, alias));
                 }
             }

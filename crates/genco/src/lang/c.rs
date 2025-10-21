@@ -38,7 +38,7 @@ impl_lang! {
         }
     }
 
-    Import {
+    Import(Import) {
         fn format(&self, out: &mut fmt::Formatter<'_>, _: &Config, _: &Format) -> fmt::Result {
             out.write_str(&self.item)?;
             Ok(())
@@ -72,7 +72,7 @@ impl C {
     fn imports(out: &mut Tokens, tokens: &Tokens) {
         let mut includes = BTreeSet::new();
 
-        for include in tokens.walk_imports() {
+        for include in tokens.iter_lang() {
             includes.insert((&include.path, include.system));
         }
 
@@ -116,11 +116,7 @@ impl C {
 /// );
 /// # Ok::<_, genco::fmt::Error>(())
 /// ```
-pub fn include<M, N>(path: M, item: N) -> Import
-where
-    M: Into<ItemStr>,
-    N: Into<ItemStr>,
-{
+pub fn include(path: impl Into<ItemStr>, item: impl Into<ItemStr>) -> Import {
     Import {
         path: path.into(),
         item: item.into(),

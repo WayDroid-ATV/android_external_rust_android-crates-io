@@ -10,15 +10,17 @@ use crate::tokens::{Item, ItemStr, Tokens};
 
 /// Trait for types that can be formatted in-place into a token stream.
 ///
-/// Things implementing [FormatInto] can be used as arguments for
-/// [interpolation] in the [quote!] macro.
+/// Things implementing [`FormatInto`] can be used as arguments for
+/// [interpolation] in the [`quote!`] macro.
 ///
-/// [from_fn()] is a helper function which simplifies the task of creating a
-/// [FormatInto] implementation on the fly.
+/// [`from_fn()`] is a helper function which simplifies the task of creating a
+/// [`FormatInto`] implementation on the fly. The [`quote_fn!`] macro is also a
+/// specialization of this.
 ///
-/// [from_fn()]: crate::tokens::from_fn()
-/// [quote!]: macro.quote.html
-/// [interpolation]: macro.quote.html#interpolation
+/// [`from_fn()`]: crate::tokens::from_fn()
+/// [`quote!`]: crate::quote
+/// [`quote_fn!`]: crate::quote_fn
+/// [interpolation]: crate::quote#interpolation
 ///
 /// # Examples
 ///
@@ -43,11 +45,6 @@ where
     L: Lang,
 {
     /// Convert the type into tokens in-place.
-    ///
-    /// A simple way to build ad-hoc format_into implementations is by using
-    /// the [from_fn()] function.
-    ///
-    /// [from_fn()]: crate::tokens::from_fn()
     fn format_into(self, tokens: &mut Tokens<L>);
 }
 
@@ -55,6 +52,7 @@ impl<L> FormatInto<L> for Tokens<L>
 where
     L: Lang,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Self) {
         tokens.extend(self);
     }
@@ -78,7 +76,9 @@ where
 impl<L> FormatInto<L> for &Tokens<L>
 where
     L: Lang,
+    L::Item: Clone,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
         tokens.extend(self.iter().cloned());
     }
@@ -106,6 +106,7 @@ where
     L: Lang,
     T: FormatInto<L>,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
         for t in self {
             tokens.append(t);
@@ -135,6 +136,7 @@ where
     L: Lang,
     T: FormatInto<L> + Clone,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
         for t in self {
             tokens.append(t.clone());
@@ -165,6 +167,7 @@ where
     L: Lang,
     T: Clone + FormatInto<L>,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
         for t in self {
             tokens.append(t.clone());
@@ -191,8 +194,9 @@ impl<L> FormatInto<L> for &str
 where
     L: Lang,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
-        tokens.item(Item::Literal(ItemStr::from(self)));
+        tokens.item(Item::literal(ItemStr::from(self)));
     }
 }
 
@@ -215,8 +219,9 @@ impl<L> FormatInto<L> for &String
 where
     L: Lang,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
-        tokens.item(Item::Literal(ItemStr::from(self)));
+        tokens.item(Item::literal(ItemStr::from(self)));
     }
 }
 
@@ -240,8 +245,9 @@ impl<L> FormatInto<L> for String
 where
     L: Lang,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
-        tokens.item(Item::Literal(ItemStr::from(self)));
+        tokens.item(Item::literal(ItemStr::from(self)));
     }
 }
 
@@ -265,8 +271,9 @@ impl<L> FormatInto<L> for Rc<String>
 where
     L: Lang,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
-        tokens.item(Item::Literal(ItemStr::from(self)));
+        tokens.item(Item::literal(ItemStr::from(self)));
     }
 }
 
@@ -291,12 +298,13 @@ impl<L> FormatInto<L> for &Rc<String>
 where
     L: Lang,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
-        tokens.item(Item::Literal(ItemStr::from(self.clone())));
+        tokens.item(Item::literal(ItemStr::from(self.clone())));
     }
 }
 
-/// Implementation for [Arguments] which allows for arbitrary and efficient
+/// Implementation for [`Arguments`] which allows for arbitrary and efficient
 /// literal formatting.
 ///
 /// # Examples
@@ -314,8 +322,13 @@ impl<L> FormatInto<L> for Arguments<'_>
 where
     L: Lang,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
-        tokens.item(Item::Literal(ItemStr::from(self.to_string())));
+        if let Some(s) = self.as_str() {
+            tokens.item(Item::literal(ItemStr::static_(s)));
+        } else {
+            tokens.item(Item::literal(ItemStr::from(self.to_string())));
+        }
     }
 }
 
@@ -341,6 +354,7 @@ where
     L: Lang,
     T: FormatInto<L>,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
         if let Some(inner) = self {
             inner.format_into(tokens);
@@ -368,9 +382,10 @@ impl<L> FormatInto<L> for Cow<'_, str>
 where
     L: Lang,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
         match self {
-            Cow::Borrowed(b) => tokens.item(Item::Literal(ItemStr::from(b))),
+            Cow::Borrowed(b) => tokens.item(Item::literal(ItemStr::from(b))),
             Cow::Owned(o) => o.format_into(tokens),
         }
     }
@@ -396,9 +411,10 @@ impl<L> FormatInto<L> for &Cow<'_, str>
 where
     L: Lang,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
         match self {
-            Cow::Borrowed(b) => tokens.item(Item::Literal(ItemStr::from(b))),
+            Cow::Borrowed(b) => tokens.item(Item::literal(ItemStr::from(b))),
             Cow::Owned(o) => o.format_into(tokens),
         }
     }
@@ -425,6 +441,7 @@ where
     L: Lang,
     T: FormatInto<L> + Clone,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
         match self {
             Cow::Borrowed(b) => {
@@ -458,6 +475,7 @@ where
     L: Lang,
     T: FormatInto<L> + Clone,
 {
+    #[inline]
     fn format_into(self, tokens: &mut Tokens<L>) {
         match self {
             Cow::Borrowed(b) => {

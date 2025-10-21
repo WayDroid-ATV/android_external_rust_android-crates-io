@@ -8,11 +8,9 @@
 //! ```rust
 //! use genco::prelude::*;
 //!
-//! # fn main() -> genco::fmt::Result {
 //! let toks: java::Tokens = quote!("start π 😊 \n \x7f end");
 //! assert_eq!("\"start \\u03c0 \\ud83d\\ude0a \\n \\u007f end\"", toks.to_string()?);
-//! # Ok(())
-//! # }
+//! # Ok::<_, genco::fmt::Error>(())
 //! ```
 
 mod block_comment;
@@ -84,7 +82,7 @@ impl_lang! {
         }
     }
 
-    Import {
+    Import(Import) {
         fn format(&self, out: &mut fmt::Formatter<'_>, config: &Config, format: &Format) -> fmt::Result {
             let file_package = config.package.as_ref().map(|p| p.as_ref());
             let imported = format.imported.get(self.name.as_ref()).map(String::as_str);
@@ -180,7 +178,7 @@ impl Java {
 
         let file_package = config.package.as_ref().map(|p| p.as_ref());
 
-        for import in tokens.walk_imports() {
+        for import in tokens.iter_lang() {
             modules.insert((import.package.clone(), import.name.clone()));
         }
 
