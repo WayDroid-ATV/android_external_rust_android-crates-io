@@ -13,9 +13,10 @@
 edition = "2021"
 rust-version = "1.81"
 name = "ptr_meta_derive"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["David Koloski <djkoloski@gmail.com>"]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
