@@ -1,17 +1,17 @@
 name: "cfg-if"
 description: "A macro to ergonomically define an item depending on a large number of #[cfg] parameters. Structured like an if-else chain, the first matching branch is the item that gets emitted."
 third_party {
-  version: "1.0.3"
+  version: "1.0.4"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 8
-    day: 26
+    month: 10
+    day: 16
   }
   homepage: "https://crates.io/crates/cfg-if"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/cfg-if/cfg-if-1.0.3.crate"
-    version: "1.0.3"
+    value: "https://static.crates.io/crates/cfg-if/cfg-if-1.0.4.crate"
+    version: "1.0.4"
   }
 }
