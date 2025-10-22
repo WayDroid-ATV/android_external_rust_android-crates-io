@@ -10,10 +10,10 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
-rust-version = "1.81"
+edition = "2024"
+rust-version = "1.85.1"
 name = "uefi-macros"
-version = "0.18.1"
+version = "0.19.0"
 authors = ["The Rust OSDev team"]
 build = false
 autolib = false
@@ -34,6 +34,7 @@ categories = [
 ]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/rust-osdev/uefi-rs"
+resolver = "2"
 
 [lib]
 name = "uefi_macros"
