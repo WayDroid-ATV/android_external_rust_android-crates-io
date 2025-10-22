@@ -17,7 +17,7 @@ rust_library_host {
     name: "libwindows_x86_64_msvc",
     crate_name: "windows_x86_64_msvc",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.53.0",
+    cargo_pkg_version: "0.53.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     target: {
