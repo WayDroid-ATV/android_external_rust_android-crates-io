@@ -250,16 +250,13 @@ impl MmapOptions {
         // This is not a problem on 64-bit targets, but on 32-bit one
         // having a file or an anonymous mapping larger than 2GB is quite normal
         // and we have to prevent it.
-        //
-        // The code below is essentially the same as in Rust's std:
-        // https://github.com/rust-lang/rust/blob/db78ab70a88a0a5e89031d7ee4eccec835dcdbde/library/alloc/src/raw_vec.rs#L495
-        if len > isize::MAX as u64 {
+        if isize::try_from(len).is_err() {
             return Err(Error::new(
                 ErrorKind::InvalidData,
                 "memory map length overflows isize",
             ));
         }
-
+        // If an unsigned number (u64) fits in isize, then it fits in usize.
         Ok(len as usize)
     }
 
@@ -368,7 +365,7 @@ impl MmapOptions {
     /// This option requests that no swap space will be allocated for the memory map,
     /// which can be useful for extremely large maps that are only written to sparsely.
     ///
-    /// This option is currently supported on Linux, Android, macOS, iOS, NetBSD, Solaris and Illumos.
+    /// This option is currently supported on Linux, Android, Apple platforms (macOS, iOS, visionOS, etc.), NetBSD, Solaris and Illumos.
     /// On those platforms, this option corresponds to the `MAP_NORESERVE` flag.
     /// On Linux, this option is ignored if [`vm.overcommit_memory`](https://www.kernel.org/doc/Documentation/vm/overcommit-accounting) is set to 2.
     ///
