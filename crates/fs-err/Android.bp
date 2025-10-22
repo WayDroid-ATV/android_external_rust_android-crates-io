@@ -18,10 +18,14 @@ rust_library {
     host_supported: true,
     crate_name: "fs_err",
     cargo_env_compat: true,
-    cargo_pkg_version: "3.1.2",
+    cargo_pkg_version: "3.1.3",
     crate_root: "src/lib.rs",
     edition: "2018",
-    cfgs: ["rustc_1_63"],
+    cfgs: [
+        "rustc_1_63",
+        "rustc_1_81",
+        "rustc_1_89",
+    ],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

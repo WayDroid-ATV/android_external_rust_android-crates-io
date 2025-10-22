@@ -12,7 +12,7 @@
 [package]
 edition = "2018"
 name = "fs-err"
-version = "3.1.2"
+version = "3.1.3"
 authors = ["Andrew Hickman <andrew.hickman1@sky.com>"]
 build = "build.rs"
 exclude = [
@@ -35,22 +35,22 @@ categories = [
 license = "MIT/Apache-2.0"
 repository = "https://github.com/andrewhickman/fs-err"
 
+[package.metadata.release]
+tag-name = "{{version}}"
+sign-tag = true
+
+[[package.metadata.release.pre-release-replacements]]
+file = "src/lib.rs"
+search = 'html_root_url = "https://docs\.rs/fs-err/.*?"'
+replace = 'html_root_url = "https://docs.rs/fs-err/{{version}}"'
+exactly = 1
+
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = [
     "--cfg",
     "docsrs",
 ]
-
-[package.metadata.release]
-sign-tag = true
-tag-name = "{{version}}"
-
-[[package.metadata.release.pre-release-replacements]]
-exactly = 1
-file = "src/lib.rs"
-replace = 'html_root_url = "https://docs.rs/fs-err/{{version}}"'
-search = 'html_root_url = "https://docs\.rs/fs-err/.*?"'
 
 [features]
 expose_original_error = []
