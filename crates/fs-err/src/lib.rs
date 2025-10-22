@@ -79,7 +79,7 @@ If the `tokio` feature is enabled, this crate will inherit the MSRV of the selec
 [serde_json]: https://crates.io/crates/serde_json
 */
 
-#![doc(html_root_url = "https://docs.rs/fs-err/3.1.2")]
+#![doc(html_root_url = "https://docs.rs/fs-err/3.1.3")]
 #![deny(missing_debug_implementations, missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
@@ -215,6 +215,15 @@ where
 pub fn metadata<P: AsRef<Path>>(path: P) -> io::Result<fs::Metadata> {
     let path = path.as_ref();
     fs::metadata(path).map_err(|source| Error::build(source, ErrorKind::Metadata, path))
+}
+
+/// Returns `Ok(true)` if the path points at an existing entity.
+///
+/// Wrapper for [`fs::exists`](https://doc.rust-lang.org/stable/std/fs/fn.exists.html).
+#[cfg(rustc_1_81)]
+pub fn exists<P: AsRef<Path>>(path: P) -> io::Result<bool> {
+    let path = path.as_ref();
+    fs::exists(path).map_err(|source| Error::build(source, ErrorKind::FileExists, path))
 }
 
 /// Returns the canonical, absolute form of a path with all intermediate components
