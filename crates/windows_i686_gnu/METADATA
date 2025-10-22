@@ -1,17 +1,17 @@
 name: "windows_i686_gnu"
 description: "Import lib for Windows"
 third_party {
-  version: "0.53.0"
+  version: "0.53.1"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 8
-    day: 21
+    month: 10
+    day: 22
   }
   homepage: "https://crates.io/crates/windows_i686_gnu"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/windows_i686_gnu/windows_i686_gnu-0.53.0.crate"
-    version: "0.53.0"
+    value: "https://static.crates.io/crates/windows_i686_gnu/windows_i686_gnu-0.53.1.crate"
+    version: "0.53.1"
   }
 }
