@@ -5,9 +5,6 @@
       "tests": true
     },
     {
-      "module_name_overrides": {
-        "libhalf": "libhalf_nostd"
-      },
       "package": {
         "ciborium-ll": {
           "alloc": true,

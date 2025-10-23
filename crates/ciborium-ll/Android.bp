@@ -54,10 +54,6 @@ rust_library {
     vendor_available: true,
     min_sdk_version: "29",
     no_std: {
-        rustlibs: [
-            "libciborium_io",
-            "libhalf_nostd",
-        ],
         enabled: true,
     },
 }
