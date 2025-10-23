@@ -6,9 +6,6 @@
       "features": [
         "alloc"
       ],
-      "module_name_overrides": {
-        "libhalf": "libhalf_nostd"
-      },
       "package": {
         "half": {
           "alloc": true,
