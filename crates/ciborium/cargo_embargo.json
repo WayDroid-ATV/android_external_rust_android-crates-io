@@ -4,9 +4,6 @@
     {},
     {
       "features": [],
-      "module_name_overrides": {
-        "libciborium_ll": "libciborium_ll_nostd"
-      },
       "package": {
         "ciborium": {
           "alloc": true,
