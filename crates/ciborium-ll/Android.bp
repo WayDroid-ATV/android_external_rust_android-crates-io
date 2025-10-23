@@ -35,6 +35,7 @@ rust_test {
 
 rust_library {
     name: "libciborium_ll",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "ciborium_ll",
     cargo_env_compat: true,
@@ -52,29 +53,13 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-}
-
-rust_library_rlib {
-    name: "libciborium_ll_nostd",
-    defaults: ["rust_baremetal_defaults"],
-    crate_name: "ciborium_ll",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.2.2",
-    crate_root: "src/lib.rs",
-    edition: "2021",
-    rustlibs: [
-        "libciborium_io",
-        "libhalf_nostd",
-    ],
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-    prefer_rlib: true,
-    no_stdlibs: true,
-    product_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
+    no_std: {
+        rustlibs: [
+            "libciborium_io",
+            "libhalf_nostd",
+        ],
+        enabled: true,
+    },
 }
 
 dirgroup {

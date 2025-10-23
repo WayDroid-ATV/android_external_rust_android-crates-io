@@ -40,11 +40,6 @@ rust_library {
     min_sdk_version: "29",
     no_std: {
         features: [],
-        rustlibs: [
-            "libciborium_io",
-            "libciborium_ll_nostd",
-            "libserde",
-        ],
         enabled: true,
     },
 }
