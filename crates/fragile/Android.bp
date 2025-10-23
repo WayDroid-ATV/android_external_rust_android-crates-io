@@ -45,3 +45,9 @@ rust_library {
     min_sdk_version: "29",
     visibility: ["//external/rust/android-crates-io/crates/mockall"],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_fragile",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}
