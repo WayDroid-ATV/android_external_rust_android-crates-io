@@ -631,6 +631,7 @@ dependencies = [
  "yaml-rust",
  "yoke",
  "yoke-derive",
+ "yuv",
  "zerocopy",
  "zerocopy-derive",
  "zerofrom",
@@ -9576,6 +9577,15 @@ dependencies = [
  "quote 1.0.41",
  "syn 2.0.107",
  "synstructure",
+]
+
+[[package]]
+name = "yuv"
+version = "0.8.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30078f3e5790a2127f89c57c4ccb46d060205bf2c4c267f77cd08fb5c02c6d79"
+dependencies = [
+ "num-traits",
 ]
 
 [[package]]
