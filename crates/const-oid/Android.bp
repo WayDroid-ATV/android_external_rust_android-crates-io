@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "libconst_oid",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "const_oid",
     cargo_env_compat: true,
@@ -34,36 +35,9 @@ rust_library {
         "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
         "//packages/modules/Virtualization:__subpackages__",
     ],
-}
-
-rust_library_rlib {
-    name: "libconst_oid_nostd",
-    defaults: ["rust_baremetal_defaults"],
-    crate_name: "const_oid",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.10.1",
-    crate_root: "src/lib.rs",
-    edition: "2024",
-    features: ["db"],
-    apex_available: [
-        "//apex_available:platform",
-        "com.android.virt",
-    ],
-    prefer_rlib: true,
-    no_stdlibs: true,
-    stdlibs: [
-        "liballoc.rust_sysroot",
-        "libcompiler_builtins.rust_sysroot",
-        "libcore.rust_sysroot",
-    ],
-    product_available: true,
-    vendor_available: true,
-    min_sdk_version: "apex_inherit",
-    visibility: [
-        "//external/rust/android-crates-io/crates/der:__subpackages__",
-        "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
-        "//packages/modules/Virtualization:__subpackages__",
-    ],
+    no_std: {
+        enabled: true,
+    },
 }
 
 dirgroup {

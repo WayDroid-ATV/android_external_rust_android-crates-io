@@ -11,20 +11,12 @@
       "//external/rust/android-crates-io/crates/der:__subpackages__",
       "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
       "//packages/modules/Virtualization:__subpackages__"
-    ],
-    "libconst_oid_nostd": [
-      "//external/rust/android-crates-io/crates/der:__subpackages__",
-      "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
-      "//packages/modules/Virtualization:__subpackages__"
     ]
   },
   "run_cargo": false,
   "variants": [
     {},
     {
-      "module_name_overrides": {
-        "libconst_oid": "libconst_oid_nostd"
-      },
       "package": {
         "const-oid": {
           "alloc": true,
