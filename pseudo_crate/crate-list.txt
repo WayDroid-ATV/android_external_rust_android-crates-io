@@ -523,6 +523,7 @@ xml-rs
 yaml-rust
 yoke
 yoke-derive
+yuv
 zerocopy
 zerocopy-derive
 zerofrom

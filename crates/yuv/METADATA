@@ -1,0 +1,17 @@
+name: "yuv"
+description: "High performance utilities for YUV format handling and conversion."
+third_party {
+  version: "0.8.8"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 10
+    day: 20
+  }
+  homepage: "https://crates.io/crates/yuv"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/yuv/yuv-0.8.8.crate"
+    version: "0.8.8"
+  }
+}
