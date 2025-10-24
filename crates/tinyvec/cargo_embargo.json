@@ -17,9 +17,6 @@
     },
     {
       "features": [],
-      "module_name_overrides": {
-        "libtinyvec": "libtinyvec_nostd"
-      },
       "package": {
         "tinyvec": {
           "force_rlib": true,

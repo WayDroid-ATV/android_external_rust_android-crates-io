@@ -19,9 +19,6 @@
     },
     {
       "features": [],
-      "module_name_overrides": {
-        "libuuid": "libuuid_nostd"
-      },
       "package": {
         "uuid": {
           "force_rlib": true,

@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "libspin",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "spin",
     cargo_env_compat: true,
@@ -34,6 +35,14 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    no_std: {
+        features: [
+            "mutex",
+            "once",
+            "spin_mutex",
+        ],
+        enabled: true,
+    },
 }
 
 rust_test {
@@ -56,34 +65,6 @@ rust_test {
         "std",
     ],
     rustlibs: ["libcriterion"],
-}
-
-rust_library_rlib {
-    name: "libspin_nostd",
-    defaults: ["rust_baremetal_defaults"],
-    crate_name: "spin",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.10.0",
-    crate_root: "src/lib.rs",
-    edition: "2015",
-    features: [
-        "mutex",
-        "once",
-        "spin_mutex",
-    ],
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-    prefer_rlib: true,
-    no_stdlibs: true,
-    stdlibs: [
-        "libcompiler_builtins.rust_sysroot",
-        "libcore.rust_sysroot",
-    ],
-    product_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
 }
 
 dirgroup {

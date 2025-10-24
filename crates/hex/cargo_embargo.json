@@ -11,9 +11,6 @@
       "features": [
         "alloc"
       ],
-      "module_name_overrides": {
-        "libhex": "libhex_nostd"
-      },
       "package": {
         "hex": {
           "alloc": true,
