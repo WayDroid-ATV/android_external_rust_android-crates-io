@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "libhex",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "hex",
     cargo_env_compat: true,
@@ -35,31 +36,11 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-}
-
-rust_library_rlib {
-    name: "libhex_nostd",
-    defaults: ["rust_baremetal_defaults"],
-    crate_name: "hex",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.4.3",
-    crate_root: "src/lib.rs",
-    edition: "2018",
-    features: ["alloc"],
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-    prefer_rlib: true,
-    no_stdlibs: true,
-    stdlibs: [
-        "liballoc.rust_sysroot",
-        "libcompiler_builtins.rust_sysroot",
-        "libcore.rust_sysroot",
-    ],
-    product_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
+    no_std: {
+        features: ["alloc"],
+        rustlibs: [],
+        enabled: true,
+    },
 }
 
 dirgroup {

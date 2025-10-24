@@ -17,9 +17,6 @@
         "mutex",
         "spin_mutex"
       ],
-      "module_name_overrides": {
-        "libspin": "libspin_nostd"
-      },
       "package": {
         "spin": {
           "force_rlib": true,

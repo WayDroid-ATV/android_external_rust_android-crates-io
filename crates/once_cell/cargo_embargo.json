@@ -20,9 +20,6 @@
         "alloc",
         "race"
       ],
-      "module_name_overrides": {
-        "libonce_cell": "libonce_cell_nostd"
-      },
       "package": {
         "once_cell": {
           "alloc": true,
