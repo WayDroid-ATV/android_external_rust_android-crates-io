@@ -45,11 +45,6 @@ rust_library {
         "//system/keymint:__subpackages__",
     ],
     no_std: {
-        rustlibs: [
-            "libder_nostd",
-            "libpkcs8_nostd",
-            "libzeroize",
-        ],
         enabled: true,
     },
 }

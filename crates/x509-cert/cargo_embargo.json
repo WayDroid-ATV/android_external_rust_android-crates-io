@@ -10,23 +10,12 @@
       "//system/keymint:__subpackages__",
       "//system/security/keystore2/tests:__subpackages__",
       "//system/security/keystore2/test_utils:__subpackages__"
-    ],
-    "libx509_cert_nostd": [
-      "//packages/modules/Virtualization:__subpackages__",
-      "//system/keymint:__subpackages__"
     ]
   },
   "run_cargo": false,
   "variants": [
     {},
     {
-      "module_name_overrides": {
-        "libconst_oid": "libconst_oid_nostd",
-        "libder": "libder_nostd",
-        "libflagset": "libflagset_nostd",
-        "libspki": "libspki_nostd",
-        "libx509_cert": "libx509_cert_nostd"
-      },
       "package": {
         "x509-cert": {
           "force_rlib": true,
