@@ -2,7 +2,8 @@
   "package": {
     "annotate-snippets": {
       "device_supported": false,
-      "host_first_multilib": true
+      "host_first_multilib": true,
+      "extra_srcs": ["examples/expected_type.svg"]
     }
   },
   "run_cargo": false,
