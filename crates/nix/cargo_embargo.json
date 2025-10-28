@@ -9,6 +9,7 @@
     "mman",
     "net",
     "poll",
+    "resource",
     "sched",
     "signal",
     "socket",

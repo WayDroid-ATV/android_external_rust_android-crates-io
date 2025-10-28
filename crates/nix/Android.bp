@@ -33,6 +33,7 @@ rust_library {
         "net",
         "poll",
         "process",
+        "resource",
         "sched",
         "signal",
         "socket",
