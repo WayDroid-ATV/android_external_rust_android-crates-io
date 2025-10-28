@@ -226,7 +226,7 @@ dependencies = [
  "derive_builder_core",
  "derive_builder_macro",
  "diplomat 0.13.0",
- "diplomat-runtime 0.13.1",
+ "diplomat-runtime 0.14.0",
  "diplomat_core 0.13.0",
  "displaydoc",
  "doc-comment",
@@ -2266,9 +2266,9 @@ dependencies = [
 
 [[package]]
 name = "diplomat-runtime"
-version = "0.13.1"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c270cf75c6ba9d974a7a670d96c7bf8007cd0d03e1fbe128d62bd47d9fe25aef"
+checksum = "0569bd3caaf13829da7ee4e83dbf9197a0e1ecd72772da6d08f0b4c9285c8d29"
 
 [[package]]
 name = "diplomat_core"
