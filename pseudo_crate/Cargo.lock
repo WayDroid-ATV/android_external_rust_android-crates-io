@@ -146,6 +146,7 @@ dependencies = [
  "atomic",
  "atty",
  "autocfg",
+ "automotive_diag",
  "axum",
  "axum-core",
  "base64 0.22.1",
@@ -963,6 +964,17 @@ name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
+
+[[package]]
+name = "automotive_diag"
+version = "0.1.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b37f4e070d716744282a755712b232fdc4fad08c826be8201bbc7576f49099e"
+dependencies = [
+ "displaydoc",
+ "serde",
+ "strum",
+]
 
 [[package]]
 name = "av1-grain"
@@ -7405,6 +7417,9 @@ name = "strum"
 version = "0.27.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af23d6f6c1a224baef9d3f61e287d2761385a5b88fdab4eb4c6f11aeb54c4bcf"
+dependencies = [
+ "strum_macros",
+]
 
 [[package]]
 name = "strum_macros"

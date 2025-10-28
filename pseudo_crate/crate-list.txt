@@ -29,6 +29,7 @@ async-trait
 atomic
 atty
 autocfg
+automotive_diag
 axum
 axum-core
 base64
