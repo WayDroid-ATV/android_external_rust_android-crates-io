@@ -11,8 +11,9 @@
 
 [package]
 edition = "2018"
+rust-version = "1.56"
 name = "document-features"
-version = "0.2.11"
+version = "0.2.12"
 authors = ["Slint Developers <info@slint.dev>"]
 build = false
 autolib = false
@@ -33,6 +34,10 @@ categories = ["development-tools"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/slint-ui/document-features"
 
+[features]
+default = []
+self-test = []
+
 [lib]
 name = "document_features"
 path = "lib.rs"
@@ -43,9 +48,4 @@ name = "self-doc"
 path = "tests/self-doc.rs"
 
 [dependencies.litrs]
-version = "0.4.1"
-default-features = false
-
-[features]
-default = []
-self-test = []
+version = "1.0.0"

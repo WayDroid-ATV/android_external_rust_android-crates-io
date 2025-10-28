@@ -118,9 +118,8 @@ The default formatting is equivalent to:
 
 ## Compatibility
 
-The minimum Rust version required to use this crate is Rust 1.54 because of the
-feature to have macro in doc comments. You can make this crate optional and use
-`#[cfg_attr()]` statements to enable it only when building the documentation:
+The minimum Rust version required to use this crate is Rust 1.56.
+You can make this crate optional and use `#[cfg_attr()]` statements to enable it only when building the documentation:
 You need to have two levels of `cfg_attr` because Rust < 1.54 doesn't parse the attribute
 otherwise.
 
@@ -215,7 +214,7 @@ fn parse_args(input: TokenStream) -> Result<Args, TokenStream> {
     if let Some(tt) = token_trees.next() {
         match litrs::StringLit::<String>::try_from(&tt) {
             Ok(string_lit) if string_lit.value().contains("{feature}") => {
-                feature_label = string_lit.value().to_string()
+                feature_label = string_lit.into_value()
             }
             _ => {
                 return Err(compile_error(
@@ -308,7 +307,7 @@ fn has_doc_comments(cargo_toml: &str) -> bool {
 }
 
 #[test]
-fn test_has_doc_coment() {
+fn test_has_doc_comments() {
     assert!(has_doc_comments("foo\nbar\n## comment\nddd"));
     assert!(!has_doc_comments("foo\nbar\n#comment\nddd"));
     assert!(!has_doc_comments(
@@ -647,6 +646,7 @@ macro_rules! self_test {
     };
 }
 
+#[allow(unused)] // Workaround until https://github.com/rust-lang/rust/pull/147914 is merged
 use self_test;
 
 // The following struct is inserted only during generation of the documentation in order to exploit doc-tests.
