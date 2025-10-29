@@ -1,3 +1,59 @@
+1.12.2 (2025-10-13)
+===================
+This release fixes a `cargo doc` breakage on nightly when `--cfg docsrs` is
+enabled. This caused documentation to fail to build on docs.rs.
+
+Bug fixes:
+
+* [BUG #1305](https://github.com/rust-lang/regex/issues/1305):
+Switches the `doc_auto_cfg` feature to `doc_cfg` on nightly for docs.rs builds.
+
+
+1.12.1 (2025-10-10)
+===================
+This release makes a bug fix in the new `regex::Captures::get_match` API
+introduced in `1.12.0`. There was an oversight with the lifetime parameter
+for the `Match` returned. This is technically a breaking change, but given
+that it was caught almost immediately and I've yanked the `1.12.0` release,
+I think this is fine.
+
+
+1.12.0 (2025-10-10)
+===================
+This release contains a smattering of bug fixes, a fix for excessive memory
+consumption in some cases and a new `regex::Captures::get_match` API.
+
+Improvements:
+
+* [FEATURE #1146](https://github.com/rust-lang/regex/issues/1146):
+Add `Capture::get_match` for returning the overall match without `unwrap()`.
+
+Bug fixes:
+
+* [BUG #1083](https://github.com/rust-lang/regex/issues/1083):
+Fixes a panic in the lazy DFA (can only occur for especially large regexes).
+* [BUG #1116](https://github.com/rust-lang/regex/issues/1116):
+Fixes a memory usage regression for large regexes (introduced in `regex 1.9`).
+* [BUG #1195](https://github.com/rust-lang/regex/issues/1195):
+Fix universal start states in sparse DFA.
+* [BUG #1295](https://github.com/rust-lang/regex/pull/1295):
+Fixes a panic when deserializing a corrupted dense DFA.
+* [BUG 8f5d9479](https://github.com/rust-lang/regex/commit/8f5d9479d0f1da5726488a530d7fd66a73d05b80):
+Make `regex_automata::meta::Regex::find` consistently return `None` when
+`WhichCaptures::None` is used.
+
+
+1.11.3 (2025-09-25)
+===================
+This is a small patch release with an improvement in memory usage in some
+cases.
+
+Improvements:
+
+* [BUG #1297](https://github.com/rust-lang/regex/issues/1297):
+Improve memory usage by trimming excess memory capacity in some spots.
+
+
 1.11.2 (2025-08-24)
 ===================
 This is a new patch release of `regex` with some minor fixes. A larger number
