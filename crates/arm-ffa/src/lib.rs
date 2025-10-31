@@ -24,7 +24,7 @@ pub const FFA_PAGE_SIZE_4K: usize = 4096;
 
 /// Rich error types returned by this module. Should be converted to [`crate::FfaError`] when used
 /// with the `FFA_ERROR` interface.
-#[derive(Debug, Error, PartialEq)]
+#[derive(Debug, Error, PartialEq, Eq, Clone, Copy)]
 pub enum Error {
     #[error("Unrecognised FF-A function ID {0}")]
     UnrecognisedFunctionId(u32),
@@ -1639,10 +1639,10 @@ impl Interface {
 
         let reg_cnt = regs.len();
 
-        let msg = match reg_cnt {
+        match reg_cnt {
             8 => {
                 assert!(version <= Version(1, 1));
-                Interface::unpack_regs8(version, regs.try_into().unwrap())?
+                Interface::unpack_regs8(version, func_id, regs.try_into().unwrap())
             }
             18 => {
                 assert!(version >= Version(1, 2));
@@ -1652,24 +1652,20 @@ impl Interface {
                     | FuncId::MsgSendDirectReq64_2
                     | FuncId::MsgSendDirectResp64_2
                     | FuncId::PartitionInfoGetRegs => {
-                        Interface::unpack_regs18(version, regs.try_into().unwrap())?
+                        Interface::unpack_regs18(version, func_id, regs.try_into().unwrap())
                     }
-                    _ => Interface::unpack_regs8(version, regs[..8].try_into().unwrap())?,
+                    _ => Interface::unpack_regs8(version, func_id, regs[..8].try_into().unwrap()),
                 }
             }
             _ => panic!(
                 "Invalid number of registers ({}) for FF-A version {}",
                 reg_cnt, version
             ),
-        };
-
-        Ok(msg)
+        }
     }
 
-    fn unpack_regs8(version: Version, regs: &[u64; 8]) -> Result<Self, Error> {
-        let fid = FuncId::try_from(regs[0] as u32)?;
-
-        let msg = match fid {
+    fn unpack_regs8(version: Version, func_id: FuncId, regs: &[u64; 8]) -> Result<Self, Error> {
+        let msg = match func_id {
             FuncId::Error => Self::Error {
                 target_info: (regs[1] as u32).into(),
                 error_code: FfaError::try_from(regs[2] as i32)?,
@@ -2091,18 +2087,19 @@ impl Interface {
             FuncId::NotificationInfoGet32 => Self::NotificationInfoGet { is_32bit: true },
             FuncId::NotificationInfoGet64 => Self::NotificationInfoGet { is_32bit: false },
             FuncId::El3IntrHandle => Self::El3IntrHandle,
-            _ => panic!("Invalid number of registers (8) for function {:#x?}", fid),
+            _ => panic!(
+                "Invalid number of registers (8) for function {:#x?}",
+                func_id
+            ),
         };
 
         Ok(msg)
     }
 
-    fn unpack_regs18(version: Version, regs: &[u64; 18]) -> Result<Self, Error> {
+    fn unpack_regs18(version: Version, func_id: FuncId, regs: &[u64; 18]) -> Result<Self, Error> {
         assert!(version >= Version(1, 2));
 
-        let fid = FuncId::try_from(regs[0] as u32)?;
-
-        let msg = match fid {
+        let msg = match func_id {
             FuncId::Success64 => Self::Success {
                 target_info: (regs[1] as u32).into(),
                 args: SuccessArgs::Args64_2(regs[2..18].try_into().unwrap()),
@@ -2145,7 +2142,10 @@ impl Interface {
                     },
                 }
             }
-            _ => panic!("Invalid number of registers (18) for function {:#x?}", fid),
+            _ => panic!(
+                "Invalid number of registers (18) for function {:#x?}",
+                func_id
+            ),
         };
 
         Ok(msg)
@@ -2160,14 +2160,10 @@ impl Interface {
         match reg_cnt {
             8 => {
                 assert!(version <= Version(1, 1));
-                regs.fill(0);
-
                 self.pack_regs8(version, (&mut regs[..8]).try_into().unwrap());
             }
             18 => {
                 assert!(version >= Version(1, 2));
-                regs.fill(0);
-
                 match self {
                     Interface::ConsoleLog {
                         chars: ConsoleLogChars::Chars64(_),
@@ -2184,6 +2180,7 @@ impl Interface {
                     }
                     _ => {
                         self.pack_regs8(version, (&mut regs[..8]).try_into().unwrap());
+                        regs[8..18].fill(0);
                     }
                 }
             }
@@ -2192,6 +2189,8 @@ impl Interface {
     }
 
     fn pack_regs8(&self, version: Version, a: &mut [u64; 8]) {
+        a.fill(0);
+
         if let Some(function_id) = self.function_id() {
             a[0] = function_id as u64;
         }
@@ -2597,6 +2596,8 @@ impl Interface {
 
     fn pack_regs18(&self, version: Version, a: &mut [u64; 18]) {
         assert!(version >= Version(1, 2));
+
+        a.fill(0);
 
         if let Some(function_id) = self.function_id() {
             a[0] = function_id as u64;
