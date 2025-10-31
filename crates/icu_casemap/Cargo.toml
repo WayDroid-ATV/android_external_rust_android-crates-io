@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.82"
 name = "icu_casemap"
-version = "2.0.0"
+version = "2.0.1"
 authors = ["The ICU4X Project Developers"]
 build = false
 include = [
@@ -72,10 +72,6 @@ serde = [
 name = "icu_casemap"
 path = "src/lib.rs"
 
-[[example]]
-name = "casemapping"
-path = "examples/casemapping.rs"
-
 [[test]]
 name = "conversions"
 path = "tests/conversions.rs"
@@ -127,6 +123,7 @@ default-features = false
 
 [dependencies.icu_provider]
 version = "2.0.0"
+features = ["alloc"]
 default-features = false
 
 [dependencies.potential_utf]

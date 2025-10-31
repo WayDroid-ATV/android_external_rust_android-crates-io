@@ -3704,9 +3704,9 @@ dependencies = [
 
 [[package]]
 name = "icu_casemap"
-version = "2.0.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6dc5e74b3c9d7b63e0d7c5fd54ee8c135705df2ea2aa558082dd555dc9747a97"
+checksum = "2183be5a01b948227f1a521f4e586ee69828d2eecc1d2397ce686de68233d27d"
 dependencies = [
  "displaydoc",
  "icu_casemap_data",
