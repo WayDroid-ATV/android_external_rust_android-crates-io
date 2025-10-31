@@ -12,9 +12,10 @@
 [package]
 edition = "2021"
 name = "protobuf-parse"
-version = "3.6.0"
+version = "3.7.2"
 authors = ["Stepan Koltsov <stepan.koltsov@gmail.com>"]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -62,10 +63,10 @@ version = "2.0.0"
 version = "0.4"
 
 [dependencies.protobuf]
-version = "=3.6.0"
+version = "=3.7.2"
 
 [dependencies.protobuf-support]
-version = "=3.6.0"
+version = "=3.7.2"
 
 [dependencies.tempfile]
 version = "3.2.0"

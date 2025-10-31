@@ -1,7 +1,8 @@
 {
   "package": {
     "protobuf-codegen": {
-      "device_supported": false
+      "device_supported": false,
+      "patch": "patches/Android.bp.patch"
     }
   },
   "run_cargo": false,
