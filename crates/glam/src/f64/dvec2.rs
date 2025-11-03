@@ -6,6 +6,9 @@ use core::fmt;
 use core::iter::{Product, Sum};
 use core::{f32, ops::*};
 
+#[cfg(feature = "zerocopy")]
+use zerocopy_derive::*;
+
 /// Creates a 2-dimensional vector.
 #[inline(always)]
 #[must_use]
@@ -16,6 +19,10 @@ pub const fn dvec2(x: f64, y: f64) -> DVec2 {
 /// A 2-dimensional vector.
 #[derive(Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    feature = "zerocopy",
+    derive(FromBytes, Immutable, IntoBytes, KnownLayout)
+)]
 #[cfg_attr(feature = "cuda", repr(align(16)))]
 #[repr(C)]
 #[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
@@ -982,6 +989,10 @@ impl DVec2 {
     /// Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
     /// then this just rotation. This is what you usually want. Otherwise,
     /// it will be like a rotation with a multiplication by `self`'s length.
+    ///
+    /// This can be used in conjunction with the [`from_angle()`][Self::from_angle()] method, e.g.
+    /// `DVec2::from_angle(PI).rotate(DVec2::Y)` will create the vector `[-1, 0]`
+    /// and rotate [`DVec2::Y`] around it returning `-DVec2::Y`.
     #[inline]
     #[must_use]
     pub fn rotate(self, rhs: Self) -> Self {

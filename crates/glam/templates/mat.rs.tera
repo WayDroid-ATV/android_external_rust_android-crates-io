@@ -118,6 +118,11 @@ use core::simd::*;
 use core::arch::aarch64::*;
 {% endif %}
 
+{% if not is_coresimd %}
+#[cfg(feature = "zerocopy")]
+use zerocopy_derive::*;
+{% endif %}
+
 {% set is_sse2_or_neon = is_sse2 or is_neon %}
 {% if self_t == "Mat2" and is_sse2_or_neon %}
 #[repr(C)]
@@ -202,8 +207,14 @@ pub const fn {{ self_t | lower }}(
 #[derive(Clone, Copy)]
 {%- if self_t == "Mat3A" and is_scalar %}
 #[cfg_attr(feature = "bytemuck", derive(bytemuck::AnyBitPattern))]
+{%- if not is_coresimd %}
+#[cfg_attr(feature = "zerocopy", derive(FromBytes, Immutable, KnownLayout))]
+{%- endif %}
 {%- else %}
 #[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+{%- if not is_coresimd %}
+#[cfg_attr(feature = "zerocopy", derive(FromBytes, Immutable, IntoBytes, KnownLayout))]
+{%- endif %}
 {%- endif %}
 {%- if self_t == "Mat4" and is_scalar %}
 #[cfg_attr(any(not(feature = "scalar-math"), feature = "cuda"), repr(align(16)))]
@@ -1806,7 +1817,7 @@ impl {{ self_t }} {
 
     /// Creates a right-handed perspective projection matrix with [-1,1] depth range.
     ///
-    /// This is the same as the OpenGL `glFurstum` function.
+    /// This is the same as the OpenGL `glFrustum` function.
     ///
     /// See <https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glFrustum.xml>
     #[inline]

@@ -263,6 +263,11 @@ use std::simd::StdFloat;
 use core::arch::aarch64::*;
 {% endif %}
 
+{% if not is_coresimd %}
+#[cfg(feature = "zerocopy")]
+use zerocopy_derive::*;
+{% endif %}
+
 {% if is_sse2 or is_neon %}
 #[repr(C)]
 union UnionCast {
@@ -311,8 +316,14 @@ pub const fn {{ self_t | lower }}(
 )]
 {%- if self_t == "Vec3A" and is_scalar %}
 #[cfg_attr(feature = "bytemuck", derive(bytemuck::AnyBitPattern))]
+{%- if not is_coresimd %}
+#[cfg_attr(feature = "zerocopy", derive(FromBytes, Immutable, KnownLayout))]
+{%- endif %}
 {%- else %}
 #[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+{%- if not is_coresimd %}
+#[cfg_attr(feature = "zerocopy", derive(FromBytes, Immutable, IntoBytes, KnownLayout))]
+{%- endif %}
 {%- endif %}
 {%- if self_t == "Vec3A" and is_scalar %}
 #[repr(align(16))]
@@ -2292,6 +2303,55 @@ impl {{ self_t }} {
                 math::sqrt(self.length_squared().mul(rhs.length_squared()))))
     }
 
+    /// Rotates around the x axis by `angle` (in radians).
+    #[inline]
+    #[must_use]
+    pub fn rotate_x(self, angle: {{ scalar_t }}) -> Self {
+        let (sina, cosa) = math::sin_cos(angle);
+        Self::new(
+            self.x,
+            self.y * cosa - self.z * sina,
+            self.y * sina + self.z * cosa,
+        )
+    }
+
+    /// Rotates around the y axis by `angle` (in radians).
+    #[inline]
+    #[must_use]
+    pub fn rotate_y(self, angle: {{ scalar_t }}) -> Self {
+        let (sina, cosa) = math::sin_cos(angle);
+        Self::new(
+            self.x * cosa + self.z * sina,
+            self.y,
+            self.x * -sina + self.z * cosa,
+        )
+    }
+
+    /// Rotates around the z axis by `angle` (in radians).
+    #[inline]
+    #[must_use]
+    pub fn rotate_z(self, angle: {{ scalar_t }}) -> Self {
+        let (sina, cosa) = math::sin_cos(angle);
+        Self::new(
+            self.x * cosa - self.y * sina,
+            self.x * sina + self.y * cosa,
+            self.z,
+        )
+    }
+
+    /// Rotates around `axis` by `angle` (in radians).
+    ///
+    /// The axis must be a unit vector.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
+    #[inline]
+    #[must_use]
+    pub fn rotate_axis(self, axis: Self, angle: {{ scalar_t }}) -> Self {
+        {{ quat_t }}::from_axis_angle(axis{% if self_t == "Vec3A" %}.into(){% endif%}, angle) * self
+    }
+
     /// Rotates towards `rhs` up to `max_angle` (in radians).
     ///
     /// When `max_angle` is `0.0`, the result will be equal to `self`. When `max_angle` is equal to
@@ -2490,6 +2550,16 @@ impl {{ self_t }} {
     /// Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
     /// then this just rotation. This is what you usually want. Otherwise,
     /// it will be like a rotation with a multiplication by `self`'s length.
+    {%- if is_float %}
+    ///
+    /// This can be used in conjunction with the [`from_angle()`][Self::from_angle()] method, e.g.
+    /// `{{ vec2_t }}::from_angle(PI).rotate({{ vec2_t }}::Y)` will create the vector `[-1, 0]`
+    /// and rotate [`{{ vec2_t }}::Y`] around it returning `-{{ vec2_t }}::Y`.
+    {%- else %}
+    ///
+    /// This can be used to rotate by 90 degree increments, e.g. `[sin(90), cos(90)` = `[1, 0]` or
+    /// `[sin(180), cos(180)]` = `[0, -1]`.
+    {%- endif %}
     #[inline]
     #[must_use]
     pub fn rotate(self, rhs: Self) -> Self {

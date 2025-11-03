@@ -10,6 +10,9 @@ use core::fmt;
 use core::iter::{Product, Sum};
 use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
+#[cfg(feature = "zerocopy")]
+use zerocopy_derive::*;
+
 /// Creates a quaternion from `x`, `y`, `z` and `w` values.
 ///
 /// This should generally not be called manually unless you know what you are doing. Use
@@ -27,6 +30,10 @@ pub const fn quat(x: f32, y: f32, z: f32, w: f32) -> Quat {
 /// operations are applied.
 #[derive(Clone, Copy)]
 #[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    feature = "zerocopy",
+    derive(FromBytes, Immutable, IntoBytes, KnownLayout)
+)]
 #[cfg_attr(not(feature = "scalar-math"), repr(align(16)))]
 #[repr(C)]
 #[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
@@ -609,7 +616,6 @@ impl Quat {
     #[must_use]
     pub fn is_near_identity(self) -> bool {
         // Based on https://github.com/nfrechette/rtm `rtm::quat_near_identity`
-        let threshold_angle = 0.002_847_144_6;
         // Because of floating point precision, we cannot represent very small rotations.
         // The closest f32 to 1.0 that is not 1.0 itself yields:
         // 0.99999994.acos() * 2.0  = 0.000690533954 rad
@@ -623,8 +629,12 @@ impl Quat {
         // If the quat.w is close to -1.0, the angle will be near 2*PI which is close to
         // a negative 0 rotation. By forcing quat.w to be positive, we'll end up with
         // the shortest path.
+        //
+        // For f64 we're using a threshhold of
+        // (1.0 - 1e-14).acos() * 2.0
+        const THRESHOLD_ANGLE: f32 = 0.002_847_144_6;
         let positive_w_angle = math::acos_approx(math::abs(self.w)) * 2.0;
-        positive_w_angle < threshold_angle
+        positive_w_angle < THRESHOLD_ANGLE
     }
 
     /// Returns the angle (in radians) for the minimal rotation
