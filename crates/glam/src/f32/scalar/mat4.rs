@@ -10,6 +10,9 @@ use core::fmt;
 use core::iter::{Product, Sum};
 use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
+#[cfg(feature = "zerocopy")]
+use zerocopy_derive::*;
+
 /// Creates a 4x4 matrix from four column vectors.
 #[inline(always)]
 #[must_use]
@@ -48,6 +51,10 @@ pub const fn mat4(x_axis: Vec4, y_axis: Vec4, z_axis: Vec4, w_axis: Vec4) -> Mat
 /// perspective correction using the [`Self::project_point3()`] convenience method.
 #[derive(Clone, Copy)]
 #[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    feature = "zerocopy",
+    derive(FromBytes, Immutable, IntoBytes, KnownLayout)
+)]
 #[cfg_attr(any(not(feature = "scalar-math"), feature = "cuda"), repr(align(16)))]
 #[repr(C)]
 pub struct Mat4 {
@@ -792,7 +799,7 @@ impl Mat4 {
 
     /// Creates a right-handed perspective projection matrix with [-1,1] depth range.
     ///
-    /// This is the same as the OpenGL `glFurstum` function.
+    /// This is the same as the OpenGL `glFrustum` function.
     ///
     /// See <https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glFrustum.xml>
     #[inline]

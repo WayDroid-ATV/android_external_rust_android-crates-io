@@ -6,6 +6,9 @@ use core::fmt;
 use core::iter::{Product, Sum};
 use core::{f32, ops::*};
 
+#[cfg(feature = "zerocopy")]
+use zerocopy_derive::*;
+
 /// Creates a 2-dimensional vector.
 #[inline(always)]
 #[must_use]
@@ -16,6 +19,10 @@ pub const fn ivec2(x: i32, y: i32) -> IVec2 {
 /// A 2-dimensional vector.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    feature = "zerocopy",
+    derive(FromBytes, Immutable, IntoBytes, KnownLayout)
+)]
 #[cfg_attr(feature = "cuda", repr(align(8)))]
 #[repr(C)]
 #[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
@@ -469,6 +476,9 @@ impl IVec2 {
     /// Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
     /// then this just rotation. This is what you usually want. Otherwise,
     /// it will be like a rotation with a multiplication by `self`'s length.
+    ///
+    /// This can be used to rotate by 90 degree increments, e.g. `[sin(90), cos(90)` = `[1, 0]` or
+    /// `[sin(180), cos(180)]` = `[0, -1]`.
     #[inline]
     #[must_use]
     pub fn rotate(self, rhs: Self) -> Self {

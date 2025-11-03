@@ -12,6 +12,9 @@ use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAss
 
 use core::arch::wasm32::*;
 
+#[cfg(feature = "zerocopy")]
+use zerocopy_derive::*;
+
 /// Creates a 3x3 matrix from three column vectors.
 #[inline(always)]
 #[must_use]
@@ -45,6 +48,10 @@ pub const fn mat3a(x_axis: Vec3A, y_axis: Vec3A, z_axis: Vec3A) -> Mat3A {
 /// transform.
 #[derive(Clone, Copy)]
 #[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    feature = "zerocopy",
+    derive(FromBytes, Immutable, IntoBytes, KnownLayout)
+)]
 #[repr(C)]
 pub struct Mat3A {
     pub x_axis: Vec3A,

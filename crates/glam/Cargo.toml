@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.68.2"
 name = "glam"
-version = "0.30.8"
+version = "0.30.9"
 authors = ["Cameron Hart <cameron.hart@gmail.com>"]
 build = false
 autolib = false
@@ -53,6 +53,10 @@ nostd-libm = ["dep:libm"]
 scalar-math = []
 serde = ["dep:serde_core"]
 std = []
+zerocopy = [
+    "dep:zerocopy",
+    "dep:zerocopy-derive",
+]
 
 [lib]
 name = "glam"
@@ -221,6 +225,11 @@ version = "0.5"
 optional = true
 default-features = false
 
+[dependencies.arbitrary]
+version = "1.4.2"
+optional = true
+default-features = false
+
 [dependencies.bytemuck]
 version = "1.9"
 features = [
@@ -262,6 +271,17 @@ optional = true
 default-features = false
 
 [dependencies.speedy]
+version = "0.8"
+optional = true
+default-features = false
+
+[dependencies.zerocopy]
+version = "0.8"
+features = ["simd"]
+optional = true
+default-features = false
+
+[dependencies.zerocopy-derive]
 version = "0.8"
 optional = true
 default-features = false

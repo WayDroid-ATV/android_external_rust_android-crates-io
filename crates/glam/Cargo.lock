@@ -33,6 +33,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "arbitrary"
+version = "1.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3d036a3c4ab069c7b410a2ce876bd74808d2d0888a82667669f8e783a898bf1"
+
+[[package]]
 name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -304,9 +310,10 @@ dependencies = [
 
 [[package]]
 name = "glam"
-version = "0.30.8"
+version = "0.30.9"
 dependencies = [
  "approx",
+ "arbitrary",
  "bytemuck",
  "criterion",
  "encase",
@@ -320,6 +327,8 @@ dependencies = [
  "serde_json",
  "speedy",
  "wasm-bindgen-test",
+ "zerocopy",
+ "zerocopy-derive",
 ]
 
 [[package]]

@@ -9,6 +9,9 @@ use core::fmt;
 use core::iter::{Product, Sum};
 use core::{f32, ops::*};
 
+#[cfg(feature = "zerocopy")]
+use zerocopy_derive::*;
+
 /// Creates a 3-dimensional vector.
 #[inline(always)]
 #[must_use]
@@ -19,6 +22,10 @@ pub const fn i8vec3(x: i8, y: i8, z: i8) -> I8Vec3 {
 /// A 3-dimensional vector.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[cfg_attr(
+    feature = "zerocopy",
+    derive(FromBytes, Immutable, IntoBytes, KnownLayout)
+)]
 #[repr(C)]
 #[cfg_attr(target_arch = "spirv", rust_gpu::vector::v1)]
 pub struct I8Vec3 {

@@ -3,6 +3,9 @@
 use crate::{Mat2, Mat3, Mat3A, Vec2, Vec3A};
 use core::ops::{Deref, DerefMut, Mul, MulAssign};
 
+#[cfg(all(feature = "zerocopy", not(feature = "core-simd")))]
+use zerocopy_derive::*;
+
 /// A 2D affine transform, which can represent translation, rotation, scaling and shear.
 #[derive(Copy, Clone)]
 #[cfg_attr(
@@ -12,6 +15,10 @@ use core::ops::{Deref, DerefMut, Mul, MulAssign};
 #[cfg_attr(
     all(feature = "bytemuck", feature = "scalar-math"),
     derive(bytemuck::Pod, bytemuck::Zeroable)
+)]
+#[cfg_attr(
+    all(feature = "zerocopy", not(feature = "core-simd")),
+    derive(FromBytes, Immutable, KnownLayout)
 )]
 #[repr(C)]
 pub struct Affine2 {
