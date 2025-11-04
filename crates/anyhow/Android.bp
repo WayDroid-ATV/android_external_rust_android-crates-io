@@ -30,10 +30,15 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -58,11 +63,50 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libanyhow",
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
+}
+
+rust_test {
+    name: "anyhow_test_tests_test_backtrace",
+    host_supported: true,
+    crate_name: "test_backtrace",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.0.99",
+    crate_root: "tests/test_backtrace.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "default",
+        "std",
+    ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
+    rustlibs: [
+        "libanyhow",
+        "libfutures",
+        "libthiserror",
+    ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -87,11 +131,16 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libanyhow",
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -116,11 +165,16 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libanyhow",
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -145,11 +199,16 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libanyhow",
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -174,11 +233,16 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libanyhow",
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -203,11 +267,16 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libanyhow",
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -232,11 +301,16 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libanyhow",
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -261,11 +335,16 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libanyhow",
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -290,11 +369,16 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libanyhow",
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -319,11 +403,16 @@ rust_test {
         "default",
         "std",
     ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
+    ],
     rustlibs: [
         "libanyhow",
         "libfutures",
         "libthiserror",
     ],
+    proc_macros: ["librustversion"],
     target: {
         windows: {
             enabled: true,
@@ -342,6 +431,10 @@ rust_library {
     features: [
         "default",
         "std",
+    ],
+    cfgs: [
+        "error_generic_member_access",
+        "std_backtrace",
     ],
     target: {
         windows: {
