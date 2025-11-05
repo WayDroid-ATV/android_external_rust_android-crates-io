@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.82"
 name = "icu_locale_core"
-version = "2.0.0"
+version = "2.0.1"
 authors = ["The ICU4X Project Developers"]
 build = false
 include = [
@@ -62,16 +62,6 @@ zerovec = [
 name = "icu_locale_core"
 path = "src/lib.rs"
 bench = false
-
-[[example]]
-name = "filter_langids"
-path = "examples/filter_langids.rs"
-test = true
-
-[[example]]
-name = "syntatically_canonicalize_locales"
-path = "examples/syntatically_canonicalize_locales.rs"
-test = true
 
 [[test]]
 name = "langid"
@@ -132,6 +122,7 @@ default-features = false
 
 [dependencies.writeable]
 version = "0.6.0"
+features = ["alloc"]
 default-features = false
 
 [dependencies.zerovec]
@@ -141,6 +132,11 @@ default-features = false
 
 [dev-dependencies.iai]
 version = "0.1.1"
+
+[dev-dependencies.litemap]
+version = "0.8.0"
+features = ["testing"]
+default-features = false
 
 [dev-dependencies.postcard]
 version = "1.0.3"
