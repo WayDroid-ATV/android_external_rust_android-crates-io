@@ -8,6 +8,18 @@
   },
   "variants": [
     {
+      "package": {
+        "acpi": {
+          "host_supported": false
+        }
+      },
+      "module_name_overrides": {
+        "libbit_field": "libbit_field_nostd",
+        "libbyteorder": "libbyteorder_nostd",
+        "libspinning_top": "libspin"
+      }
+    },
+    {
       "generate_androidbp": false,
       "generate_rulesmk": true
     }

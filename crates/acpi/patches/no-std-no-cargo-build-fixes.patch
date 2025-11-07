@@ -29,18 +29,5 @@ index 60040c14d..09526a84c 100644
                  op: Operation::ToString,
                  typ: ObjectType::Buffer,
              })?;
-diff --git a/src/lib.rs b/src/lib.rs
-index 0030e8c61..b0fd16c63 100644
---- a/src/lib.rs
-+++ b/src/lib.rs
-@@ -33,6 +33,8 @@
- 
- #![no_std]
- #![feature(allocator_api)]
-+#![feature(vec_pop_if)]
-+#![feature(let_chains)]
- 
- #[cfg_attr(test, macro_use)]
- #[cfg(test)]
 -- 
 2.51.0.534.gc79095c0ca-goog

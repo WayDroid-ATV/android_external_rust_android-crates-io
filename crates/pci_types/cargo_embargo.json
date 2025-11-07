@@ -1,11 +1,21 @@
 {
   "run_cargo": false,
-    "package": {
+  "package": {
     "pci_types": {
       "no_std": true
     }
   },
   "variants": [
+    {
+      "package": {
+        "pci_types": {
+          "host_supported": false
+        }
+      },
+      "module_name_overrides": {
+        "libbit_field": "libbit_field_nostd"
+      }
+    },
     {
       "generate_androidbp": false,
       "generate_rulesmk": true
