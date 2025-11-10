@@ -11,8 +11,9 @@
 
 [package]
 edition = "2024"
+rust-version = "1.88.0"
 name = "aarch64-rt"
-version = "0.2.2"
+version = "0.3.0"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 build = "build.rs"
 autolib = false
@@ -39,7 +40,6 @@ default-target = "aarch64-unknown-none"
 
 [features]
 default = [
-    "el1",
     "exceptions",
     "initial-pagetable",
     "psci",
@@ -64,11 +64,11 @@ version = "0.2.2"
 optional = true
 
 [dev-dependencies.aarch64-paging]
-version = "0.9.1"
+version = "0.10.0"
 default-features = false
 
 [dev-dependencies.arm-pl011-uart]
-version = "0.3.1"
+version = "0.4.0"
 
 [dev-dependencies.smccc]
 version = "0.2.2"

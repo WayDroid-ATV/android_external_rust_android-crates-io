@@ -15,35 +15,48 @@
 ))]
 compile_error!("Only one `el` feature may be enabled at once.");
 
+mod entry;
 #[cfg(feature = "initial-pagetable")]
 mod pagetable;
 
+#[cfg(feature = "initial-pagetable")]
+#[doc(hidden)]
+pub mod __private {
+    pub use crate::pagetable::{__enable_mmu_el1, __enable_mmu_el2, __enable_mmu_el3};
+}
+
 #[cfg(any(feature = "exceptions", feature = "psci"))]
 use core::arch::asm;
+#[cfg(feature = "exceptions")]
 use core::arch::global_asm;
+#[cfg(not(feature = "initial-pagetable"))]
+use core::arch::naked_asm;
+pub use entry::secondary_entry;
+#[cfg(all(feature = "initial-pagetable", feature = "el1"))]
+pub use pagetable::DEFAULT_TCR_EL1 as DEFAULT_TCR;
+#[cfg(all(feature = "initial-pagetable", feature = "el2"))]
+pub use pagetable::DEFAULT_TCR_EL2 as DEFAULT_TCR;
+#[cfg(all(feature = "initial-pagetable", feature = "el3"))]
+pub use pagetable::DEFAULT_TCR_EL3 as DEFAULT_TCR;
 #[cfg(feature = "initial-pagetable")]
-pub use pagetable::{DEFAULT_MAIR, DEFAULT_SCTLR, DEFAULT_TCR, InitialPagetable};
-
-global_asm!(include_str!("entry.S"));
+pub use pagetable::{
+    DEFAULT_MAIR, DEFAULT_SCTLR, DEFAULT_TCR_EL1, DEFAULT_TCR_EL2, DEFAULT_TCR_EL3,
+    InitialPagetable,
+};
 
 #[cfg(not(feature = "initial-pagetable"))]
-global_asm!(include_str!("dummy_enable_mmu.S"),);
+#[unsafe(naked)]
+#[unsafe(link_section = ".init")]
+#[unsafe(export_name = "enable_mmu")]
+extern "C" fn enable_mmu() {
+    naked_asm!("ret")
+}
 
 #[cfg(feature = "exceptions")]
 global_asm!(include_str!("exceptions.S"));
 
-unsafe extern "C" {
-    /// An assembly entry point for secondary cores.
-    ///
-    /// It will enable the MMU, disable trapping of floating point instructions, initialise the
-    /// stack pointer to `stack_end` and then jump to the function pointer at the bottom of the
-    /// stack with the u64 value second on the stack as a parameter.
-    pub unsafe fn secondary_entry(stack_end: *mut u64) -> !;
-}
-
 /// Sets the appropriate vbar to point to our `vector_table`, if the `exceptions` feature is
 /// enabled.
-#[unsafe(no_mangle)]
 extern "C" fn set_exception_vector() {
     // SAFETY: We provide a valid vector table.
     #[cfg(all(feature = "el1", feature = "exceptions"))]
@@ -75,9 +88,55 @@ extern "C" fn set_exception_vector() {
             out("x9") _,
         );
     }
+    #[cfg(all(
+        feature = "exceptions",
+        not(any(feature = "el1", feature = "el2", feature = "el3"))
+    ))]
+    {
+        let current_el: u64;
+        // SAFETY: Reading CurrentEL is always safe.
+        unsafe {
+            asm!(
+                "mrs {current_el}, CurrentEL",
+                options(nomem, nostack, preserves_flags),
+                current_el = out(reg) current_el,
+            );
+        }
+        match (current_el >> 2) & 0b11 {
+            // SAFETY: We provide a valid vector table.
+            1 => unsafe {
+                asm!(
+                    "adr x9, vector_table_el1",
+                    "msr vbar_el1, x9",
+                    options(nomem, nostack, preserves_flags),
+                    out("x9") _,
+                );
+            },
+            // SAFETY: We provide a valid vector table.
+            2 => unsafe {
+                asm!(
+                    "adr x9, vector_table_el2",
+                    "msr vbar_el2, x9",
+                    options(nomem, nostack, preserves_flags),
+                    out("x9") _,
+                );
+            },
+            // SAFETY: We provide a valid vector table.
+            3 => unsafe {
+                asm!(
+                    "adr x9, vector_table_el3",
+                    "msr vbar_el3, x9",
+                    options(nomem, nostack, preserves_flags),
+                    out("x9") _,
+                );
+            },
+            _ => {
+                panic!("Unexpected EL");
+            }
+        }
+    }
 }
 
-#[unsafe(no_mangle)]
 extern "C" fn rust_entry(arg0: u64, arg1: u64, arg2: u64, arg3: u64) -> ! {
     set_exception_vector();
     __main(arg0, arg1, arg2, arg3)
@@ -179,13 +238,17 @@ pub unsafe fn start_core<C: smccc::Call, const N: usize>(
     let params = stack_end as *mut u64;
     // SAFETY: Our caller promised that the stack is valid and nothing else will access it.
     unsafe {
-        *params.wrapping_sub(1) = rust_entry as _;
+        *params.wrapping_sub(1) = rust_entry as usize as _;
         *params.wrapping_sub(2) = arg;
     }
     // Wait for the stores above to complete before starting the secondary CPU core.
     dsb_st();
 
-    smccc::psci::cpu_on::<C>(mpidr, secondary_entry as _, stack_end as _)
+    smccc::psci::cpu_on::<C>(
+        mpidr,
+        secondary_entry as usize as _,
+        stack_end as usize as _,
+    )
 }
 
 /// Data synchronisation barrier that waits for stores to complete, for the full system.
