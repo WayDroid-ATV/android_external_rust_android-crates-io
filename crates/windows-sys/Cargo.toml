@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.71"
 name = "windows-sys"
-version = "0.61.0"
+version = "0.61.2"
 build = false
 autolib = false
 autobins = false
@@ -21,7 +21,7 @@ autoexamples = false
 autotests = false
 autobenches = false
 description = "Rust for Windows"
-readme = "README.md"
+readme = "readme.md"
 categories = ["os::windows-apis"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/microsoft/windows-rs"
@@ -287,7 +287,7 @@ test = false
 doctest = false
 
 [dependencies.windows-link]
-version = "0.2.0"
+version = "0.2.1"
 default-features = false
 
 [lints.rust]
