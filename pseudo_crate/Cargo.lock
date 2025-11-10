@@ -616,7 +616,7 @@ dependencies = [
  "windows-sys 0.61.2",
  "windows-targets 0.53.4",
  "windows_aarch64_gnullvm 0.53.0",
- "windows_aarch64_msvc 0.53.0",
+ "windows_aarch64_msvc 0.53.1",
  "windows_i686_gnu 0.53.1",
  "windows_i686_gnullvm 0.53.1",
  "windows_i686_msvc 0.53.0",
@@ -9222,7 +9222,7 @@ checksum = "2d42b7b7f66d2a06854650af09cfdf8713e427a439c97ad65a6375318033ac4b"
 dependencies = [
  "windows-link 0.2.1",
  "windows_aarch64_gnullvm 0.53.0",
- "windows_aarch64_msvc 0.53.0",
+ "windows_aarch64_msvc 0.53.1",
  "windows_i686_gnu 0.53.1",
  "windows_i686_gnullvm 0.53.1",
  "windows_i686_msvc 0.53.0",
@@ -9284,9 +9284,9 @@ checksum = "09ec2a7bb152e2252b53fa7803150007879548bc709c039df7627cabbd05d469"
 
 [[package]]
 name = "windows_aarch64_msvc"
-version = "0.53.0"
+version = "0.53.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c7651a1f62a11b8cbd5e0d42526e55f2c99886c77e007179efff86c2b137e66c"
+checksum = "b9d782e804c2f632e395708e99a94275910eb9100b2114651e04744e9b125006"
 
 [[package]]
 name = "windows_i686_gnu"
