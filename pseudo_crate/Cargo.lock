@@ -7292,9 +7292,9 @@ dependencies = [
 
 [[package]]
 name = "spidev"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d3081d9cd18e38e608bd29b067168f28b15940e4815ed3e30481e8e661161cf"
+checksum = "4f611021817865236902d15bdf8d729b0bd232141b568d56bb88409a8dc27397"
 dependencies = [
  "bitflags 2.10.0",
  "libc 0.2.177",

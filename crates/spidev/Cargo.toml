@@ -13,7 +13,7 @@
 edition = "2018"
 rust-version = "1.69"
 name = "spidev"
-version = "0.7.0"
+version = "0.7.1"
 authors = [
     "Paul Osborne <osbpau@gmail.com>",
     "The Embedded Linux Team <embedded-linux@teams.rust-embedded.org>",
