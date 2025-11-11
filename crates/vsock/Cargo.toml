@@ -12,30 +12,44 @@
 [package]
 edition = "2021"
 name = "vsock"
-version = "0.5.1"
+version = "0.5.2"
 authors = [
     "fsyncd",
     "rust-vsock",
 ]
+build = false
 exclude = ["test_fixture"]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Virtio socket support for Rust"
 homepage = "https://github.com/rust-vsock/vsock-rs"
 readme = "README.md"
 license = "Apache-2.0"
 repository = "https://github.com/rust-vsock/vsock-rs"
 
+[lib]
+name = "vsock"
+path = "src/lib.rs"
+
+[[test]]
+name = "vsock"
+path = "tests/vsock.rs"
+
 [dependencies.libc]
 version = "0.2.158"
 
 [dependencies.nix]
-version = "0.29.0"
+version = "0.30.1"
 features = [
     "ioctl",
     "socket",
 ]
 
 [dev-dependencies.rand]
-version = "0.8.5"
+version = "0.9.0"
 
 [dev-dependencies.sha2]
 version = "0.10.8"
