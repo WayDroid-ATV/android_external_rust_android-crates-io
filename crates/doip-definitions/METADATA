@@ -1,0 +1,17 @@
+name: "doip-definitions"
+description: "A Diagnostics over Internet Protocol (DoIP) definition library for use in DoIP applications."
+third_party {
+  version: "3.0.13"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 10
+    day: 31
+  }
+  homepage: "https://crates.io/crates/doip-definitions"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/doip-definitions/doip-definitions-3.0.13.crate"
+    version: "3.0.13"
+  }
+}
