@@ -15,5 +15,6 @@
       ]
     }
   },
-  "tests": true
+  "tests": true,
+  "features": ["default", "serde"]
 }

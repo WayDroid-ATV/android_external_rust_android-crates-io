@@ -1,0 +1,17 @@
+name: "lsp-types"
+description: "Types for interaction with a language server, using VSCode\'s Language Server Protocol"
+third_party {
+  version: "0.95.1"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 11
+    day: 5
+  }
+  homepage: "https://crates.io/crates/lsp-types"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/lsp-types/lsp-types-0.95.1.crate"
+    version: "0.95.1"
+  }
+}
