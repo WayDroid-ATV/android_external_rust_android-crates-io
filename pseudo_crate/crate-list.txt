@@ -114,6 +114,7 @@ diplomat_core
 displaydoc
 doc-comment
 document-features
+doip-definitions
 downcast
 downcast-rs
 drm
