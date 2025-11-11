@@ -250,6 +250,7 @@ litrs
 lock_api
 log
 lru-cache
+lsp-server
 lsp-types
 lz4_flex
 macaddr
