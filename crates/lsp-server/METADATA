@@ -1,0 +1,17 @@
+name: "lsp-server"
+description: "Generic LSP server scaffold."
+third_party {
+  version: "0.7.9"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 11
+    day: 5
+  }
+  homepage: "https://crates.io/crates/lsp-server"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/lsp-server/lsp-server-0.7.9.crate"
+    version: "0.7.9"
+  }
+}
