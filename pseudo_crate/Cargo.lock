@@ -503,6 +503,7 @@ dependencies = [
  "serde_cbor",
  "serde_derive",
  "serde_json",
+ "serde_nanos",
  "serde_repr",
  "serde_spanned 0.6.9",
  "serde_test",
@@ -2235,7 +2236,7 @@ checksum = "bda628edc44c4bb645fbe0f758797143e4e07926f7ebf4e9bdfbd3d2ce621df3"
 dependencies = [
  "proc-macro2 1.0.103",
  "quote 1.0.41",
- "syn 2.0.107",
+ "syn 2.0.109",
 ]
 
 [[package]]
@@ -7057,6 +7058,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_nanos"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a93142f0367a4cc53ae0fead1bcda39e85beccfad3dcd717656cacab94b12985"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "serde_path_to_error"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7074,7 +7084,7 @@ checksum = "175ee3e80ae9982737ca543e96133087cbd9a485eecc3bc4de9c1a37b47ea59c"
 dependencies = [
  "proc-macro2 1.0.103",
  "quote 1.0.41",
- "syn 2.0.107",
+ "syn 2.0.109",
 ]
 
 [[package]]
