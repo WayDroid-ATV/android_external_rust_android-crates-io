@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.81"
 name = "lz4_flex"
-version = "0.11.5"
+version = "0.12.0"
 authors = [
     "Pascal Seitz <pascal.seitz@gmail.com>",
     "Arthur Silva <arthurprs@gmail.com>",
@@ -81,7 +81,7 @@ optional = true
 default-features = false
 
 [dev-dependencies.binggan]
-version = "0.12.0"
+version = "0.14.0"
 
 [dev-dependencies.jemallocator]
 version = "0.5.4"
@@ -90,7 +90,7 @@ version = "0.5.4"
 version = "0.1.1"
 
 [dev-dependencies.lzzzz]
-version = "1.0.4"
+version = "2.0.0"
 
 [dev-dependencies.more-asserts]
 version = "0.3.1"

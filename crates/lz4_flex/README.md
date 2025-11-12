@@ -46,12 +46,12 @@ Compression and decompression uses no unsafe via the default feature flags "safe
 
 Safe:
 ```
-lz4_flex = { version = "0.11" }
+lz4_flex = { version = "0.12" }
 ```
 
 Performance:
 ```
-lz4_flex = { version = "0.11", default-features = false }
+lz4_flex = { version = "0.12", default-features = false }
 ```
 
 ### Block Format
@@ -119,6 +119,7 @@ This fuzz target asserts compression with cpp and decompression with lz4_flex re
 ## Bindings in other languages
  - Node.js: [lz4-napi](https://github.com/antoniomuso/lz4-napi) 
  - Wasm: [lz4-wasm](https://github.com/PSeitz/lz4-wasm)
+ - Python: [safelz4](https://github.com/LVivona/safelz4)
 
 ## TODO
 - High compression
