@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.60"
 name = "windows-targets"
-version = "0.53.4"
+version = "0.53.5"
 build = false
 autolib = false
 autobins = false
@@ -21,7 +21,7 @@ autoexamples = false
 autotests = false
 autobenches = false
 description = "Import libs for Windows"
-readme = "README.md"
+readme = "readme.md"
 categories = ["os::windows-apis"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/microsoft/windows-rs"
@@ -49,7 +49,7 @@ version = "0.53.0"
 version = "0.53.0"
 
 [target."cfg(windows_raw_dylib)".dependencies.windows-link]
-version = "0.2.0"
+version = "0.2.1"
 default-features = false
 
 [target.i686-pc-windows-gnullvm.dependencies.windows_i686_gnullvm]
