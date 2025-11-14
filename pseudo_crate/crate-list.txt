@@ -465,6 +465,7 @@ tracing-attributes
 tracing-core
 tracing-subscriber
 try-lock
+tryhard
 tungstenite
 twox-hash
 ucd-trie

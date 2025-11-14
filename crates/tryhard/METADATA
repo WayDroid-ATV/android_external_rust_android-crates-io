@@ -1,0 +1,17 @@
+name: "tryhard"
+description: "Easily retry futures"
+third_party {
+  version: "0.5.2"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 11
+    day: 13
+  }
+  homepage: "https://crates.io/crates/tryhard"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/tryhard/tryhard-0.5.2.crate"
+    version: "0.5.2"
+  }
+}
