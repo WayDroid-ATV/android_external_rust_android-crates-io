@@ -972,9 +972,9 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
 name = "automotive_diag"
-version = "0.1.24"
+version = "0.1.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b37f4e070d716744282a755712b232fdc4fad08c826be8201bbc7576f49099e"
+checksum = "9d4c593e8a4c66a3ec0cb94832fb20feb2328a35e4cbb71314bee1682bc24725"
 dependencies = [
  "displaydoc",
  "serde",
