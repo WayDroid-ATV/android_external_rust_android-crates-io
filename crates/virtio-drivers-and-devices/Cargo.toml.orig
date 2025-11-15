@@ -1,0 +1,32 @@
+[package]
+name = "virtio-drivers-and-devices"
+version = "0.2.4"
+license = "MIT"
+authors = [
+  "Jiajie Chen <noc@jiegec.ac.cn>",
+  "Runji Wang <wangrunji0408@163.com>",
+  "Yuekai Jia <equation618@gmail.com>",
+  "Andrew Walbran <qwandor@google.com>",
+  "Ayrton Munoz <ayrton@google.com>",
+]
+edition = "2021"
+description = "VirtIO guest drivers and devices. Fork of rcore-os/virtio-drivers."
+repository = "https://github.com/immunant/virtio-drivers-and-devices"
+keywords = ["virtio"]
+categories = ["hardware-support", "no-std"]
+
+[dependencies]
+log = "0.4.25"
+bitflags = "2.8.0"
+enumn = "0.1.14"
+embedded-io = { version = "0.6.1", optional = true }
+thiserror = { version = "2.0.11", default-features = false }
+zerocopy = { version = "0.8.14", features = ["derive"] }
+
+[features]
+default = ["alloc", "embedded-io"]
+alloc = ["zerocopy/alloc"]
+embedded-io = ["dep:embedded-io"]
+
+[dev-dependencies]
+zerocopy = { version = "0.8.14", features = ["alloc"] }
