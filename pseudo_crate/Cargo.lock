@@ -826,10 +826,8 @@ checksum = "56df0aeedf6b7a2fc67d06db35b09684c3e8da0c95f8f27685cb17e08413d87a"
 dependencies = [
  "argh_shared",
  "proc-macro2 1.0.103",
- "quote 1.0.41",
- "syn 2.0.110",
  "quote 1.0.42",
- "syn 2.0.109",
+ "syn 2.0.110",
 ]
 
 [[package]]
@@ -8672,9 +8670,9 @@ dependencies = [
 
 [[package]]
 name = "virtio-drivers-and-devices"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4aac1eb33b07e3feaea523a6d701d467dfb5bacec604e011f39ebabdbcb256f0"
+checksum = "14197150aa92b5e0c7febed9d1e47b39d37bcd5d73e4c6f14f6cf09ac6b54713"
 dependencies = [
  "bitflags 2.10.0",
  "embedded-io",
