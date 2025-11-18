@@ -26,7 +26,16 @@
   "vendor_available": true,
   "run_cargo": false,
   "variants": [
-    {},
+    {
+      "features": [
+        "alloc",
+        "derive",
+        "flagset",
+        "oid",
+        "std",
+        "zeroize"
+      ]
+    },
     {
       "package": {
         "der": {
