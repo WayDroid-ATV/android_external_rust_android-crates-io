@@ -1,0 +1,17 @@
+name: "etcetera"
+description: "An unopinionated library for obtaining configuration, data, cache, & other directories"
+third_party {
+  version: "0.10.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 11
+    day: 12
+  }
+  homepage: "https://crates.io/crates/etcetera"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/etcetera/etcetera-0.10.0.crate"
+    version: "0.10.0"
+  }
+}
