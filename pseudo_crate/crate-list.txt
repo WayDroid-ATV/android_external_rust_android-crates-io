@@ -135,6 +135,7 @@ errno
 etcetera
 etherparse
 evdev
+faccess
 fallible-iterator
 fallible-streaming-iterator
 fastrand
