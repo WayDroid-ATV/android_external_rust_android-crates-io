@@ -1,0 +1,17 @@
+name: "humantime"
+description: "A parser and formatter for std::time::{Duration, SystemTime}"
+third_party {
+  version: "2.3.0"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 11
+    day: 19
+  }
+  homepage: "https://crates.io/crates/humantime"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/humantime/humantime-2.3.0.crate"
+    version: "2.3.0"
+  }
+}
