@@ -92,6 +92,7 @@ crossbeam-queue
 crossbeam-utils
 csv
 csv-core
+ctrlc
 darling
 darling_core
 darling_macro
