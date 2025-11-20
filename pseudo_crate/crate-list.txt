@@ -16,6 +16,7 @@ arc-swap
 argh
 argh_derive
 argh_shared
+argmax
 arm-ffa
 arm-gic
 arm-pl011-uart
