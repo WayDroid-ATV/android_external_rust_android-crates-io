@@ -228,15 +228,5 @@
     {
       "path": "tools/asuite/adevice"
     }
-  ],
-  "presubmit": [
-    {
-      "name": "serde_test_src_lib"
-    }
-  ],
-  "presubmit-rust": [
-    {
-      "name": "serde_test_src_lib"
-    }
   ]
 }

@@ -24,7 +24,7 @@ rust_library {
     rustlibs: [
         "libchunked_transfer",
         "libhttparse",
-        "libhyper",
+        "libhyper-0.14",
         "liblog_rust",
         "librusb",
         "libtokio",

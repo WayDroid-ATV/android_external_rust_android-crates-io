@@ -1,7 +1,4 @@
 {
-  "module_name_overrides": {
-    "librand": "librand-0.8"
-  },
   "features":[
     "__common",
     "balance",
@@ -12,10 +9,8 @@
     "indexmap",
     "limit",
     "load",
+    "load-shed",
     "make",
-    "pin-project",
-    "pin-project-lite",
-    "rand",
     "ready-cache",
     "slab",
     "timeout",

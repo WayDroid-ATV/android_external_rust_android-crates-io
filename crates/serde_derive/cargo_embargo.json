@@ -2,7 +2,8 @@
   "package": {
     "serde_derive": {
       "device_supported": false,
-      "host_first_multilib": true
+      "host_first_multilib": true,
+      "rulesmk_patch": "patches/rules.mk.diff"
     }
   },
   "run_cargo": false,

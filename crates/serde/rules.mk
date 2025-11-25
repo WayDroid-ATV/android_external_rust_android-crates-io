@@ -8,12 +8,27 @@ MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := serde
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
-MODULE_RUST_EDITION := 2018
+OUT_FILES := private.rs
+BUILD_OUT_FILES := $(addprefix $(call TOBUILDDIR,$(MODULE))/,$(OUT_FILES))
+$(BUILD_OUT_FILES): $(call TOBUILDDIR,$(MODULE))/% : $(MODULE)/out/%
+	@echo copying $^ to $@
+	@$(MKDIR)
+	@cp $^ $@
+
+MODULE_RUST_ENV += OUT_DIR=$(call TOBUILDDIR,$(MODULE))
+
+MODULE_SRCDEPS += $(BUILD_OUT_FILES)
+
+OUT_FILES :=
+BUILD_OUT_FILES :=
+
+MODULE_RUST_EDITION := 2021
 MODULE_RUSTFLAGS += \
 	--cfg 'feature="alloc"' \
 	--cfg 'feature="default"' \
 	--cfg 'feature="derive"' \
 	--cfg 'feature="serde_derive"' \
+	--cfg 'if_docsrs_then_no_serde_core'
 
 ifeq ($(call TOBOOL,$(TRUSTY_USERSPACE)),true)
 
@@ -24,6 +39,7 @@ endif
 
 MODULE_LIBRARY_DEPS := \
 	trusty/user/base/lib/liballoc-rust \
-	$(call FIND_CRATE,serde_derive) \
+	$(call FIND_CRATE,serde_core) \
+	$(call FIND_CRATE,serde_derive)
 
 include make/library.mk

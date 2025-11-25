@@ -28,6 +28,7 @@ async-stream-impl
 async-task
 async-trait
 atomic
+atomic-waker
 atty
 autocfg
 automotive_diag
@@ -194,11 +195,13 @@ home
 hound
 http
 http-body
+http-body-util
 httparse
 httpdate
 humantime
 hyper
 hyper-timeout
+hyper-util
 icu_capi
 icu_casemap
 icu_casemap_data
@@ -394,6 +397,7 @@ serde
 serde-xml-rs
 serde_bytes
 serde_cbor
+serde_core
 serde_derive
 serde_json
 serde_nanos

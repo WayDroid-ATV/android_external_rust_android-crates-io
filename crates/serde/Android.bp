@@ -13,15 +13,23 @@ license {
     license_text: ["LICENSE"],
 }
 
+genrule {
+    name: "copy_serde_build_out",
+    srcs: ["out/*"],
+    cmd: "cp $(in) $(genDir)",
+    out: ["private.rs"],
+}
+
 rust_library {
     name: "libserde",
     defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "serde",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.219",
+    cargo_pkg_version: "1.0.228",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    srcs: [":copy_serde_build_out"],
+    edition: "2021",
     features: [
         "default",
         "derive",
@@ -29,6 +37,8 @@ rust_library {
         "serde_derive",
         "std",
     ],
+    cfgs: ["if_docsrs_then_no_serde_core"],
+    rustlibs: ["libserde_core"],
     proc_macros: ["libserde_derive"],
     target: {
         windows: {
@@ -54,34 +64,6 @@ rust_library {
             "serde_derive",
         ],
         enabled: true,
-    },
-}
-
-rust_test {
-    name: "serde_test_src_lib",
-    host_supported: true,
-    crate_name: "serde",
-    cargo_env_compat: true,
-    cargo_pkg_version: "1.0.219",
-    crate_root: "src/lib.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2018",
-    features: [
-        "default",
-        "derive",
-        "rc",
-        "serde_derive",
-        "std",
-    ],
-    proc_macros: ["libserde_derive"],
-    target: {
-        windows: {
-            enabled: true,
-        },
     },
 }
 
