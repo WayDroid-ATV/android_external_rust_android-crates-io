@@ -1,7 +1,5 @@
 use super::*;
 
-use std::usize;
-
 #[derive(Debug)]
 pub(super) struct Counts {
     /// Acting as a client or server. This allows us to track which values to
@@ -231,7 +229,7 @@ impl Counts {
                 }
             }
 
-            if stream.is_counted {
+            if !stream.state.is_scheduled_reset() && stream.is_counted {
                 tracing::trace!("dec_num_streams; stream={:?}", stream.id);
                 // Decrement the number of active streams.
                 self.dec_num_streams(&mut stream);

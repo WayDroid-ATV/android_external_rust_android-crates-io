@@ -17,9 +17,9 @@ rust_proc_macro {
     name: "libserde_derive",
     crate_name: "serde_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.219",
+    cargo_pkg_version: "1.0.228",
     crate_root: "src/lib.rs",
-    edition: "2015",
+    edition: "2021",
     features: ["default"],
     rustlibs: [
         "libproc_macro2",
@@ -34,14 +34,14 @@ rust_test_host {
     host_cross_supported: false,
     crate_name: "serde_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.219",
+    cargo_pkg_version: "1.0.228",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2015",
+    edition: "2021",
     features: ["default"],
     rustlibs: [
         "libproc_macro2",

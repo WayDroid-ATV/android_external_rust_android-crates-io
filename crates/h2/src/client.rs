@@ -148,7 +148,6 @@ use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 use std::time::Duration;
-use std::usize;
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 use tracing::Instrument;
 
@@ -548,6 +547,16 @@ where
     pub fn is_extended_connect_protocol_enabled(&self) -> bool {
         self.inner.is_extended_connect_protocol_enabled()
     }
+
+    /// Returns the current max send streams
+    pub fn current_max_send_streams(&self) -> usize {
+        self.inner.current_max_send_streams()
+    }
+
+    /// Returns the current max recv streams
+    pub fn current_max_recv_streams(&self) -> usize {
+        self.inner.current_max_recv_streams()
+    }
 }
 
 impl<B> fmt::Debug for SendRequest<B>
@@ -914,7 +923,7 @@ impl Builder {
     /// received for that stream will result in a connection level protocol
     /// error, forcing the connection to terminate.
     ///
-    /// The default value is 10.
+    /// The default value is currently 50.
     ///
     /// # Examples
     ///
@@ -959,7 +968,7 @@ impl Builder {
     /// received for that stream will result in a connection level protocol
     /// error, forcing the connection to terminate.
     ///
-    /// The default value is 30 seconds.
+    /// The default value is currently 1 second.
     ///
     /// # Examples
     ///
@@ -1060,7 +1069,7 @@ impl Builder {
     ///
     /// This function panics if `max` is larger than `u32::MAX`.
     pub fn max_send_buffer_size(&mut self, max: usize) -> &mut Self {
-        assert!(max <= std::u32::MAX as usize);
+        assert!(max <= u32::MAX as usize);
         self.max_send_buffer_size = max;
         self
     }
@@ -1428,7 +1437,18 @@ where
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         self.inner.maybe_close_connection_if_no_streams();
-        self.inner.poll(cx).map_err(Into::into)
+        let had_streams_or_refs = self.inner.has_streams_or_other_references();
+        let result = self.inner.poll(cx).map_err(Into::into);
+        // if we had streams/refs, and don't anymore, wake up one more time to
+        // ensure proper shutdown
+        if result.is_pending()
+            && had_streams_or_refs
+            && !self.inner.has_streams_or_other_references()
+        {
+            tracing::trace!("last stream closed during poll, wake again");
+            cx.waker().wake_by_ref();
+        }
+        result
     }
 }
 
@@ -1487,7 +1507,7 @@ impl ResponseFuture {
 impl PushPromises {
     /// Get the next `PushPromise`.
     pub async fn push_promise(&mut self) -> Option<Result<PushPromise, crate::Error>> {
-        futures_util::future::poll_fn(move |cx| self.poll_push_promise(cx)).await
+        crate::poll_fn(move |cx| self.poll_push_promise(cx)).await
     }
 
     #[doc(hidden)]

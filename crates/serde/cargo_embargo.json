@@ -4,14 +4,15 @@
   ],
   "sdk_version": "29",
   "min_sdk_version": "29",
-  "run_cargo": false,
+  "run_cargo": true,
   "ramdisk_available": true,
   "recovery_available": true,
   "vendor_ramdisk_available": true,
   "package": {
     "serde": {
-      "rulesmk_patch": "patches/rules.mk.diff",
-      "target_windows": true
+      "target_windows": true,
+      "copy_out": true,
+      "rulesmk_patch": "patches/rules.mk.diff"
     }
   },
   "variants": [

@@ -21,7 +21,11 @@ rust_library {
     cargo_pkg_version: "1.15.1",
     crate_root: "src/lib.rs",
     edition: "2018",
-    features: ["write"],
+    features: [
+        "const_generics",
+        "const_new",
+        "write",
+    ],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

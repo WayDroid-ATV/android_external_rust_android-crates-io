@@ -1,36 +1,52 @@
-//! `IndexMap` is a hash table where the iteration order of the key-value
+//! [`IndexMap`] is a hash table where the iteration order of the key-value
 //! pairs is independent of the hash values of the keys.
 
 mod core;
+mod iter;
+mod mutable;
+mod slice;
 
-pub use crate::mutable_keys::MutableKeys;
+#[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
+pub mod serde_seq;
+
+#[cfg(test)]
+mod tests;
+
+pub use self::core::raw_entry_v1::{self, RawEntryApiV1};
+pub use self::core::{Entry, IndexedEntry, OccupiedEntry, VacantEntry};
+pub use self::iter::{
+    Drain, ExtractIf, IntoIter, IntoKeys, IntoValues, Iter, IterMut, IterMut2, Keys, Splice,
+    Values, ValuesMut,
+};
+pub use self::mutable::MutableEntryKey;
+pub use self::mutable::MutableKeys;
+pub use self::slice::Slice;
 
 #[cfg(feature = "rayon")]
 pub use crate::rayon::map as rayon;
 
-use crate::vec::{self, Vec};
 use ::core::cmp::Ordering;
 use ::core::fmt;
-use ::core::hash::{BuildHasher, Hash, Hasher};
-use ::core::iter::FusedIterator;
+use ::core::hash::{BuildHasher, Hash};
+use ::core::mem;
 use ::core::ops::{Index, IndexMut, RangeBounds};
-use ::core::slice::{Iter as SliceIter, IterMut as SliceIterMut};
+use alloc::boxed::Box;
+use alloc::vec::Vec;
 
-#[cfg(has_std)]
-use std::collections::hash_map::RandomState;
+#[cfg(feature = "std")]
+use std::hash::RandomState;
 
-use self::core::IndexMapCore;
-use crate::equivalent::Equivalent;
-use crate::util::third;
-use crate::{Bucket, Entries, HashValue};
-
-pub use self::core::{Entry, OccupiedEntry, VacantEntry};
+pub(crate) use self::core::{ExtractCore, IndexMapCore};
+use crate::util::{third, try_simplify_range};
+use crate::{Bucket, Equivalent, GetDisjointMutError, HashValue, TryReserveError};
 
 /// A hash table where the iteration order of the key-value pairs is independent
 /// of the hash values of the keys.
 ///
-/// The interface is closely compatible with the standard `HashMap`, but also
-/// has additional features.
+/// The interface is closely compatible with the standard
+/// [`HashMap`][std::collections::HashMap],
+/// but also has additional features.
 ///
 /// # Order
 ///
@@ -41,7 +57,8 @@ pub use self::core::{Entry, OccupiedEntry, VacantEntry};
 /// All iterators traverse the map in *the order*.
 ///
 /// The insertion order is preserved, with **notable exceptions** like the
-/// `.remove()` or `.swap_remove()` methods. Methods such as `.sort_by()` of
+/// [`.remove()`][Self::remove] or [`.swap_remove()`][Self::swap_remove] methods.
+/// Methods such as [`.sort_by()`][Self::sort_by] of
 /// course result in a new order, depending on the sorting order.
 ///
 /// # Indices
@@ -67,12 +84,12 @@ pub use self::core::{Entry, OccupiedEntry, VacantEntry};
 /// assert_eq!(letters[&'u'], 1);
 /// assert_eq!(letters.get(&'y'), None);
 /// ```
-#[cfg(has_std)]
+#[cfg(feature = "std")]
 pub struct IndexMap<K, V, S = RandomState> {
     pub(crate) core: IndexMapCore<K, V>,
     hash_builder: S,
 }
-#[cfg(not(has_std))]
+#[cfg(not(feature = "std"))]
 pub struct IndexMap<K, V, S> {
     pub(crate) core: IndexMapCore<K, V>,
     hash_builder: S,
@@ -97,50 +114,27 @@ where
     }
 }
 
-impl<K, V, S> Entries for IndexMap<K, V, S> {
-    type Entry = Bucket<K, V>;
-
-    #[inline]
-    fn into_entries(self) -> Vec<Self::Entry> {
-        self.core.into_entries()
-    }
-
-    #[inline]
-    fn as_entries(&self) -> &[Self::Entry] {
-        self.core.as_entries()
-    }
-
-    #[inline]
-    fn as_entries_mut(&mut self) -> &mut [Self::Entry] {
-        self.core.as_entries_mut()
-    }
-
-    fn with_entries<F>(&mut self, f: F)
-    where
-        F: FnOnce(&mut [Self::Entry]),
-    {
-        self.core.with_entries(f);
-    }
-}
-
 impl<K, V, S> fmt::Debug for IndexMap<K, V, S>
 where
     K: fmt::Debug,
     V: fmt::Debug,
 {
+    #[cfg(not(feature = "test_debug"))]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if cfg!(not(feature = "test_debug")) {
-            f.debug_map().entries(self.iter()).finish()
-        } else {
-            // Let the inner `IndexMapCore` print all of its details
-            f.debug_struct("IndexMap")
-                .field("core", &self.core)
-                .finish()
-        }
+        f.debug_map().entries(self.iter()).finish()
+    }
+
+    #[cfg(feature = "test_debug")]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Let the inner `IndexMapCore` print all of its details
+        f.debug_struct("IndexMap")
+            .field("core", &self.core)
+            .finish()
     }
 }
 
-#[cfg(has_std)]
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<K, V> IndexMap<K, V> {
     /// Create a new map. (Does not allocate.)
     #[inline]
@@ -186,6 +180,33 @@ impl<K, V, S> IndexMap<K, V, S> {
         }
     }
 
+    #[inline]
+    pub(crate) fn into_entries(self) -> Vec<Bucket<K, V>> {
+        self.core.into_entries()
+    }
+
+    #[inline]
+    pub(crate) fn as_entries(&self) -> &[Bucket<K, V>] {
+        self.core.as_entries()
+    }
+
+    #[inline]
+    pub(crate) fn as_entries_mut(&mut self) -> &mut [Bucket<K, V>] {
+        self.core.as_entries_mut()
+    }
+
+    pub(crate) fn with_entries<F>(&mut self, f: F)
+    where
+        F: FnOnce(&mut [Bucket<K, V>]),
+    {
+        self.core.with_entries(f);
+    }
+
+    /// Return the number of elements the map can hold without reallocating.
+    ///
+    /// This number is a lower bound; the map might be able to hold more,
+    /// but is guaranteed to be able to hold at least this many.
+    ///
     /// Computes in **O(1)** time.
     pub fn capacity(&self) -> usize {
         self.core.capacity()
@@ -214,52 +235,38 @@ impl<K, V, S> IndexMap<K, V, S> {
 
     /// Return an iterator over the key-value pairs of the map, in their order
     pub fn iter(&self) -> Iter<'_, K, V> {
-        Iter {
-            iter: self.as_entries().iter(),
-        }
+        Iter::new(self.as_entries())
     }
 
     /// Return an iterator over the key-value pairs of the map, in their order
     pub fn iter_mut(&mut self) -> IterMut<'_, K, V> {
-        IterMut {
-            iter: self.as_entries_mut().iter_mut(),
-        }
+        IterMut::new(self.as_entries_mut())
     }
 
     /// Return an iterator over the keys of the map, in their order
     pub fn keys(&self) -> Keys<'_, K, V> {
-        Keys {
-            iter: self.as_entries().iter(),
-        }
+        Keys::new(self.as_entries())
     }
 
     /// Return an owning iterator over the keys of the map, in their order
     pub fn into_keys(self) -> IntoKeys<K, V> {
-        IntoKeys {
-            iter: self.into_entries().into_iter(),
-        }
+        IntoKeys::new(self.into_entries())
     }
 
     /// Return an iterator over the values of the map, in their order
     pub fn values(&self) -> Values<'_, K, V> {
-        Values {
-            iter: self.as_entries().iter(),
-        }
+        Values::new(self.as_entries())
     }
 
     /// Return an iterator over mutable references to the values of the map,
     /// in their order
     pub fn values_mut(&mut self) -> ValuesMut<'_, K, V> {
-        ValuesMut {
-            iter: self.as_entries_mut().iter_mut(),
-        }
+        ValuesMut::new(self.as_entries_mut())
     }
 
     /// Return an owning iterator over the values of the map, in their order
     pub fn into_values(self) -> IntoValues<K, V> {
-        IntoValues {
-            iter: self.into_entries().into_iter(),
-        }
+        IntoValues::new(self.into_entries())
     }
 
     /// Remove all key-value pairs in the map, while preserving its capacity.
@@ -279,7 +286,7 @@ impl<K, V, S> IndexMap<K, V, S> {
     /// Clears the `IndexMap` in the given index range, returning those
     /// key-value pairs as a drain iterator.
     ///
-    /// The range may be any type that implements `RangeBounds<usize>`,
+    /// The range may be any type that implements [`RangeBounds<usize>`],
     /// including all of the `std::ops::Range*` types, or even a tuple pair of
     /// `Bound` start and end values. To drain the map entirely, use `RangeFull`
     /// like `map.drain(..)`.
@@ -289,13 +296,61 @@ impl<K, V, S> IndexMap<K, V, S> {
     ///
     /// ***Panics*** if the starting point is greater than the end point or if
     /// the end point is greater than the length of the map.
+    #[track_caller]
     pub fn drain<R>(&mut self, range: R) -> Drain<'_, K, V>
     where
         R: RangeBounds<usize>,
     {
-        Drain {
-            iter: self.core.drain(range),
-        }
+        Drain::new(self.core.drain(range))
+    }
+
+    /// Creates an iterator which uses a closure to determine if an element should be removed,
+    /// for all elements in the given range.
+    ///
+    /// If the closure returns true, the element is removed from the map and yielded.
+    /// If the closure returns false, or panics, the element remains in the map and will not be
+    /// yielded.
+    ///
+    /// Note that `extract_if` lets you mutate every value in the filter closure, regardless of
+    /// whether you choose to keep or remove it.
+    ///
+    /// The range may be any type that implements [`RangeBounds<usize>`],
+    /// including all of the `std::ops::Range*` types, or even a tuple pair of
+    /// `Bound` start and end values. To check the entire map, use `RangeFull`
+    /// like `map.extract_if(.., predicate)`.
+    ///
+    /// If the returned `ExtractIf` is not exhausted, e.g. because it is dropped without iterating
+    /// or the iteration short-circuits, then the remaining elements will be retained.
+    /// Use [`retain`] with a negated predicate if you do not need the returned iterator.
+    ///
+    /// [`retain`]: IndexMap::retain
+    ///
+    /// ***Panics*** if the starting point is greater than the end point or if
+    /// the end point is greater than the length of the map.
+    ///
+    /// # Examples
+    ///
+    /// Splitting a map into even and odd keys, reusing the original map:
+    ///
+    /// ```
+    /// use indexmap::IndexMap;
+    ///
+    /// let mut map: IndexMap<i32, i32> = (0..8).map(|x| (x, x)).collect();
+    /// let extracted: IndexMap<i32, i32> = map.extract_if(.., |k, _v| k % 2 == 0).collect();
+    ///
+    /// let evens = extracted.keys().copied().collect::<Vec<_>>();
+    /// let odds = map.keys().copied().collect::<Vec<_>>();
+    ///
+    /// assert_eq!(evens, vec![0, 2, 4, 6]);
+    /// assert_eq!(odds, vec![1, 3, 5, 7]);
+    /// ```
+    #[track_caller]
+    pub fn extract_if<F, R>(&mut self, range: R, pred: F) -> ExtractIf<'_, K, V, F>
+    where
+        F: FnMut(&K, &mut V) -> bool,
+        R: RangeBounds<usize>,
+    {
+        ExtractIf::new(&mut self.core, range, pred)
     }
 
     /// Splits the collection into two at the given index.
@@ -305,6 +360,7 @@ impl<K, V, S> IndexMap<K, V, S> {
     /// the elements `[0, at)` with its previous capacity unchanged.
     ///
     /// ***Panics*** if `at > len`.
+    #[track_caller]
     pub fn split_off(&mut self, at: usize) -> Self
     where
         S: Clone,
@@ -314,18 +370,43 @@ impl<K, V, S> IndexMap<K, V, S> {
             hash_builder: self.hash_builder.clone(),
         }
     }
-}
 
-impl<K, V, S> IndexMap<K, V, S>
-where
-    K: Hash + Eq,
-    S: BuildHasher,
-{
     /// Reserve capacity for `additional` more key-value pairs.
     ///
     /// Computes in **O(n)** time.
     pub fn reserve(&mut self, additional: usize) {
         self.core.reserve(additional);
+    }
+
+    /// Reserve capacity for `additional` more key-value pairs, without over-allocating.
+    ///
+    /// Unlike `reserve`, this does not deliberately over-allocate the entry capacity to avoid
+    /// frequent re-allocations. However, the underlying data structures may still have internal
+    /// capacity requirements, and the allocator itself may give more space than requested, so this
+    /// cannot be relied upon to be precisely minimal.
+    ///
+    /// Computes in **O(n)** time.
+    pub fn reserve_exact(&mut self, additional: usize) {
+        self.core.reserve_exact(additional);
+    }
+
+    /// Try to reserve capacity for `additional` more key-value pairs.
+    ///
+    /// Computes in **O(n)** time.
+    pub fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.core.try_reserve(additional)
+    }
+
+    /// Try to reserve capacity for `additional` more key-value pairs, without over-allocating.
+    ///
+    /// Unlike `try_reserve`, this does not deliberately over-allocate the entry capacity to avoid
+    /// frequent re-allocations. However, the underlying data structures may still have internal
+    /// capacity requirements, and the allocator itself may give more space than requested, so this
+    /// cannot be relied upon to be precisely minimal.
+    ///
+    /// Computes in **O(n)** time.
+    pub fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
+        self.core.try_reserve_exact(additional)
     }
 
     /// Shrink the capacity of the map as much as possible.
@@ -341,26 +422,27 @@ where
     pub fn shrink_to(&mut self, min_capacity: usize) {
         self.core.shrink_to(min_capacity);
     }
+}
 
-    fn hash<Q: ?Sized + Hash>(&self, key: &Q) -> HashValue {
-        let mut h = self.hash_builder.build_hasher();
-        key.hash(&mut h);
-        HashValue(h.finish() as usize)
-    }
-
+impl<K, V, S> IndexMap<K, V, S>
+where
+    K: Hash + Eq,
+    S: BuildHasher,
+{
     /// Insert a key-value pair in the map.
     ///
     /// If an equivalent key already exists in the map: the key remains and
     /// retains in its place in the order, its corresponding value is updated
-    /// with `value` and the older value is returned inside `Some(_)`.
+    /// with `value`, and the older value is returned inside `Some(_)`.
     ///
     /// If no equivalent key existed in the map: the new key-value pair is
     /// inserted, last in order, and `None` is returned.
     ///
     /// Computes in **O(1)** time (amortized average).
     ///
-    /// See also [`entry`](#method.entry) if you you want to insert *or* modify
-    /// or if you need to get the index of the corresponding key-value pair.
+    /// See also [`entry`][Self::entry] if you want to insert *or* modify,
+    /// or [`insert_full`][Self::insert_full] if you need to get the index of
+    /// the corresponding key-value pair.
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
         self.insert_full(key, value).1
     }
@@ -369,21 +451,286 @@ where
     ///
     /// If an equivalent key already exists in the map: the key remains and
     /// retains in its place in the order, its corresponding value is updated
-    /// with `value` and the older value is returned inside `(index, Some(_))`.
+    /// with `value`, and the older value is returned inside `(index, Some(_))`.
     ///
     /// If no equivalent key existed in the map: the new key-value pair is
     /// inserted, last in order, and `(index, None)` is returned.
     ///
     /// Computes in **O(1)** time (amortized average).
     ///
-    /// See also [`entry`](#method.entry) if you you want to insert *or* modify
-    /// or if you need to get the index of the corresponding key-value pair.
+    /// See also [`entry`][Self::entry] if you want to insert *or* modify.
     pub fn insert_full(&mut self, key: K, value: V) -> (usize, Option<V>) {
         let hash = self.hash(&key);
         self.core.insert_full(hash, key, value)
     }
 
-    /// Get the given key’s corresponding entry in the map for insertion and/or
+    /// Insert a key-value pair in the map at its ordered position among sorted keys.
+    ///
+    /// This is equivalent to finding the position with
+    /// [`binary_search_keys`][Self::binary_search_keys], then either updating
+    /// it or calling [`insert_before`][Self::insert_before] for a new key.
+    ///
+    /// If the sorted key is found in the map, its corresponding value is
+    /// updated with `value`, and the older value is returned inside
+    /// `(index, Some(_))`. Otherwise, the new key-value pair is inserted at
+    /// the sorted position, and `(index, None)` is returned.
+    ///
+    /// If the existing keys are **not** already sorted, then the insertion
+    /// index is unspecified (like [`slice::binary_search`]), but the key-value
+    /// pair is moved to or inserted at that position regardless.
+    ///
+    /// Computes in **O(n)** time (average). Instead of repeating calls to
+    /// `insert_sorted`, it may be faster to call batched [`insert`][Self::insert]
+    /// or [`extend`][Self::extend] and only call [`sort_keys`][Self::sort_keys]
+    /// or [`sort_unstable_keys`][Self::sort_unstable_keys] once.
+    pub fn insert_sorted(&mut self, key: K, value: V) -> (usize, Option<V>)
+    where
+        K: Ord,
+    {
+        match self.binary_search_keys(&key) {
+            Ok(i) => (i, Some(mem::replace(&mut self[i], value))),
+            Err(i) => self.insert_before(i, key, value),
+        }
+    }
+
+    /// Insert a key-value pair in the map at its ordered position among keys
+    /// sorted by `cmp`.
+    ///
+    /// This is equivalent to finding the position with
+    /// [`binary_search_by`][Self::binary_search_by], then calling
+    /// [`insert_before`][Self::insert_before] with the given key and value.
+    ///
+    /// If the existing keys are **not** already sorted, then the insertion
+    /// index is unspecified (like [`slice::binary_search`]), but the key-value
+    /// pair is moved to or inserted at that position regardless.
+    ///
+    /// Computes in **O(n)** time (average).
+    pub fn insert_sorted_by<F>(&mut self, key: K, value: V, mut cmp: F) -> (usize, Option<V>)
+    where
+        F: FnMut(&K, &V, &K, &V) -> Ordering,
+    {
+        let (Ok(i) | Err(i)) = self.binary_search_by(|k, v| cmp(k, v, &key, &value));
+        self.insert_before(i, key, value)
+    }
+
+    /// Insert a key-value pair in the map at its ordered position
+    /// using a sort-key extraction function.
+    ///
+    /// This is equivalent to finding the position with
+    /// [`binary_search_by_key`][Self::binary_search_by_key] with `sort_key(key)`, then
+    /// calling [`insert_before`][Self::insert_before] with the given key and value.
+    ///
+    /// If the existing keys are **not** already sorted, then the insertion
+    /// index is unspecified (like [`slice::binary_search`]), but the key-value
+    /// pair is moved to or inserted at that position regardless.
+    ///
+    /// Computes in **O(n)** time (average).
+    pub fn insert_sorted_by_key<B, F>(
+        &mut self,
+        key: K,
+        value: V,
+        mut sort_key: F,
+    ) -> (usize, Option<V>)
+    where
+        B: Ord,
+        F: FnMut(&K, &V) -> B,
+    {
+        let search_key = sort_key(&key, &value);
+        let (Ok(i) | Err(i)) = self.binary_search_by_key(&search_key, sort_key);
+        self.insert_before(i, key, value)
+    }
+
+    /// Insert a key-value pair in the map before the entry at the given index, or at the end.
+    ///
+    /// If an equivalent key already exists in the map: the key remains and
+    /// is moved to the new position in the map, its corresponding value is updated
+    /// with `value`, and the older value is returned inside `Some(_)`. The returned index
+    /// will either be the given index or one less, depending on how the entry moved.
+    /// (See [`shift_insert`](Self::shift_insert) for different behavior here.)
+    ///
+    /// If no equivalent key existed in the map: the new key-value pair is
+    /// inserted exactly at the given index, and `None` is returned.
+    ///
+    /// ***Panics*** if `index` is out of bounds.
+    /// Valid indices are `0..=map.len()` (inclusive).
+    ///
+    /// Computes in **O(n)** time (average).
+    ///
+    /// See also [`entry`][Self::entry] if you want to insert *or* modify,
+    /// perhaps only using the index for new entries with [`VacantEntry::shift_insert`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use indexmap::IndexMap;
+    /// let mut map: IndexMap<char, ()> = ('a'..='z').map(|c| (c, ())).collect();
+    ///
+    /// // The new key '*' goes exactly at the given index.
+    /// assert_eq!(map.get_index_of(&'*'), None);
+    /// assert_eq!(map.insert_before(10, '*', ()), (10, None));
+    /// assert_eq!(map.get_index_of(&'*'), Some(10));
+    ///
+    /// // Moving the key 'a' up will shift others down, so this moves *before* 10 to index 9.
+    /// assert_eq!(map.insert_before(10, 'a', ()), (9, Some(())));
+    /// assert_eq!(map.get_index_of(&'a'), Some(9));
+    /// assert_eq!(map.get_index_of(&'*'), Some(10));
+    ///
+    /// // Moving the key 'z' down will shift others up, so this moves to exactly 10.
+    /// assert_eq!(map.insert_before(10, 'z', ()), (10, Some(())));
+    /// assert_eq!(map.get_index_of(&'z'), Some(10));
+    /// assert_eq!(map.get_index_of(&'*'), Some(11));
+    ///
+    /// // Moving or inserting before the endpoint is also valid.
+    /// assert_eq!(map.len(), 27);
+    /// assert_eq!(map.insert_before(map.len(), '*', ()), (26, Some(())));
+    /// assert_eq!(map.get_index_of(&'*'), Some(26));
+    /// assert_eq!(map.insert_before(map.len(), '+', ()), (27, None));
+    /// assert_eq!(map.get_index_of(&'+'), Some(27));
+    /// assert_eq!(map.len(), 28);
+    /// ```
+    #[track_caller]
+    pub fn insert_before(&mut self, mut index: usize, key: K, value: V) -> (usize, Option<V>) {
+        let len = self.len();
+
+        assert!(
+            index <= len,
+            "index out of bounds: the len is {len} but the index is {index}. Expected index <= len"
+        );
+
+        match self.entry(key) {
+            Entry::Occupied(mut entry) => {
+                if index > entry.index() {
+                    // Some entries will shift down when this one moves up,
+                    // so "insert before index" becomes "move to index - 1",
+                    // keeping the entry at the original index unmoved.
+                    index -= 1;
+                }
+                let old = mem::replace(entry.get_mut(), value);
+                entry.move_index(index);
+                (index, Some(old))
+            }
+            Entry::Vacant(entry) => {
+                entry.shift_insert(index, value);
+                (index, None)
+            }
+        }
+    }
+
+    /// Insert a key-value pair in the map at the given index.
+    ///
+    /// If an equivalent key already exists in the map: the key remains and
+    /// is moved to the given index in the map, its corresponding value is updated
+    /// with `value`, and the older value is returned inside `Some(_)`.
+    /// Note that existing entries **cannot** be moved to `index == map.len()`!
+    /// (See [`insert_before`](Self::insert_before) for different behavior here.)
+    ///
+    /// If no equivalent key existed in the map: the new key-value pair is
+    /// inserted at the given index, and `None` is returned.
+    ///
+    /// ***Panics*** if `index` is out of bounds.
+    /// Valid indices are `0..map.len()` (exclusive) when moving an existing entry, or
+    /// `0..=map.len()` (inclusive) when inserting a new key.
+    ///
+    /// Computes in **O(n)** time (average).
+    ///
+    /// See also [`entry`][Self::entry] if you want to insert *or* modify,
+    /// perhaps only using the index for new entries with [`VacantEntry::shift_insert`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use indexmap::IndexMap;
+    /// let mut map: IndexMap<char, ()> = ('a'..='z').map(|c| (c, ())).collect();
+    ///
+    /// // The new key '*' goes exactly at the given index.
+    /// assert_eq!(map.get_index_of(&'*'), None);
+    /// assert_eq!(map.shift_insert(10, '*', ()), None);
+    /// assert_eq!(map.get_index_of(&'*'), Some(10));
+    ///
+    /// // Moving the key 'a' up to 10 will shift others down, including the '*' that was at 10.
+    /// assert_eq!(map.shift_insert(10, 'a', ()), Some(()));
+    /// assert_eq!(map.get_index_of(&'a'), Some(10));
+    /// assert_eq!(map.get_index_of(&'*'), Some(9));
+    ///
+    /// // Moving the key 'z' down to 9 will shift others up, including the '*' that was at 9.
+    /// assert_eq!(map.shift_insert(9, 'z', ()), Some(()));
+    /// assert_eq!(map.get_index_of(&'z'), Some(9));
+    /// assert_eq!(map.get_index_of(&'*'), Some(10));
+    ///
+    /// // Existing keys can move to len-1 at most, but new keys can insert at the endpoint.
+    /// assert_eq!(map.len(), 27);
+    /// assert_eq!(map.shift_insert(map.len() - 1, '*', ()), Some(()));
+    /// assert_eq!(map.get_index_of(&'*'), Some(26));
+    /// assert_eq!(map.shift_insert(map.len(), '+', ()), None);
+    /// assert_eq!(map.get_index_of(&'+'), Some(27));
+    /// assert_eq!(map.len(), 28);
+    /// ```
+    ///
+    /// ```should_panic
+    /// use indexmap::IndexMap;
+    /// let mut map: IndexMap<char, ()> = ('a'..='z').map(|c| (c, ())).collect();
+    ///
+    /// // This is an invalid index for moving an existing key!
+    /// map.shift_insert(map.len(), 'a', ());
+    /// ```
+    #[track_caller]
+    pub fn shift_insert(&mut self, index: usize, key: K, value: V) -> Option<V> {
+        let len = self.len();
+        match self.entry(key) {
+            Entry::Occupied(mut entry) => {
+                assert!(
+                    index < len,
+                    "index out of bounds: the len is {len} but the index is {index}"
+                );
+
+                let old = mem::replace(entry.get_mut(), value);
+                entry.move_index(index);
+                Some(old)
+            }
+            Entry::Vacant(entry) => {
+                assert!(
+                    index <= len,
+                    "index out of bounds: the len is {len} but the index is {index}. Expected index <= len"
+                );
+
+                entry.shift_insert(index, value);
+                None
+            }
+        }
+    }
+
+    /// Replaces the key at the given index. The new key does not need to be
+    /// equivalent to the one it is replacing, but it must be unique to the rest
+    /// of the map.
+    ///
+    /// Returns `Ok(old_key)` if successful, or `Err((other_index, key))` if an
+    /// equivalent key already exists at a different index. The map will be
+    /// unchanged in the error case.
+    ///
+    /// Direct indexing can be used to change the corresponding value: simply
+    /// `map[index] = value`, or `mem::replace(&mut map[index], value)` to
+    /// retrieve the old value as well.
+    ///
+    /// ***Panics*** if `index` is out of bounds.
+    ///
+    /// Computes in **O(1)** time (average).
+    #[track_caller]
+    pub fn replace_index(&mut self, index: usize, key: K) -> Result<K, (usize, K)> {
+        // If there's a direct match, we don't even need to hash it.
+        let entry = &mut self.as_entries_mut()[index];
+        if key == entry.key {
+            return Ok(mem::replace(&mut entry.key, key));
+        }
+
+        let hash = self.hash(&key);
+        if let Some(i) = self.core.get_index_of(hash, &key) {
+            debug_assert_ne!(i, index);
+            return Err((i, key));
+        }
+        Ok(self.core.replace_index_unique(index, hash, key))
+    }
+
+    /// Get the given key's corresponding entry in the map for insertion and/or
     /// in-place manipulation.
     ///
     /// Computes in **O(1)** time (amortized average).
@@ -392,23 +739,101 @@ where
         self.core.entry(hash, key)
     }
 
+    /// Creates a splicing iterator that replaces the specified range in the map
+    /// with the given `replace_with` key-value iterator and yields the removed
+    /// items. `replace_with` does not need to be the same length as `range`.
+    ///
+    /// The `range` is removed even if the iterator is not consumed until the
+    /// end. It is unspecified how many elements are removed from the map if the
+    /// `Splice` value is leaked.
+    ///
+    /// The input iterator `replace_with` is only consumed when the `Splice`
+    /// value is dropped. If a key from the iterator matches an existing entry
+    /// in the map (outside of `range`), then the value will be updated in that
+    /// position. Otherwise, the new key-value pair will be inserted in the
+    /// replaced `range`.
+    ///
+    /// ***Panics*** if the starting point is greater than the end point or if
+    /// the end point is greater than the length of the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use indexmap::IndexMap;
+    ///
+    /// let mut map = IndexMap::from([(0, '_'), (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd')]);
+    /// let new = [(5, 'E'), (4, 'D'), (3, 'C'), (2, 'B'), (1, 'A')];
+    /// let removed: Vec<_> = map.splice(2..4, new).collect();
+    ///
+    /// // 1 and 4 got new values, while 5, 3, and 2 were newly inserted.
+    /// assert!(map.into_iter().eq([(0, '_'), (1, 'A'), (5, 'E'), (3, 'C'), (2, 'B'), (4, 'D')]));
+    /// assert_eq!(removed, &[(2, 'b'), (3, 'c')]);
+    /// ```
+    #[track_caller]
+    pub fn splice<R, I>(&mut self, range: R, replace_with: I) -> Splice<'_, I::IntoIter, K, V, S>
+    where
+        R: RangeBounds<usize>,
+        I: IntoIterator<Item = (K, V)>,
+    {
+        Splice::new(self, range, replace_with.into_iter())
+    }
+
+    /// Moves all key-value pairs from `other` into `self`, leaving `other` empty.
+    ///
+    /// This is equivalent to calling [`insert`][Self::insert] for each
+    /// key-value pair from `other` in order, which means that for keys that
+    /// already exist in `self`, their value is updated in the current position.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use indexmap::IndexMap;
+    ///
+    /// // Note: Key (3) is present in both maps.
+    /// let mut a = IndexMap::from([(3, "c"), (2, "b"), (1, "a")]);
+    /// let mut b = IndexMap::from([(3, "d"), (4, "e"), (5, "f")]);
+    /// let old_capacity = b.capacity();
+    ///
+    /// a.append(&mut b);
+    ///
+    /// assert_eq!(a.len(), 5);
+    /// assert_eq!(b.len(), 0);
+    /// assert_eq!(b.capacity(), old_capacity);
+    ///
+    /// assert!(a.keys().eq(&[3, 2, 1, 4, 5]));
+    /// assert_eq!(a[&3], "d"); // "c" was overwritten.
+    /// ```
+    pub fn append<S2>(&mut self, other: &mut IndexMap<K, V, S2>) {
+        self.extend(other.drain(..));
+    }
+}
+
+impl<K, V, S> IndexMap<K, V, S>
+where
+    S: BuildHasher,
+{
+    pub(crate) fn hash<Q: ?Sized + Hash>(&self, key: &Q) -> HashValue {
+        let h = self.hash_builder.hash_one(key);
+        HashValue(h as usize)
+    }
+
     /// Return `true` if an equivalent to `key` exists in the map.
     ///
     /// Computes in **O(1)** time (average).
-    pub fn contains_key<Q: ?Sized>(&self, key: &Q) -> bool
+    pub fn contains_key<Q>(&self, key: &Q) -> bool
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         self.get_index_of(key).is_some()
     }
 
-    /// Return a reference to the value stored for `key`, if it is present,
+    /// Return a reference to the stored value for `key`, if it is present,
     /// else `None`.
     ///
     /// Computes in **O(1)** time (average).
-    pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&V>
+    pub fn get<Q>(&self, key: &Q) -> Option<&V>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         if let Some(i) = self.get_index_of(key) {
             let entry = &self.as_entries()[i];
@@ -418,13 +843,13 @@ where
         }
     }
 
-    /// Return references to the key-value pair stored for `key`,
+    /// Return references to the stored key-value pair for the lookup `key`,
     /// if it is present, else `None`.
     ///
     /// Computes in **O(1)** time (average).
-    pub fn get_key_value<Q: ?Sized>(&self, key: &Q) -> Option<(&K, &V)>
+    pub fn get_key_value<Q>(&self, key: &Q) -> Option<(&K, &V)>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         if let Some(i) = self.get_index_of(key) {
             let entry = &self.as_entries()[i];
@@ -434,10 +859,13 @@ where
         }
     }
 
-    /// Return item index, key and value
-    pub fn get_full<Q: ?Sized>(&self, key: &Q) -> Option<(usize, &K, &V)>
+    /// Return the index with references to the stored key-value pair for the
+    /// lookup `key`, if it is present, else `None`.
+    ///
+    /// Computes in **O(1)** time (average).
+    pub fn get_full<Q>(&self, key: &Q) -> Option<(usize, &K, &V)>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         if let Some(i) = self.get_index_of(key) {
             let entry = &self.as_entries()[i];
@@ -447,24 +875,30 @@ where
         }
     }
 
-    /// Return item index, if it exists in the map
+    /// Return the item index for `key`, if it is present, else `None`.
     ///
     /// Computes in **O(1)** time (average).
-    pub fn get_index_of<Q: ?Sized>(&self, key: &Q) -> Option<usize>
+    pub fn get_index_of<Q>(&self, key: &Q) -> Option<usize>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
-        if self.is_empty() {
-            None
-        } else {
-            let hash = self.hash(key);
-            self.core.get_index_of(hash, key)
+        match self.as_entries() {
+            [] => None,
+            [x] => key.equivalent(&x.key).then_some(0),
+            _ => {
+                let hash = self.hash(key);
+                self.core.get_index_of(hash, key)
+            }
         }
     }
 
-    pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
+    /// Return a mutable reference to the stored value for `key`,
+    /// if it is present, else `None`.
+    ///
+    /// Computes in **O(1)** time (average).
+    pub fn get_mut<Q>(&mut self, key: &Q) -> Option<&mut V>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         if let Some(i) = self.get_index_of(key) {
             let entry = &mut self.as_entries_mut()[i];
@@ -474,9 +908,29 @@ where
         }
     }
 
-    pub fn get_full_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<(usize, &K, &mut V)>
+    /// Return a reference and mutable references to the stored key-value pair
+    /// for the lookup `key`, if it is present, else `None`.
+    ///
+    /// Computes in **O(1)** time (average).
+    pub fn get_key_value_mut<Q>(&mut self, key: &Q) -> Option<(&K, &mut V)>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
+    {
+        if let Some(i) = self.get_index_of(key) {
+            let entry = &mut self.as_entries_mut()[i];
+            Some((&entry.key, &mut entry.value))
+        } else {
+            None
+        }
+    }
+
+    /// Return the index with a reference and mutable reference to the stored
+    /// key-value pair for the lookup `key`, if it is present, else `None`.
+    ///
+    /// Computes in **O(1)** time (average).
+    pub fn get_full_mut<Q>(&mut self, key: &Q) -> Option<(usize, &K, &mut V)>
+    where
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         if let Some(i) = self.get_index_of(key) {
             let entry = &mut self.as_entries_mut()[i];
@@ -486,46 +940,59 @@ where
         }
     }
 
-    pub(crate) fn get_full_mut2_impl<Q: ?Sized>(
-        &mut self,
-        key: &Q,
-    ) -> Option<(usize, &mut K, &mut V)>
+    /// Return the values for `N` keys. If any key is duplicated, this function will panic.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let mut map = indexmap::IndexMap::from([(1, 'a'), (3, 'b'), (2, 'c')]);
+    /// assert_eq!(map.get_disjoint_mut([&2, &1]), [Some(&mut 'c'), Some(&mut 'a')]);
+    /// ```
+    pub fn get_disjoint_mut<Q, const N: usize>(&mut self, keys: [&Q; N]) -> [Option<&mut V>; N]
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
-        if let Some(i) = self.get_index_of(key) {
-            let entry = &mut self.as_entries_mut()[i];
-            Some((i, &mut entry.key, &mut entry.value))
-        } else {
-            None
+        let indices = keys.map(|key| self.get_index_of(key));
+        match self.as_mut_slice().get_disjoint_opt_mut(indices) {
+            Err(GetDisjointMutError::IndexOutOfBounds) => {
+                unreachable!(
+                    "Internal error: indices should never be OOB as we got them from get_index_of"
+                );
+            }
+            Err(GetDisjointMutError::OverlappingIndices) => {
+                panic!("duplicate keys found");
+            }
+            Ok(key_values) => key_values.map(|kv_opt| kv_opt.map(|kv| kv.1)),
         }
     }
 
     /// Remove the key-value pair equivalent to `key` and return
     /// its value.
     ///
-    /// **NOTE:** This is equivalent to `.swap_remove(key)`, if you need to
-    /// preserve the order of the keys in the map, use `.shift_remove(key)`
-    /// instead.
-    ///
-    /// Computes in **O(1)** time (average).
-    pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
+    /// **NOTE:** This is equivalent to [`.swap_remove(key)`][Self::swap_remove], replacing this
+    /// entry's position with the last element, and it is deprecated in favor of calling that
+    /// explicitly. If you need to preserve the relative order of the keys in the map, use
+    /// [`.shift_remove(key)`][Self::shift_remove] instead.
+    #[deprecated(note = "`remove` disrupts the map order -- \
+        use `swap_remove` or `shift_remove` for explicit behavior.")]
+    pub fn remove<Q>(&mut self, key: &Q) -> Option<V>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         self.swap_remove(key)
     }
 
     /// Remove and return the key-value pair equivalent to `key`.
     ///
-    /// **NOTE:** This is equivalent to `.swap_remove_entry(key)`, if you need to
-    /// preserve the order of the keys in the map, use `.shift_remove_entry(key)`
-    /// instead.
-    ///
-    /// Computes in **O(1)** time (average).
-    pub fn remove_entry<Q: ?Sized>(&mut self, key: &Q) -> Option<(K, V)>
+    /// **NOTE:** This is equivalent to [`.swap_remove_entry(key)`][Self::swap_remove_entry],
+    /// replacing this entry's position with the last element, and it is deprecated in favor of
+    /// calling that explicitly. If you need to preserve the relative order of the keys in the map,
+    /// use [`.shift_remove_entry(key)`][Self::shift_remove_entry] instead.
+    #[deprecated(note = "`remove_entry` disrupts the map order -- \
+        use `swap_remove_entry` or `shift_remove_entry` for explicit behavior.")]
+    pub fn remove_entry<Q>(&mut self, key: &Q) -> Option<(K, V)>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         self.swap_remove_entry(key)
     }
@@ -533,32 +1000,32 @@ where
     /// Remove the key-value pair equivalent to `key` and return
     /// its value.
     ///
-    /// Like `Vec::swap_remove`, the pair is removed by swapping it with the
+    /// Like [`Vec::swap_remove`], the pair is removed by swapping it with the
     /// last element of the map and popping it off. **This perturbs
     /// the position of what used to be the last element!**
     ///
     /// Return `None` if `key` is not in map.
     ///
     /// Computes in **O(1)** time (average).
-    pub fn swap_remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
+    pub fn swap_remove<Q>(&mut self, key: &Q) -> Option<V>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         self.swap_remove_full(key).map(third)
     }
 
     /// Remove and return the key-value pair equivalent to `key`.
     ///
-    /// Like `Vec::swap_remove`, the pair is removed by swapping it with the
+    /// Like [`Vec::swap_remove`], the pair is removed by swapping it with the
     /// last element of the map and popping it off. **This perturbs
     /// the position of what used to be the last element!**
     ///
     /// Return `None` if `key` is not in map.
     ///
     /// Computes in **O(1)** time (average).
-    pub fn swap_remove_entry<Q: ?Sized>(&mut self, key: &Q) -> Option<(K, V)>
+    pub fn swap_remove_entry<Q>(&mut self, key: &Q) -> Option<(K, V)>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         match self.swap_remove_full(key) {
             Some((_, key, value)) => Some((key, value)),
@@ -569,53 +1036,59 @@ where
     /// Remove the key-value pair equivalent to `key` and return it and
     /// the index it had.
     ///
-    /// Like `Vec::swap_remove`, the pair is removed by swapping it with the
+    /// Like [`Vec::swap_remove`], the pair is removed by swapping it with the
     /// last element of the map and popping it off. **This perturbs
     /// the position of what used to be the last element!**
     ///
     /// Return `None` if `key` is not in map.
     ///
     /// Computes in **O(1)** time (average).
-    pub fn swap_remove_full<Q: ?Sized>(&mut self, key: &Q) -> Option<(usize, K, V)>
+    pub fn swap_remove_full<Q>(&mut self, key: &Q) -> Option<(usize, K, V)>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
-        if self.is_empty() {
-            return None;
+        match self.as_entries() {
+            [x] if key.equivalent(&x.key) => {
+                let (k, v) = self.core.pop()?;
+                Some((0, k, v))
+            }
+            [_] | [] => None,
+            _ => {
+                let hash = self.hash(key);
+                self.core.swap_remove_full(hash, key)
+            }
         }
-        let hash = self.hash(key);
-        self.core.swap_remove_full(hash, key)
     }
 
     /// Remove the key-value pair equivalent to `key` and return
     /// its value.
     ///
-    /// Like `Vec::remove`, the pair is removed by shifting all of the
+    /// Like [`Vec::remove`], the pair is removed by shifting all of the
     /// elements that follow it, preserving their relative order.
     /// **This perturbs the index of all of those elements!**
     ///
     /// Return `None` if `key` is not in map.
     ///
     /// Computes in **O(n)** time (average).
-    pub fn shift_remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
+    pub fn shift_remove<Q>(&mut self, key: &Q) -> Option<V>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         self.shift_remove_full(key).map(third)
     }
 
     /// Remove and return the key-value pair equivalent to `key`.
     ///
-    /// Like `Vec::remove`, the pair is removed by shifting all of the
+    /// Like [`Vec::remove`], the pair is removed by shifting all of the
     /// elements that follow it, preserving their relative order.
     /// **This perturbs the index of all of those elements!**
     ///
     /// Return `None` if `key` is not in map.
     ///
     /// Computes in **O(n)** time (average).
-    pub fn shift_remove_entry<Q: ?Sized>(&mut self, key: &Q) -> Option<(K, V)>
+    pub fn shift_remove_entry<Q>(&mut self, key: &Q) -> Option<(K, V)>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
         match self.shift_remove_full(key) {
             Some((_, key, value)) => Some((key, value)),
@@ -626,31 +1099,70 @@ where
     /// Remove the key-value pair equivalent to `key` and return it and
     /// the index it had.
     ///
-    /// Like `Vec::remove`, the pair is removed by shifting all of the
+    /// Like [`Vec::remove`], the pair is removed by shifting all of the
     /// elements that follow it, preserving their relative order.
     /// **This perturbs the index of all of those elements!**
     ///
     /// Return `None` if `key` is not in map.
     ///
     /// Computes in **O(n)** time (average).
-    pub fn shift_remove_full<Q: ?Sized>(&mut self, key: &Q) -> Option<(usize, K, V)>
+    pub fn shift_remove_full<Q>(&mut self, key: &Q) -> Option<(usize, K, V)>
     where
-        Q: Hash + Equivalent<K>,
+        Q: ?Sized + Hash + Equivalent<K>,
     {
-        if self.is_empty() {
-            return None;
+        match self.as_entries() {
+            [x] if key.equivalent(&x.key) => {
+                let (k, v) = self.core.pop()?;
+                Some((0, k, v))
+            }
+            [_] | [] => None,
+            _ => {
+                let hash = self.hash(key);
+                self.core.shift_remove_full(hash, key)
+            }
         }
-        let hash = self.hash(key);
-        self.core.shift_remove_full(hash, key)
     }
+}
 
+impl<K, V, S> IndexMap<K, V, S> {
     /// Remove the last key-value pair
     ///
     /// This preserves the order of the remaining elements.
     ///
     /// Computes in **O(1)** time (average).
+    #[doc(alias = "pop_last")] // like `BTreeMap`
     pub fn pop(&mut self) -> Option<(K, V)> {
         self.core.pop()
+    }
+
+    /// Removes and returns the last key-value pair from a map if the predicate
+    /// returns `true`, or [`None`] if the predicate returns false or the map
+    /// is empty (the predicate will not be called in that case).
+    ///
+    /// This preserves the order of the remaining elements.
+    ///
+    /// Computes in **O(1)** time (average).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use indexmap::IndexMap;
+    ///
+    /// let init = [(1, 'a'), (2, 'b'), (3, 'c'), (4, 'd')];
+    /// let mut map = IndexMap::from(init);
+    /// let pred = |key: &i32, _value: &mut char| *key % 2 == 0;
+    ///
+    /// assert_eq!(map.pop_if(pred), Some((4, 'd')));
+    /// assert_eq!(map.as_slice(), &init[..3]);
+    /// assert_eq!(map.pop_if(pred), None);
+    /// ```
+    pub fn pop_if(&mut self, predicate: impl FnOnce(&K, &mut V) -> bool) -> Option<(K, V)> {
+        let (last_key, last_value) = self.last_mut()?;
+        if predicate(last_key, last_value) {
+            self.core.pop()
+        } else {
+            None
+        }
     }
 
     /// Scan through each key-value pair in the map and keep those where the
@@ -667,14 +1179,11 @@ where
         self.core.retain_in_order(move |k, v| keep(k, v));
     }
 
-    pub(crate) fn retain_mut<F>(&mut self, keep: F)
-    where
-        F: FnMut(&mut K, &mut V) -> bool,
-    {
-        self.core.retain_in_order(keep);
-    }
-
-    /// Sort the map’s key-value pairs by the default ordering of the keys.
+    /// Sort the map's key-value pairs by the default ordering of the keys.
+    ///
+    /// This is a stable sort -- but equivalent keys should not normally coexist in
+    /// a map at all, so [`sort_unstable_keys`][Self::sort_unstable_keys] is preferred
+    /// because it is generally faster and doesn't allocate auxiliary memory.
     ///
     /// See [`sort_by`](Self::sort_by) for details.
     pub fn sort_keys(&mut self)
@@ -686,7 +1195,7 @@ where
         });
     }
 
-    /// Sort the map’s key-value pairs in place using the comparison
+    /// Sort the map's key-value pairs in place using the comparison
     /// function `cmp`.
     ///
     /// The comparison function receives two key and value pairs to compare (you
@@ -713,9 +1222,21 @@ where
     {
         let mut entries = self.into_entries();
         entries.sort_by(move |a, b| cmp(&a.key, &a.value, &b.key, &b.value));
-        IntoIter {
-            iter: entries.into_iter(),
-        }
+        IntoIter::new(entries)
+    }
+
+    /// Sort the map's key-value pairs in place using a sort-key extraction function.
+    ///
+    /// Computes in **O(n log n + c)** time and **O(n)** space where *n* is
+    /// the length of the map and *c* the capacity. The sort is stable.
+    pub fn sort_by_key<T, F>(&mut self, mut sort_key: F)
+    where
+        T: Ord,
+        F: FnMut(&K, &V) -> T,
+    {
+        self.with_entries(move |entries| {
+            entries.sort_by_key(move |a| sort_key(&a.key, &a.value));
+        });
     }
 
     /// Sort the map's key-value pairs by the default ordering of the keys, but
@@ -759,23 +1280,157 @@ where
     {
         let mut entries = self.into_entries();
         entries.sort_unstable_by(move |a, b| cmp(&a.key, &a.value, &b.key, &b.value));
-        IntoIter {
-            iter: entries.into_iter(),
-        }
+        IntoIter::new(entries)
     }
 
-    /// Reverses the order of the map’s key-value pairs in place.
+    /// Sort the map's key-value pairs in place using a sort-key extraction function.
+    ///
+    /// Computes in **O(n log n + c)** time where *n* is
+    /// the length of the map and *c* is the capacity. The sort is unstable.
+    pub fn sort_unstable_by_key<T, F>(&mut self, mut sort_key: F)
+    where
+        T: Ord,
+        F: FnMut(&K, &V) -> T,
+    {
+        self.with_entries(move |entries| {
+            entries.sort_unstable_by_key(move |a| sort_key(&a.key, &a.value));
+        });
+    }
+
+    /// Sort the map's key-value pairs in place using a sort-key extraction function.
+    ///
+    /// During sorting, the function is called at most once per entry, by using temporary storage
+    /// to remember the results of its evaluation. The order of calls to the function is
+    /// unspecified and may change between versions of `indexmap` or the standard library.
+    ///
+    /// Computes in **O(m n + n log n + c)** time () and **O(n)** space, where the function is
+    /// **O(m)**, *n* is the length of the map, and *c* the capacity. The sort is stable.
+    pub fn sort_by_cached_key<T, F>(&mut self, mut sort_key: F)
+    where
+        T: Ord,
+        F: FnMut(&K, &V) -> T,
+    {
+        self.with_entries(move |entries| {
+            entries.sort_by_cached_key(move |a| sort_key(&a.key, &a.value));
+        });
+    }
+
+    /// Search over a sorted map for a key.
+    ///
+    /// Returns the position where that key is present, or the position where it can be inserted to
+    /// maintain the sort. See [`slice::binary_search`] for more details.
+    ///
+    /// Computes in **O(log(n))** time, which is notably less scalable than looking the key up
+    /// using [`get_index_of`][IndexMap::get_index_of], but this can also position missing keys.
+    pub fn binary_search_keys(&self, x: &K) -> Result<usize, usize>
+    where
+        K: Ord,
+    {
+        self.as_slice().binary_search_keys(x)
+    }
+
+    /// Search over a sorted map with a comparator function.
+    ///
+    /// Returns the position where that value is present, or the position where it can be inserted
+    /// to maintain the sort. See [`slice::binary_search_by`] for more details.
+    ///
+    /// Computes in **O(log(n))** time.
+    #[inline]
+    pub fn binary_search_by<'a, F>(&'a self, f: F) -> Result<usize, usize>
+    where
+        F: FnMut(&'a K, &'a V) -> Ordering,
+    {
+        self.as_slice().binary_search_by(f)
+    }
+
+    /// Search over a sorted map with an extraction function.
+    ///
+    /// Returns the position where that value is present, or the position where it can be inserted
+    /// to maintain the sort. See [`slice::binary_search_by_key`] for more details.
+    ///
+    /// Computes in **O(log(n))** time.
+    #[inline]
+    pub fn binary_search_by_key<'a, B, F>(&'a self, b: &B, f: F) -> Result<usize, usize>
+    where
+        F: FnMut(&'a K, &'a V) -> B,
+        B: Ord,
+    {
+        self.as_slice().binary_search_by_key(b, f)
+    }
+
+    /// Checks if the keys of this map are sorted.
+    #[inline]
+    pub fn is_sorted(&self) -> bool
+    where
+        K: PartialOrd,
+    {
+        self.as_slice().is_sorted()
+    }
+
+    /// Checks if this map is sorted using the given comparator function.
+    #[inline]
+    pub fn is_sorted_by<'a, F>(&'a self, cmp: F) -> bool
+    where
+        F: FnMut(&'a K, &'a V, &'a K, &'a V) -> bool,
+    {
+        self.as_slice().is_sorted_by(cmp)
+    }
+
+    /// Checks if this map is sorted using the given sort-key function.
+    #[inline]
+    pub fn is_sorted_by_key<'a, F, T>(&'a self, sort_key: F) -> bool
+    where
+        F: FnMut(&'a K, &'a V) -> T,
+        T: PartialOrd,
+    {
+        self.as_slice().is_sorted_by_key(sort_key)
+    }
+
+    /// Returns the index of the partition point of a sorted map according to the given predicate
+    /// (the index of the first element of the second partition).
+    ///
+    /// See [`slice::partition_point`] for more details.
+    ///
+    /// Computes in **O(log(n))** time.
+    #[must_use]
+    pub fn partition_point<P>(&self, pred: P) -> usize
+    where
+        P: FnMut(&K, &V) -> bool,
+    {
+        self.as_slice().partition_point(pred)
+    }
+
+    /// Reverses the order of the map's key-value pairs in place.
     ///
     /// Computes in **O(n)** time and **O(1)** space.
     pub fn reverse(&mut self) {
         self.core.reverse()
     }
-}
 
-impl<K, V, S> IndexMap<K, V, S> {
+    /// Returns a slice of all the key-value pairs in the map.
+    ///
+    /// Computes in **O(1)** time.
+    pub fn as_slice(&self) -> &Slice<K, V> {
+        Slice::from_slice(self.as_entries())
+    }
+
+    /// Returns a mutable slice of all the key-value pairs in the map.
+    ///
+    /// Computes in **O(1)** time.
+    pub fn as_mut_slice(&mut self) -> &mut Slice<K, V> {
+        Slice::from_mut_slice(self.as_entries_mut())
+    }
+
+    /// Converts into a boxed slice of all the key-value pairs in the map.
+    ///
+    /// Note that this will drop the inner hash table and any excess capacity.
+    pub fn into_boxed_slice(self) -> Box<Slice<K, V>> {
+        Slice::from_boxed(self.into_entries().into_boxed_slice())
+    }
+
     /// Get a key-value pair by index
     ///
-    /// Valid indices are *0 <= index < self.len()*
+    /// Valid indices are `0 <= index < self.len()`.
     ///
     /// Computes in **O(1)** time.
     pub fn get_index(&self, index: usize) -> Option<(&K, &V)> {
@@ -784,16 +1439,68 @@ impl<K, V, S> IndexMap<K, V, S> {
 
     /// Get a key-value pair by index
     ///
-    /// Valid indices are *0 <= index < self.len()*
+    /// Valid indices are `0 <= index < self.len()`.
     ///
     /// Computes in **O(1)** time.
-    pub fn get_index_mut(&mut self, index: usize) -> Option<(&mut K, &mut V)> {
-        self.as_entries_mut().get_mut(index).map(Bucket::muts)
+    pub fn get_index_mut(&mut self, index: usize) -> Option<(&K, &mut V)> {
+        self.as_entries_mut().get_mut(index).map(Bucket::ref_mut)
+    }
+
+    /// Get an entry in the map by index for in-place manipulation.
+    ///
+    /// Valid indices are `0 <= index < self.len()`.
+    ///
+    /// Computes in **O(1)** time.
+    pub fn get_index_entry(&mut self, index: usize) -> Option<IndexedEntry<'_, K, V>> {
+        if index >= self.len() {
+            return None;
+        }
+        Some(IndexedEntry::new(&mut self.core, index))
+    }
+
+    /// Get an array of `N` key-value pairs by `N` indices
+    ///
+    /// Valid indices are *0 <= index < self.len()* and each index needs to be unique.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let mut map = indexmap::IndexMap::from([(1, 'a'), (3, 'b'), (2, 'c')]);
+    /// assert_eq!(map.get_disjoint_indices_mut([2, 0]), Ok([(&2, &mut 'c'), (&1, &mut 'a')]));
+    /// ```
+    pub fn get_disjoint_indices_mut<const N: usize>(
+        &mut self,
+        indices: [usize; N],
+    ) -> Result<[(&K, &mut V); N], GetDisjointMutError> {
+        self.as_mut_slice().get_disjoint_mut(indices)
+    }
+
+    /// Returns a slice of key-value pairs in the given range of indices.
+    ///
+    /// Valid indices are `0 <= index < self.len()`.
+    ///
+    /// Computes in **O(1)** time.
+    pub fn get_range<R: RangeBounds<usize>>(&self, range: R) -> Option<&Slice<K, V>> {
+        let entries = self.as_entries();
+        let range = try_simplify_range(range, entries.len())?;
+        entries.get(range).map(Slice::from_slice)
+    }
+
+    /// Returns a mutable slice of key-value pairs in the given range of indices.
+    ///
+    /// Valid indices are `0 <= index < self.len()`.
+    ///
+    /// Computes in **O(1)** time.
+    pub fn get_range_mut<R: RangeBounds<usize>>(&mut self, range: R) -> Option<&mut Slice<K, V>> {
+        let entries = self.as_entries_mut();
+        let range = try_simplify_range(range, entries.len())?;
+        entries.get_mut(range).map(Slice::from_mut_slice)
     }
 
     /// Get the first key-value pair
     ///
     /// Computes in **O(1)** time.
+    #[doc(alias = "first_key_value")] // like `BTreeMap`
     pub fn first(&self) -> Option<(&K, &V)> {
         self.as_entries().first().map(Bucket::refs)
     }
@@ -805,9 +1512,17 @@ impl<K, V, S> IndexMap<K, V, S> {
         self.as_entries_mut().first_mut().map(Bucket::ref_mut)
     }
 
+    /// Get the first entry in the map for in-place manipulation.
+    ///
+    /// Computes in **O(1)** time.
+    pub fn first_entry(&mut self) -> Option<IndexedEntry<'_, K, V>> {
+        self.get_index_entry(0)
+    }
+
     /// Get the last key-value pair
     ///
     /// Computes in **O(1)** time.
+    #[doc(alias = "last_key_value")] // like `BTreeMap`
     pub fn last(&self) -> Option<(&K, &V)> {
         self.as_entries().last().map(Bucket::refs)
     }
@@ -819,11 +1534,18 @@ impl<K, V, S> IndexMap<K, V, S> {
         self.as_entries_mut().last_mut().map(Bucket::ref_mut)
     }
 
+    /// Get the last entry in the map for in-place manipulation.
+    ///
+    /// Computes in **O(1)** time.
+    pub fn last_entry(&mut self) -> Option<IndexedEntry<'_, K, V>> {
+        self.get_index_entry(self.len().checked_sub(1)?)
+    }
+
     /// Remove the key-value pair by index
     ///
-    /// Valid indices are *0 <= index < self.len()*
+    /// Valid indices are `0 <= index < self.len()`.
     ///
-    /// Like `Vec::swap_remove`, the pair is removed by swapping it with the
+    /// Like [`Vec::swap_remove`], the pair is removed by swapping it with the
     /// last element of the map and popping it off. **This perturbs
     /// the position of what used to be the last element!**
     ///
@@ -834,9 +1556,9 @@ impl<K, V, S> IndexMap<K, V, S> {
 
     /// Remove the key-value pair by index
     ///
-    /// Valid indices are *0 <= index < self.len()*
+    /// Valid indices are `0 <= index < self.len()`.
     ///
-    /// Like `Vec::remove`, the pair is removed by shifting all of the
+    /// Like [`Vec::remove`], the pair is removed by shifting all of the
     /// elements that follow it, preserving their relative order.
     /// **This perturbs the index of all of those elements!**
     ///
@@ -854,6 +1576,7 @@ impl<K, V, S> IndexMap<K, V, S> {
     /// ***Panics*** if `from` or `to` are out of bounds.
     ///
     /// Computes in **O(n)** time (average).
+    #[track_caller]
     pub fn move_index(&mut self, from: usize, to: usize) {
         self.core.move_index(from, to)
     }
@@ -861,386 +1584,15 @@ impl<K, V, S> IndexMap<K, V, S> {
     /// Swaps the position of two key-value pairs in the map.
     ///
     /// ***Panics*** if `a` or `b` are out of bounds.
+    ///
+    /// Computes in **O(1)** time (average).
+    #[track_caller]
     pub fn swap_indices(&mut self, a: usize, b: usize) {
         self.core.swap_indices(a, b)
     }
 }
 
-/// An iterator over the keys of a `IndexMap`.
-///
-/// This `struct` is created by the [`keys`] method on [`IndexMap`]. See its
-/// documentation for more.
-///
-/// [`keys`]: struct.IndexMap.html#method.keys
-/// [`IndexMap`]: struct.IndexMap.html
-pub struct Keys<'a, K, V> {
-    iter: SliceIter<'a, Bucket<K, V>>,
-}
-
-impl<'a, K, V> Iterator for Keys<'a, K, V> {
-    type Item = &'a K;
-
-    iterator_methods!(Bucket::key_ref);
-}
-
-impl<K, V> DoubleEndedIterator for Keys<'_, K, V> {
-    double_ended_iterator_methods!(Bucket::key_ref);
-}
-
-impl<K, V> ExactSizeIterator for Keys<'_, K, V> {
-    fn len(&self) -> usize {
-        self.iter.len()
-    }
-}
-
-impl<K, V> FusedIterator for Keys<'_, K, V> {}
-
-// FIXME(#26925) Remove in favor of `#[derive(Clone)]`
-impl<K, V> Clone for Keys<'_, K, V> {
-    fn clone(&self) -> Self {
-        Keys {
-            iter: self.iter.clone(),
-        }
-    }
-}
-
-impl<K: fmt::Debug, V> fmt::Debug for Keys<'_, K, V> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_list().entries(self.clone()).finish()
-    }
-}
-
-/// An owning iterator over the keys of a `IndexMap`.
-///
-/// This `struct` is created by the [`into_keys`] method on [`IndexMap`].
-/// See its documentation for more.
-///
-/// [`IndexMap`]: struct.IndexMap.html
-/// [`into_keys`]: struct.IndexMap.html#method.into_keys
-pub struct IntoKeys<K, V> {
-    iter: vec::IntoIter<Bucket<K, V>>,
-}
-
-impl<K, V> Iterator for IntoKeys<K, V> {
-    type Item = K;
-
-    iterator_methods!(Bucket::key);
-}
-
-impl<K, V> DoubleEndedIterator for IntoKeys<K, V> {
-    double_ended_iterator_methods!(Bucket::key);
-}
-
-impl<K, V> ExactSizeIterator for IntoKeys<K, V> {
-    fn len(&self) -> usize {
-        self.iter.len()
-    }
-}
-
-impl<K, V> FusedIterator for IntoKeys<K, V> {}
-
-impl<K: fmt::Debug, V> fmt::Debug for IntoKeys<K, V> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let iter = self.iter.as_slice().iter().map(Bucket::key_ref);
-        f.debug_list().entries(iter).finish()
-    }
-}
-
-/// An iterator over the values of a `IndexMap`.
-///
-/// This `struct` is created by the [`values`] method on [`IndexMap`]. See its
-/// documentation for more.
-///
-/// [`values`]: struct.IndexMap.html#method.values
-/// [`IndexMap`]: struct.IndexMap.html
-pub struct Values<'a, K, V> {
-    iter: SliceIter<'a, Bucket<K, V>>,
-}
-
-impl<'a, K, V> Iterator for Values<'a, K, V> {
-    type Item = &'a V;
-
-    iterator_methods!(Bucket::value_ref);
-}
-
-impl<K, V> DoubleEndedIterator for Values<'_, K, V> {
-    double_ended_iterator_methods!(Bucket::value_ref);
-}
-
-impl<K, V> ExactSizeIterator for Values<'_, K, V> {
-    fn len(&self) -> usize {
-        self.iter.len()
-    }
-}
-
-impl<K, V> FusedIterator for Values<'_, K, V> {}
-
-// FIXME(#26925) Remove in favor of `#[derive(Clone)]`
-impl<K, V> Clone for Values<'_, K, V> {
-    fn clone(&self) -> Self {
-        Values {
-            iter: self.iter.clone(),
-        }
-    }
-}
-
-impl<K, V: fmt::Debug> fmt::Debug for Values<'_, K, V> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_list().entries(self.clone()).finish()
-    }
-}
-
-/// A mutable iterator over the values of a `IndexMap`.
-///
-/// This `struct` is created by the [`values_mut`] method on [`IndexMap`]. See its
-/// documentation for more.
-///
-/// [`values_mut`]: struct.IndexMap.html#method.values_mut
-/// [`IndexMap`]: struct.IndexMap.html
-pub struct ValuesMut<'a, K, V> {
-    iter: SliceIterMut<'a, Bucket<K, V>>,
-}
-
-impl<'a, K, V> Iterator for ValuesMut<'a, K, V> {
-    type Item = &'a mut V;
-
-    iterator_methods!(Bucket::value_mut);
-}
-
-impl<K, V> DoubleEndedIterator for ValuesMut<'_, K, V> {
-    double_ended_iterator_methods!(Bucket::value_mut);
-}
-
-impl<K, V> ExactSizeIterator for ValuesMut<'_, K, V> {
-    fn len(&self) -> usize {
-        self.iter.len()
-    }
-}
-
-impl<K, V> FusedIterator for ValuesMut<'_, K, V> {}
-
-impl<K, V: fmt::Debug> fmt::Debug for ValuesMut<'_, K, V> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let iter = self.iter.as_slice().iter().map(Bucket::value_ref);
-        f.debug_list().entries(iter).finish()
-    }
-}
-
-/// An owning iterator over the values of a `IndexMap`.
-///
-/// This `struct` is created by the [`into_values`] method on [`IndexMap`].
-/// See its documentation for more.
-///
-/// [`IndexMap`]: struct.IndexMap.html
-/// [`into_values`]: struct.IndexMap.html#method.into_values
-pub struct IntoValues<K, V> {
-    iter: vec::IntoIter<Bucket<K, V>>,
-}
-
-impl<K, V> Iterator for IntoValues<K, V> {
-    type Item = V;
-
-    iterator_methods!(Bucket::value);
-}
-
-impl<K, V> DoubleEndedIterator for IntoValues<K, V> {
-    double_ended_iterator_methods!(Bucket::value);
-}
-
-impl<K, V> ExactSizeIterator for IntoValues<K, V> {
-    fn len(&self) -> usize {
-        self.iter.len()
-    }
-}
-
-impl<K, V> FusedIterator for IntoValues<K, V> {}
-
-impl<K, V: fmt::Debug> fmt::Debug for IntoValues<K, V> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let iter = self.iter.as_slice().iter().map(Bucket::value_ref);
-        f.debug_list().entries(iter).finish()
-    }
-}
-
-/// An iterator over the entries of a `IndexMap`.
-///
-/// This `struct` is created by the [`iter`] method on [`IndexMap`]. See its
-/// documentation for more.
-///
-/// [`iter`]: struct.IndexMap.html#method.iter
-/// [`IndexMap`]: struct.IndexMap.html
-pub struct Iter<'a, K, V> {
-    iter: SliceIter<'a, Bucket<K, V>>,
-}
-
-impl<'a, K, V> Iterator for Iter<'a, K, V> {
-    type Item = (&'a K, &'a V);
-
-    iterator_methods!(Bucket::refs);
-}
-
-impl<K, V> DoubleEndedIterator for Iter<'_, K, V> {
-    double_ended_iterator_methods!(Bucket::refs);
-}
-
-impl<K, V> ExactSizeIterator for Iter<'_, K, V> {
-    fn len(&self) -> usize {
-        self.iter.len()
-    }
-}
-
-impl<K, V> FusedIterator for Iter<'_, K, V> {}
-
-// FIXME(#26925) Remove in favor of `#[derive(Clone)]`
-impl<K, V> Clone for Iter<'_, K, V> {
-    fn clone(&self) -> Self {
-        Iter {
-            iter: self.iter.clone(),
-        }
-    }
-}
-
-impl<K: fmt::Debug, V: fmt::Debug> fmt::Debug for Iter<'_, K, V> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_list().entries(self.clone()).finish()
-    }
-}
-
-/// A mutable iterator over the entries of a `IndexMap`.
-///
-/// This `struct` is created by the [`iter_mut`] method on [`IndexMap`]. See its
-/// documentation for more.
-///
-/// [`iter_mut`]: struct.IndexMap.html#method.iter_mut
-/// [`IndexMap`]: struct.IndexMap.html
-pub struct IterMut<'a, K, V> {
-    iter: SliceIterMut<'a, Bucket<K, V>>,
-}
-
-impl<'a, K, V> Iterator for IterMut<'a, K, V> {
-    type Item = (&'a K, &'a mut V);
-
-    iterator_methods!(Bucket::ref_mut);
-}
-
-impl<K, V> DoubleEndedIterator for IterMut<'_, K, V> {
-    double_ended_iterator_methods!(Bucket::ref_mut);
-}
-
-impl<K, V> ExactSizeIterator for IterMut<'_, K, V> {
-    fn len(&self) -> usize {
-        self.iter.len()
-    }
-}
-
-impl<K, V> FusedIterator for IterMut<'_, K, V> {}
-
-impl<K: fmt::Debug, V: fmt::Debug> fmt::Debug for IterMut<'_, K, V> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let iter = self.iter.as_slice().iter().map(Bucket::refs);
-        f.debug_list().entries(iter).finish()
-    }
-}
-
-/// An owning iterator over the entries of a `IndexMap`.
-///
-/// This `struct` is created by the [`into_iter`] method on [`IndexMap`]
-/// (provided by the `IntoIterator` trait). See its documentation for more.
-///
-/// [`into_iter`]: struct.IndexMap.html#method.into_iter
-/// [`IndexMap`]: struct.IndexMap.html
-pub struct IntoIter<K, V> {
-    iter: vec::IntoIter<Bucket<K, V>>,
-}
-
-impl<K, V> Iterator for IntoIter<K, V> {
-    type Item = (K, V);
-
-    iterator_methods!(Bucket::key_value);
-}
-
-impl<K, V> DoubleEndedIterator for IntoIter<K, V> {
-    double_ended_iterator_methods!(Bucket::key_value);
-}
-
-impl<K, V> ExactSizeIterator for IntoIter<K, V> {
-    fn len(&self) -> usize {
-        self.iter.len()
-    }
-}
-
-impl<K, V> FusedIterator for IntoIter<K, V> {}
-
-impl<K: fmt::Debug, V: fmt::Debug> fmt::Debug for IntoIter<K, V> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let iter = self.iter.as_slice().iter().map(Bucket::refs);
-        f.debug_list().entries(iter).finish()
-    }
-}
-
-/// A draining iterator over the entries of a `IndexMap`.
-///
-/// This `struct` is created by the [`drain`] method on [`IndexMap`]. See its
-/// documentation for more.
-///
-/// [`drain`]: struct.IndexMap.html#method.drain
-/// [`IndexMap`]: struct.IndexMap.html
-pub struct Drain<'a, K, V> {
-    pub(crate) iter: vec::Drain<'a, Bucket<K, V>>,
-}
-
-impl<K, V> Iterator for Drain<'_, K, V> {
-    type Item = (K, V);
-
-    iterator_methods!(Bucket::key_value);
-}
-
-impl<K, V> DoubleEndedIterator for Drain<'_, K, V> {
-    double_ended_iterator_methods!(Bucket::key_value);
-}
-
-impl<K, V> ExactSizeIterator for Drain<'_, K, V> {
-    fn len(&self) -> usize {
-        self.iter.len()
-    }
-}
-
-impl<K, V> FusedIterator for Drain<'_, K, V> {}
-
-impl<K: fmt::Debug, V: fmt::Debug> fmt::Debug for Drain<'_, K, V> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let iter = self.iter.as_slice().iter().map(Bucket::refs);
-        f.debug_list().entries(iter).finish()
-    }
-}
-
-impl<'a, K, V, S> IntoIterator for &'a IndexMap<K, V, S> {
-    type Item = (&'a K, &'a V);
-    type IntoIter = Iter<'a, K, V>;
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter()
-    }
-}
-
-impl<'a, K, V, S> IntoIterator for &'a mut IndexMap<K, V, S> {
-    type Item = (&'a K, &'a mut V);
-    type IntoIter = IterMut<'a, K, V>;
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter_mut()
-    }
-}
-
-impl<K, V, S> IntoIterator for IndexMap<K, V, S> {
-    type Item = (K, V);
-    type IntoIter = IntoIter<K, V>;
-    fn into_iter(self) -> Self::IntoIter {
-        IntoIter {
-            iter: self.into_entries().into_iter(),
-        }
-    }
-}
-
-/// Access `IndexMap` values corresponding to a key.
+/// Access [`IndexMap`] values corresponding to a key.
 ///
 /// # Examples
 ///
@@ -1265,7 +1617,6 @@ impl<K, V, S> IntoIterator for IndexMap<K, V, S> {
 impl<K, V, Q: ?Sized, S> Index<&Q> for IndexMap<K, V, S>
 where
     Q: Hash + Equivalent<K>,
-    K: Hash + Eq,
     S: BuildHasher,
 {
     type Output = V;
@@ -1274,11 +1625,11 @@ where
     ///
     /// ***Panics*** if `key` is not present in the map.
     fn index(&self, key: &Q) -> &V {
-        self.get(key).expect("IndexMap: key not found")
+        self.get(key).expect("no entry found for key")
     }
 }
 
-/// Access `IndexMap` values corresponding to a key.
+/// Access [`IndexMap`] values corresponding to a key.
 ///
 /// Mutable indexing allows changing / updating values of key-value
 /// pairs that are already present.
@@ -1310,18 +1661,21 @@ where
 impl<K, V, Q: ?Sized, S> IndexMut<&Q> for IndexMap<K, V, S>
 where
     Q: Hash + Equivalent<K>,
-    K: Hash + Eq,
     S: BuildHasher,
 {
     /// Returns a mutable reference to the value corresponding to the supplied `key`.
     ///
     /// ***Panics*** if `key` is not present in the map.
     fn index_mut(&mut self, key: &Q) -> &mut V {
-        self.get_mut(key).expect("IndexMap: key not found")
+        self.get_mut(key).expect("no entry found for key")
     }
 }
 
-/// Access `IndexMap` values at indexed positions.
+/// Access [`IndexMap`] values at indexed positions.
+///
+/// See [`Index<usize> for Keys`][keys] to access a map's keys instead.
+///
+/// [keys]: Keys#impl-Index<usize>-for-Keys<'a,+K,+V>
 ///
 /// # Examples
 ///
@@ -1356,18 +1710,23 @@ impl<K, V, S> Index<usize> for IndexMap<K, V, S> {
     ///
     /// ***Panics*** if `index` is out of bounds.
     fn index(&self, index: usize) -> &V {
-        self.get_index(index)
-            .expect("IndexMap: index out of bounds")
-            .1
+        if let Some((_, value)) = self.get_index(index) {
+            value
+        } else {
+            panic!(
+                "index out of bounds: the len is {len} but the index is {index}",
+                len = self.len()
+            );
+        }
     }
 }
 
-/// Access `IndexMap` values at indexed positions.
+/// Access [`IndexMap`] values at indexed positions.
 ///
 /// Mutable indexing allows changing / updating indexed values
 /// that are already present.
 ///
-/// You can **not** insert new values with index syntax, use `.insert()`.
+/// You can **not** insert new values with index syntax -- use [`.insert()`][IndexMap::insert].
 ///
 /// # Examples
 ///
@@ -1396,9 +1755,13 @@ impl<K, V, S> IndexMut<usize> for IndexMap<K, V, S> {
     ///
     /// ***Panics*** if `index` is out of bounds.
     fn index_mut(&mut self, index: usize) -> &mut V {
-        self.get_index_mut(index)
-            .expect("IndexMap: index out of bounds")
-            .1
+        let len: usize = self.len();
+
+        if let Some((_, value)) = self.get_index_mut(index) {
+            value
+        } else {
+            panic!("index out of bounds: the len is {len} but the index is {index}");
+        }
     }
 }
 
@@ -1411,7 +1774,7 @@ where
     /// iterable.
     ///
     /// `from_iter` uses the same logic as `extend`. See
-    /// [`extend`](#method.extend) for more details.
+    /// [`extend`][IndexMap::extend] for more details.
     fn from_iter<I: IntoIterator<Item = (K, V)>>(iterable: I) -> Self {
         let iter = iterable.into_iter();
         let (low, _) = iter.size_hint();
@@ -1421,7 +1784,8 @@ where
     }
 }
 
-#[cfg(has_std)]
+#[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl<K, V, const N: usize> From<[(K, V); N]> for IndexMap<K, V, RandomState>
 where
     K: Hash + Eq,
@@ -1447,7 +1811,7 @@ where
 {
     /// Extend the map with all key-value pairs in the iterable.
     ///
-    /// This is equivalent to calling [`insert`](#method.insert) for each of
+    /// This is equivalent to calling [`insert`][IndexMap::insert] for each of
     /// them in order, which means that for keys that already existed
     /// in the map, their value is updated but it keeps the existing order.
     ///
@@ -1461,10 +1825,11 @@ where
         // Otherwise reserve half the hint (rounded up), so the map
         // will only resize twice in the worst case.
         let iter = iterable.into_iter();
+        let (lower_len, _) = iter.size_hint();
         let reserve = if self.is_empty() {
-            iter.size_hint().0
+            lower_len
         } else {
-            (iter.size_hint().0 + 1) / 2
+            lower_len.div_ceil(2)
         };
         self.reserve(reserve);
         iter.for_each(move |(k, v)| {
@@ -1491,7 +1856,7 @@ impl<K, V, S> Default for IndexMap<K, V, S>
 where
     S: Default,
 {
-    /// Return an empty `IndexMap`
+    /// Return an empty [`IndexMap`]
     fn default() -> Self {
         Self::with_capacity_and_hasher(0, S::default())
     }
@@ -1520,428 +1885,4 @@ where
     V: Eq,
     S: BuildHasher,
 {
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::string::String;
-
-    #[test]
-    fn it_works() {
-        let mut map = IndexMap::new();
-        assert_eq!(map.is_empty(), true);
-        map.insert(1, ());
-        map.insert(1, ());
-        assert_eq!(map.len(), 1);
-        assert!(map.get(&1).is_some());
-        assert_eq!(map.is_empty(), false);
-    }
-
-    #[test]
-    fn new() {
-        let map = IndexMap::<String, String>::new();
-        println!("{:?}", map);
-        assert_eq!(map.capacity(), 0);
-        assert_eq!(map.len(), 0);
-        assert_eq!(map.is_empty(), true);
-    }
-
-    #[test]
-    fn insert() {
-        let insert = [0, 4, 2, 12, 8, 7, 11, 5];
-        let not_present = [1, 3, 6, 9, 10];
-        let mut map = IndexMap::with_capacity(insert.len());
-
-        for (i, &elt) in insert.iter().enumerate() {
-            assert_eq!(map.len(), i);
-            map.insert(elt, elt);
-            assert_eq!(map.len(), i + 1);
-            assert_eq!(map.get(&elt), Some(&elt));
-            assert_eq!(map[&elt], elt);
-        }
-        println!("{:?}", map);
-
-        for &elt in &not_present {
-            assert!(map.get(&elt).is_none());
-        }
-    }
-
-    #[test]
-    fn insert_full() {
-        let insert = vec![9, 2, 7, 1, 4, 6, 13];
-        let present = vec![1, 6, 2];
-        let mut map = IndexMap::with_capacity(insert.len());
-
-        for (i, &elt) in insert.iter().enumerate() {
-            assert_eq!(map.len(), i);
-            let (index, existing) = map.insert_full(elt, elt);
-            assert_eq!(existing, None);
-            assert_eq!(Some(index), map.get_full(&elt).map(|x| x.0));
-            assert_eq!(map.len(), i + 1);
-        }
-
-        let len = map.len();
-        for &elt in &present {
-            let (index, existing) = map.insert_full(elt, elt);
-            assert_eq!(existing, Some(elt));
-            assert_eq!(Some(index), map.get_full(&elt).map(|x| x.0));
-            assert_eq!(map.len(), len);
-        }
-    }
-
-    #[test]
-    fn insert_2() {
-        let mut map = IndexMap::with_capacity(16);
-
-        let mut keys = vec![];
-        keys.extend(0..16);
-        keys.extend(if cfg!(miri) { 32..64 } else { 128..267 });
-
-        for &i in &keys {
-            let old_map = map.clone();
-            map.insert(i, ());
-            for key in old_map.keys() {
-                if map.get(key).is_none() {
-                    println!("old_map: {:?}", old_map);
-                    println!("map: {:?}", map);
-                    panic!("did not find {} in map", key);
-                }
-            }
-        }
-
-        for &i in &keys {
-            assert!(map.get(&i).is_some(), "did not find {}", i);
-        }
-    }
-
-    #[test]
-    fn insert_order() {
-        let insert = [0, 4, 2, 12, 8, 7, 11, 5, 3, 17, 19, 22, 23];
-        let mut map = IndexMap::new();
-
-        for &elt in &insert {
-            map.insert(elt, ());
-        }
-
-        assert_eq!(map.keys().count(), map.len());
-        assert_eq!(map.keys().count(), insert.len());
-        for (a, b) in insert.iter().zip(map.keys()) {
-            assert_eq!(a, b);
-        }
-        for (i, k) in (0..insert.len()).zip(map.keys()) {
-            assert_eq!(map.get_index(i).unwrap().0, k);
-        }
-    }
-
-    #[test]
-    fn grow() {
-        let insert = [0, 4, 2, 12, 8, 7, 11];
-        let not_present = [1, 3, 6, 9, 10];
-        let mut map = IndexMap::with_capacity(insert.len());
-
-        for (i, &elt) in insert.iter().enumerate() {
-            assert_eq!(map.len(), i);
-            map.insert(elt, elt);
-            assert_eq!(map.len(), i + 1);
-            assert_eq!(map.get(&elt), Some(&elt));
-            assert_eq!(map[&elt], elt);
-        }
-
-        println!("{:?}", map);
-        for &elt in &insert {
-            map.insert(elt * 10, elt);
-        }
-        for &elt in &insert {
-            map.insert(elt * 100, elt);
-        }
-        for (i, &elt) in insert.iter().cycle().enumerate().take(100) {
-            map.insert(elt * 100 + i as i32, elt);
-        }
-        println!("{:?}", map);
-        for &elt in &not_present {
-            assert!(map.get(&elt).is_none());
-        }
-    }
-
-    #[test]
-    fn reserve() {
-        let mut map = IndexMap::<usize, usize>::new();
-        assert_eq!(map.capacity(), 0);
-        map.reserve(100);
-        let capacity = map.capacity();
-        assert!(capacity >= 100);
-        for i in 0..capacity {
-            assert_eq!(map.len(), i);
-            map.insert(i, i * i);
-            assert_eq!(map.len(), i + 1);
-            assert_eq!(map.capacity(), capacity);
-            assert_eq!(map.get(&i), Some(&(i * i)));
-        }
-        map.insert(capacity, std::usize::MAX);
-        assert_eq!(map.len(), capacity + 1);
-        assert!(map.capacity() > capacity);
-        assert_eq!(map.get(&capacity), Some(&std::usize::MAX));
-    }
-
-    #[test]
-    fn shrink_to_fit() {
-        let mut map = IndexMap::<usize, usize>::new();
-        assert_eq!(map.capacity(), 0);
-        for i in 0..100 {
-            assert_eq!(map.len(), i);
-            map.insert(i, i * i);
-            assert_eq!(map.len(), i + 1);
-            assert!(map.capacity() >= i + 1);
-            assert_eq!(map.get(&i), Some(&(i * i)));
-            map.shrink_to_fit();
-            assert_eq!(map.len(), i + 1);
-            assert_eq!(map.capacity(), i + 1);
-            assert_eq!(map.get(&i), Some(&(i * i)));
-        }
-    }
-
-    #[test]
-    fn remove() {
-        let insert = [0, 4, 2, 12, 8, 7, 11, 5, 3, 17, 19, 22, 23];
-        let mut map = IndexMap::new();
-
-        for &elt in &insert {
-            map.insert(elt, elt);
-        }
-
-        assert_eq!(map.keys().count(), map.len());
-        assert_eq!(map.keys().count(), insert.len());
-        for (a, b) in insert.iter().zip(map.keys()) {
-            assert_eq!(a, b);
-        }
-
-        let remove_fail = [99, 77];
-        let remove = [4, 12, 8, 7];
-
-        for &key in &remove_fail {
-            assert!(map.swap_remove_full(&key).is_none());
-        }
-        println!("{:?}", map);
-        for &key in &remove {
-            //println!("{:?}", map);
-            let index = map.get_full(&key).unwrap().0;
-            assert_eq!(map.swap_remove_full(&key), Some((index, key, key)));
-        }
-        println!("{:?}", map);
-
-        for key in &insert {
-            assert_eq!(map.get(key).is_some(), !remove.contains(key));
-        }
-        assert_eq!(map.len(), insert.len() - remove.len());
-        assert_eq!(map.keys().count(), insert.len() - remove.len());
-    }
-
-    #[test]
-    fn remove_to_empty() {
-        let mut map = indexmap! { 0 => 0, 4 => 4, 5 => 5 };
-        map.swap_remove(&5).unwrap();
-        map.swap_remove(&4).unwrap();
-        map.swap_remove(&0).unwrap();
-        assert!(map.is_empty());
-    }
-
-    #[test]
-    fn swap_remove_index() {
-        let insert = [0, 4, 2, 12, 8, 7, 11, 5, 3, 17, 19, 22, 23];
-        let mut map = IndexMap::new();
-
-        for &elt in &insert {
-            map.insert(elt, elt * 2);
-        }
-
-        let mut vector = insert.to_vec();
-        let remove_sequence = &[3, 3, 10, 4, 5, 4, 3, 0, 1];
-
-        // check that the same swap remove sequence on vec and map
-        // have the same result.
-        for &rm in remove_sequence {
-            let out_vec = vector.swap_remove(rm);
-            let (out_map, _) = map.swap_remove_index(rm).unwrap();
-            assert_eq!(out_vec, out_map);
-        }
-        assert_eq!(vector.len(), map.len());
-        for (a, b) in vector.iter().zip(map.keys()) {
-            assert_eq!(a, b);
-        }
-    }
-
-    #[test]
-    fn partial_eq_and_eq() {
-        let mut map_a = IndexMap::new();
-        map_a.insert(1, "1");
-        map_a.insert(2, "2");
-        let mut map_b = map_a.clone();
-        assert_eq!(map_a, map_b);
-        map_b.swap_remove(&1);
-        assert_ne!(map_a, map_b);
-
-        let map_c: IndexMap<_, String> = map_b.into_iter().map(|(k, v)| (k, v.into())).collect();
-        assert_ne!(map_a, map_c);
-        assert_ne!(map_c, map_a);
-    }
-
-    #[test]
-    fn extend() {
-        let mut map = IndexMap::new();
-        map.extend(vec![(&1, &2), (&3, &4)]);
-        map.extend(vec![(5, 6)]);
-        assert_eq!(
-            map.into_iter().collect::<Vec<_>>(),
-            vec![(1, 2), (3, 4), (5, 6)]
-        );
-    }
-
-    #[test]
-    fn entry() {
-        let mut map = IndexMap::new();
-
-        map.insert(1, "1");
-        map.insert(2, "2");
-        {
-            let e = map.entry(3);
-            assert_eq!(e.index(), 2);
-            let e = e.or_insert("3");
-            assert_eq!(e, &"3");
-        }
-
-        let e = map.entry(2);
-        assert_eq!(e.index(), 1);
-        assert_eq!(e.key(), &2);
-        match e {
-            Entry::Occupied(ref e) => assert_eq!(e.get(), &"2"),
-            Entry::Vacant(_) => panic!(),
-        }
-        assert_eq!(e.or_insert("4"), &"2");
-    }
-
-    #[test]
-    fn entry_and_modify() {
-        let mut map = IndexMap::new();
-
-        map.insert(1, "1");
-        map.entry(1).and_modify(|x| *x = "2");
-        assert_eq!(Some(&"2"), map.get(&1));
-
-        map.entry(2).and_modify(|x| *x = "doesn't exist");
-        assert_eq!(None, map.get(&2));
-    }
-
-    #[test]
-    fn entry_or_default() {
-        let mut map = IndexMap::new();
-
-        #[derive(Debug, PartialEq)]
-        enum TestEnum {
-            DefaultValue,
-            NonDefaultValue,
-        }
-
-        impl Default for TestEnum {
-            fn default() -> Self {
-                TestEnum::DefaultValue
-            }
-        }
-
-        map.insert(1, TestEnum::NonDefaultValue);
-        assert_eq!(&mut TestEnum::NonDefaultValue, map.entry(1).or_default());
-
-        assert_eq!(&mut TestEnum::DefaultValue, map.entry(2).or_default());
-    }
-
-    #[test]
-    fn occupied_entry_key() {
-        // These keys match hash and equality, but their addresses are distinct.
-        let (k1, k2) = (&mut 1, &mut 1);
-        let k1_ptr = k1 as *const i32;
-        let k2_ptr = k2 as *const i32;
-        assert_ne!(k1_ptr, k2_ptr);
-
-        let mut map = IndexMap::new();
-        map.insert(k1, "value");
-        match map.entry(k2) {
-            Entry::Occupied(ref e) => {
-                // `OccupiedEntry::key` should reference the key in the map,
-                // not the key that was used to find the entry.
-                let ptr = *e.key() as *const i32;
-                assert_eq!(ptr, k1_ptr);
-                assert_ne!(ptr, k2_ptr);
-            }
-            Entry::Vacant(_) => panic!(),
-        }
-    }
-
-    #[test]
-    fn keys() {
-        let vec = vec![(1, 'a'), (2, 'b'), (3, 'c')];
-        let map: IndexMap<_, _> = vec.into_iter().collect();
-        let keys: Vec<_> = map.keys().copied().collect();
-        assert_eq!(keys.len(), 3);
-        assert!(keys.contains(&1));
-        assert!(keys.contains(&2));
-        assert!(keys.contains(&3));
-    }
-
-    #[test]
-    fn into_keys() {
-        let vec = vec![(1, 'a'), (2, 'b'), (3, 'c')];
-        let map: IndexMap<_, _> = vec.into_iter().collect();
-        let keys: Vec<i32> = map.into_keys().collect();
-        assert_eq!(keys.len(), 3);
-        assert!(keys.contains(&1));
-        assert!(keys.contains(&2));
-        assert!(keys.contains(&3));
-    }
-
-    #[test]
-    fn values() {
-        let vec = vec![(1, 'a'), (2, 'b'), (3, 'c')];
-        let map: IndexMap<_, _> = vec.into_iter().collect();
-        let values: Vec<_> = map.values().copied().collect();
-        assert_eq!(values.len(), 3);
-        assert!(values.contains(&'a'));
-        assert!(values.contains(&'b'));
-        assert!(values.contains(&'c'));
-    }
-
-    #[test]
-    fn values_mut() {
-        let vec = vec![(1, 1), (2, 2), (3, 3)];
-        let mut map: IndexMap<_, _> = vec.into_iter().collect();
-        for value in map.values_mut() {
-            *value *= 2
-        }
-        let values: Vec<_> = map.values().copied().collect();
-        assert_eq!(values.len(), 3);
-        assert!(values.contains(&2));
-        assert!(values.contains(&4));
-        assert!(values.contains(&6));
-    }
-
-    #[test]
-    fn into_values() {
-        let vec = vec![(1, 'a'), (2, 'b'), (3, 'c')];
-        let map: IndexMap<_, _> = vec.into_iter().collect();
-        let values: Vec<char> = map.into_values().collect();
-        assert_eq!(values.len(), 3);
-        assert!(values.contains(&'a'));
-        assert!(values.contains(&'b'));
-        assert!(values.contains(&'c'));
-    }
-
-    #[test]
-    #[cfg(has_std)]
-    fn from_array() {
-        let map = IndexMap::from([(1, 2), (3, 4)]);
-        let mut expected = IndexMap::new();
-        expected.insert(1, 2);
-        expected.insert(3, 4);
-
-        assert_eq!(map, expected)
-    }
 }
