@@ -1,17 +1,17 @@
 name: "json-strip-comments"
 description: "Strip comments from JSON"
 third_party {
-  version: "3.0.1"
+  version: "3.1.0"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 9
-    day: 15
+    month: 11
+    day: 26
   }
   homepage: "https://crates.io/crates/json-strip-comments"
   identifier {
     type: "Archive"
-    value: "https://static.crates.io/crates/json-strip-comments/json-strip-comments-3.0.1.crate"
-    version: "3.0.1"
+    value: "https://static.crates.io/crates/json-strip-comments/json-strip-comments-3.1.0.crate"
+    version: "3.1.0"
   }
 }
