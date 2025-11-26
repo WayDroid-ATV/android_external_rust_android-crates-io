@@ -12,8 +12,14 @@
 [package]
 edition = "2018"
 name = "argmax"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["David Peter <mail@david-peter.de>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = " Rust library to deal with 'argument too long' errors"
 homepage = "https://github.com/sharkdp/argmax"
 readme = "README.md"
@@ -21,13 +27,21 @@ categories = ["command-line-interface"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/sharkdp/argmax"
 
-[dependencies.lazy_static]
-version = "1.4"
+[lib]
+name = "argmax"
+path = "src/lib.rs"
+
+[[test]]
+name = "main"
+path = "tests/main.rs"
 
 [dependencies.nix]
-version = "0.24.2"
+version = "0.30.1"
 features = ["feature"]
 default-features = false
 
+[dependencies.once_cell]
+version = "1.17"
+
 [target."cfg(unix)".dependencies.libc]
-version = "0.2.126"
+version = "0.2.127"
