@@ -1,5 +1,5 @@
 error: expected `=`
- --> $DIR/derive-no-strategy.rs:8:12
+ --> tests/compile/derive-no-strategy.rs:8:21
   |
 8 |     #[merge(strategy)]
-  |            ^^^^^^^^^^
+  |                     ^
