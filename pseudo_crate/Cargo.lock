@@ -264,7 +264,7 @@ dependencies = [
  "flagset",
  "flate2",
  "fnv",
- "foldhash 0.1.5",
+ "foldhash 0.2.0",
  "font-types 0.10.1",
  "foreign-types 0.3.2",
  "foreign-types-shared 0.1.1",
