@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "semver",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.26",
+    cargo_pkg_version: "1.0.27",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
@@ -26,7 +26,8 @@ rust_library {
         "serde",
         "std",
     ],
-    rustlibs: ["libserde"],
+    rustlibs: ["libserde_core"],
+    aliases: ["serde_core:serde"],
     apex_available: [
         "//apex_available:platform",
         "com.android.virt",
