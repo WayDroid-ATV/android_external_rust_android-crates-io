@@ -15,11 +15,12 @@
 //! use case is merging configuration from different sources, for example environment variables,
 //! multiple configuration files and command-line arguments, see the [`args.rs`][] example.
 //!
-//! `Merge` is implemented for `Option` and can be derived for structs.  When deriving the `Merge`
-//! trait for a struct, you can provide custom merge strategies for the fields that don’t implement
-//! `Merge`.  A merge strategy is a function with the signature `fn merge<T>(left: &mut T, right:
-//! T)` that merges `right` into `left`.  The submodules of this crate provide strategies for the
-//! most common types, but you can also define your own strategies.
+//! This crate does not provide any `Merge` implementations, but `Merge` can be derived for
+//! structs.  When deriving the `Merge` trait for a struct, you can provide custom merge strategies
+//! for the fields that don’t implement `Merge`.  A merge strategy is a function with the signature
+//! `fn merge<T>(left: &mut T, right: T)` that merges `right` into `left`.  The submodules of this
+//! crate provide strategies for the most common types, but you can also define your own
+//! strategies.
 //!
 //! ## Features
 //!
@@ -29,8 +30,8 @@
 //!   crate.
 //! - `num` (default): Enables the merge strategies in the `num` module that require the
 //!   `num_traits` crate.
-//! - `std` (default): Enables the merge strategies in the `vec` module that require the standard
-//!   library.  If this feature is not set, `merge` is a `no_std` library.
+//! - `std` (default): Enables the merge strategies in the `hashmap` and `vec` modules that require
+//!   the standard library.  If this feature is not set, `merge` is a `no_std` library.
 //!
 //! # Example
 //!
@@ -43,10 +44,10 @@
 //!     #[merge(skip)]
 //!     pub name: &'static str,
 //!
-//!     // The Merge implementation for Option replaces its value if it is None
+//!     // The strategy attribute is used to customize the merge behavior
+//!     #[merge(strategy = merge::option::overwrite_none)]
 //!     pub location: Option<&'static str>,
 //!
-//!     // The strategy attribute is used to customize the merge behavior
 //!     #[merge(strategy = merge::vec::append)]
 //!     pub groups: Vec<&'static str>,
 //! }
@@ -85,19 +86,12 @@ pub use merge_derive::*;
 /// You can use these field attributes to configure the generated implementation:
 /// - `skip`: Skip this field in the `merge` method.
 /// - `strategy = f`: Call `f(self.field, other.field)` instead of calling the `merge` function for
-///    this field.
+///   this field.
+///
+/// You can also set a default strategy for all fields by setting the `strategy` attribute for the
+/// struct.
 ///
 /// # Examples
-///
-/// Using the `Merge` implementation for `Option`:
-///
-/// ```
-/// use merge::Merge as _;
-///
-/// let mut val = None;
-/// val.merge(Some(42));
-/// assert_eq!(Some(42), val);
-/// ```
 ///
 /// Deriving `Merge` for a struct:
 ///
@@ -106,6 +100,7 @@ pub use merge_derive::*;
 ///
 /// #[derive(Debug, PartialEq, Merge)]
 /// struct S {
+///     #[merge(strategy = merge::option::overwrite_none)]
 ///     option: Option<usize>,
 ///
 ///     #[merge(skip)]
@@ -131,15 +126,59 @@ pub use merge_derive::*;
 ///     flag: true,
 /// }, val);
 /// ```
+///
+/// Setting a default merge strategy:
+///
+/// ```
+/// use merge::Merge;
+///
+/// #[derive(Debug, PartialEq, Merge)]
+/// #[merge(strategy = merge::option::overwrite_none)]
+/// struct S {
+///     option1: Option<usize>,
+///     option2: Option<usize>,
+///     option3: Option<usize>,
+/// }
+///
+/// let mut val = S {
+///     option1: None,
+///     option2: Some(1),
+///     option3: None,
+/// };
+/// val.merge(S {
+///     option1: Some(2),
+///     option2: Some(2),
+///     option3: None,
+/// });
+/// assert_eq!(S {
+///     option1: Some(2),
+///     option2: Some(1),
+///     option3: None,
+/// }, val);
+/// ```
 pub trait Merge {
     /// Merge another object into this object.
     fn merge(&mut self, other: Self);
 }
 
-impl<T> Merge for Option<T> {
-    fn merge(&mut self, mut other: Self) {
-        if !self.is_some() {
-            *self = other.take();
+/// Merge strategies for `Option`
+pub mod option {
+    /// Overwrite `left` with `right` only if `left` is `None`.
+    pub fn overwrite_none<T>(left: &mut Option<T>, right: Option<T>) {
+        if left.is_none() {
+            *left = right;
+        }
+    }
+
+    /// If both `left` and `right` are `Some`, recursively merge the two.
+    /// Otherwise, fall back to `overwrite_none`.
+    pub fn recurse<T: crate::Merge>(left: &mut Option<T>, right: Option<T>) {
+        if let Some(new) = right {
+            if let Some(original) = left {
+                original.merge(new);
+            } else {
+                *left = Some(new);
+            }
         }
     }
 }
@@ -219,5 +258,44 @@ pub mod vec {
     pub fn prepend<T>(left: &mut Vec<T>, mut right: Vec<T>) {
         right.append(left);
         *left = right;
+    }
+}
+
+/// Merge strategies for hash maps.
+///
+/// These strategies are only available if the `std` feature is enabled.
+#[cfg(feature = "std")]
+pub mod hashmap {
+    use std::collections::HashMap;
+    use std::hash::Hash;
+
+    /// On conflict, overwrite elements of `left` with `right`.
+    ///
+    /// In other words, this gives precedence to `right`.
+    pub fn overwrite<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: HashMap<K, V>) {
+        left.extend(right)
+    }
+
+    /// On conflict, ignore elements from `right`.
+    ///
+    /// In other words, this gives precedence to `left`.
+    pub fn ignore<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: HashMap<K, V>) {
+        for (k, v) in right {
+            left.entry(k).or_insert(v);
+        }
+    }
+
+    /// On conflict, recursively merge the elements.
+    pub fn recurse<K: Eq + Hash, V: crate::Merge>(left: &mut HashMap<K, V>, right: HashMap<K, V>) {
+        use std::collections::hash_map::Entry;
+
+        for (k, v) in right {
+            match left.entry(k) {
+                Entry::Occupied(mut existing) => existing.get_mut().merge(v),
+                Entry::Vacant(empty) => {
+                    empty.insert(v);
+                }
+            }
+        }
     }
 }

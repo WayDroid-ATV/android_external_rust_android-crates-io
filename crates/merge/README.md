@@ -14,7 +14,7 @@ trait Merge {
 }
 ```
 
-`Merge` is implemented for `Option` and can be derived for structs:
+`Merge` can be derived for structs:
 
 <!-- should be kept in sync with examples/user.rs -->
 ```rust
@@ -26,10 +26,10 @@ struct User {
     #[merge(skip)]
     pub name: &'static str,
 
-    // The Merge implementation for Option replaces its value if it is None
+    // The strategy attribute is used to select the merge behavior
+    #[merge(strategy = merge::option::overwrite_none)]
     pub location: Option<&'static str>,
 
-    // The strategy attribute is used to customize the merge behavior
     #[merge(strategy = merge::vec::append)]
     pub groups: Vec<&'static str>,
 }
@@ -68,19 +68,26 @@ This crate has the following features:
   `merge_derive` crate.
 - `num` (default): Enables the merge strategies in the `num` module that
   require the `num_traits` crate.
-- `std` (default): Enables the merge strategies in the `vec` module that
-  require the standard library.  If this feature is not set, `merge` is a
-  `no_std` library.
+- `std` (default): Enables the merge strategies in the `hashmap` and `vec`
+  modules that require the standard library.  If this feature is not set,
+  `merge` is a `no_std` library.
 
 ## Minimum Supported Rust Version
 
-This crate supports Rust 1.36.0 or later.
+This crate supports Rust 1.70.0 or later.
 
 ## Contact
 
 For bug reports, patches, feature requests and other messages, please send a
-mail to [~ireas/public-inbox@lists.sr.ht][] using the `[merge-rs]` prefix in
-the subject.
+mail to [~ireas/public-inbox@lists.sr.ht][] ([archive][]) using the
+`[merge-rs]` prefix in the subject.
+
+You can submit patches using [`git send-email`][], for example:
+```
+git send-email --to=~ireas/public-inbox@lists.sr.ht --subject-prefix="PATCH merge-rs"
+```
+Please prefix the subject with `PATCH merge-rs` so that CI will be
+automatically run.
 
 ## License
 
@@ -92,6 +99,8 @@ of the license texts in the `LICENSES` directory.
 `merge-rs` complies with [version 3.0 of the REUSE specification][reuse].
 
 [~ireas/public-inbox@lists.sr.ht]: mailto:~ireas/public-inbox@lists.sr.ht
+[`git send-email`]: https://git-send-email.io
+[archive]: https://lists.sr.ht/~ireas/public-inbox
 [Apache-2.0]: https://opensource.org/licenses/Apache-2.0
 [MIT]: https://opensource.org/licenses/MIT
 [CC0]: https://creativecommons.org/publicdomain/zero/1.0/
