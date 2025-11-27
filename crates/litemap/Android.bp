@@ -19,7 +19,7 @@ rust_library {
     host_supported: true,
     crate_name: "litemap",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.8.0",
+    cargo_pkg_version: "0.8.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -28,7 +28,7 @@ rust_library {
         "yoke",
     ],
     rustlibs: [
-        "libserde",
+        "libserde_core",
         "libyoke",
     ],
     apex_available: [
