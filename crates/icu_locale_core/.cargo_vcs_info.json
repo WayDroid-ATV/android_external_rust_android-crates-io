@@ -1,6 +1,7 @@
 {
   "git": {
-    "sha1": "911ee264279a560c571d423578edbe84a8ae2232"
+    "sha1": "38a49da495248dd1ded84cf306e4ca42e64d5bb3",
+    "dirty": true
   },
   "path_in_vcs": "components/locale_core"
 }
