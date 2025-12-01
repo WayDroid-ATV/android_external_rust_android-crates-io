@@ -1,7 +1,9 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0 OR BSD-3-Clause
 
-use criterion::{black_box, BatchSize, Criterion};
+use std::hint::black_box;
+
+use criterion::{BatchSize, Criterion};
 use virtio_queue::{Queue, QueueOwnedT, QueueT};
 use vm_memory::{GuestAddress, GuestMemory, GuestMemoryMmap};
 
@@ -56,7 +58,7 @@ pub fn benchmark_queue(c: &mut Criterion) {
     for indirect in [false, true].iter().copied() {
         bench_queue(
             c,
-            &format!("single chain (indirect={})", indirect),
+            &format!("single chain (indirect={indirect})"),
             || queue_with_chains(1, 128, indirect),
             |mut q| {
                 let (num_chains, num_descriptors) = walk_queue(&mut q, &mem);
@@ -67,7 +69,7 @@ pub fn benchmark_queue(c: &mut Criterion) {
 
         bench_queue(
             c,
-            &format!("multiple chains (indirect={})", indirect),
+            &format!("multiple chains (indirect={indirect})"),
             || queue_with_chains(128, 1, indirect),
             |mut q| {
                 let (num_chains, num_descriptors) = walk_queue(&mut q, &mem);

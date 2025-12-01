@@ -1,5 +1,40 @@
 # Upcoming
 
+## Added
+
+## Changed
+
+## Fixed
+
+# v0.17.0
+
+## Changed
+
+- Updated vm-memory from 0.16.0 to 0.17.1
+
+# v0.16.0
+
+## Changed
+
+- Updated virtio-bindings from 0.2.5 to 0.2.6.
+
+# v0.15.0
+
+## Fixed
+
+- Add license files.
+
+## Changed
+
+- Updated virtio-bindings from 0.2.4 to 0.2.5.
+- Use `RawDescriptor` to represent the memory layout of the split and packed descriptor in virtio-queue/desc.
+- Move the split descriptor to the virtio-queue/desc.
+- Updated vmm-sys-util from v0.12.1 to v0.14.0
+
+## Added
+
+- Add packed descriptor in virtio-queue
+
 # v0.14.0
 
 ## Changed

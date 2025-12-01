@@ -615,7 +615,7 @@ dependencies = [
  "virtio-bindings",
  "virtio-drivers",
  "virtio-drivers-and-devices",
- "virtio-queue 0.14.0",
+ "virtio-queue 0.17.0",
  "virtio-vsock",
  "vm-memory 0.16.2",
  "vmm-sys-util 0.15.0",

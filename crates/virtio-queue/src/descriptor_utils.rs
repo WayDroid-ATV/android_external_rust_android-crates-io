@@ -232,7 +232,7 @@ impl<'a, B: BitmapSlice> Reader<'a, B> {
     }
 }
 
-impl<'a, B: BitmapSlice> io::Read for Reader<'a, B> {
+impl<B: BitmapSlice> io::Read for Reader<'_, B> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.buffer.consume(buf.len(), |bufs| {
             let mut rem = buf;
@@ -333,7 +333,7 @@ impl<'a, B: BitmapSlice> Writer<'a, B> {
     }
 }
 
-impl<'a, B: BitmapSlice> io::Write for Writer<'a, B> {
+impl<B: BitmapSlice> io::Write for Writer<'_, B> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.buffer.consume(buf.len(), |bufs| {
             let mut rem = buf;
@@ -365,7 +365,10 @@ impl<'a, B: BitmapSlice> io::Write for Writer<'a, B> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Descriptor, Queue, QueueOwnedT, QueueT};
+    use crate::{
+        desc::{split::Descriptor as SplitDescriptor, RawDescriptor},
+        Queue, QueueOwnedT, QueueT,
+    };
     use vm_memory::{GuestAddress, GuestMemoryMmap, Le32};
 
     use crate::mock::MockSplitQueue;
@@ -402,12 +405,12 @@ mod tests {
                 flags |= VRING_DESC_F_NEXT;
             }
 
-            descs.push(Descriptor::new(
+            descs.push(RawDescriptor::from(SplitDescriptor::new(
                 buffers_start_addr.raw_value(),
                 size,
                 flags as u16,
                 (index + 1) as u16,
-            ));
+            )));
 
             let offset = size + spaces_between_regions;
             buffers_start_addr = buffers_start_addr
@@ -439,7 +442,7 @@ mod tests {
         let queue = MockSplitQueue::create(&memory, GuestAddress(0x0), MAX_QUEUE_SIZE);
 
         // set addr out of memory
-        let descriptor = Descriptor::new(0x1001, 1, 0, 1_u16);
+        let descriptor = RawDescriptor::from(SplitDescriptor::new(0x1001, 1, 0, 1_u16));
         queue.build_desc_chain(&[descriptor]).unwrap();
 
         let avail_ring = queue.avail_addr();
@@ -479,14 +482,14 @@ mod tests {
 
         let mut buffer = [0_u8; 64];
         if let Err(e) = reader.read_exact(&mut buffer) {
-            panic!("read_exact should not fail here: {:?}", e);
+            panic!("read_exact should not fail here: {e:?}");
         }
 
         assert_eq!(reader.available_bytes(), 42);
         assert_eq!(reader.bytes_read(), 64);
 
         match reader.read(&mut buffer) {
-            Err(e) => panic!("read should not fail here: {:?}", e),
+            Err(e) => panic!("read should not fail here: {e:?}"),
             Ok(length) => assert_eq!(length, 42),
         }
 
@@ -519,14 +522,14 @@ mod tests {
 
         let buffer = [0_u8; 64];
         if let Err(e) = writer.write_all(&buffer) {
-            panic!("write_all should not fail here: {:?}", e);
+            panic!("write_all should not fail here: {e:?}");
         }
 
         assert_eq!(writer.available_bytes(), 42);
         assert_eq!(writer.bytes_written(), 64);
 
         match writer.write(&buffer) {
-            Err(e) => panic!("write should not fail here {:?}", e),
+            Err(e) => panic!("write should not fail here {e:?}"),
             Ok(length) => assert_eq!(length, 42),
         }
 
@@ -638,7 +641,7 @@ mod tests {
         .expect("create_descriptor_chain failed");
         let mut writer = Writer::new(&memory, chain_writer).expect("failed to create Writer");
         if let Err(e) = writer.write_obj(secret) {
-            panic!("write_obj should not fail here: {:?}", e);
+            panic!("write_obj should not fail here: {e:?}");
         }
 
         // Now create new descriptor chain pointing to the same memory and try to read it.
@@ -651,7 +654,7 @@ mod tests {
         .expect("create_descriptor_chain failed");
         let mut reader = Reader::new(&memory, chain_reader).expect("failed to create Reader");
         match reader.read_obj::<Le32>() {
-            Err(e) => panic!("read_obj should not fail here: {:?}", e),
+            Err(e) => panic!("read_obj should not fail here: {e:?}"),
             Ok(read_secret) => assert_eq!(read_secret, secret),
         }
     }
