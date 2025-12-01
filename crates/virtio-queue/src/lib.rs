@@ -23,18 +23,17 @@ use log::error;
 use vm_memory::{GuestMemory, GuestMemoryError, VolatileMemoryError};
 
 pub use self::chain::{DescriptorChain, DescriptorChainRwIter};
-pub use self::descriptor::{Descriptor, VirtqUsedElem};
 pub use self::descriptor_utils::{Reader, Writer};
 pub use self::queue::{AvailIter, Queue};
 pub use self::queue_sync::QueueSync;
 pub use self::state::QueueState;
 
 pub mod defs;
+pub mod desc;
 #[cfg(any(test, feature = "test-utils"))]
 pub mod mock;
 
 mod chain;
-mod descriptor;
 mod descriptor_utils;
 mod queue;
 mod queue_sync;
@@ -155,7 +154,7 @@ pub trait QueueT: for<'a> QueueGuard<'a> {
     ///
     /// Logically this method will acquire the underlying lock protecting the `Queue` Object.
     /// The lock will be released when the returned object gets dropped.
-    fn lock(&mut self) -> <Self as QueueGuard>::G;
+    fn lock(&mut self) -> <Self as QueueGuard<'_>>::G;
 
     /// Get the maximum size of the virtio queue.
     fn max_size(&self) -> u16;
