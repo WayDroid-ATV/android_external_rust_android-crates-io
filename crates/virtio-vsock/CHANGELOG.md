@@ -1,5 +1,35 @@
 # Upcoming
 
+## Added
+
+## Changed
+
+## Fixed
+
+# v0.11.0
+
+## Changed
+
+- Updated virtio-queue from 0.16.0 to 0.17.0
+
+# v0.10.0
+
+## Changed
+
+- Updated virtio-bindings from 0.2.5 to 0.2.6.
+- Updated virtio-queue from 0.15.0 to 0.16.0
+
+# v0.9.0
+
+## Fixed
+
+- Add license files.
+
+## Changed
+
+- Updated virtio-bindings from 0.2.4 to 0.2.5.
+- Updated virtio-queue from 0.14.0 to 0.15.0
+
 # v0.8.0
 
 ## Changed
