@@ -202,7 +202,7 @@ dependencies = [
  "crc-catalog",
  "crc32fast",
  "criterion",
- "criterion-plot",
+ "criterion-plot 0.8.0",
  "critical-section",
  "crossbeam-channel",
  "crossbeam-deque",
@@ -1919,7 +1919,7 @@ dependencies = [
  "cast",
  "ciborium",
  "clap 4.5.53",
- "criterion-plot",
+ "criterion-plot 0.6.0",
  "itertools 0.13.0",
  "num-traits",
  "oorandom",
@@ -1937,6 +1937,16 @@ name = "criterion-plot"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b1bcc0dc7dfae599d84ad0b1a55f80cde8af3725da8313b528da95ef783e338"
+dependencies = [
+ "cast",
+ "itertools 0.13.0",
+]
+
+[[package]]
+name = "criterion-plot"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5de36c2bee19fba779808f92bf5d9b0fa5a40095c277aba10c458a12b35d21d6"
 dependencies = [
  "cast",
  "itertools 0.13.0",
