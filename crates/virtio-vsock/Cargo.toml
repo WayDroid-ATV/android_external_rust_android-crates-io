@@ -12,12 +12,13 @@
 [package]
 edition = "2021"
 name = "virtio-vsock"
-version = "0.8.0"
+version = "0.11.0"
 authors = [
     "rust-vmm community",
     "rust-vmm AWS maintainers <rust-vmm-maintainers@amazon.com>",
 ]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -36,20 +37,20 @@ name = "virtio_vsock"
 path = "src/lib.rs"
 
 [dependencies.virtio-bindings]
-version = "0.2.4"
+version = "0.2.6"
 
 [dependencies.virtio-queue]
-version = "0.14.0"
+version = "0.17.0"
 
 [dependencies.vm-memory]
-version = "0.16.0"
+version = "0.17.1"
 
 [dev-dependencies.virtio-queue]
-version = "0.14.0"
+version = "0.17.0"
 features = ["test-utils"]
 
 [dev-dependencies.vm-memory]
-version = "0.16.0"
+version = "0.17.1"
 features = [
     "backend-mmap",
     "backend-atomic",
