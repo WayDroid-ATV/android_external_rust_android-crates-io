@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/fallible-iterator"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/fallible-iterator/fallible-iterator-0.3.0.crate"
+    type: "crates.io"
+    value: "fallible-iterator"
     version: "0.3.0"
   }
 }

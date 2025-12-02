@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/futures-io"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/futures-io/futures-io-0.3.31.crate"
+    type: "crates.io"
+    value: "futures-io"
     version: "0.3.31"
   }
 }

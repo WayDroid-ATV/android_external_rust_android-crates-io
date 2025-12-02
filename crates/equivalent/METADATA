@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/equivalent"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/equivalent/equivalent-1.0.2.crate"
+    type: "crates.io"
+    value: "equivalent"
     version: "1.0.2"
   }
 }

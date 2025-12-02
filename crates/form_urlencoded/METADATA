@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/form_urlencoded"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/form_urlencoded/form_urlencoded-1.2.2.crate"
+    type: "crates.io"
+    value: "form_urlencoded"
     version: "1.2.2"
   }
 }

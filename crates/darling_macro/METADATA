@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/darling_macro"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/darling_macro/darling_macro-0.21.3.crate"
+    type: "crates.io"
+    value: "darling_macro"
     version: "0.21.3"
   }
 }

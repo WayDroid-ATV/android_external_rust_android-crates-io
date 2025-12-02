@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/errno"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/errno/errno-0.3.14.crate"
+    type: "crates.io"
+    value: "errno"
     version: "0.3.14"
   }
 }

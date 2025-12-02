@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/enumn"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/enumn/enumn-0.1.14.crate"
+    type: "crates.io"
+    value: "enumn"
     version: "0.1.14"
   }
 }

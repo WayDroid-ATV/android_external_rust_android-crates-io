@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/diplomat"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/diplomat/diplomat-0.14.0.crate"
+    type: "crates.io"
+    value: "diplomat"
     version: "0.14.0"
   }
 }

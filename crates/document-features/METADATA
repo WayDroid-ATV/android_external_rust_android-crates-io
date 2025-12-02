@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/document-features"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/document-features/document-features-0.2.12.crate"
+    type: "crates.io"
+    value: "document-features"
     version: "0.2.12"
   }
 }
