@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/android_bp"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/android_bp/android_bp-0.3.0.crate"
+    type: "crates.io"
+    value: "android_bp"
     version: "0.3.0"
   }
 }

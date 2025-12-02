@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/atomic"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/atomic/atomic-0.6.1.crate"
+    type: "crates.io"
+    value: "atomic"
     version: "0.6.1"
   }
 }

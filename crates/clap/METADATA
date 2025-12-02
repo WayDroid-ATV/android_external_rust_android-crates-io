@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/clap"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/clap/clap-4.5.53.crate"
+    type: "crates.io"
+    value: "clap"
     version: "4.5.53"
   }
 }

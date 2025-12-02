@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/adler2"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/adler2/adler2-2.0.1.crate"
+    type: "crates.io"
+    value: "adler2"
     version: "2.0.1"
   }
 }

@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/arm-psci"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/arm-psci/arm-psci-0.2.0.crate"
+    type: "crates.io"
+    value: "arm-psci"
     version: "0.2.0"
   }
 }

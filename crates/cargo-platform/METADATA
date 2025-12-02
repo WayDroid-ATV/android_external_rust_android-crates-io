@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/cargo-platform"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/cargo-platform/cargo-platform-0.3.1.crate"
+    type: "crates.io"
+    value: "cargo-platform"
     version: "0.3.1"
   }
 }

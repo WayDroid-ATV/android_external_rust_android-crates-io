@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/clang-sys"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/clang-sys/clang-sys-1.8.1.crate"
+    type: "crates.io"
+    value: "clang-sys"
     version: "1.8.1"
   }
 }

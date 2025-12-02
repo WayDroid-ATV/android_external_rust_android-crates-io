@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/atomic-waker"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/atomic-waker/atomic-waker-1.1.2.crate"
+    type: "crates.io"
+    value: "atomic-waker"
     version: "1.1.2"
   }
 }

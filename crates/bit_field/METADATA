@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/bit_field"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/bit_field/bit_field-0.10.3.crate"
+    type: "crates.io"
+    value: "bit_field"
     version: "0.10.3"
   }
 }

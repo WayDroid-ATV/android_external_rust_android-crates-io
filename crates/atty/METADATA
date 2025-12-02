@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/atty"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/atty/atty-0.2.14.crate"
+    type: "crates.io"
+    value: "atty"
     version: "0.2.14"
   }
 }

@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/ahash"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/ahash/ahash-0.8.12.crate"
+    type: "crates.io"
+    value: "ahash"
     version: "0.8.12"
   }
 }
