@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/unicode-normalization"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/unicode-normalization/unicode-normalization-0.1.25.crate"
+    type: "crates.io"
+    value: "unicode-normalization"
     version: "0.1.25"
   }
 }

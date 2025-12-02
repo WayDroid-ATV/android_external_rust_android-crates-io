@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/tinystr"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/tinystr/tinystr-0.8.2.crate"
+    type: "crates.io"
+    value: "tinystr"
     version: "0.8.2"
   }
 }

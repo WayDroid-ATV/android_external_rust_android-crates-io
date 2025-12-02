@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/vhost"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/vhost/vhost-0.13.0.crate"
+    type: "crates.io"
+    value: "vhost"
     version: "0.13.0"
   }
 }

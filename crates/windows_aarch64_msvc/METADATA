@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/windows_aarch64_msvc"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/windows_aarch64_msvc/windows_aarch64_msvc-0.53.1.crate"
+    type: "crates.io"
+    value: "windows_aarch64_msvc"
     version: "0.53.1"
   }
 }

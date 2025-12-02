@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/want"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/want/want-0.3.1.crate"
+    type: "crates.io"
+    value: "want"
     version: "0.3.1"
   }
 }

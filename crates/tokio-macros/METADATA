@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/tokio-macros"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/tokio-macros/tokio-macros-2.5.0.crate"
+    type: "crates.io"
+    value: "tokio-macros"
     version: "2.5.0"
   }
 }

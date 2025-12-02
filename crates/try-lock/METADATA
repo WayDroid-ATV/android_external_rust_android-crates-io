@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/try-lock"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/try-lock/try-lock-0.2.5.crate"
+    type: "crates.io"
+    value: "try-lock"
     version: "0.2.5"
   }
 }

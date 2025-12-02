@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/unicode-bidi"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/unicode-bidi/unicode-bidi-0.3.18.crate"
+    type: "crates.io"
+    value: "unicode-bidi"
     version: "0.3.18"
   }
 }
