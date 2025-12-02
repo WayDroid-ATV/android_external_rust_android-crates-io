@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/userfaultfd-sys"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/userfaultfd-sys/userfaultfd-sys-0.6.0.crate"
+    type: "crates.io"
+    value: "userfaultfd-sys"
     version: "0.6.0"
   }
 }

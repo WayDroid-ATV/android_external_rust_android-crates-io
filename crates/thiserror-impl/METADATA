@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/thiserror-impl"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/thiserror-impl/thiserror-impl-2.0.16.crate"
+    type: "crates.io"
+    value: "thiserror-impl"
     version: "2.0.16"
   }
 }

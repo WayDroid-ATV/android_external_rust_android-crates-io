@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/tokio-io-timeout"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/tokio-io-timeout/tokio-io-timeout-1.2.1.crate"
+    type: "crates.io"
+    value: "tokio-io-timeout"
     version: "1.2.1"
   }
 }

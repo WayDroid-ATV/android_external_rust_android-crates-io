@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/unicode-xid"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/unicode-xid/unicode-xid-0.2.6.crate"
+    type: "crates.io"
+    value: "unicode-xid"
     version: "0.2.6"
   }
 }

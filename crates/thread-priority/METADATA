@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/thread-priority"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/thread-priority/thread-priority-3.0.0.crate"
+    type: "crates.io"
+    value: "thread-priority"
     version: "3.0.0"
   }
 }

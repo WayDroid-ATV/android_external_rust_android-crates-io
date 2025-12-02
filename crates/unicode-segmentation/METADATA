@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/unicode-segmentation"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/unicode-segmentation/unicode-segmentation-1.12.0.crate"
+    type: "crates.io"
+    value: "unicode-segmentation"
     version: "1.12.0"
   }
 }
