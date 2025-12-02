@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/gbm"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/gbm/gbm-0.15.0.crate"
+    type: "crates.io"
+    value: "gbm"
     version: "0.15.0"
   }
 }

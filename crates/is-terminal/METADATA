@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/is-terminal"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/is-terminal/is-terminal-0.4.17.crate"
+    type: "crates.io"
+    value: "is-terminal"
     version: "0.4.17"
   }
 }

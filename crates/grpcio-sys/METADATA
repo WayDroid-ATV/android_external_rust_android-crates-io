@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/grpcio-sys"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/grpcio-sys/grpcio-sys-0.13.0+1.56.2-patched.crate"
+    type: "crates.io"
+    value: "grpcio-sys"
     version: "0.13.0+1.56.2-patched"
   }
 }

@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/icu_collections"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/icu_collections/icu_collections-2.0.0.crate"
+    type: "crates.io"
+    value: "icu_collections"
     version: "2.0.0"
   }
 }

@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/genco"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/genco/genco-0.19.0.crate"
+    type: "crates.io"
+    value: "genco"
     version: "0.19.0"
   }
 }

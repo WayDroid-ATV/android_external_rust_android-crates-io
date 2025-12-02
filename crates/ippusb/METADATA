@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/ippusb"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/ippusb/ippusb-0.5.0.crate"
+    type: "crates.io"
+    value: "ippusb"
     version: "0.5.0"
   }
 }

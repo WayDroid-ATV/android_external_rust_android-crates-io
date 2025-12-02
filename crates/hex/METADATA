@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/hex"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/hex/hex-0.4.3.crate"
+    type: "crates.io"
+    value: "hex"
     version: "0.4.3"
   }
 }
