@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/acpi"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/acpi/acpi-6.0.1.crate"
+    type: "crates.io"
+    value: "acpi"
     version: "6.0.1"
   }
 }

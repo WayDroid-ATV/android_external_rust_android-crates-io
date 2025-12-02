@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/csv"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/csv/csv-1.4.0.crate"
+    type: "crates.io"
+    value: "csv"
     version: "1.4.0"
   }
 }

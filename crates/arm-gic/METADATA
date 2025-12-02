@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/arm-gic"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/arm-gic/arm-gic-0.7.1.crate"
+    type: "crates.io"
+    value: "arm-gic"
     version: "0.7.1"
   }
 }

@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/bitvec"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/bitvec/bitvec-1.0.1.crate"
+    type: "crates.io"
+    value: "bitvec"
     version: "1.0.1"
   }
 }

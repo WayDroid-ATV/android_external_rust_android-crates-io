@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/critical-section"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/critical-section/critical-section-1.2.0.crate"
+    type: "crates.io"
+    value: "critical-section"
     version: "1.2.0"
   }
 }

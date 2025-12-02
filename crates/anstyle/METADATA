@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/anstyle"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/anstyle/anstyle-1.0.13.crate"
+    type: "crates.io"
+    value: "anstyle"
     version: "1.0.13"
   }
 }

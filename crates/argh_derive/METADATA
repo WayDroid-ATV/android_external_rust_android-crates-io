@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/argh_derive"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/argh_derive/argh_derive-0.1.12.crate"
+    type: "crates.io"
+    value: "argh_derive"
     version: "0.1.12"
   }
 }

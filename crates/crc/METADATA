@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/crc"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/crc/crc-3.4.0.crate"
+    type: "crates.io"
+    value: "crc"
     version: "3.4.0"
   }
 }

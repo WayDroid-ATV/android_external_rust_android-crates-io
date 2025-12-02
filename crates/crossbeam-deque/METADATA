@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/crossbeam-deque"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/crossbeam-deque/crossbeam-deque-0.8.6.crate"
+    type: "crates.io"
+    value: "crossbeam-deque"
     version: "0.8.6"
   }
 }

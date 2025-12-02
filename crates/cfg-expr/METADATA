@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/cfg-expr"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/cfg-expr/cfg-expr-0.20.4.crate"
+    type: "crates.io"
+    value: "cfg-expr"
     version: "0.20.4"
   }
 }
