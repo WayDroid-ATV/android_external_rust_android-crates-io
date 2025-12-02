@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/miette"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/miette/miette-7.6.0.crate"
+    type: "crates.io"
+    value: "miette"
     version: "7.6.0"
   }
 }

@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/netlink-packet-route"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/netlink-packet-route/netlink-packet-route-0.25.1.crate"
+    type: "crates.io"
+    value: "netlink-packet-route"
     version: "0.25.1"
   }
 }

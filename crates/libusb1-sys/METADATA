@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/libusb1-sys"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/libusb1-sys/libusb1-sys-0.7.0.crate"
+    type: "crates.io"
+    value: "libusb1-sys"
     version: "0.7.0"
   }
 }

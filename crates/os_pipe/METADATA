@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/os_pipe"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/os_pipe/os_pipe-1.2.3.crate"
+    type: "crates.io"
+    value: "os_pipe"
     version: "1.2.3"
   }
 }

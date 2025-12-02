@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/num_enum_derive"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/num_enum_derive/num_enum_derive-0.7.4.crate"
+    type: "crates.io"
+    value: "num_enum_derive"
     version: "0.7.4"
   }
 }

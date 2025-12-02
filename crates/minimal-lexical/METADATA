@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/minimal-lexical"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/minimal-lexical/minimal-lexical-0.2.1.crate"
+    type: "crates.io"
+    value: "minimal-lexical"
     version: "0.2.1"
   }
 }

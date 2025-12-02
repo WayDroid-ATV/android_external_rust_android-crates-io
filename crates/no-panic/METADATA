@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/no-panic"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/no-panic/no-panic-0.1.35.crate"
+    type: "crates.io"
+    value: "no-panic"
     version: "0.1.35"
   }
 }
