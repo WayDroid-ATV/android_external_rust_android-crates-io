@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/spin"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/spin/spin-0.10.0.crate"
+    type: "crates.io"
+    value: "spin"
     version: "0.10.0"
   }
 }

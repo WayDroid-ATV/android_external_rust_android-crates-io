@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/safe-mmio"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/safe-mmio/safe-mmio-0.2.5.crate"
+    type: "crates.io"
+    value: "safe-mmio"
     version: "0.2.5"
   }
 }

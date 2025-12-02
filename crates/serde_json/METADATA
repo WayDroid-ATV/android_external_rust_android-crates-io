@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/serde_json"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/serde_json/serde_json-1.0.145.crate"
+    type: "crates.io"
+    value: "serde_json"
     version: "1.0.145"
   }
 }

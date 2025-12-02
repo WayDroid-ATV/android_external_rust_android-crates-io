@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/rustc-hash"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/rustc-hash/rustc-hash-2.1.1.crate"
+    type: "crates.io"
+    value: "rustc-hash"
     version: "2.1.1"
   }
 }

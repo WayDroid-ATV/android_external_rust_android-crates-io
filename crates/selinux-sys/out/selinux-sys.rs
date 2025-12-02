@@ -877,7 +877,7 @@ extern "C" {
 #[derive(Debug, Copy, Clone, PartialOrd, Ord, PartialEq, Eq)]
 pub struct security_id {
     pub ctx: *mut ::std::os::raw::c_char,
-    pub refcnt: ::std::os::raw::c_uint,
+    pub id: ::std::os::raw::c_uint,
 }
 pub type security_id_t = *mut security_id;
 extern "C" {

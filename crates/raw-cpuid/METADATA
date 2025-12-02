@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/raw-cpuid"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/raw-cpuid/raw-cpuid-11.6.0.crate"
+    type: "crates.io"
+    value: "raw-cpuid"
     version: "11.6.0"
   }
 }

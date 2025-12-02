@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/same-file"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/same-file/same-file-1.0.6.crate"
+    type: "crates.io"
+    value: "same-file"
     version: "1.0.6"
   }
 }

@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/selinux-sys"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/selinux-sys/selinux-sys-0.6.13.crate"
+    type: "crates.io"
+    value: "selinux-sys"
     version: "0.6.13"
   }
 }

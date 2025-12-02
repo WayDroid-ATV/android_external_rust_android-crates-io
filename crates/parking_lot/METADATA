@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/parking_lot"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/parking_lot/parking_lot-0.12.5.crate"
+    type: "crates.io"
+    value: "parking_lot"
     version: "0.12.5"
   }
 }
