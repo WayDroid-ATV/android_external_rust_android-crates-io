@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/merge"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/merge/merge-0.2.0.crate"
+    type: "crates.io"
+    value: "merge"
     version: "0.2.0"
   }
 }

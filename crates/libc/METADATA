@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/libc"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/libc/libc-0.2.177.crate"
+    type: "crates.io"
+    value: "libc"
     version: "0.2.177"
   }
 }

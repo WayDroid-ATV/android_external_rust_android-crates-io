@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/num-traits"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/num-traits/num-traits-0.2.19.crate"
+    type: "crates.io"
+    value: "num-traits"
     version: "0.2.19"
   }
 }

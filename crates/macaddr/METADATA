@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/macaddr"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/macaddr/macaddr-1.0.1.crate"
+    type: "crates.io"
+    value: "macaddr"
     version: "1.0.1"
   }
 }

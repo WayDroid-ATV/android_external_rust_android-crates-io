@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/oorandom"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/oorandom/oorandom-11.1.5.crate"
+    type: "crates.io"
+    value: "oorandom"
     version: "11.1.5"
   }
 }
