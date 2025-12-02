@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/ppv-lite86"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/ppv-lite86/ppv-lite86-0.2.21.crate"
+    type: "crates.io"
+    value: "ppv-lite86"
     version: "0.2.21"
   }
 }

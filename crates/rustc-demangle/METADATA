@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/rustc-demangle"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/rustc-demangle/rustc-demangle-0.1.26.crate"
+    type: "crates.io"
+    value: "rustc-demangle"
     version: "0.1.26"
   }
 }

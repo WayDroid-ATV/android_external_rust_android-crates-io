@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/stable_deref_trait"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/stable_deref_trait/stable_deref_trait-1.2.1.crate"
+    type: "crates.io"
+    value: "stable_deref_trait"
     version: "1.2.1"
   }
 }

@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/semver"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/semver/semver-1.0.27.crate"
+    type: "crates.io"
+    value: "semver"
     version: "1.0.27"
   }
 }

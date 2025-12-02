@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/scopeguard"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/scopeguard/scopeguard-1.2.0.crate"
+    type: "crates.io"
+    value: "scopeguard"
     version: "1.2.0"
   }
 }

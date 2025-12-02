@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/pdl-compiler"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/pdl-compiler/pdl-compiler-0.4.2.crate"
+    type: "crates.io"
+    value: "pdl-compiler"
     version: "0.4.2"
   }
 }

@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/syn"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/syn/syn-2.0.111.crate"
+    type: "crates.io"
+    value: "syn"
     version: "2.0.111"
   }
 }

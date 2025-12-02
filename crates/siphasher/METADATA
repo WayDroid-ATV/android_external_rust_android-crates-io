@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/siphasher"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/siphasher/siphasher-1.0.1.crate"
+    type: "crates.io"
+    value: "siphasher"
     version: "1.0.1"
   }
 }

@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/rayon"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/rayon/rayon-1.11.0.crate"
+    type: "crates.io"
+    value: "rayon"
     version: "1.11.0"
   }
 }

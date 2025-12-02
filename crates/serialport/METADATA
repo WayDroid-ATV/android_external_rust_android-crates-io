@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/serialport"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/serialport/serialport-4.7.3.crate"
+    type: "crates.io"
+    value: "serialport"
     version: "4.7.3"
   }
 }

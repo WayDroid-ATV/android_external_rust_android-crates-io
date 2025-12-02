@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/serde_yaml"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/serde_yaml/serde_yaml-0.9.34+deprecated.crate"
+    type: "crates.io"
+    value: "serde_yaml"
     version: "0.9.34+deprecated"
   }
 }

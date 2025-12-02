@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/smol_str"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/smol_str/smol_str-0.3.4.crate"
+    type: "crates.io"
+    value: "smol_str"
     version: "0.3.4"
   }
 }

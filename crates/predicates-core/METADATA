@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/predicates-core"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/predicates-core/predicates-core-1.0.9.crate"
+    type: "crates.io"
+    value: "predicates-core"
     version: "1.0.9"
   }
 }
