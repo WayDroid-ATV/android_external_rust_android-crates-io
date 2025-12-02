@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/dashmap"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/dashmap/dashmap-5.5.3.crate"
+    type: "crates.io"
+    value: "dashmap"
     version: "5.5.3"
   }
 }

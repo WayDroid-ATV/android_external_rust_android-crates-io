@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/doip-definitions"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/doip-definitions/doip-definitions-3.0.13.crate"
+    type: "crates.io"
+    value: "doip-definitions"
     version: "3.0.13"
   }
 }

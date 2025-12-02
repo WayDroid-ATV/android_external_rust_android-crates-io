@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/debug_tree"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/debug_tree/debug_tree-0.4.0.crate"
+    type: "crates.io"
+    value: "debug_tree"
     version: "0.4.0"
   }
 }
