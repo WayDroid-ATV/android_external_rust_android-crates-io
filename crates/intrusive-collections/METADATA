@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/intrusive-collections"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/intrusive-collections/intrusive-collections-0.9.7.crate"
+    type: "crates.io"
+    value: "intrusive-collections"
     version: "0.9.7"
   }
 }

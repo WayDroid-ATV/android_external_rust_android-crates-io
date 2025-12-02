@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/grpcio"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/grpcio/grpcio-0.13.0.crate"
+    type: "crates.io"
+    value: "grpcio"
     version: "0.13.0"
   }
 }

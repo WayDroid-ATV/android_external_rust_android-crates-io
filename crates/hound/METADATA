@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/hound"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/hound/hound-3.5.1.crate"
+    type: "crates.io"
+    value: "hound"
     version: "3.5.1"
   }
 }

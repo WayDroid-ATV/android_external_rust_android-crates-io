@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/globset"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/globset/globset-0.4.18.crate"
+    type: "crates.io"
+    value: "globset"
     version: "0.4.18"
   }
 }

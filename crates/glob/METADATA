@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/glob"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/glob/glob-0.3.3.crate"
+    type: "crates.io"
+    value: "glob"
     version: "0.3.3"
   }
 }

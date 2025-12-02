@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/hyper-timeout"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/hyper-timeout/hyper-timeout-0.5.2.crate"
+    type: "crates.io"
+    value: "hyper-timeout"
     version: "0.5.2"
   }
 }

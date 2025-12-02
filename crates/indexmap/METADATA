@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/indexmap"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/indexmap/indexmap-2.12.1.crate"
+    type: "crates.io"
+    value: "indexmap"
     version: "2.12.1"
   }
 }

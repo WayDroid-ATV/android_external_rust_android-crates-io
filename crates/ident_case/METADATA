@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/ident_case"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/ident_case/ident_case-1.0.1.crate"
+    type: "crates.io"
+    value: "ident_case"
     version: "1.0.1"
   }
 }
