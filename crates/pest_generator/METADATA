@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/pest_generator"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/pest_generator/pest_generator-2.8.4.crate"
+    type: "crates.io"
+    value: "pest_generator"
     version: "2.8.4"
   }
 }
