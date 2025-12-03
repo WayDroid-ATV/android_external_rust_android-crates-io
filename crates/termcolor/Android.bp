@@ -44,3 +44,9 @@ rust_test {
     },
     edition: "2018",
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_termcolor",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}
