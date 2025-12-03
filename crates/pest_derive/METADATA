@@ -1,17 +1,17 @@
 name: "pest_derive"
 description: "pest\'s derive macro"
 third_party {
-  version: "2.8.3"
+  version: "2.8.4"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 11
-    day: 19
+    month: 12
+    day: 2
   }
   homepage: "https://crates.io/crates/pest_derive"
   identifier {
     type: "crates.io"
     value: "pest_derive"
-    version: "2.8.3"
+    version: "2.8.4"
   }
 }
