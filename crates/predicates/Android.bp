@@ -63,3 +63,9 @@ rust_test {
         "libtermcolor",
     ],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_predicates",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}
