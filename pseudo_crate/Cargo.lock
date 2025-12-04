@@ -333,6 +333,7 @@ dependencies = [
  "icu_provider_adapters",
  "ident_case",
  "idna",
+ "idna_adapter",
  "if-addrs",
  "image 0.25.6",
  "indexmap 2.12.1",
@@ -4218,6 +4219,16 @@ checksum = "634d9b1461af396cad843f47fdba5597a4f9e6ddd4bfb6ff5d85028c25cb12f6"
 dependencies = [
  "unicode-bidi",
  "unicode-normalization",
+]
+
+[[package]]
+name = "idna_adapter"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3acae9609540aa318d1bc588455225fb2085b9ed0c4f6bd0d9d5bcd86f1a0344"
+dependencies = [
+ "icu_normalizer",
+ "icu_properties",
 ]
 
 [[package]]

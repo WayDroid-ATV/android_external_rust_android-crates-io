@@ -218,6 +218,7 @@ icu_provider_baked
 icu_provider_macros
 ident_case
 idna
+idna_adapter
 if-addrs
 image
 indexmap
