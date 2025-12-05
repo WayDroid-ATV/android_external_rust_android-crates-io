@@ -25,6 +25,7 @@ rust_library {
         "//apex_available:platform",
         "com.android.compos",
         "com.android.resolv",
+        "com.android.tethering",
         "com.android.virt",
     ],
     product_available: true,
