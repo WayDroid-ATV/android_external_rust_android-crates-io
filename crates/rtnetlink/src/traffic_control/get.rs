@@ -2,7 +2,7 @@
 
 use futures::{
     future::{self, Either},
-    stream::{StreamExt, TryStream},
+    stream::{Stream, StreamExt},
     FutureExt,
 };
 use netlink_packet_core::{NetlinkMessage, NLM_F_DUMP, NLM_F_REQUEST};
@@ -28,7 +28,7 @@ impl QDiscGetRequest {
     }
 
     /// Execute the request
-    pub fn execute(self) -> impl TryStream<Ok = TcMessage, Error = Error> {
+    pub fn execute(self) -> impl Stream<Item = Result<TcMessage, Error>> {
         let QDiscGetRequest {
             mut handle,
             message,
@@ -75,7 +75,7 @@ impl TrafficClassGetRequest {
     }
 
     /// Execute the request
-    pub fn execute(self) -> impl TryStream<Ok = TcMessage, Error = Error> {
+    pub fn execute(self) -> impl Stream<Item = Result<TcMessage, Error>> {
         let TrafficClassGetRequest {
             mut handle,
             message,
@@ -110,7 +110,7 @@ impl TrafficFilterGetRequest {
     }
 
     /// Execute the request
-    pub fn execute(self) -> impl TryStream<Ok = TcMessage, Error = Error> {
+    pub fn execute(self) -> impl Stream<Item = Result<TcMessage, Error>> {
         let TrafficFilterGetRequest {
             mut handle,
             message,
@@ -136,6 +136,24 @@ impl TrafficFilterGetRequest {
         self.message.header.parent = TcHandle::ROOT;
         self
     }
+
+    /// Set parent to ingress.
+    pub fn ingress(mut self) -> Self {
+        self.message.header.parent = TcHandle {
+            major: 0xffff,
+            minor: TcHandle::MIN_INGRESS,
+        };
+        self
+    }
+
+    /// Set parent to egress.
+    pub fn egress(mut self) -> Self {
+        self.message.header.parent = TcHandle {
+            major: 0xffff,
+            minor: TcHandle::MIN_EGRESS,
+        };
+        self
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -152,7 +170,7 @@ impl TrafficChainGetRequest {
     }
 
     /// Execute the request
-    pub fn execute(self) -> impl TryStream<Ok = TcMessage, Error = Error> {
+    pub fn execute(self) -> impl Stream<Item = Result<TcMessage, Error>> {
         let TrafficChainGetRequest {
             mut handle,
             message,

@@ -10,10 +10,10 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
+edition = "2021"
 rust-version = "1.66.1"
 name = "rtnetlink"
-version = "0.17.0"
+version = "0.18.1"
 authors = ["Corentin Henry <corentinhenry@gmail.com>"]
 build = false
 autolib = false
@@ -67,6 +67,10 @@ path = "examples/add_netns_async.rs"
 [[example]]
 name = "add_route"
 path = "examples/add_route.rs"
+
+[[example]]
+name = "add_route_ecmp"
+path = "examples/add_route_ecmp.rs"
 
 [[example]]
 name = "add_route_mpls"
@@ -127,6 +131,10 @@ path = "examples/create_wireguard.rs"
 [[example]]
 name = "create_xfrm"
 path = "examples/create_xfrm.rs"
+
+[[example]]
+name = "del_address"
+path = "examples/del_address.rs"
 
 [[example]]
 name = "del_link"
@@ -211,16 +219,13 @@ version = "0.3.11"
 version = "0.4.8"
 
 [dependencies.netlink-packet-core]
-version = "0.7"
+version = "0.8"
 
 [dependencies.netlink-packet-route]
-version = "0.24"
-
-[dependencies.netlink-packet-utils]
-version = "0.5"
+version = "0.25"
 
 [dependencies.netlink-proto]
-version = "0.11"
+version = "0.12.0"
 default-features = false
 
 [dependencies.netlink-sys]

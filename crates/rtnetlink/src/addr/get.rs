@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-use futures::{
-    future::{self, Either},
-    stream::{StreamExt, TryStream, TryStreamExt},
-    FutureExt,
-};
 use std::net::IpAddr;
 
+use futures::{
+    future::{self, Either},
+    stream::{Stream, StreamExt, TryStreamExt},
+    FutureExt,
+};
 use netlink_packet_core::{NetlinkMessage, NLM_F_DUMP, NLM_F_REQUEST};
 use netlink_packet_route::{
     address::{AddressAttribute, AddressMessage},
@@ -34,7 +34,7 @@ impl AddressGetRequest {
         &mut self.message
     }
 
-    pub fn execute(self) -> impl TryStream<Ok = AddressMessage, Error = Error> {
+    pub fn execute(self) -> impl Stream<Item = Result<AddressMessage, Error>> {
         let AddressGetRequest {
             mut handle,
             message,

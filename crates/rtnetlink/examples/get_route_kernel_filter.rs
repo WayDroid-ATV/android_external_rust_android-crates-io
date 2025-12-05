@@ -10,8 +10,7 @@ use rtnetlink::{
     RouteMessageBuilder,
 };
 
-/// Dump IPv4 unicast routes with protocol boot(e.g. route created by ip
-/// route)on table 254 only
+/// Dump IPv4 routes on table 254 only
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (mut connection, handle, _) = new_connection().unwrap();
@@ -26,9 +25,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("dumping routes for IPv4 in table 254");
     let route = RouteMessageBuilder::<Ipv4Addr>::new()
         .table_id(254)
-        .protocol(RouteProtocol::Boot)
+        .protocol(RouteProtocol::Unspec)
         .scope(RouteScope::Universe)
-        .kind(RouteType::Unicast)
+        .kind(RouteType::Unspec)
         .build();
     let mut routes = handle.route().get(route).execute();
     while let Some(route) = routes.try_next().await? {
