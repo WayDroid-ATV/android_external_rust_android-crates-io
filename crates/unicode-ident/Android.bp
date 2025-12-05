@@ -11,7 +11,7 @@ license {
     visibility: [":__subpackages__"],
     license_kinds: [
         "SPDX-license-identifier-Apache-2.0",
-        "SPDX-license-identifier-Unicode-DFS-2016",
+        "SPDX-license-identifier-Unicode-3.0",
     ],
     license_text: [
         "LICENSE-APACHE",
@@ -24,7 +24,7 @@ rust_library {
     host_supported: true,
     crate_name: "unicode_ident",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.8",
+    cargo_pkg_version: "1.0.22",
     crate_root: "src/lib.rs",
     edition: "2018",
     apex_available: [
