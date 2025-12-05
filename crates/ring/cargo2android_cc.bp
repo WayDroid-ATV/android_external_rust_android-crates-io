@@ -98,6 +98,7 @@ cc_library_static {
     apex_available: [
         "//apex_available:platform",
         "com.android.resolv",
+        "com.android.tethering",
     ],
     vendor_available: true,
     product_available: true,
@@ -114,6 +115,7 @@ cc_library_static {
     apex_available: [
         "//apex_available:platform",
         "com.android.resolv",
+        "com.android.tethering",
     ],
     vendor_available: true,
     product_available: true,
