@@ -226,10 +226,11 @@ impl<'a> TupleVariationHeader<'a> {
             } else {
                 Default::default()
             }
-            + index
-                .intermediate_region()
-                .then_some(tuple_byte_len * 2)
-                .unwrap_or_default()
+            + if index.intermediate_region() {
+                tuple_byte_len * 2
+            } else {
+                Default::default()
+            }
     }
 }
 
@@ -1333,7 +1334,7 @@ impl ItemVariationStore<'_> {
         index: DeltaSetIndex,
         coords: &[F2Dot14],
     ) -> Result<i32, ReadError> {
-        if coords.is_empty() {
+        if coords.is_empty() || index == DeltaSetIndex::NO_VARIATION_INDEX {
             return Ok(0);
         }
         let data = match self.item_variation_data().get(index.outer as usize) {

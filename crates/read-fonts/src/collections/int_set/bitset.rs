@@ -244,6 +244,31 @@ impl U32Set {
             .unwrap_or(false)
     }
 
+    pub fn intersects_set(&self, other: &U32Set) -> bool {
+        let mut it_a = self.page_map.iter().peekable();
+        let mut it_b = other.page_map.iter().peekable();
+
+        while let (Some(a), Some(b)) = (it_a.peek(), it_b.peek()) {
+            match a.major_value.cmp(&b.major_value) {
+                Ordering::Equal => {
+                    if self.pages[a.index as usize].intersects_set(&other.pages[b.index as usize]) {
+                        return true;
+                    }
+                    it_a.next();
+                    it_b.next();
+                }
+                Ordering::Less => {
+                    it_a.next();
+                }
+                Ordering::Greater => {
+                    it_b.next();
+                }
+            }
+        }
+
+        false
+    }
+
     pub const fn empty() -> U32Set {
         U32Set {
             pages: Vec::new(),
@@ -602,6 +627,7 @@ impl U32Set {
 
     /// Returns the index in `self.pages` for the page with the same major as `major_value`. Will create
     /// the page if it does not yet exist.
+    #[inline]
     fn ensure_page_index_for_major(&mut self, major_value: u32) -> usize {
         match self
             .page_map
@@ -1470,5 +1496,38 @@ mod test {
             [1000, 2000, 3000, 4000, 5000],
             Ordering::Greater
         ); // out of order
+    }
+
+    #[test]
+    fn intersects() {
+        macro_rules! assert_intersects {
+            ($lhs:path, $rhs:path, $expected:expr) => {
+                assert_eq!($lhs.intersects_set(&$rhs), $expected);
+                assert_eq!($rhs.intersects_set(&$lhs), $expected);
+            };
+        }
+
+        let a = U32Set::from_iter([2, 4, 5, 2057, 7000]);
+        let b = U32Set::from_iter([3]);
+        let c = U32Set::from_iter([2058]);
+        let d = U32Set::from_iter([2057, 3000]);
+        let e = U32Set::from_iter([3, 7000]);
+
+        assert_intersects!(a, b, false);
+        assert_intersects!(a, c, false);
+        assert_intersects!(e, d, false);
+
+        assert_intersects!(a, d, true);
+        assert_intersects!(a, e, true);
+        assert_intersects!(b, e, true);
+
+        // Check that page map population orderdoes not impact the check
+        let mut a = U32Set::empty();
+        a.insert(4000);
+        a.insert(0);
+
+        let b = U32Set::from_iter([4000]);
+
+        assert_intersects!(a, b, true);
     }
 }

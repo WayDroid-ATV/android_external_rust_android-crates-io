@@ -7,6 +7,19 @@ use crate::collections::IntSet;
 use crate::{FontRef, TableProvider};
 use std::ops::Range;
 
+// See <https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#windows-platform-platform-id--3>
+const WINDOWS_SYMBOL_ENCODING: u16 = 0;
+const WINDOWS_UNICODE_BMP_ENCODING: u16 = 1;
+const WINDOWS_UNICODE_FULL_ENCODING: u16 = 10;
+
+// See <https://docs.microsoft.com/en-us/typography/opentype/spec/name#platform-specific-encoding-and-language-ids-unicode-platform-platform-id--0>
+const UNICODE_1_0_ENCODING: u16 = 0;
+const UNICODE_1_1_ENCODING: u16 = 1;
+const UNICODE_ISO_ENCODING: u16 = 2;
+const UNICODE_2_0_BMP_ENCODING: u16 = 3;
+const UNICODE_2_0_FULL_ENCODING: u16 = 4;
+const UNICODE_FULL_ENCODING: u16 = 6;
+
 /// Result of mapping a codepoint with a variation selector.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum MapVariant {
@@ -18,7 +31,7 @@ pub enum MapVariant {
     Variant(GlyphId),
 }
 
-impl Cmap<'_> {
+impl<'a> Cmap<'a> {
     /// Map a codepoint to a nominal glyph identifier
     ///
     /// This uses the first available subtable that provides a valid mapping.
@@ -31,19 +44,87 @@ impl Cmap<'_> {
         let codepoint = codepoint.into();
         for record in self.encoding_records() {
             if let Ok(subtable) = record.subtable(self.offset_data()) {
-                if let Some(gid) = match subtable {
-                    CmapSubtable::Format0(format0) => format0.map_codepoint(codepoint),
-                    CmapSubtable::Format4(format4) => format4.map_codepoint(codepoint),
-                    CmapSubtable::Format6(format6) => format6.map_codepoint(codepoint),
-                    CmapSubtable::Format12(format12) => format12.map_codepoint(codepoint),
-                    CmapSubtable::Format13(format13) => format13.map_codepoint(codepoint),
-                    _ => None,
-                } {
+                if let Some(gid) = subtable.map_codepoint(codepoint) {
                     return Some(gid);
                 }
             }
         }
         None
+    }
+
+    /// Returns the index, encoding record and subtable for the most
+    /// comprehensive mapping available.
+    ///
+    /// Comprehensive means that tables capable of mapping the Unicode full
+    /// repertoire are chosen over those that only support the basic
+    /// multilingual plane. The exception is that symbol mappings are
+    /// preferred above all others
+    /// (see <https://github.com/harfbuzz/harfbuzz/issues/1918>).
+    pub fn best_subtable(&self) -> Option<(u16, EncodingRecord, CmapSubtable<'a>)> {
+        // Follows the HarfBuzz approach
+        // See <https://github.com/harfbuzz/harfbuzz/blob/a9a78e1bff9d4a62429d22277fea4e0e76e9ac7e/src/hb-ot-cmap-table.hh#L1962>
+        let offset_data = self.offset_data();
+        let records = self.encoding_records();
+        let find = |platform_id, encoding_id| {
+            for (index, record) in records.iter().enumerate() {
+                if record.platform_id() != platform_id || record.encoding_id() != encoding_id {
+                    continue;
+                }
+                if let Ok(subtable) = record.subtable(offset_data) {
+                    match subtable {
+                        CmapSubtable::Format0(_)
+                        | CmapSubtable::Format4(_)
+                        | CmapSubtable::Format6(_)
+                        | CmapSubtable::Format10(_)
+                        | CmapSubtable::Format12(_)
+                        | CmapSubtable::Format13(_) => {
+                            return Some((index as u16, *record, subtable))
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            None
+        };
+        // Symbol subtable.
+        // Prefer symbol if available.
+        // https://github.com/harfbuzz/harfbuzz/issues/1918
+        find(PlatformId::Windows, WINDOWS_SYMBOL_ENCODING)
+            // 32-bit subtables:
+            .or_else(|| find(PlatformId::Windows, WINDOWS_UNICODE_FULL_ENCODING))
+            .or_else(|| find(PlatformId::Unicode, UNICODE_FULL_ENCODING))
+            .or_else(|| find(PlatformId::Unicode, UNICODE_2_0_FULL_ENCODING))
+            // 16-bit subtables:
+            .or_else(|| find(PlatformId::Windows, WINDOWS_UNICODE_BMP_ENCODING))
+            .or_else(|| find(PlatformId::Unicode, UNICODE_2_0_BMP_ENCODING))
+            .or_else(|| find(PlatformId::Unicode, UNICODE_ISO_ENCODING))
+            .or_else(|| find(PlatformId::Unicode, UNICODE_1_1_ENCODING))
+            .or_else(|| find(PlatformId::Unicode, UNICODE_1_0_ENCODING))
+            // MacRoman subtable:
+            .or_else(|| find(PlatformId::Macintosh, 0))
+    }
+
+    /// Returns the index and subtable for the first mapping capable of
+    /// handling Unicode variation sequences.
+    ///
+    /// This is always a [format 14](https://learn.microsoft.com/en-us/typography/opentype/spec/cmap#format-14-unicode-variation-sequences)
+    /// subtable.
+    pub fn uvs_subtable(&self) -> Option<(u16, Cmap14<'a>)> {
+        let offset_data = self.offset_data();
+        for (index, record) in self.encoding_records().iter().enumerate() {
+            if let Ok(CmapSubtable::Format14(cmap14)) = record.subtable(offset_data) {
+                return Some((index as u16, cmap14));
+            };
+        }
+        None
+    }
+
+    /// Returns the subtable at the given index.
+    pub fn subtable(&self, index: u16) -> Result<CmapSubtable<'a>, ReadError> {
+        self.encoding_records()
+            .get(index as usize)
+            .ok_or(ReadError::OutOfBounds)
+            .and_then(|encoding| encoding.subtable(self.offset_data()))
     }
 
     #[cfg(feature = "std")]
@@ -64,7 +145,17 @@ impl Cmap<'_> {
     }
 }
 
-impl CmapSubtable<'_> {
+impl EncodingRecord {
+    pub fn is_symbol(&self) -> bool {
+        self.platform_id() == PlatformId::Windows && self.encoding_id() == WINDOWS_SYMBOL_ENCODING
+    }
+
+    pub fn is_mac_roman(&self) -> bool {
+        self.platform_id() == PlatformId::Macintosh && self.encoding_id() == 0
+    }
+}
+
+impl<'a> CmapSubtable<'a> {
     pub fn language(&self) -> u32 {
         match self {
             Self::Format0(item) => item.language() as u32,
@@ -75,6 +166,77 @@ impl CmapSubtable<'_> {
             Self::Format12(item) => item.language(),
             Self::Format13(item) => item.language(),
             _ => 0,
+        }
+    }
+
+    /// Attempts to map the given codepoint to a nominal glyph identifier using
+    /// the underlying subtable.
+    #[inline]
+    pub fn map_codepoint(&self, codepoint: impl Into<u32>) -> Option<GlyphId> {
+        match self {
+            Self::Format0(item) => item.map_codepoint(codepoint),
+            Self::Format4(item) => item.map_codepoint(codepoint),
+            Self::Format6(item) => item.map_codepoint(codepoint),
+            Self::Format10(item) => item.map_codepoint(codepoint),
+            Self::Format12(item) => item.map_codepoint(codepoint),
+            Self::Format13(item) => item.map_codepoint(codepoint),
+            _ => None,
+        }
+    }
+
+    /// Returns an iterator over all (codepoint, glyph identifier) pairs
+    /// in the subtable.
+    ///
+    /// Malicious and malformed fonts can produce a large number of invalid
+    /// pairs. Use [`Self::iter_with_limits`] to generate a pruned sequence
+    /// that is limited to reasonable values.
+    pub fn iter(&self) -> CmapSubtableIter<'a> {
+        let limits = CmapIterLimits {
+            max_char: u32::MAX,
+            glyph_count: u32::MAX,
+        };
+        self.iter_with_limits(limits)
+    }
+
+    /// Returns an iterator over all (codepoint, glyph identifier) pairs
+    /// in the subtable within the given limits.    
+    pub fn iter_with_limits(&self, limits: CmapIterLimits) -> CmapSubtableIter<'a> {
+        match self {
+            Self::Format4(item) => CmapSubtableIter::Format4(item.iter()),
+            Self::Format6(item) => CmapSubtableIter::Format6(item.iter()),
+            Self::Format10(item) => CmapSubtableIter::Format10(item.iter()),
+            Self::Format12(item) => CmapSubtableIter::Format12(item.iter_with_limits(limits)),
+            Self::Format13(item) => CmapSubtableIter::Format13(item.iter_with_limits(limits)),
+            _ => CmapSubtableIter::None,
+        }
+    }
+}
+
+/// Iterator over all (codepoint, glyph identifier) pairs in
+/// the subtable.
+#[derive(Clone)]
+#[non_exhaustive]
+pub enum CmapSubtableIter<'a> {
+    None,
+    Format4(Cmap4Iter<'a>),
+    Format6(Cmap6Iter<'a>),
+    Format10(Cmap10Iter<'a>),
+    Format12(Cmap12Iter<'a>),
+    Format13(Cmap13Iter<'a>),
+}
+
+impl<'a> Iterator for CmapSubtableIter<'a> {
+    type Item = (u32, GlyphId);
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            Self::None => None,
+            Self::Format4(iter) => iter.next(),
+            Self::Format6(iter) => iter.next(),
+            Self::Format10(iter) => iter.next(),
+            Self::Format12(iter) => iter.next(),
+            Self::Format13(iter) => iter.next(),
         }
     }
 }
@@ -204,7 +366,7 @@ impl Iterator for Cmap4Iter<'_> {
     }
 }
 
-impl Cmap6<'_> {
+impl<'a> Cmap6<'a> {
     pub fn map_codepoint(&self, codepoint: impl Into<u32>) -> Option<GlyphId> {
         let codepoint = codepoint.into();
 
@@ -213,6 +375,76 @@ impl Cmap6<'_> {
         self.glyph_id_array()
             .get(idx as usize)
             .map(|g| GlyphId::new(g.get() as u32))
+    }
+
+    /// Returns an iterator over all (codepoint, glyph identifier) pairs
+    /// in the subtable.    
+    pub fn iter(&self) -> Cmap6Iter<'a> {
+        Cmap6Iter {
+            first: self.first_code() as u32,
+            glyph_ids: self.glyph_id_array(),
+            pos: 0,
+        }
+    }
+}
+
+/// Iterator over all (codepoint, glyph identifier) pairs in
+/// the subtable.
+#[derive(Clone)]
+pub struct Cmap6Iter<'a> {
+    first: u32,
+    glyph_ids: &'a [BigEndian<u16>],
+    pos: u32,
+}
+
+impl Iterator for Cmap6Iter<'_> {
+    type Item = (u32, GlyphId);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let gid = self.glyph_ids.get(self.pos as usize)?.get().into();
+        let codepoint = self.first + self.pos;
+        self.pos += 1;
+        Some((codepoint, gid))
+    }
+}
+
+impl<'a> Cmap10<'a> {
+    pub fn map_codepoint(&self, codepoint: impl Into<u32>) -> Option<GlyphId> {
+        let codepoint = codepoint.into();
+        let idx = codepoint.checked_sub(self.start_char_code())?;
+        self.glyph_id_array()
+            .get(idx as usize)
+            .map(|g| GlyphId::new(g.get() as u32))
+    }
+
+    /// Returns an iterator over all (codepoint, glyph identifier) pairs
+    /// in the subtable.    
+    pub fn iter(&self) -> Cmap10Iter<'a> {
+        Cmap10Iter {
+            first: self.start_char_code(),
+            glyph_ids: self.glyph_id_array(),
+            pos: 0,
+        }
+    }
+}
+
+/// Iterator over all (codepoint, glyph identifier) pairs in
+/// the subtable.
+#[derive(Clone)]
+pub struct Cmap10Iter<'a> {
+    first: u32,
+    glyph_ids: &'a [BigEndian<u16>],
+    pos: u32,
+}
+
+impl Iterator for Cmap10Iter<'_> {
+    type Item = (u32, GlyphId);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let gid = self.glyph_ids.get(self.pos as usize)?.get().into();
+        let codepoint = self.first + self.pos;
+        self.pos += 1;
+        Some((codepoint, gid))
     }
 }
 
@@ -907,6 +1139,78 @@ mod tests {
         assert_eq!(mappings, &[(259, 236), (262, 326), (65535, 0)]);
     }
 
+    const CMAP6_PAIRS: &[(u32, u32)] = &[
+        (0x1723, 1),
+        (0x1724, 2),
+        (0x1725, 3),
+        (0x1726, 4),
+        (0x1727, 5),
+    ];
+
+    #[test]
+    fn cmap6_map() {
+        let font = FontRef::new(font_test_data::CMAP6).unwrap();
+        let cmap = font.cmap().unwrap();
+        let CmapSubtable::Format6(cmap6) = cmap.subtable(0).unwrap() else {
+            panic!("should be a format 6 subtable");
+        };
+        for (ch, gid) in CMAP6_PAIRS {
+            assert_eq!(cmap6.map_codepoint(*ch).unwrap().to_u32(), *gid);
+        }
+        // Check out of bounds codepoints
+        assert!(cmap6.map_codepoint(CMAP6_PAIRS[0].0 - 1).is_none());
+        assert!(cmap6
+            .map_codepoint(CMAP6_PAIRS.last().copied().unwrap().0 + 1)
+            .is_none());
+    }
+
+    #[test]
+    fn cmap6_iter() {
+        let font = FontRef::new(font_test_data::CMAP6).unwrap();
+        let cmap = font.cmap().unwrap();
+        let CmapSubtable::Format6(cmap6) = cmap.subtable(0).unwrap() else {
+            panic!("should be a format 6 subtable");
+        };
+        let pairs = cmap6
+            .iter()
+            .map(|(ch, gid)| (ch, gid.to_u32()))
+            .collect::<Vec<_>>();
+        assert_eq!(pairs, CMAP6_PAIRS);
+    }
+
+    const CMAP10_PAIRS: &[(u32, u32)] = &[(0x109423, 26), (0x109424, 27), (0x109425, 32)];
+
+    #[test]
+    fn cmap10_map() {
+        let font = FontRef::new(font_test_data::CMAP10).unwrap();
+        let cmap = font.cmap().unwrap();
+        let CmapSubtable::Format10(cmap10) = cmap.subtable(0).unwrap() else {
+            panic!("should be a format 10 subtable");
+        };
+        for (ch, gid) in CMAP10_PAIRS {
+            assert_eq!(cmap10.map_codepoint(*ch).unwrap().to_u32(), *gid);
+        }
+        // Check out of bounds codepoints
+        assert!(cmap10.map_codepoint(CMAP10_PAIRS[0].0 - 1).is_none());
+        assert!(cmap10
+            .map_codepoint(CMAP10_PAIRS.last().copied().unwrap().0 + 1)
+            .is_none());
+    }
+
+    #[test]
+    fn cmap10_iter() {
+        let font = FontRef::new(font_test_data::CMAP10).unwrap();
+        let cmap = font.cmap().unwrap();
+        let CmapSubtable::Format10(cmap10) = cmap.subtable(0).unwrap() else {
+            panic!("should be a format 10 subtable");
+        };
+        let pairs = cmap10
+            .iter()
+            .map(|(ch, gid)| (ch, gid.to_u32()))
+            .collect::<Vec<_>>();
+        assert_eq!(pairs, CMAP10_PAIRS);
+    }
+
     #[test]
     fn cmap12_iter() {
         let font = FontRef::new(font_test_data::CMAP12_FONT1).unwrap();
@@ -1195,5 +1499,47 @@ mod tests {
             252, 218, 129, 247, 203, 159, 109, 74, 7, 58,
             237, 199, 88, 205, 148, 3]
         }
+    }
+
+    #[test]
+    fn best_subtable_full() {
+        let font = FontRef::new(font_test_data::VORG).unwrap();
+        let cmap = font.cmap().unwrap();
+        let (index, record, _) = cmap.best_subtable().unwrap();
+        assert_eq!(
+            (index, record.platform_id(), record.encoding_id()),
+            (3, PlatformId::Windows, WINDOWS_UNICODE_FULL_ENCODING)
+        );
+    }
+
+    #[test]
+    fn best_subtable_bmp() {
+        let font = FontRef::new(font_test_data::CMAP12_FONT1).unwrap();
+        let cmap = font.cmap().unwrap();
+        let (index, record, _) = cmap.best_subtable().unwrap();
+        assert_eq!(
+            (index, record.platform_id(), record.encoding_id()),
+            (0, PlatformId::Windows, WINDOWS_UNICODE_BMP_ENCODING)
+        );
+    }
+
+    #[test]
+    fn best_subtable_symbol() {
+        let font = FontRef::new(font_test_data::CMAP4_SYMBOL_PUA).unwrap();
+        let cmap = font.cmap().unwrap();
+        let (index, record, _) = cmap.best_subtable().unwrap();
+        assert!(record.is_symbol());
+        assert_eq!(
+            (index, record.platform_id(), record.encoding_id()),
+            (0, PlatformId::Windows, WINDOWS_SYMBOL_ENCODING)
+        );
+    }
+
+    #[test]
+    fn uvs_subtable() {
+        let font = FontRef::new(font_test_data::CMAP14_FONT1).unwrap();
+        let cmap = font.cmap().unwrap();
+        let (index, _) = cmap.uvs_subtable().unwrap();
+        assert_eq!(index, 0);
     }
 }

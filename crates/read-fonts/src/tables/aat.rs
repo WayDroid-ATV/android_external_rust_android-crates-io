@@ -14,14 +14,17 @@ pub mod class {
 }
 
 impl Lookup0<'_> {
-    pub fn value<T: LookupValue>(&self, index: u16) -> Result<T, ReadError> {
+    pub fn values<T: LookupValue>(&self) -> Result<&[BigEndian<T>], ReadError> {
         let data = self.values_data();
         let data_len = data.len();
         let n_elems = data_len / T::RAW_BYTE_LEN;
         let len_in_bytes = n_elems * T::RAW_BYTE_LEN;
         FontData::new(&data[..len_in_bytes])
             .cursor()
-            .read_array::<BigEndian<T>>(n_elems)?
+            .read_array::<BigEndian<T>>(n_elems)
+    }
+    pub fn value<T: LookupValue>(&self, index: u16) -> Result<T, ReadError> {
+        self.values::<T>()?
             .get(index as usize)
             .map(|val| val.get())
             .ok_or(ReadError::OutOfBounds)
@@ -63,7 +66,7 @@ impl Lookup2<'_> {
         Err(ReadError::OutOfBounds)
     }
 
-    fn segments<T: LookupValue>(&self) -> Result<&[LookupSegment2<T>], ReadError> {
+    pub fn segments<T: LookupValue>(&self) -> Result<&[LookupSegment2<T>], ReadError> {
         FontData::new(self.segments_data())
             .cursor()
             .read_array(self.n_units() as usize)
@@ -88,6 +91,23 @@ impl Lookup4<'_> {
             return self.offset_data().read_at(offset);
         }
         Err(ReadError::OutOfBounds)
+    }
+    pub fn segment_values<T: LookupValue>(
+        &self,
+        segment: usize,
+    ) -> Result<&[BigEndian<T>], ReadError> {
+        let segment = self.segments().get(segment).ok_or(ReadError::OutOfBounds)?;
+        let base_offset = segment.value_offset() as usize;
+        let n_elems = segment
+            .last_glyph
+            .get()
+            .checked_sub(segment.first_glyph.get())
+            .ok_or(ReadError::MalformedData(
+                "invalid segment in format 4 AAT lookup table",
+            ))? as usize
+            + 1;
+        self.offset_data()
+            .read_array::<BigEndian<T>>(base_offset..base_offset + n_elems * T::RAW_BYTE_LEN)
     }
 }
 
@@ -120,7 +140,7 @@ impl Lookup6<'_> {
         Err(ReadError::OutOfBounds)
     }
 
-    fn entries<T: LookupValue>(&self) -> Result<&[LookupSingle<T>], ReadError> {
+    pub fn entries<T: LookupValue>(&self) -> Result<&[LookupSingle<T>], ReadError> {
         FontData::new(self.entries_data())
             .cursor()
             .read_array(self.n_units() as usize)
@@ -178,7 +198,7 @@ impl Lookup<'_> {
 
 #[derive(Clone)]
 pub struct TypedLookup<'a, T> {
-    lookup: Lookup<'a>,
+    pub lookup: Lookup<'a>,
     _marker: std::marker::PhantomData<fn() -> T>,
 }
 
@@ -308,7 +328,12 @@ where
 /// for more detail.
 #[derive(Clone)]
 pub struct StateTable<'a> {
-    header: StateHeader<'a>,
+    pub header: StateHeader<'a>,
+    n_classes: usize,
+    class_first_glyph: u16,
+    class_array: &'a [u8],
+    state_array: &'a [u8],
+    entry_table: &'a [u8],
 }
 
 impl StateTable<'_> {
@@ -320,40 +345,27 @@ impl StateTable<'_> {
         if glyph_id == 0xFFFF {
             return Ok(class::DELETED_GLYPH);
         }
-        let class_table = self.header.class_table()?;
         glyph_id
-            .checked_sub(class_table.first_glyph())
-            .and_then(|ix| class_table.class_array().get(ix as usize).copied())
+            .checked_sub(self.class_first_glyph)
+            .and_then(|ix| self.class_array.get(ix as usize).copied())
             .ok_or(ReadError::OutOfBounds)
     }
 
     /// Returns the entry for the given state and class.
+    #[inline(always)]
     pub fn entry(&self, state: u16, class: u8) -> Result<StateEntry, ReadError> {
-        // Each state has a 1-byte entry per class so state_size == n_classes
-        let n_classes = self.header.state_size() as usize;
-        if n_classes == 0 {
-            // Avoid potential divide by zero below
-            return Err(ReadError::MalformedData("empty AAT state table"));
-        }
         let mut class = class as usize;
-        if class >= n_classes {
+        if class >= self.n_classes {
             class = class::OUT_OF_BOUNDS as usize;
         }
-        let state_array = self.header.state_array()?.data();
-        let entry_ix = state_array
-            .get(
-                (state as usize)
-                    .checked_mul(n_classes)
-                    .ok_or(ReadError::OutOfBounds)?
-                    + class,
-            )
+        let entry_ix = self
+            .state_array
+            .get(state as usize * self.n_classes + class)
             .copied()
             .ok_or(ReadError::OutOfBounds)? as usize;
         let entry_offset = entry_ix * 4;
         let entry_data = self
-            .header
-            .entry_table()?
-            .data()
+            .entry_table
             .get(entry_offset..)
             .ok_or(ReadError::OutOfBounds)?;
         let mut entry = StateEntry::read(FontData::new(entry_data))?;
@@ -362,7 +374,7 @@ impl StateTable<'_> {
         let new_state = (entry.new_state as i32)
             .checked_sub(self.header.state_array_offset().to_u32() as i32)
             .ok_or(ReadError::OutOfBounds)?
-            / n_classes as i32;
+            / self.n_classes as i32;
         entry.new_state = new_state.try_into().map_err(|_| ReadError::OutOfBounds)?;
         Ok(entry)
     }
@@ -375,8 +387,25 @@ impl StateTable<'_> {
 
 impl<'a> FontRead<'a> for StateTable<'a> {
     fn read(data: FontData<'a>) -> Result<Self, ReadError> {
+        let header = StateHeader::read(data)?;
+        // Each state has a 1-byte entry per class so state_size == n_classes
+        let n_classes = header.state_size() as usize;
+        if n_classes == 0 {
+            // This will result in a divide by 0 in all cases
+            return Err(ReadError::MalformedData("empty AAT state table"));
+        }
+        let class_table = header.class_table()?;
+        let class_first_glyph = class_table.first_glyph();
+        let class_array = class_table.class_array();
+        let state_array = header.state_array()?.data();
+        let entry_table = header.entry_table()?.data();
         Ok(Self {
             header: StateHeader::read(data)?,
+            n_classes,
+            class_first_glyph,
+            class_array,
+            state_array,
+            entry_table,
         })
     }
 }
@@ -394,8 +423,8 @@ impl<'a> SomeTable<'a> for StateTable<'a> {
 
 #[derive(Clone)]
 pub struct ExtendedStateTable<'a, T = NoPayload> {
-    n_classes: usize,
-    class_table: LookupU16<'a>,
+    pub n_classes: usize,
+    pub class_table: LookupU16<'a>,
     state_array: &'a [BigEndian<u16>],
     entry_table: &'a [u8],
     _marker: std::marker::PhantomData<fn() -> T>,
