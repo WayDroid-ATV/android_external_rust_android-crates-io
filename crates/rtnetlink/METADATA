@@ -1,17 +1,17 @@
 name: "rtnetlink"
 description: "manipulate linux networking resources via netlink"
 third_party {
-  version: "0.17.0"
+  version: "0.18.1"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 6
-    day: 25
+    month: 12
+    day: 2
   }
   homepage: "https://crates.io/crates/rtnetlink"
   identifier {
     type: "crates.io"
     value: "rtnetlink"
-    version: "0.17.0"
+    version: "0.18.1"
   }
 }

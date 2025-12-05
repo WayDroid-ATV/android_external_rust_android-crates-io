@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-use std::env;
+use std::{
+    env,
+    net::{IpAddr, Ipv4Addr, Ipv6Addr},
+};
 
 use futures::stream::TryStreamExt;
 use ipnetwork::IpNetwork;
-use rtnetlink::{new_connection, Error, Handle};
+use rtnetlink::{new_connection, AddressMessageBuilder, Error, Handle};
 
 #[tokio::main]
 async fn main() -> Result<(), ()> {
@@ -23,13 +26,13 @@ async fn main() -> Result<(), ()> {
     let (connection, handle, _) = new_connection().unwrap();
     tokio::spawn(connection);
 
-    if let Err(e) = add_address(link_name, ip, handle.clone()).await {
+    if let Err(e) = del_address(link_name, ip, handle.clone()).await {
         eprintln!("{e}");
     }
     Ok(())
 }
 
-async fn add_address(
+async fn del_address(
     link_name: &str,
     ip: IpNetwork,
     handle: Handle,
@@ -40,11 +43,20 @@ async fn add_address(
         .match_name(link_name.to_string())
         .execute();
     if let Some(link) = links.try_next().await? {
-        handle
-            .address()
-            .add(link.header.index, ip.ip(), ip.prefix())
-            .execute()
-            .await?
+        let index = link.header.index;
+        let address = ip.ip();
+        let prefix_len = ip.prefix();
+        let message = match address {
+            IpAddr::V4(address) => AddressMessageBuilder::<Ipv4Addr>::new()
+                .index(index)
+                .address(address, prefix_len)
+                .build(),
+            IpAddr::V6(address) => AddressMessageBuilder::<Ipv6Addr>::new()
+                .index(index)
+                .address(address, prefix_len)
+                .build(),
+        };
+        handle.address().del(message).execute().await?
     }
     Ok(())
 }
@@ -52,15 +64,15 @@ async fn add_address(
 fn usage() {
     eprintln!(
         "usage:
-    cargo run --example add_address -- <link_name> <ip_address>
+    cargo run --example del_address -- <link_name> <ip_address>
 
 Note that you need to run this program as root. Instead of running cargo as root,
 build the example normally:
 
-    cd rtnetlink ; cargo build --example add_address
+    cd rtnetlink ; cargo build --example del_address
 
 Then find the binary in the target directory:
 
-    cd ../target/debug/example ; sudo ./add_address <link_name> <ip_address>"
+    cd ../target/debug/example ; sudo ./del_address <link_name> <ip_address>"
     );
 }

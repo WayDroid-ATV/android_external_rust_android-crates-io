@@ -5,10 +5,13 @@ use std::{
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
 };
 
+#[cfg(not(target_os = "android"))]
+use netlink_packet_route::route::{
+    MplsLabel, RouteLwEnCapType, RouteLwTunnelEncap, RouteMplsIpTunnel,
+};
 use netlink_packet_route::{
     route::{
-        MplsLabel, RouteAddress, RouteAttribute, RouteFlags, RouteHeader,
-        RouteLwEnCapType, RouteLwTunnelEncap, RouteMessage, RouteMplsIpTunnel,
+        RouteAddress, RouteAttribute, RouteFlags, RouteHeader, RouteMessage,
         RouteNextHop, RouteNextHopFlags, RouteProtocol, RouteScope, RouteType,
         RouteVia,
     },
@@ -208,6 +211,14 @@ impl RouteMessageBuilder<Ipv4Addr> {
             .push(RouteAttribute::Gateway(RouteAddress::Inet(addr)));
         self
     }
+
+    /// Sets the IPv6 gateway (via) address.
+    pub fn via(mut self, addr: Ipv6Addr) -> Self {
+        self.message
+            .attributes
+            .push(RouteAttribute::Via(RouteVia::Inet6(addr)));
+        self
+    }
 }
 
 impl Default for RouteMessageBuilder<Ipv4Addr> {
@@ -400,25 +411,17 @@ impl RouteMessageBuilder<IpAddr> {
         mut self,
         addr: IpAddr,
     ) -> Result<Self, InvalidRouteMessage> {
-        self.set_address_family_from_ip_addr(addr);
-        match self.message.header.address_family {
-            AddressFamily::Inet => {
-                if addr.is_ipv6() {
-                    return Err(InvalidRouteMessage::Gateway(addr));
-                };
+        let attr = match (self.message.header.address_family, addr) {
+            (AddressFamily::Inet, addr @ IpAddr::V4(_))
+            | (AddressFamily::Inet6, addr @ IpAddr::V6(_)) => {
+                RouteAttribute::Gateway(addr.into())
             }
-            AddressFamily::Inet6 => {
-                if addr.is_ipv4() {
-                    return Err(InvalidRouteMessage::Gateway(addr));
-                };
+            (AddressFamily::Inet, IpAddr::V6(v6)) => {
+                RouteAttribute::Via(RouteVia::Inet6(v6))
             }
-            af => {
-                return Err(InvalidRouteMessage::AddressFamily(af));
-            }
-        }
-        self.message
-            .attributes
-            .push(RouteAttribute::Gateway(addr.into()));
+            (af, _) => return Err(InvalidRouteMessage::AddressFamily(af)),
+        };
+        self.message.attributes.push(attr);
         Ok(self)
     }
 
@@ -495,6 +498,22 @@ impl RouteNextHopBuilder {
         }
     }
 
+    /// Create IPv4 RouteNexthop
+    pub fn new_ipv4() -> Self {
+        Self {
+            address_family: AddressFamily::Inet,
+            nexthop: Default::default(),
+        }
+    }
+
+    /// Create IPv6 RouteNexthop
+    pub fn new_ipv6() -> Self {
+        Self {
+            address_family: AddressFamily::Inet6,
+            nexthop: Default::default(),
+        }
+    }
+
     /// Sets the nexthop interface index.
     pub fn interface(mut self, index: u32) -> Self {
         self.nexthop.interface_index = index;
@@ -503,13 +522,16 @@ impl RouteNextHopBuilder {
 
     /// Sets the nexthop (via) address.
     pub fn via(mut self, addr: IpAddr) -> Result<Self, InvalidRouteMessage> {
-        use AddressFamily::*;
         let attr = match (self.address_family, addr) {
-            (Inet, addr @ IpAddr::V4(_)) | (Inet6, addr @ IpAddr::V6(_)) => {
+            (AddressFamily::Inet, addr @ IpAddr::V4(_))
+            | (AddressFamily::Inet6, addr @ IpAddr::V6(_)) => {
                 RouteAttribute::Gateway(addr.into())
             }
-            (Inet, IpAddr::V6(v6)) => RouteAttribute::Via(RouteVia::Inet6(v6)),
-            (Mpls, _) => RouteAttribute::Via(addr.into()),
+            (AddressFamily::Inet, IpAddr::V6(v6)) => {
+                RouteAttribute::Via(RouteVia::Inet6(v6))
+            }
+            #[cfg(not(target_os = "android"))]
+            (AddressFamily::Mpls, _) => RouteAttribute::Via(addr.into()),
             (af, _) => return Err(InvalidRouteMessage::AddressFamily(af)),
         };
         self.nexthop.attributes.push(attr);
@@ -546,6 +568,23 @@ impl RouteNextHopBuilder {
                 .attributes
                 .push(RouteAttribute::Encap(vec![encap]));
         }
+        self
+    }
+
+    /// Set the nexthop weight
+    ///
+    /// Equal to `weight` property in `ip route`, but please be advised the
+    /// number shown in `ip route` command has plus 1. Meaning kernel has
+    /// `weight 0`, but `ip route` shows as `weight 1`. This function is using
+    /// kernel number from range of 0 to 255.
+    pub fn weight(mut self, weight: u8) -> Self {
+        self.nexthop.hops = weight;
+        self
+    }
+
+    /// Set flags for next hop
+    pub fn flags(mut self, flags: RouteNextHopFlags) -> Self {
+        self.nexthop.flags = flags;
         self
     }
 
