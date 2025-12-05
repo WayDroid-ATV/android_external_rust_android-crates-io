@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.80"
+rust-version = "1.82"
 name = "skrifa"
-version = "0.34.0"
+version = "0.39.0"
 build = false
 autolib = false
 autobins = false
@@ -36,8 +36,8 @@ all-features = true
 [features]
 autohint_shaping = []
 default = [
+    "std",
     "autohint_shaping",
-    "traversal",
 ]
 libm = [
     "dep:core_maths",
@@ -62,17 +62,17 @@ version = "0.1"
 optional = true
 
 [dependencies.read-fonts]
-version = "0.32.0"
+version = "0.36.0"
 default-features = false
 
 [dev-dependencies.kurbo]
-version = "0.11.0"
+version = "0.12.0"
 
 [dev-dependencies.pretty_assertions]
 version = "1.3.0"
 
 [dev-dependencies.read-fonts]
-version = "0.32.0"
+version = "0.36.0"
 features = [
     "scaler_test",
     "serde",

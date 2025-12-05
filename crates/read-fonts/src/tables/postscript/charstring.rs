@@ -40,6 +40,8 @@ pub trait CommandSink {
     /// Bitmask defining the counter hints that should be made active for the
     /// commands that follow.
     fn counter_mask(&mut self, mask: &[u8]) {}
+    /// Clear accumulated stem hints and all data derived from them.
+    fn clear_hints(&mut self) {}
 }
 
 /// Evaluates the given charstring and emits the resulting commands to the
@@ -142,9 +144,13 @@ where
                     self.stack.push(num)?;
                 }
                 _ => {
-                    let operator = Operator::read(&mut cursor, b0)?;
-                    if !self.evaluate_operator(operator, &mut cursor, nesting_depth)? {
-                        break;
+                    // FreeType ignores reserved (unknown) operators.
+                    // See <https://gitlab.freedesktop.org/freetype/freetype/-/blob/80a507a6b8e3d2906ad2c8ba69329bd2fb2a85ef/src/psaux/psintrp.c#L703>
+                    // and fontations issue <https://github.com/googlefonts/fontations/issues/1680>
+                    if let Ok(operator) = Operator::read(&mut cursor, b0) {
+                        if !self.evaluate_operator(operator, &mut cursor, nesting_depth)? {
+                            break;
+                        }
                     }
                 }
             }
@@ -492,10 +498,21 @@ where
         self.x = dx;
         self.y = dy;
         let accent_charstring = self.charstrings.get(accent_gid.to_u32() as usize)?;
+        // FreeType calls cf2_interpT2CharString for each component
+        // which uses a fresh set of stem hints. Since our hinter is in
+        // a separate crate, we signal this through the sink. Also
+        // reset our own stem count so we read the correct number of
+        // bytes for each hint mask instruction.
+        // See <https://gitlab.freedesktop.org/freetype/freetype/-/blob/80a507a6b8e3d2906ad2c8ba69329bd2fb2a85ef/src/psaux/psintrp.c#L1443>
+        // and <https://gitlab.freedesktop.org/freetype/freetype/-/blob/80a507a6b8e3d2906ad2c8ba69329bd2fb2a85ef/src/psaux/psintrp.c#L540>
+        self.sink.clear_hints();
+        self.stem_count = 0;
         self.evaluate(accent_charstring, nesting_depth + 1)?;
         self.x = x;
         self.y = y;
         let base_charstring = self.charstrings.get(base_gid.to_u32() as usize)?;
+        self.sink.clear_hints();
+        self.stem_count = 0;
         self.evaluate(base_charstring, nesting_depth + 1)
     }
 
@@ -1092,5 +1109,32 @@ mod tests {
         let mut cursor = FontData::new(&[]).cursor();
         // Just don't panic
         let _ = evaluator.evaluate_operator(Operator::HhCurveTo, &mut cursor, 0);
+    }
+
+    #[test]
+    fn ignore_reserved_operators() {
+        let charstring = &[
+            0u8, // reserved
+            32,  // push -107
+            22,  // hmoveto
+            2,   // reserved
+        ];
+        let empty_index_bytes = [0u8; 8];
+        let global_subrs = Index::new(&empty_index_bytes, false).unwrap();
+        let mut commands = CaptureCommandSink::default();
+        evaluate(
+            &[],
+            Index::Empty,
+            global_subrs,
+            None,
+            None,
+            charstring,
+            &mut commands,
+        )
+        .unwrap();
+        assert_eq!(
+            commands.0,
+            [Command::MoveTo(Fixed::from_i32(-107), Fixed::ZERO)]
+        );
     }
 }
