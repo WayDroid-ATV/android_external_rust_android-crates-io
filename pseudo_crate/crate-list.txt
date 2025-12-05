@@ -32,6 +32,7 @@ atomic-waker
 atty
 autocfg
 automotive_diag
+aws-lc-rs
 axum
 axum-core
 base64
@@ -200,6 +201,7 @@ httparse
 httpdate
 humantime
 hyper
+hyper-rustls
 hyper-timeout
 hyper-util
 icu_capi
@@ -229,6 +231,7 @@ intrusive-collections
 ipnet
 ipp
 ippusb
+iri-string
 is-terminal
 itertools
 itoa
@@ -377,6 +380,7 @@ regex-automata
 regex-syntax
 relative-path
 remain
+reqwest
 ring
 rtnetlink
 rusb
@@ -386,6 +390,10 @@ rustc-demangle-capi
 rustc-hash
 rustc-stable-hash
 rustix
+rustls
+rustls-native-certs
+rustls-pki-types
+rustls-webpki
 rustversion
 ryu
 safe-mmio
@@ -406,6 +414,7 @@ serde_nanos
 serde_repr
 serde_spanned
 serde_test
+serde_urlencoded
 serde_yaml
 serialport
 sharded-slab
@@ -434,6 +443,7 @@ strck
 strsim
 strum
 strum_macros
+subtle
 syn
 syn-mid
 sync_wrapper
@@ -462,6 +472,7 @@ tokio
 tokio-io-timeout
 tokio-macros
 tokio-openssl
+tokio-rustls
 tokio-stream
 tokio-test
 tokio-util
@@ -470,6 +481,7 @@ toml_datetime
 toml_edit
 tonic
 tower
+tower-http
 tower-layer
 tower-service
 tracing

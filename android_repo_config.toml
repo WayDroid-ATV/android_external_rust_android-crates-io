@@ -25,5 +25,4 @@ crate_denylist = [
   "oid-registry",
   "asn1-rs",
   "android-tzdata", # Relies on unsupported API
-  "rustls"          # Duplicates BoringSSL
 ]

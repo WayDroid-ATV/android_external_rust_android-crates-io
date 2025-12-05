@@ -1,0 +1,17 @@
+name: "rustls"
+description: "Rustls is a modern TLS library written in Rust."
+third_party {
+  version: "0.23.27"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 11
+    day: 20
+  }
+  homepage: "https://crates.io/crates/rustls"
+  identifier {
+    type: "crates.io"
+    value: "rustls"
+    version: "0.23.27"
+  }
+}

@@ -12,6 +12,7 @@
     "load-shed",
     "make",
     "ready-cache",
+    "retry",
     "slab",
     "timeout",
     "tokio",

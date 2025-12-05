@@ -1,0 +1,64 @@
+commit 477b599b3e4ce0c096193dc1d5c9a3d0c50653b9
+Author: Matthew Maurer <mmaurer@google.com>
+Date:   Thu Nov 20 23:12:41 2025 +0000
+
+    Split LICENSE to two files for handling
+    
+    Change-Id: Ibff140051da57911a46933b4e4637c5ea7cf616e
+
+diff --git a/LICENSE b/LICENSE-Apache-2.0
+similarity index 92%
+rename from LICENSE
+rename to LICENSE-Apache-2.0
+index 58d28381c..7dd3a5fd0 100644
+--- a/LICENSE
++++ b/LICENSE-Apache-2.0
+@@ -181,22 +181,3 @@ Apache 2.0 license
+       of your accepting any such warranty or additional liability.
+ 
+    END OF TERMS AND CONDITIONS
+-
+-
+-ISC license
+--------------------------------------
+-
+-
+-Copyright Amazon.com, Inc. or its affiliates.
+-
+-Permission to use, copy, modify, and/or distribute this software for any
+-purpose with or without fee is hereby granted, provided that the above
+-copyright notice and this permission notice appear in all copies.
+-
+-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+-WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+-MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+-ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+-WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+-ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+-OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+diff --git a/LICENSE-ISC b/LICENSE-ISC
+new file mode 100644
+index 000000000..5677c0041
+--- /dev/null
++++ b/LICENSE-ISC
+@@ -0,0 +1,20 @@
++SPDX-License-Identifier: ISC AND (Apache-2.0 OR ISC)
++
++
++ISC license
++-------------------------------------
++
++
++Copyright Amazon.com, Inc. or its affiliates.
++
++Permission to use, copy, modify, and/or distribute this software for any
++purpose with or without fee is hereby granted, provided that the above
++copyright notice and this permission notice appear in all copies.
++
++THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
++WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
++MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
++ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
++WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
++ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
++OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
