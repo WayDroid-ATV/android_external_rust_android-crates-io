@@ -1,0 +1,55 @@
+commit 61151fa299ddaa3ba935b877138e9e188a824c51
+Author: Matthew Maurer <mmaurer@google.com>
+Date:   Tue Nov 11 23:03:16 2025 +0000
+
+    Disable PQC - the interfaces for AWS-LC and BoringSSL don't match
+    
+    Change-Id: I3a90dc76858fa1194714cde31d293f48c8d08470
+
+diff --git a/src/crypto/aws_lc_rs/mod.rs b/src/crypto/aws_lc_rs/mod.rs
+index fe631bfc9..2a74d9de3 100644
+--- a/src/crypto/aws_lc_rs/mod.rs
++++ b/src/crypto/aws_lc_rs/mod.rs
+@@ -19,8 +19,6 @@ use crate::{Error, OtherError};
+ 
+ /// Hybrid public key encryption (HPKE).
+ pub mod hpke;
+-/// Post-quantum secure algorithms.
+-pub(crate) mod pq;
+ /// Using software keys for authentication.
+ pub mod sign;
+ 
+@@ -229,7 +227,6 @@ static SUPPORTED_SIG_ALGS: WebPkiSupportedAlgorithms = WebPkiSupportedAlgorithms
+ /// [`DEFAULT_KX_GROUPS`] is provided as an array of this provider's defaults.
+ pub mod kx_group {
+     pub use super::kx::{SECP256R1, SECP384R1, X25519};
+-    pub use super::pq::{MLKEM768, X25519MLKEM768};
+ }
+ 
+ /// A list of the default key exchange groups supported by this provider.
+@@ -237,25 +234,16 @@ pub mod kx_group {
+ /// This does not contain MLKEM768; by default MLKEM768 is only offered
+ /// in hybrid with X25519.
+ pub static DEFAULT_KX_GROUPS: &[&dyn SupportedKxGroup] = &[
+-    #[cfg(feature = "prefer-post-quantum")]
+-    kx_group::X25519MLKEM768,
+     kx_group::X25519,
+     kx_group::SECP256R1,
+     kx_group::SECP384R1,
+-    #[cfg(not(feature = "prefer-post-quantum"))]
+-    kx_group::X25519MLKEM768,
+ ];
+ 
+ /// A list of all the key exchange groups supported by this provider.
+ pub static ALL_KX_GROUPS: &[&dyn SupportedKxGroup] = &[
+-    #[cfg(feature = "prefer-post-quantum")]
+-    kx_group::X25519MLKEM768,
+     kx_group::X25519,
+     kx_group::SECP256R1,
+     kx_group::SECP384R1,
+-    #[cfg(not(feature = "prefer-post-quantum"))]
+-    kx_group::X25519MLKEM768,
+-    kx_group::MLKEM768,
+ ];
+ 
+ #[cfg(any(feature = "std", feature = "hashbrown"))]

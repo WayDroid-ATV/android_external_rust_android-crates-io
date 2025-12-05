@@ -35,6 +35,7 @@ rust_library {
         "make",
         "pin-project-lite",
         "ready-cache",
+        "retry",
         "slab",
         "sync_wrapper",
         "timeout",

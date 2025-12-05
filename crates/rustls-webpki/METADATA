@@ -1,0 +1,17 @@
+name: "rustls-webpki"
+description: "Web PKI X.509 Certificate Verification."
+third_party {
+  version: "0.103.8"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 11
+    day: 21
+  }
+  homepage: "https://crates.io/crates/rustls-webpki"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/rustls-webpki/rustls-webpki-0.103.8.crate"
+    version: "0.103.8"
+  }
+}

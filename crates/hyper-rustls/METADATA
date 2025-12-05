@@ -1,0 +1,17 @@
+name: "hyper-rustls"
+description: "Rustls+hyper integration for pure rust HTTPS"
+third_party {
+  version: "0.27.7"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 11
+    day: 22
+  }
+  homepage: "https://crates.io/crates/hyper-rustls"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/hyper-rustls/hyper-rustls-0.27.7.crate"
+    version: "0.27.7"
+  }
+}

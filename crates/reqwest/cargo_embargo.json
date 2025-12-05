@@ -1,0 +1,14 @@
+{
+  "run_cargo": true,
+  "min_sdk_version": "29",
+  "package": {
+    "reqwest": {
+      "host_supported": false
+    }
+  },
+  "features": [
+    "http2",
+    "rustls-tls-native-roots-no-provider",
+    "blocking"
+  ]
+}
