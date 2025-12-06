@@ -1,0 +1,72 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 47320ff1e..4b91435f3 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -59,7 +59,7 @@ path = "src/main.rs"
+ version = "0.1.12"
+ 
+ [dependencies.codespan-reporting]
+-version = "0.11.1"
++version = "0.13.1"
+ 
+ [dependencies.genco]
+ version = "0.17.10"
+diff --git a/src/analyzer.rs b/src/analyzer.rs
+index a088023cf..86168af19 100644
+--- a/src/analyzer.rs
++++ b/src/analyzer.rs
+@@ -17,6 +17,7 @@ use codespan_reporting::files;
+ use codespan_reporting::term;
+ use codespan_reporting::term::termcolor;
+ use std::collections::HashMap;
++use std::fmt;
+ 
+ use crate::ast::*;
+ 
+@@ -87,6 +88,7 @@ impl Size {
+ 
+ /// List of unique errors reported as analyzer diagnostics.
+ #[repr(u16)]
++#[derive(Copy, Clone)]
+ pub enum ErrorCode {
+     DuplicateDeclIdentifier = 1,
+     RecursiveDecl = 2,
+@@ -142,9 +144,15 @@ pub enum ErrorCode {
+     InvalidPacketSize = 53,
+ }
+ 
++impl fmt::Display for ErrorCode {
++    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
++        write!(f, "E{}", *self as u16)
++    }
++}
++
+ impl From<ErrorCode> for String {
+     fn from(code: ErrorCode) -> Self {
+-        format!("E{}", code as u16)
++        format!("{}", code)
+     }
+ }
+ 
+@@ -198,7 +206,7 @@ impl Diagnostics {
+     ) -> Result<(), files::Error> {
+         let config = term::Config::default();
+         for d in self.diagnostics.iter() {
+-            term::emit(writer, &config, sources, d)?;
++            term::emit_to_write_style(writer, &config, sources, d)?;
+         }
+         Ok(())
+     }
+diff --git a/src/main.rs b/src/main.rs
+index 77191c506..40bce0311 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -167,7 +167,7 @@ fn generate_backend(opt: &Opt) -> Result<(), String> {
+         Err(err) => {
+             let writer = termcolor::StandardStream::stderr(termcolor::ColorChoice::Always);
+             let config = term::Config::default();
+-            term::emit(&mut writer.lock(), &config, &sources, &err).expect("Could not print error");
++            term::emit_to_write_style(&mut writer.lock(), &config, &sources, &err).expect("Could not print error");
+             Err(String::from("Error while parsing input"))
+         }
+     }

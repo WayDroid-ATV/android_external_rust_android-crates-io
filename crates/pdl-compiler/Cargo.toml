@@ -59,7 +59,7 @@ path = "src/main.rs"
 version = "0.1.12"
 
 [dependencies.codespan-reporting]
-version = "0.11.1"
+version = "0.13.1"
 
 [dependencies.genco]
 version = "0.17.10"

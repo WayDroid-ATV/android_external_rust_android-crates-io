@@ -190,7 +190,7 @@ dependencies = [
  "clap_complete",
  "clap_derive",
  "clap_lex",
- "codespan-reporting",
+ "codespan-reporting 0.13.1",
  "combine",
  "command-fds",
  "config",
@@ -1720,6 +1720,17 @@ checksum = "3538270d33cc669650c4b093848450d380def10c331d38c768e34cac80576e6e"
 dependencies = [
  "termcolor",
  "unicode-width 0.1.11",
+]
+
+[[package]]
+name = "codespan-reporting"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af491d569909a7e4dee0ad7db7f5341fef5c614d5b8ec8cf765732aba3cff681"
+dependencies = [
+ "serde",
+ "termcolor",
+ "unicode-width 0.2.2",
 ]
 
 [[package]]
@@ -5954,7 +5965,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2d9106e8134cf4ed0d5dafb2eee25e30381449be38557c42c6b1283c096dec01"
 dependencies = [
  "argh",
- "codespan-reporting",
+ "codespan-reporting 0.11.1",
  "heck 0.4.1",
  "pest",
  "pest_derive",
