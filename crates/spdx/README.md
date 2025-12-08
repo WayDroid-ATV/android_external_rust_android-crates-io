@@ -10,46 +10,56 @@
 [![Embark](https://img.shields.io/badge/discord-ark-%237289da.svg?logo=discord)](https://discord.gg/dAuKfZS)
 [![Crates.io](https://img.shields.io/crates/v/spdx.svg)](https://crates.io/crates/spdx)
 [![Docs](https://docs.rs/spdx/badge.svg)](https://docs.rs/spdx)
-[![Minimum Stable Rust Version](https://img.shields.io/badge/Rust-1.65.0-blue?color=fc8d62&logo=rust)](https://blog.rust-lang.org/2022/11/03/Rust-1.65.0.html)
+[![Minimum Stable Rust Version](https://img.shields.io/badge/Rust-1.85.0-blue?color=fc8d62&logo=rust)](https://releases.rs/docs/1.85.0/)
 [![SPDX Version](https://img.shields.io/badge/SPDX%20Version-3.27.0-blue.svg)](https://spdx.org/licenses/)
 [![dependency status](https://deps.rs/repo/github/EmbarkStudios/spdx/status.svg)](https://deps.rs/repo/github/EmbarkStudios/spdx)
 [![Build Status](https://github.com/EmbarkStudios/spdx/workflows/CI/badge.svg)](https://github.com/EmbarkStudios/spdx/actions?workflow=CI)
 
 </div>
 
+## About
+
+This crate's main purpose is to parse and evaluate SPDX license expressions. It also optionally provides the ability to scan text data for SPDX license information. Each version of this crate contains a specific version of the official [SPDX license list](https://spdx.org/licenses/) which can be retrieved via the `spdx::identifiers::VERSION` constant.
+
+## Features
+
+- `text` - Includes the full canonical text of each license
+- `detection` - Allows analysis of text to determine if it might be an SPDX license text, or have an SPDX license header
+- `detection-cache` - Allows de/serialization of a `Store` for quicker loading
+- `detection-inline-cache` - Inlines a `Store` cache into this crate, which allows easier loading in downstream crates at the cost of increased binary size
+- `detection-parallel` - Performs license detection in parallel within the same text
+
 ## Usage
 
 ```rust
 use spdx::Expression;
 
-fn main() {
-    let this_is_fine = Expression::parse("MIT OR Apache-2.0").unwrap();
+let this_is_fine = Expression::parse("MIT OR Apache-2.0").unwrap();
 
-    assert!(this_is_fine.evaluate(|req| {
-        if let spdx::LicenseItem::Spdx { id, .. } = req.license {
-            // Both MIT and Apache-2.0 are OSI approved, so this expression
-            // evaluates to true
-            return id.is_osi_approved();
-        }
+assert!(this_is_fine.evaluate(|req| {
+    if let spdx::LicenseItem::Spdx { id, .. } = req.license {
+        // Both MIT and Apache-2.0 are OSI approved, so this expression
+        // evaluates to true
+        return id.is_osi_approved();
+    }
 
-        false
-    }));
+    false
+}));
 
-    assert!(!this_is_fine.evaluate(|req| {
-        if let spdx::LicenseItem::Spdx { id, .. } = req.license {
-            // This is saying we don't accept any licenses that are OSI approved
-            // so the expression will evaluate to false as both sides of the OR
-            // are now rejected
-            return !id.is_osi_approved();
-        }
+assert!(!this_is_fine.evaluate(|req| {
+    if let spdx::LicenseItem::Spdx { id, .. } = req.license {
+        // This is saying we don't accept any licenses that are OSI approved
+        // so the expression will evaluate to false as both sides of the OR
+        // are now rejected
+        return !id.is_osi_approved();
+    }
 
-        false
-    }));
+    false
+}));
 
-    // `NOPE` is not a valid SPDX license identifier, so this expression
-    // will fail to parse
-    let _this_is_not = Expression::parse("MIT OR NOPE").unwrap_err();
-}
+// `NOPE` is not a valid SPDX license identifier, so this expression
+// will fail to parse
+let _this_is_not = Expression::parse("MIT OR NOPE").unwrap_err();
 ```
 
 ## Updating SPDX list

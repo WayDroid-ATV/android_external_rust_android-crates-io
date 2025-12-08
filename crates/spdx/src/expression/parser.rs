@@ -1,5 +1,5 @@
 use crate::{
-    AdditionItem, LicenseItem, LicenseReq, ParseMode,
+    AdditionItem, AdditionRef, LicenseItem, LicenseRef, LicenseReq, ParseMode,
     error::{ParseError, Reason},
     expression::{ExprNode, Expression, ExpressionReq, Operator},
     lexer::{Lexer, Token},
@@ -124,6 +124,7 @@ impl Expression {
                     can.push_str("AdditionRef-");
                     can.push_str(add_ref);
                 }
+                Token::Unknown(_u) => unreachable!(),
             }
         }
 
@@ -188,7 +189,7 @@ impl Expression {
                 None | Some(Token::And | Token::Or | Token::OpenParen) => &["<license>", "("],
                 Some(Token::CloseParen) => &["AND", "OR"],
                 Some(Token::Exception(_) | Token::AdditionRef { .. }) => &["AND", "OR", ")"],
-                Some(Token::Spdx(_)) => &["AND", "OR", "WITH", ")", "+"],
+                Some(Token::Spdx(_) | Token::Unknown(_)) => &["AND", "OR", "WITH", ")", "+"],
                 Some(Token::LicenseRef { .. } | Token::Plus) => &["AND", "OR", "WITH", ")"],
                 Some(Token::With) => &["<addition>"],
             };
@@ -225,10 +226,10 @@ impl Expression {
                     None | Some(Token::And | Token::Or | Token::OpenParen) => {
                         expr_queue.push(ExprNode::Req(ExpressionReq {
                             req: LicenseReq {
-                                license: LicenseItem::Other {
+                                license: LicenseItem::Other(Box::new(LicenseRef {
                                     doc_ref: doc_ref.map(String::from),
                                     lic_ref: String::from(*lic_ref),
-                                },
+                                })),
                                 addition: None,
                             },
                             span: lt.span.start as u32..lt.span.end as u32,
@@ -282,7 +283,9 @@ impl Expression {
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::With => match last_token {
-                    Some(Token::Spdx(_) | Token::LicenseRef { .. } | Token::Plus) => {}
+                    Some(
+                        Token::Spdx(_) | Token::LicenseRef { .. } | Token::Plus | Token::Unknown(_),
+                    ) => {}
                     _ => return make_err_for_token(last_token, lt.span),
                 },
                 Token::Or | Token::And => match last_token {
@@ -292,7 +295,8 @@ impl Expression {
                         | Token::CloseParen
                         | Token::Exception(_)
                         | Token::AdditionRef { .. }
-                        | Token::Plus,
+                        | Token::Plus
+                        | Token::Unknown(_),
                     ) => {
                         let new_op = match lt.token {
                             Token::Or => Op::Or,
@@ -342,7 +346,8 @@ impl Expression {
                             | Token::Plus
                             | Token::Exception(_)
                             | Token::AdditionRef { .. }
-                            | Token::CloseParen,
+                            | Token::CloseParen
+                            | Token::Unknown(_),
                         ) => {
                             while let Some(top) = op_stack.pop() {
                                 match top.op {
@@ -378,15 +383,44 @@ impl Expression {
                 Token::AdditionRef { doc_ref, add_ref } => match last_token {
                     Some(Token::With) => match expr_queue.last_mut() {
                         Some(ExprNode::Req(lic)) => {
-                            lic.req.addition = Some(AdditionItem::Other {
+                            lic.req.addition = Some(AdditionItem::Other(Box::new(AdditionRef {
                                 doc_ref: doc_ref.map(String::from),
                                 add_ref: String::from(*add_ref),
-                            });
+                            })));
                         }
                         _ => unreachable!(),
                     },
                     _ => return make_err_for_token(last_token, lt.span),
                 },
+                Token::Unknown(unknown) => {
+                    match last_token {
+                        None | Some(Token::And | Token::Or | Token::OpenParen) => {
+                            // This is the same position as a valid SPDX license id,
+                            // so assume that is what the user was attempting
+                            expr_queue.push(ExprNode::Req(ExpressionReq {
+                                req: LicenseReq {
+                                    license: LicenseItem::Other(Box::new(LicenseRef {
+                                        doc_ref: None,
+                                        lic_ref: (*unknown).to_owned(),
+                                    })),
+                                    addition: None,
+                                },
+                                span: lt.span.start as u32..lt.span.end as u32,
+                            }));
+                        }
+                        Some(Token::With) => {
+                            let Some(ExprNode::Req(lic)) = expr_queue.last_mut() else {
+                                return make_err_for_token(last_token, lt.span);
+                            };
+
+                            lic.req.addition = Some(AdditionItem::Other(Box::new(AdditionRef {
+                                doc_ref: None,
+                                add_ref: (*unknown).to_owned(),
+                            })));
+                        }
+                        _ => return make_err_for_token(last_token, lt.span),
+                    }
+                }
             }
 
             last_token = Some(lt.token);
@@ -400,7 +434,8 @@ impl Expression {
                 | Token::Exception(_)
                 | Token::AdditionRef { .. }
                 | Token::CloseParen
-                | Token::Plus,
+                | Token::Plus
+                | Token::Unknown(_),
             ) => {}
             // We have to have at least one valid license requirement
             None => {
