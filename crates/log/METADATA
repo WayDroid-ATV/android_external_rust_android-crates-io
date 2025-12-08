@@ -1,17 +1,17 @@
 name: "log"
 description: "A lightweight logging facade for Rust"
 third_party {
-  version: "0.4.28"
+  version: "0.4.29"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 9
-    day: 11
+    month: 12
+    day: 2
   }
   homepage: "https://crates.io/crates/log"
   identifier {
     type: "crates.io"
     value: "log"
-    version: "0.4.28"
+    version: "0.4.29"
   }
 }
