@@ -16,6 +16,8 @@
 compile_error!("Only one `el` feature may be enabled at once.");
 
 mod entry;
+#[cfg(feature = "exceptions")]
+mod exceptions;
 #[cfg(feature = "initial-pagetable")]
 mod pagetable;
 
@@ -27,11 +29,12 @@ pub mod __private {
 
 #[cfg(any(feature = "exceptions", feature = "psci"))]
 use core::arch::asm;
-#[cfg(feature = "exceptions")]
-use core::arch::global_asm;
 #[cfg(not(feature = "initial-pagetable"))]
 use core::arch::naked_asm;
+use core::mem::ManuallyDrop;
 pub use entry::secondary_entry;
+#[cfg(feature = "exceptions")]
+pub use exceptions::{ExceptionHandlers, RegisterState, RegisterStateRef};
 #[cfg(all(feature = "initial-pagetable", feature = "el1"))]
 pub use pagetable::DEFAULT_TCR_EL1 as DEFAULT_TCR;
 #[cfg(all(feature = "initial-pagetable", feature = "el2"))]
@@ -51,9 +54,6 @@ pub use pagetable::{
 extern "C" fn enable_mmu() {
     naked_asm!("ret")
 }
-
-#[cfg(feature = "exceptions")]
-global_asm!(include_str!("exceptions.S"));
 
 /// Sets the appropriate vbar to point to our `vector_table`, if the `exceptions` feature is
 /// enabled.
@@ -210,12 +210,22 @@ impl StackPage {
     }
 }
 
+#[repr(C)]
+pub(crate) struct StartCoreStack<F> {
+    entry_ptr: *mut ManuallyDrop<F>,
+    trampoline_ptr: unsafe extern "C" fn(&mut ManuallyDrop<F>) -> !,
+}
+
 #[cfg(feature = "psci")]
 /// Issues a PSCI CPU_ON call to start the CPU core with the given MPIDR.
 ///
 /// This starts the core with an assembly entry point which will enable the MMU, disable trapping of
 /// floating point instructions, initialise the stack pointer to the given value, and then jump to
 /// the given Rust entry point function, passing it the given argument value.
+///
+/// The closure passed as `rust_entry` **should never return**. Because the
+/// [never type has not been stabilized](https://github.com/rust-lang/rust/issues/35121)), this
+/// cannot be enforced by the type system yet.
 ///
 /// # Safety
 ///
@@ -224,23 +234,47 @@ impl StackPage {
 /// time. It must be mapped both for the current core to write to it (to pass initial parameters)
 /// and in the initial page table which the core being started will used, with the same memory
 /// attributes for both.
-pub unsafe fn start_core<C: smccc::Call, const N: usize>(
+// TODO: change `F` generic bounds to `FnOnce() -> !` when the never type is stabilized:
+// https://github.com/rust-lang/rust/issues/35121
+pub unsafe fn start_core<C: smccc::Call, F: FnOnce() + Send + 'static, const N: usize>(
     mpidr: u64,
     stack: *mut Stack<N>,
-    rust_entry: extern "C" fn(arg: u64) -> !,
-    arg: u64,
+    rust_entry: F,
 ) -> Result<(), smccc::psci::Error> {
+    const {
+        assert!(
+            size_of::<StartCoreStack<F>>()
+                + 2 * size_of::<F>()
+                + 2 * align_of::<F>()
+                + 1024 // trampoline stack frame overhead
+                <= size_of::<Stack<N>>(),
+            "the `rust_entry` closure is too big to fit in the core stack"
+        );
+    }
+
+    let rust_entry = ManuallyDrop::new(rust_entry);
+
+    let stack_start = stack.cast::<u8>();
+    let align_offfset = stack_start.align_offset(align_of::<F>());
+    let entry_ptr = stack_start
+        .wrapping_add(align_offfset)
+        .cast::<ManuallyDrop<F>>();
+
     assert!(stack.is_aligned());
     // The stack grows downwards on aarch64, so get a pointer to the end of the stack.
     let stack_end = stack.wrapping_add(1);
+    let params = stack_end.cast::<StartCoreStack<F>>().wrapping_sub(1);
 
-    // Write Rust entry point to the stack, so the assembly entry point can jump to it.
-    let params = stack_end as *mut u64;
+    // Write the trampoline and entry closure, so the assembly entry point can jump to it.
     // SAFETY: Our caller promised that the stack is valid and nothing else will access it.
     unsafe {
-        *params.wrapping_sub(1) = rust_entry as usize as _;
-        *params.wrapping_sub(2) = arg;
-    }
+        entry_ptr.write(rust_entry);
+        *params = StartCoreStack {
+            entry_ptr,
+            trampoline_ptr: trampoline::<F>,
+        };
+    };
+
     // Wait for the stores above to complete before starting the secondary CPU core.
     dsb_st();
 
@@ -249,6 +283,24 @@ pub unsafe fn start_core<C: smccc::Call, const N: usize>(
         secondary_entry as usize as _,
         stack_end as usize as _,
     )
+}
+
+#[cfg(feature = "psci")]
+/// Used by [`start_core`] as an entry point for the secondary CPU core.
+///
+/// # Safety
+///
+/// This calls [`ManuallyDrop::take`] on the provided argument, so this function must be
+/// called at most once for a given instance of `F`.
+// TODO: change `F` generic bounds to `FnOnce() -> !` when the never type is stabilized:
+// https://github.com/rust-lang/rust/issues/35121
+unsafe extern "C" fn trampoline<F: FnOnce() + Send + 'static>(entry: &mut ManuallyDrop<F>) -> ! {
+    // SAFETY: the trampoline function is only ever called once after creating ManuallyDrop
+    // instance, so we won't call ManuallyDrop::take more than once.
+    let entry = unsafe { ManuallyDrop::take(entry) };
+    entry();
+
+    panic!("rust_entry function passed to start_core should never return");
 }
 
 /// Data synchronisation barrier that waits for stores to complete, for the full system.
