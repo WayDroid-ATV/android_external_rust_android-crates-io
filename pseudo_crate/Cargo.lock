@@ -214,7 +214,7 @@ dependencies = [
  "csv-core",
  "ctrlc",
  "darling 0.21.3",
- "darling_core 0.21.3",
+ "darling_core 0.23.0",
  "darling_macro 0.21.3",
  "dashmap",
  "dasp_sample",
@@ -2144,6 +2144,18 @@ dependencies = [
  "proc-macro2 1.0.103",
  "quote 1.0.42",
  "strsim 0.11.1",
+ "syn 2.0.111",
+]
+
+[[package]]
+name = "darling_core"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9865a50f7c335f53564bb694ef660825eb8610e0a53d3e11bf1b0d3df31e03b0"
+dependencies = [
+ "ident_case",
+ "proc-macro2 1.0.103",
+ "quote 1.0.42",
  "syn 2.0.111",
 ]
 
