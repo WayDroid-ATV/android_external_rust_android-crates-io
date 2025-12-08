@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.82"
 name = "icu_normalizer"
-version = "2.0.0"
+version = "2.0.1"
 authors = ["The ICU4X Project Developers"]
 build = false
 include = [
@@ -144,6 +144,7 @@ default-features = false
 
 [dependencies.icu_provider]
 version = "2.0.0"
+features = ["alloc"]
 default-features = false
 
 [dependencies.serde]
