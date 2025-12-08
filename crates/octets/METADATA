@@ -1,17 +1,17 @@
 name: "octets"
 description: "Zero-copy abstraction for parsing and constructing network packets"
 third_party {
-  version: "0.3.3"
+  version: "0.3.4"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 10
-    day: 16
+    month: 12
+    day: 5
   }
   homepage: "https://crates.io/crates/octets"
   identifier {
     type: "crates.io"
     value: "octets"
-    version: "0.3.3"
+    version: "0.3.4"
   }
 }
