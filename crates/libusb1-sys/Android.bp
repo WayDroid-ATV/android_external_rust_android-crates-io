@@ -26,6 +26,7 @@ rust_library {
         "//apex_available:platform",
         "//apex_available:anyapex",
     ],
+    recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
     shared_libs: ["libusb"],
@@ -44,6 +45,7 @@ rust_library {
         "//apex_available:platform",
         "//apex_available:anyapex",
     ],
+    recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
     // This library should be depended upon only by programs
