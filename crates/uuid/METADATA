@@ -1,17 +1,17 @@
 name: "uuid"
 description: "A library to generate and parse UUIDs."
 third_party {
-  version: "1.18.1"
+  version: "1.19.0"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 9
-    day: 22
+    month: 12
+    day: 9
   }
   homepage: "https://crates.io/crates/uuid"
   identifier {
     type: "crates.io"
     value: "uuid"
-    version: "1.18.1"
+    version: "1.19.0"
   }
 }

@@ -9,7 +9,7 @@ MODULE_CRATE_NAME := uuid
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_ADD_IMPLICIT_DEPS := false
-MODULE_RUST_EDITION := 2018
+MODULE_RUST_EDITION := 2021
 MODULE_LIBRARY_DEPS := \
 	trusty/user/base/lib/libcompiler_builtins-rust \
 	trusty/user/base/lib/libcore-rust
