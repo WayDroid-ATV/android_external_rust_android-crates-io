@@ -4,5 +4,5 @@
     "//apex_available:platform"
   ],
   "min_sdk_version": "30",
-  "run_cargo": false
+  "run_cargo": true
 }
