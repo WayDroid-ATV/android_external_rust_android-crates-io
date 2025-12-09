@@ -7,7 +7,7 @@ import * as diplomatRuntime from "./diplomat-runtime.mjs";
 
 
 /**
- * See the [Rust documentation for `TitlecaseOptions`](https://docs.rs/icu/2.0.0/icu/casemap/options/struct.TitlecaseOptions.html) for more information.
+ * See the [Rust documentation for `TitlecaseOptions`](https://docs.rs/icu/2.1.1/icu/casemap/options/struct.TitlecaseOptions.html) for more information.
  */
 export class TitlecaseOptions {
     #leadingAdjustment;
@@ -55,7 +55,13 @@ export class TitlecaseOptions {
         functionCleanupArena,
         appendArrayMap
     ) {
-        return [...diplomatRuntime.optionToArgsForCalling(this.#leadingAdjustment, 4, 4, (arrayBuffer, offset, jsValue) => [diplomatRuntime.writeToArrayBuffer(arrayBuffer, offset + 0, jsValue.ffiValue, Int32Array)]), ...diplomatRuntime.optionToArgsForCalling(this.#trailingCase, 4, 4, (arrayBuffer, offset, jsValue) => [diplomatRuntime.writeToArrayBuffer(arrayBuffer, offset + 0, jsValue.ffiValue, Int32Array)])]
+        let buffer = diplomatRuntime.DiplomatBuf.struct(wasm, 16, 4);
+
+        this._writeToArrayBuffer(wasm.memory.buffer, buffer.ptr, functionCleanupArena, appendArrayMap);
+
+        functionCleanupArena.alloc(buffer);
+
+        return buffer.ptr;
     }
 
     static _fromSuppliedValue(internalConstructor, obj) {
@@ -100,7 +106,7 @@ export class TitlecaseOptions {
 
 
     /**
-     * See the [Rust documentation for `default`](https://docs.rs/icu/2.0.0/icu/casemap/options/struct.TitlecaseOptions.html#method.default) for more information.
+     * See the [Rust documentation for `default`](https://docs.rs/icu/2.1.1/icu/casemap/options/struct.TitlecaseOptions.html#method.default) for more information.
      */
     #defaultConstructor() {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 16, 4, false);
@@ -118,7 +124,7 @@ export class TitlecaseOptions {
     }
 
     /**
-     * See the [Rust documentation for `default`](https://docs.rs/icu/2.0.0/icu/casemap/options/struct.TitlecaseOptions.html#method.default) for more information.
+     * See the [Rust documentation for `default`](https://docs.rs/icu/2.1.1/icu/casemap/options/struct.TitlecaseOptions.html#method.default) for more information.
      */
     constructor() {
         if (arguments[0] === diplomatRuntime.exposeConstructor) {

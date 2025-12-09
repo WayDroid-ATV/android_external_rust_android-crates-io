@@ -6,7 +6,7 @@ import * as diplomatRuntime from "./diplomat-runtime.mjs";
 
 
 /**
- * See the [Rust documentation for `VariantOffsets`](https://docs.rs/icu/2.0.0/icu/time/zone/struct.VariantOffsets.html) for more information.
+ * See the [Rust documentation for `VariantOffsets`](https://docs.rs/icu/2.1.1/icu/time/zone/struct.VariantOffsets.html) for more information.
  */
 export class VariantOffsets {
     #standard;
@@ -46,7 +46,13 @@ export class VariantOffsets {
         functionCleanupArena,
         appendArrayMap
     ) {
-        return [this.#standard.ffiValue, this.#daylight.ffiValue ?? 0]
+        let buffer = diplomatRuntime.DiplomatBuf.struct(wasm, 8, 4);
+
+        this._writeToArrayBuffer(wasm.memory.buffer, buffer.ptr, functionCleanupArena, appendArrayMap);
+
+        functionCleanupArena.alloc(buffer);
+
+        return buffer.ptr;
     }
 
     static _fromSuppliedValue(internalConstructor, obj) {

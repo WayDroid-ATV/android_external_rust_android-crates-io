@@ -4,7 +4,6 @@
 
 #[diplomat::bridge]
 #[diplomat::abi_rename = "icu4x_{0}_mv1"]
-#[diplomat::attr(auto, namespace = "icu4x")]
 pub mod ffi {
     use icu_properties::props;
 
@@ -13,6 +12,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::BidiClass, Struct)]
     #[diplomat::enum_convert(icu_properties::props::BidiClass, needs_wildcard)]
+    #[non_exhaustive]
     pub enum BidiClass {
         #[diplomat::rust_link(
             icu::properties::props::BidiClass::LeftToRight,
@@ -212,6 +212,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::Script, Struct)]
     #[diplomat::enum_convert(icu_properties::props::Script, needs_wildcard)]
+    #[non_exhaustive]
     pub enum Script {
         #[diplomat::rust_link(icu::properties::props::Script::Adlam, AssociatedConstantInStruct)]
         Adlam = 167,
@@ -247,6 +248,11 @@ pub mod ffi {
         Batak = 63,
         #[diplomat::rust_link(icu::properties::props::Script::Bengali, AssociatedConstantInStruct)]
         Bengali = 4,
+        #[diplomat::rust_link(
+            icu::properties::props::Script::BeriaErfe,
+            AssociatedConstantInStruct
+        )]
+        BeriaErfe = 208,
         #[diplomat::rust_link(
             icu::properties::props::Script::Bhaiksuki,
             AssociatedConstantInStruct
@@ -289,6 +295,8 @@ pub mod ffi {
             AssociatedConstantInStruct
         )]
         Cherokee = 6,
+        #[diplomat::rust_link(icu::properties::props::Script::Chisoi, AssociatedConstantInStruct)]
+        Chisoi = 209,
         #[diplomat::rust_link(
             icu::properties::props::Script::Chorasmian,
             AssociatedConstantInStruct
@@ -678,6 +686,8 @@ pub mod ffi {
         Shavian = 51,
         #[diplomat::rust_link(icu::properties::props::Script::Siddham, AssociatedConstantInStruct)]
         Siddham = 166,
+        #[diplomat::rust_link(icu::properties::props::Script::Sidetic, AssociatedConstantInStruct)]
+        Sidetic = 210,
         #[diplomat::rust_link(
             icu::properties::props::Script::SignWriting,
             AssociatedConstantInStruct
@@ -719,6 +729,8 @@ pub mod ffi {
         TaiTham = 106,
         #[diplomat::rust_link(icu::properties::props::Script::TaiViet, AssociatedConstantInStruct)]
         TaiViet = 127,
+        #[diplomat::rust_link(icu::properties::props::Script::TaiYo, AssociatedConstantInStruct)]
+        TaiYo = 211,
         #[diplomat::rust_link(icu::properties::props::Script::Takri, AssociatedConstantInStruct)]
         Takri = 153,
         #[diplomat::rust_link(icu::properties::props::Script::Tamil, AssociatedConstantInStruct)]
@@ -742,6 +754,11 @@ pub mod ffi {
         Tifinagh = 60,
         #[diplomat::rust_link(icu::properties::props::Script::Tirhuta, AssociatedConstantInStruct)]
         Tirhuta = 158,
+        #[diplomat::rust_link(
+            icu::properties::props::Script::TolongSiki,
+            AssociatedConstantInStruct
+        )]
+        TolongSiki = 212,
         #[diplomat::rust_link(icu::properties::props::Script::Toto, AssociatedConstantInStruct)]
         Toto = 196,
         #[diplomat::rust_link(
@@ -750,6 +767,7 @@ pub mod ffi {
         )]
         Ugaritic = 53,
         #[diplomat::rust_link(icu::properties::props::Script::Unknown, AssociatedConstantInStruct)]
+        #[diplomat::attr(auto, default)]
         Unknown = 103,
         #[diplomat::rust_link(icu::properties::props::Script::Vai, AssociatedConstantInStruct)]
         Vai = 99,
@@ -825,6 +843,7 @@ pub mod ffi {
                 134 => Self::BassaVah,
                 63 => Self::Batak,
                 4 => Self::Bengali,
+                208 => Self::BeriaErfe,
                 168 => Self::Bhaiksuki,
                 5 => Self::Bopomofo,
                 65 => Self::Brahmi,
@@ -837,6 +856,7 @@ pub mod ffi {
                 118 => Self::Chakma,
                 66 => Self::Cham,
                 6 => Self::Cherokee,
+                209 => Self::Chisoi,
                 189 => Self::Chorasmian,
                 0 => Self::Common,
                 7 => Self::Coptic,
@@ -946,6 +966,7 @@ pub mod ffi {
                 151 => Self::Sharada,
                 51 => Self::Shavian,
                 166 => Self::Siddham,
+                210 => Self::Sidetic,
                 112 => Self::SignWriting,
                 33 => Self::Sinhala,
                 183 => Self::Sogdian,
@@ -959,6 +980,7 @@ pub mod ffi {
                 52 => Self::TaiLe,
                 106 => Self::TaiTham,
                 127 => Self::TaiViet,
+                211 => Self::TaiYo,
                 153 => Self::Takri,
                 35 => Self::Tamil,
                 195 => Self::Tangsa,
@@ -969,6 +991,7 @@ pub mod ffi {
                 39 => Self::Tibetan,
                 60 => Self::Tifinagh,
                 158 => Self::Tirhuta,
+                212 => Self::TolongSiki,
                 196 => Self::Toto,
                 53 => Self::Ugaritic,
                 103 => Self::Unknown,
@@ -986,6 +1009,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::HangulSyllableType, Struct)]
     #[diplomat::enum_convert(icu_properties::props::HangulSyllableType, needs_wildcard)]
+    #[non_exhaustive]
     pub enum HangulSyllableType {
         #[diplomat::rust_link(
             icu::properties::props::HangulSyllableType::NotApplicable,
@@ -1057,6 +1081,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::EastAsianWidth, Struct)]
     #[diplomat::enum_convert(icu_properties::props::EastAsianWidth, needs_wildcard)]
+    #[non_exhaustive]
     pub enum EastAsianWidth {
         #[diplomat::rust_link(
             icu::properties::props::EastAsianWidth::Neutral,
@@ -1138,6 +1163,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::LineBreak, Struct)]
     #[diplomat::enum_convert(icu_properties::props::LineBreak, needs_wildcard)]
+    #[non_exhaustive]
     pub enum LineBreak {
         #[diplomat::rust_link(
             icu::properties::props::LineBreak::Unknown,
@@ -1358,6 +1384,11 @@ pub mod ffi {
             AssociatedConstantInStruct
         )]
         Virama = 47,
+        #[diplomat::rust_link(
+            icu::properties::props::LineBreak::UnambiguousHyphen,
+            AssociatedConstantInStruct
+        )]
+        UnambiguousHyphen = 48,
     }
 
     impl LineBreak {
@@ -1441,6 +1472,7 @@ pub mod ffi {
                 45 => Self::AksaraStart,
                 46 => Self::ViramaFinal,
                 47 => Self::Virama,
+                48 => Self::UnambiguousHyphen,
                 _ => return None,
             })
         }
@@ -1448,6 +1480,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::GraphemeClusterBreak, Struct)]
     #[diplomat::enum_convert(icu_properties::props::GraphemeClusterBreak, needs_wildcard)]
+    #[non_exhaustive]
     pub enum GraphemeClusterBreak {
         #[diplomat::rust_link(
             icu::properties::props::LineBreak::Other,
@@ -1567,6 +1600,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::WordBreak, Struct)]
     #[diplomat::enum_convert(icu_properties::props::WordBreak, needs_wildcard)]
+    #[non_exhaustive]
     pub enum WordBreak {
         #[diplomat::rust_link(
             icu::properties::props::WordBreak::Other,
@@ -1739,6 +1773,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::SentenceBreak, Struct)]
     #[diplomat::enum_convert(icu_properties::props::SentenceBreak, needs_wildcard)]
+    #[non_exhaustive]
     pub enum SentenceBreak {
         #[diplomat::rust_link(
             icu::properties::props::SentenceBreak::Other,
@@ -1874,6 +1909,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::CanonicalCombiningClass, Struct)]
     #[diplomat::enum_convert(icu_properties::props::CanonicalCombiningClass, needs_wildcard)]
+    #[non_exhaustive]
     pub enum CanonicalCombiningClass {
         #[diplomat::rust_link(
             icu::properties::props::CanonicalCombiningClass::NotReordered,
@@ -2257,6 +2293,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::IndicSyllabicCategory, Struct)]
     #[diplomat::enum_convert(icu_properties::props::IndicSyllabicCategory, needs_wildcard)]
+    #[non_exhaustive]
     pub enum IndicSyllabicCategory {
         #[diplomat::rust_link(
             icu::properties::props::IndicSyllabicCategory::Other,
@@ -2514,6 +2551,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::JoiningType, Struct)]
     #[diplomat::enum_convert(icu_properties::props::JoiningType, needs_wildcard)]
+    #[non_exhaustive]
     pub enum JoiningType {
         #[diplomat::rust_link(
             icu::properties::props::JoiningType::NonJoining,
@@ -2593,6 +2631,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::GeneralCategory, Enum)]
     #[diplomat::enum_convert(icu_properties::props::GeneralCategory)]
+    #[non_exhaustive]
     pub enum GeneralCategory {
         #[diplomat::rust_link(icu::properties::props::GeneralCategory::Unassigned, EnumVariant)]
         Unassigned = 0,
@@ -2897,6 +2936,7 @@ pub mod ffi {
 
     #[diplomat::rust_link(icu::properties::props::VerticalOrientation, Struct)]
     #[diplomat::enum_convert(icu_properties::props::VerticalOrientation, needs_wildcard)]
+    #[non_exhaustive]
     pub enum VerticalOrientation {
         #[diplomat::rust_link(
             icu::properties::props::VerticalOrientation::Rotated,

@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "icu_normalizer",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.0.1",
+    cargo_pkg_version: "2.1.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
@@ -27,7 +27,6 @@ rust_library {
         "libsmallvec",
         "libzerovec",
     ],
-    proc_macros: ["libdisplaydoc"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

@@ -1,17 +1,17 @@
 name: "icu_provider_adapters"
 description: "Adapters for composing and manipulating data providers."
 third_party {
-  version: "2.0.0"
+  version: "2.1.1"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 9
-    day: 26
+    month: 12
+    day: 9
   }
   homepage: "https://crates.io/crates/icu_provider_adapters"
   identifier {
     type: "crates.io"
     value: "icu_provider_adapters"
-    version: "2.0.0"
+    version: "2.1.1"
   }
 }

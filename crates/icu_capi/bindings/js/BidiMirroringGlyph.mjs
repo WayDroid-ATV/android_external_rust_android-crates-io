@@ -6,7 +6,7 @@ import * as diplomatRuntime from "./diplomat-runtime.mjs";
 
 
 /**
- * See the [Rust documentation for `BidiMirroringGlyph`](https://docs.rs/icu/2.0.0/icu/properties/props/struct.BidiMirroringGlyph.html) for more information.
+ * See the [Rust documentation for `BidiMirroringGlyph`](https://docs.rs/icu/2.1.1/icu/properties/props/struct.BidiMirroringGlyph.html) for more information.
  */
 export class BidiMirroringGlyph {
     #mirroringGlyph;
@@ -67,7 +67,13 @@ export class BidiMirroringGlyph {
         functionCleanupArena,
         appendArrayMap
     ) {
-        return [...diplomatRuntime.optionToArgsForCalling(this.#mirroringGlyph, 4, 4, (arrayBuffer, offset, jsValue) => [diplomatRuntime.writeToArrayBuffer(arrayBuffer, offset + 0, jsValue, Uint32Array)]), this.#mirrored, /* [3 x i8] padding */ 0, 0, 0 /* end padding */, this.#pairedBracketType.ffiValue]
+        let buffer = diplomatRuntime.DiplomatBuf.struct(wasm, 16, 4);
+
+        this._writeToArrayBuffer(wasm.memory.buffer, buffer.ptr, functionCleanupArena, appendArrayMap);
+
+        functionCleanupArena.alloc(buffer);
+
+        return buffer.ptr;
     }
 
     static _fromSuppliedValue(internalConstructor, obj) {
@@ -115,7 +121,7 @@ export class BidiMirroringGlyph {
 
 
     /**
-     * See the [Rust documentation for `for_char`](https://docs.rs/icu/2.0.0/icu/properties/props/trait.EnumeratedProperty.html#tymethod.for_char) for more information.
+     * See the [Rust documentation for `for_char`](https://docs.rs/icu/2.1.1/icu/properties/props/trait.EnumeratedProperty.html#tymethod.for_char) for more information.
      */
     static forChar(ch) {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 16, 4, false);

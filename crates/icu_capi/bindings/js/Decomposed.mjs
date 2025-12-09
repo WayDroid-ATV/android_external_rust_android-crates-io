@@ -9,7 +9,7 @@ import * as diplomatRuntime from "./diplomat-runtime.mjs";
  * `second` will be NUL when the decomposition expands to a single character
  * (which may or may not be the original one)
  *
- * See the [Rust documentation for `Decomposed`](https://docs.rs/icu/2.0.0/icu/normalizer/properties/enum.Decomposed.html) for more information.
+ * See the [Rust documentation for `Decomposed`](https://docs.rs/icu/2.1.1/icu/normalizer/properties/enum.Decomposed.html) for more information.
  */
 export class Decomposed {
     #first;
@@ -49,7 +49,13 @@ export class Decomposed {
         functionCleanupArena,
         appendArrayMap
     ) {
-        return [this.#first, this.#second]
+        let buffer = diplomatRuntime.DiplomatBuf.struct(wasm, 8, 4);
+
+        this._writeToArrayBuffer(wasm.memory.buffer, buffer.ptr, functionCleanupArena, appendArrayMap);
+
+        functionCleanupArena.alloc(buffer);
+
+        return buffer.ptr;
     }
 
     static _fromSuppliedValue(internalConstructor, obj) {

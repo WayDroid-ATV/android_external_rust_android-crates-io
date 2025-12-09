@@ -11,7 +11,7 @@ import * as diplomatRuntime from "./diplomat-runtime.mjs";
 /**
  * An ICU4X DateTime object capable of containing a date and time for any calendar.
  *
- * See the [Rust documentation for `DateTime`](https://docs.rs/icu/2.0.0/icu/time/struct.DateTime.html) for more information.
+ * See the [Rust documentation for `DateTime`](https://docs.rs/icu/2.1.1/icu/time/struct.DateTime.html) for more information.
  */
 export class DateTime {
     #date;
@@ -51,7 +51,13 @@ export class DateTime {
         functionCleanupArena,
         appendArrayMap
     ) {
-        return [this.#date.ffiValue, this.#time.ffiValue]
+        let buffer = diplomatRuntime.DiplomatBuf.struct(wasm, 8, 4);
+
+        this._writeToArrayBuffer(wasm.memory.buffer, buffer.ptr, functionCleanupArena, appendArrayMap);
+
+        functionCleanupArena.alloc(buffer);
+
+        return buffer.ptr;
     }
 
     static _fromSuppliedValue(internalConstructor, obj) {
@@ -98,16 +104,16 @@ export class DateTime {
     /**
      * Creates a new {@link DateTime} from an IXDTF string.
      *
-     * See the [Rust documentation for `try_from_str`](https://docs.rs/icu/2.0.0/icu/time/struct.DateTime.html#method.try_from_str) for more information.
+     * See the [Rust documentation for `try_from_str`](https://docs.rs/icu/2.1.1/icu/time/struct.DateTime.html#method.try_from_str) for more information.
      */
     static fromString(v, calendar) {
         let functionCleanupArena = new diplomatRuntime.CleanupArena();
 
-        const vSlice = diplomatRuntime.DiplomatBuf.str8(wasm, v);
+        const vSlice = functionCleanupArena.alloc(diplomatRuntime.DiplomatBuf.sliceWrapper(wasm, diplomatRuntime.DiplomatBuf.str8(wasm, v)));
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 9, 4, true);
 
 
-        const result = wasm.icu4x_DateTime_from_string_mv1(diplomatReceive.buffer, ...vSlice.splat(), calendar.ffiValue);
+        const result = wasm.icu4x_DateTime_from_string_mv1(diplomatReceive.buffer, vSlice.ptr, calendar.ffiValue);
 
         try {
             if (!diplomatReceive.resultFlag) {
