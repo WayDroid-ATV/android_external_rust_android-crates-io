@@ -1,17 +1,17 @@
 name: "icu_casemap"
 description: "Unicode case mapping and folding algorithms"
 third_party {
-  version: "2.0.1"
+  version: "2.1.1"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 10
-    day: 30
+    month: 12
+    day: 9
   }
   homepage: "https://crates.io/crates/icu_casemap"
   identifier {
     type: "crates.io"
     value: "icu_casemap"
-    version: "2.0.1"
+    version: "2.1.1"
   }
 }

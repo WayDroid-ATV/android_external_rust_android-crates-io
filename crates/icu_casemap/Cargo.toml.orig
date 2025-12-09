@@ -5,7 +5,6 @@
 [package]
 name = "icu_casemap"
 description = "Unicode case mapping and folding algorithms"
-version = "2.0.1"
 
 authors.workspace = true
 categories.workspace = true
@@ -15,12 +14,12 @@ include.workspace = true
 license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
+version.workspace = true
 
 [package.metadata.docs.rs]
 all-features = true
 
 [dependencies]
-displaydoc = { workspace = true }
 icu_collections = { workspace = true, features = ["alloc"] }
 icu_locale_core = { workspace = true, features = ["alloc"] }
 icu_properties = { workspace = true }

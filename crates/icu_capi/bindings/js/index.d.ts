@@ -6,6 +6,10 @@ export { TitlecaseOptions, TitlecaseOptions_obj } from "./TitlecaseOptions"
 
 export { CollatorOptions, CollatorOptions_obj } from "./CollatorOptions"
 
+export { DateFields, DateFields_obj } from "./DateFields"
+
+export { DateFromFieldsOptions, DateFromFieldsOptions_obj } from "./DateFromFieldsOptions"
+
 export { IsoWeekOfYear, IsoWeekOfYear_obj } from "./IsoWeekOfYear"
 
 export { DisplayNamesOptions, DisplayNamesOptions_obj } from "./DisplayNamesOptions"
@@ -116,10 +120,6 @@ export { LocaleDirectionality } from "./LocaleDirectionality"
 
 export { Logger } from "./Logger"
 
-export { MeasureUnit } from "./MeasureUnit"
-
-export { MeasureUnitParser } from "./MeasureUnitParser"
-
 export { ComposingNormalizer } from "./ComposingNormalizer"
 
 export { DecomposingNormalizer } from "./DecomposingNormalizer"
@@ -198,10 +198,6 @@ export { TimeZoneInfo } from "./TimeZoneInfo"
 
 export { TimeZoneFormatter } from "./TimeZoneFormatter"
 
-export { UnitsConverter } from "./UnitsConverter"
-
-export { UnitsConverterFactory } from "./UnitsConverterFactory"
-
 export { UtcOffset } from "./UtcOffset"
 
 export { VariantOffsetsCalculator } from "./VariantOffsetsCalculator"
@@ -242,6 +238,10 @@ export { CollatorNumericOrdering } from "./CollatorNumericOrdering"
 
 export { CollatorStrength } from "./CollatorStrength"
 
+export { DateMissingFieldsStrategy } from "./DateMissingFieldsStrategy"
+
+export { DateOverflow } from "./DateOverflow"
+
 export { Weekday } from "./Weekday"
 
 export { DateTimeAlignment } from "./DateTimeAlignment"
@@ -259,6 +259,8 @@ export { DisplayNamesFallback } from "./DisplayNamesFallback"
 export { DisplayNamesStyle } from "./DisplayNamesStyle"
 
 export { LanguageDisplay } from "./LanguageDisplay"
+
+export { CalendarDateFromFieldsError } from "./CalendarDateFromFieldsError"
 
 export { CalendarError } from "./CalendarError"
 

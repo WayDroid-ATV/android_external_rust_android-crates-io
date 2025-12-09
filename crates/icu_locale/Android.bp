@@ -19,7 +19,7 @@ rust_library {
     host_supported: true,
     crate_name: "icu_locale",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.0.0",
+    cargo_pkg_version: "2.1.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: ["compiled_data"],
@@ -32,7 +32,6 @@ rust_library {
         "libtinystr",
         "libzerovec",
     ],
-    proc_macros: ["libdisplaydoc"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

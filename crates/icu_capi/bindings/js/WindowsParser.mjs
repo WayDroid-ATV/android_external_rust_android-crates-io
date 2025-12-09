@@ -15,7 +15,7 @@ const WindowsParser_box_destroy_registry = new FinalizationRegistry((ptr) => {
  * This mapper supports two-way mapping, but it is optimized for the case of Windows to BCP-47.
  * It also supports normalizing and canonicalizing the Windows strings.
  *
- * See the [Rust documentation for `WindowsParser`](https://docs.rs/icu/2.0.0/icu/time/zone/windows/struct.WindowsParser.html) for more information.
+ * See the [Rust documentation for `WindowsParser`](https://docs.rs/icu/2.1.1/icu/time/zone/windows/struct.WindowsParser.html) for more information.
  */
 export class WindowsParser {
     // Internal ptr reference:
@@ -49,7 +49,7 @@ export class WindowsParser {
     /**
      * Create a new {@link WindowsParser} using compiled data
      *
-     * See the [Rust documentation for `new`](https://docs.rs/icu/2.0.0/icu/time/zone/windows/struct.WindowsParser.html#method.new) for more information.
+     * See the [Rust documentation for `new`](https://docs.rs/icu/2.1.1/icu/time/zone/windows/struct.WindowsParser.html#method.new) for more information.
      */
     #defaultConstructor() {
 
@@ -66,7 +66,7 @@ export class WindowsParser {
     /**
      * Create a new {@link WindowsParser} using a particular data source
      *
-     * See the [Rust documentation for `new`](https://docs.rs/icu/2.0.0/icu/time/zone/windows/struct.WindowsParser.html#method.new) for more information.
+     * See the [Rust documentation for `new`](https://docs.rs/icu/2.1.1/icu/time/zone/windows/struct.WindowsParser.html#method.new) for more information.
      */
     static createWithProvider(provider) {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 5, 4, true);
@@ -88,15 +88,15 @@ export class WindowsParser {
     }
 
     /**
-     * See the [Rust documentation for `parse`](https://docs.rs/icu/2.0.0/icu/time/zone/windows/struct.WindowsParserBorrowed.html#method.parse) for more information.
+     * See the [Rust documentation for `parse`](https://docs.rs/icu/2.1.1/icu/time/zone/windows/struct.WindowsParserBorrowed.html#method.parse) for more information.
      */
     parse(value, region) {
         let functionCleanupArena = new diplomatRuntime.CleanupArena();
 
-        const valueSlice = diplomatRuntime.DiplomatBuf.str8(wasm, value);
-        const regionSlice = diplomatRuntime.DiplomatBuf.str8(wasm, region);
+        const valueSlice = functionCleanupArena.alloc(diplomatRuntime.DiplomatBuf.sliceWrapper(wasm, diplomatRuntime.DiplomatBuf.str8(wasm, value)));
+        const regionSlice = functionCleanupArena.alloc(diplomatRuntime.DiplomatBuf.sliceWrapper(wasm, diplomatRuntime.DiplomatBuf.str8(wasm, region)));
 
-        const result = wasm.icu4x_WindowsParser_parse_mv1(this.ffiValue, ...valueSlice.splat(), ...regionSlice.splat());
+        const result = wasm.icu4x_WindowsParser_parse_mv1(this.ffiValue, valueSlice.ptr, regionSlice.ptr);
 
         try {
             return result === 0 ? null : new TimeZone(diplomatRuntime.internalConstructor, result, []);
@@ -111,7 +111,7 @@ export class WindowsParser {
     /**
      * Create a new {@link WindowsParser} using compiled data
      *
-     * See the [Rust documentation for `new`](https://docs.rs/icu/2.0.0/icu/time/zone/windows/struct.WindowsParser.html#method.new) for more information.
+     * See the [Rust documentation for `new`](https://docs.rs/icu/2.1.1/icu/time/zone/windows/struct.WindowsParser.html#method.new) for more information.
      */
     constructor() {
         if (arguments[0] === diplomatRuntime.exposeConstructor) {
