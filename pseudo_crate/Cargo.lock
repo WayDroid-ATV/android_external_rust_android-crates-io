@@ -407,7 +407,6 @@ dependencies = [
  "mockall",
  "mockall_derive",
  "mockall_double",
- "moveit",
  "named-lock",
  "netlink-packet-core",
  "netlink-packet-route",
@@ -5384,12 +5383,6 @@ dependencies = [
  "quote 1.0.42",
  "syn 2.0.111",
 ]
-
-[[package]]
-name = "moveit"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87d7335204cb6ef7bd647fa6db0be3e4d7aa25b5823a7aa030027ddf512cefba"
 
 [[package]]
 name = "named-lock"
