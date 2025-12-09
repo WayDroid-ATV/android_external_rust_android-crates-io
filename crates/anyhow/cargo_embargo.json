@@ -23,5 +23,6 @@
       "tests": false
     }
   ],
-  "run_cargo": true
+  "run_cargo": true,
+  "recovery_available": true
 }
