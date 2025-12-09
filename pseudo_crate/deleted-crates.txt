@@ -1,6 +1,7 @@
 icu_provider_baked
 icu_provider_macros
 instant
+moveit
 oneshot-uniffi
 uniffi
 uniffi_checksum_derive
