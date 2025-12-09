@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.82.0"
 name = "yuv"
-version = "0.8.8"
+version = "0.8.9"
 authors = ["Radzivon Bartoshyk"]
 build = false
 exclude = [
