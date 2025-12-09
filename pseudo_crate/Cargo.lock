@@ -416,6 +416,7 @@ dependencies = [
  "nix 0.29.0",
  "no-panic",
  "nom",
+ "nu-ansi-term",
  "num-bigint",
  "num-complex",
  "num-derive",

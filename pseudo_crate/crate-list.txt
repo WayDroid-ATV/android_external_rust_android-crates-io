@@ -302,6 +302,7 @@ netlink-sys
 nix
 no-panic
 nom
+nu-ansi-term
 num-bigint
 num-complex
 num-derive
