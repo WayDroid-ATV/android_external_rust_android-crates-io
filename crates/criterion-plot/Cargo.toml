@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "criterion-plot"
-version = "0.8.0"
+version = "0.8.1"
 authors = [
     "Jorge Aparicio <japaricious@gmail.com>",
     "Brook Heisler <brookheisler@gmail.com>",
