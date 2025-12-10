@@ -1,17 +1,17 @@
 name: "url"
 description: "URL library for Rust, based on the WHATWG URL Standard"
 third_party {
-  version: "2.5.2"
+  version: "2.5.7"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 1
-    day: 13
+    month: 12
+    day: 9
   }
   homepage: "https://crates.io/crates/url"
   identifier {
     type: "crates.io"
     value: "url"
-    version: "2.5.2"
+    version: "2.5.7"
   }
 }

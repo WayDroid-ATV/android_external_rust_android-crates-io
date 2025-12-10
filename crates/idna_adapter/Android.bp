@@ -21,6 +21,7 @@ rust_library {
     cargo_pkg_version: "1.2.1",
     crate_root: "src/lib.rs",
     edition: "2021",
+    features: ["compiled_data"],
     rustlibs: [
         "libicu_normalizer",
         "libicu_properties",
