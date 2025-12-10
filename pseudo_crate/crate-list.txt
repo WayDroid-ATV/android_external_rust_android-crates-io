@@ -303,6 +303,7 @@ netlink-sys
 nix
 no-panic
 nom
+normpath
 nu-ansi-term
 num-bigint
 num-complex
