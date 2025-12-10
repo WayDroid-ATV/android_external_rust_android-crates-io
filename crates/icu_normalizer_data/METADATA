@@ -1,7 +1,7 @@
 name: "icu_normalizer_data"
 description: "Data for the icu_normalizer crate"
 third_party {
-  version: "2.0.0"
+  version: "2.1.1"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
@@ -12,6 +12,6 @@ third_party {
   identifier {
     type: "crates.io"
     value: "icu_normalizer_data"
-    version: "2.0.0"
+    version: "2.1.1"
   }
 }

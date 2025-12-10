@@ -18,17 +18,19 @@ rust_library {
     host_supported: true,
     crate_name: "idna",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.5.0",
+    cargo_pkg_version: "1.1.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
         "alloc",
+        "compiled_data",
         "default",
         "std",
     ],
     rustlibs: [
-        "libunicode_bidi",
-        "libunicode_normalization",
+        "libidna_adapter",
+        "libsmallvec",
+        "libutf8_iter",
     ],
     apex_available: [
         "//apex_available:platform",
