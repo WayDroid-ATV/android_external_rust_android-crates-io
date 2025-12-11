@@ -80,6 +80,15 @@ impl Inflate {
         u64::from(self.0.total_out)
     }
 
+    /// The error message if the previous operation failed.
+    pub fn error_message(&self) -> Option<&'static str> {
+        if self.0.msg.is_null() {
+            None
+        } else {
+            unsafe { core::ffi::CStr::from_ptr(self.0.msg).to_str() }.ok()
+        }
+    }
+
     /// Create a new instance. Note that it allocates in various ways and thus should be re-used.
     ///
     /// The `window_bits` must be in the range `8..=15`, with `15` being most common.
@@ -133,6 +142,15 @@ impl Inflate {
             ReturnCode::MemError => Err(InflateError::MemError),
             ReturnCode::BufError => Ok(Status::BufError),
             ReturnCode::VersionError => unreachable!("the rust API does not use the version"),
+        }
+    }
+
+    pub fn set_dictionary(&mut self, dictionary: &[u8]) -> Result<u32, InflateError> {
+        match crate::inflate::set_dictionary(&mut self.0, dictionary) {
+            ReturnCode::Ok => Ok(self.0.adler as u32),
+            ReturnCode::StreamError => Err(InflateError::StreamError),
+            ReturnCode::DataError => Err(InflateError::DataError),
+            other => unreachable!("set_dictionary does not return {other:?}"),
         }
     }
 }
@@ -203,6 +221,15 @@ impl Deflate {
         u64::from(self.0.total_out)
     }
 
+    /// The error message if the previous operation failed.
+    pub fn error_message(&self) -> Option<&'static str> {
+        if self.0.msg.is_null() {
+            None
+        } else {
+            unsafe { core::ffi::CStr::from_ptr(self.0.msg).to_str() }.ok()
+        }
+    }
+
     /// Create a new instance - this allocates so should be done with care.
     ///
     /// The `window_bits` must be in the range `8..=15`, with `15` being most common.
@@ -240,6 +267,36 @@ impl Deflate {
         self.0.next_out = output.as_mut_ptr();
 
         crate::deflate::deflate(&mut self.0, flush).into()
+    }
+
+    /// Specifies the compression dictionary to use.
+    ///
+    /// Returns the Adler-32 checksum of the dictionary.
+    pub fn set_dictionary(&mut self, dictionary: &[u8]) -> Result<u32, DeflateError> {
+        match crate::deflate::set_dictionary(&mut self.0, dictionary) {
+            ReturnCode::Ok => Ok(self.0.adler as u32),
+            ReturnCode::StreamError => Err(DeflateError::StreamError),
+            other => unreachable!("set_dictionary does not return {other:?}"),
+        }
+    }
+
+    /// Dynamically updates the compression level.
+    ///
+    /// This can be used to switch between compression levels for different
+    /// kinds of data, or it can be used in conjunction with a call to [`Deflate::reset`]
+    /// to reuse the compressor.
+    ///
+    /// This may return an error if there wasn't enough output space to complete
+    /// the compression of the available input data before changing the
+    /// compression level. Flushing the stream before calling this method
+    /// ensures that the function will succeed on the first call.
+    pub fn set_level(&mut self, level: i32) -> Result<Status, DeflateError> {
+        match crate::deflate::params(&mut self.0, level, Default::default()) {
+            ReturnCode::Ok => Ok(Status::Ok),
+            ReturnCode::StreamError => Err(DeflateError::StreamError),
+            ReturnCode::BufError => Ok(Status::BufError),
+            other => unreachable!("set_level does not return {other:?}"),
+        }
     }
 }
 
