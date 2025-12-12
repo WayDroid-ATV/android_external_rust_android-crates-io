@@ -338,6 +338,7 @@ dependencies = [
  "idna",
  "idna_adapter",
  "if-addrs",
+ "ignore",
  "image 0.25.6",
  "indexmap 2.12.1",
  "inotify",
@@ -4275,6 +4276,22 @@ checksum = "bf39cc0423ee66021dc5eccface85580e4a001e0c5288bae8bea7ecb69225e90"
 dependencies = [
  "libc 0.2.177",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "ignore"
+version = "0.4.25"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3d782a365a015e0f5c04902246139249abf769125006fbe7649e2ee88169b4a"
+dependencies = [
+ "crossbeam-deque",
+ "globset",
+ "log",
+ "memchr",
+ "regex-automata",
+ "same-file",
+ "walkdir",
+ "winapi-util",
 ]
 
 [[package]]
