@@ -1,0 +1,17 @@
+name: "ignore"
+description: "A fast library for efficiently matching ignore files such as `.gitignore` against file paths."
+third_party {
+  version: "0.4.25"
+  license_type: NOTICE
+  last_upgrade_date {
+    year: 2025
+    month: 11
+    day: 20
+  }
+  homepage: "https://crates.io/crates/ignore"
+  identifier {
+    type: "Archive"
+    value: "https://static.crates.io/crates/ignore/ignore-0.4.25.crate"
+    version: "0.4.25"
+  }
+}

@@ -223,6 +223,7 @@ ident_case
 idna
 idna_adapter
 if-addrs
+ignore
 image
 indexmap
 inotify
