@@ -266,6 +266,7 @@ litrs
 lock_api
 log
 lru-cache
+lscolors
 lsp-server
 lsp-types
 lz4_flex
