@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.70"
+rust-version = "1.74"
 name = "automotive_diag"
-version = "0.1.25"
+version = "0.1.26"
 authors = [
     "Yuri Astrakhan <YuriAstrakhan@gmail.com>",
     "Ashcon Mohseninia <ashconm@outlook.com>",
@@ -50,6 +50,7 @@ default = [
     "std",
     "iter",
     "display",
+    "doip",
     "kwp2000",
     "obd2",
     "uds",
@@ -89,7 +90,7 @@ optional = true
 default-features = false
 
 [dependencies.pyo3]
-version = "0.26.0"
+version = "0.27.2"
 optional = true
 
 [dependencies.serde]
