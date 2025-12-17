@@ -27,16 +27,16 @@ use crate::task::{self, BatchFuture, BatchResult, BatchType, CallTag};
 /// An gRPC status code structure.
 /// This type contains constants for all gRPC status codes.
 #[derive(PartialEq, Eq, Clone, Copy)]
-pub struct RpcStatusCode(i32);
+pub struct RpcStatusCode(u32);
 
-impl From<i32> for RpcStatusCode {
-    fn from(code: i32) -> RpcStatusCode {
+impl From<u32> for RpcStatusCode {
+    fn from(code: u32) -> RpcStatusCode {
         RpcStatusCode(code)
     }
 }
 
-impl From<RpcStatusCode> for i32 {
-    fn from(code: RpcStatusCode) -> i32 {
+impl From<RpcStatusCode> for u32 {
+    fn from(code: RpcStatusCode) -> u32 {
         code.0
     }
 }
