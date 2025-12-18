@@ -48,3 +48,9 @@ rust_test_host {
         "libsyn",
     ],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_mockall_derive",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}
