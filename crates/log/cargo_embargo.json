@@ -2,6 +2,11 @@
   "run_cargo": false,
   "recovery_available": true,
   "min_sdk_version": "29",
+  "package": {
+    "log": {
+      "target_windows": true
+    }
+  },
   "variants": [
     {
       "features": [
@@ -9,10 +14,16 @@
       ],
       "module_name_overrides": {
         "liblog": "liblog_rust"
+      }
+    },
+    {
+      "features": [],
+      "module_name_overrides": {
+        "liblog": "liblog_rust"
       },
       "package": {
         "log": {
-          "add_module_block": "android_impl.bp.fragment"
+          "no_std": true
         }
       }
     },
@@ -24,11 +35,6 @@
       ],
       "module_name_overrides": {
         "liblog": "liblog_rust_max_level_info"
-      },
-      "package": {
-        "log": {
-          "add_module_block": "android_impl.bp.fragment"
-        }
       }
     },
     {
@@ -39,11 +45,6 @@
       ],
       "module_name_overrides": {
         "liblog": "liblog_rust_max_level_off"
-      },
-      "package": {
-        "log": {
-          "add_module_block": "android_impl.bp.fragment"
-        }
       }
     },
     {
