@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.3.2] - 2025-12-18
+
+- `Ipv*Cidr` and `Ipv*Inet`: add methods to get reference to stored (first / host) address
+
 ## [0.3.1] - 2025-01-18
 
 - raise serde version to support no-std builds
