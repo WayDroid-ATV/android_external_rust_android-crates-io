@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.81"
 name = "cidr"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Stefan Bühler <stbuehler@web.de>"]
 build = false
 exclude = ["CHECKLIST.md"]
@@ -41,6 +41,16 @@ repository = "https://github.com/stbuehler/rust-cidr"
 all-features = true
 targets = []
 
+[badges.appveyor]
+repository = "stbuehler/rust-cidr"
+
+[features]
+bitstring = ["dep:bitstring"]
+default = ["std"]
+no_unsafe = []
+serde = ["dep:serde"]
+std = []
+
 [lib]
 name = "cidr"
 path = "src/lib.rs"
@@ -67,13 +77,3 @@ version = "1.0.27"
 
 [dev-dependencies.version-sync]
 version = "0.9.1"
-
-[features]
-bitstring = ["dep:bitstring"]
-default = ["std"]
-no_unsafe = []
-serde = ["dep:serde"]
-std = []
-
-[badges.appveyor]
-repository = "stbuehler/rust-cidr"

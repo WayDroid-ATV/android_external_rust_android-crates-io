@@ -29,7 +29,7 @@ impl<A: Address> Iterator for InetIterator<A> {
 	type Item = A::Inet;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		let state = self.state.as_mut().take()?;
+		let state = self.state.as_mut()?;
 		let res = state.first();
 		if !state._inc_first() {
 			self.state = None;
@@ -65,7 +65,7 @@ impl<A: Address> Iterator for InetIterator<A> {
 
 impl<A: Address> core::iter::DoubleEndedIterator for InetIterator<A> {
 	fn next_back(&mut self) -> Option<Self::Item> {
-		let state = self.state.as_mut().take()?;
+		let state = self.state.as_mut()?;
 		let res = state.second();
 		if !state._dec_second() {
 			self.state = None;
