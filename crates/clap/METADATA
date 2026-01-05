@@ -1,17 +1,17 @@
 name: "clap"
 description: "A simple to use, efficient, and full-featured Command Line Argument Parser"
 third_party {
-  version: "4.5.53"
+  version: "4.5.54"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 11
-    day: 27
+    year: 2026
+    month: 1
+    day: 3
   }
   homepage: "https://crates.io/crates/clap"
   identifier {
     type: "crates.io"
     value: "clap"
-    version: "4.5.53"
+    version: "4.5.54"
   }
 }
