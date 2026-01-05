@@ -224,7 +224,7 @@ impl EnvCompleter for Fish {
 
         writeln!(
             buf,
-            r#"complete --keep-order --exclusive --command {bin} --arguments "({var}=fish "'{completer}'" -- (commandline --current-process --tokenize --cut-at-cursor) (commandline --current-token))""#
+            r#"complete --keep-order --exclusive --command {bin} --arguments "({var}=fish {completer} -- (commandline --current-process --tokenize --cut-at-cursor) (commandline --current-token))""#
         )
     }
     fn write_complete(
@@ -381,7 +381,25 @@ function _clap_dynamic_completer_NAME() {
     )}")
 
     if [[ -n $completions ]]; then
-        _describe 'values' completions
+        local -a dirs=()
+        local -a other=()
+        local completion
+        for completion in $completions; do
+            local value="${completion%%:*}"
+            if [[ "$value" == */ ]]; then
+                local dir_no_slash="${value%/}"
+                if [[ "$completion" == *:* ]]; then
+                    local desc="${completion#*:}"
+                    dirs+=("$dir_no_slash:$desc")
+                else
+                    dirs+=("$dir_no_slash")
+                fi
+            else
+                other+=("$completion")
+            fi
+        done
+        [[ -n $dirs ]] && _describe 'values' dirs -S '/' -r '/'
+        [[ -n $other ]] && _describe 'values' other
     fi
 }
 
@@ -444,5 +462,51 @@ impl Zsh {
     /// Escape help string
     fn escape_help(string: &str) -> String {
         string.replace('\\', "\\\\")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use snapbox::assert_data_eq;
+
+    // This test verifies that fish shell path quoting works with or without spaces in the path.
+    #[test]
+    #[cfg(all(unix, feature = "unstable-dynamic"))]
+    #[cfg(feature = "unstable-shell-tests")]
+    fn fish_env_completer_path_quoting_works() {
+        // Returns the dynamic registration line for the fish shell, for example:
+        // complete --keep-order --exclusive --command my-bin --arguments "(COMPLETE=fish /path/to/my-bin ... )"
+        let get_fish_registration = |completer_bin: &str| {
+            let mut buf = Vec::new();
+            let fish = Fish;
+            fish.write_registration(
+                "IGNORED_VAR",
+                "ignored-name",
+                "/ignored/bin",
+                completer_bin,
+                &mut buf,
+            )
+            .expect("write_registration failed");
+            return String::from_utf8(buf).expect("Invalid UTF-8");
+        };
+
+        let script = get_fish_registration("completer");
+        assert_data_eq!(
+            script.trim(),
+            snapbox::str![r#"complete [..] "([..] completer [..])""#]
+        );
+
+        let script = get_fish_registration("/path/completer");
+        assert_data_eq!(
+            script.trim(),
+            snapbox::str![r#"complete [..] "([..] /path/completer [..])""#]
+        );
+
+        let script = get_fish_registration("/path with a space/completer");
+        assert_data_eq!(
+            script.trim(),
+            snapbox::str![r#"complete [..] "([..] '/path with a space/completer' [..])""#]
+        );
     }
 }
