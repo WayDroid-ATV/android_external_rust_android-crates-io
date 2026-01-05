@@ -10,6 +10,6 @@ MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
 MODULE_RUST_EDITION := 2018
 MODULE_LIBRARY_DEPS := \
-	
+	$(call FIND_CRATE,rustversion)
 
 include make/library.mk
