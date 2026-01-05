@@ -11,8 +11,9 @@
 
 [package]
 edition = "2021"
+rust-version = "1.85"
 name = "safe-mmio"
-version = "0.2.5"
+version = "0.2.6"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 build = false
 autolib = false
@@ -35,5 +36,5 @@ name = "safe_mmio"
 path = "src/lib.rs"
 
 [dependencies.zerocopy]
-version = "0.8.24"
+version = "0.8.31"
 features = ["derive"]
