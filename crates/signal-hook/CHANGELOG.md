@@ -1,3 +1,28 @@
+# 0.4.1
+
+* Don't pin specific dependency versions accidentally.
+
+# 0.4.0
+
+* Changed the `low_level::pipe` to look `OwnedFd` instead of `IntoRawFd`, to
+  enforce ownership of the file descriptor (#196).
+
+# signal-hook-registry-1.4.8
+
+* Restore errno on signal handler exit (#194, #191).
+
+# signal-hook-registry-1.4.7
+
+* Using earlier monopolization to reduce binary size (#190).
+
+# signal-hook-mio-0.2.5
+
+* Allow mio 1.1
+
+# signal-hook-registry-1.4.6
+
+* Reword/improve the safety requirements docs for register (#178).
+
 # signal-hook-1.3.18
 
 * Release the special-case removal of AIX for top-level signal-hook too (#169,

@@ -11,8 +11,9 @@
 
 [package]
 edition = "2018"
+rust-version = "1.66"
 name = "signal-hook"
-version = "0.3.18"
+version = "0.4.1"
 authors = [
     "Michal 'vorner' Vaner <vorner@vorner.cz>",
     "Thomas Himmelstoss <thimm@posteo.de>",
@@ -31,7 +32,7 @@ keywords = [
     "unix",
     "daemon",
 ]
-license = "Apache-2.0/MIT"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/vorner/signal-hook"
 
 [package.metadata.docs.rs]
@@ -84,8 +85,7 @@ version = "^0.2"
 [dependencies.signal-hook-registry]
 version = "^1.4"
 
-[dev-dependencies.serial_test]
-version = "^0.7"
+[dev-dependencies]
 
 [build-dependencies.cc]
 version = "^1"
