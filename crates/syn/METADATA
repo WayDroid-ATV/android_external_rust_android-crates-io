@@ -1,17 +1,17 @@
 name: "syn"
 description: "Parser for Rust source code"
 third_party {
-  version: "2.0.111"
+  version: "2.0.112"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 11
-    day: 27
+    year: 2026
+    month: 1
+    day: 3
   }
   homepage: "https://crates.io/crates/syn"
   identifier {
     type: "crates.io"
     value: "syn"
-    version: "2.0.111"
+    version: "2.0.112"
   }
 }
