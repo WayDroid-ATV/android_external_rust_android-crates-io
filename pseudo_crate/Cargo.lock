@@ -538,7 +538,7 @@ dependencies = [
  "shared_child",
  "shared_library",
  "shlex",
- "signal-hook",
+ "signal-hook 0.4.1",
  "signal-hook-registry",
  "simd-adler32",
  "simple-dns",
@@ -7488,7 +7488,7 @@ checksum = "47106eded3c154e70176fc83df9737335c94ce22f821c32d17ed1db1f83badb1"
 dependencies = [
  "libc 0.2.177",
  "os_pipe",
- "signal-hook",
+ "signal-hook 0.3.18",
 ]
 
 [[package]]
@@ -7496,6 +7496,16 @@ name = "signal-hook"
 version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d881a16cf4426aa584979d30bd82cb33429027e42122b169753d6ef1085ed6e2"
+dependencies = [
+ "libc 0.2.177",
+ "signal-hook-registry",
+]
+
+[[package]]
+name = "signal-hook"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a37d01603c37b5466f808de79f845c7116049b0579adb70a6b7d47c1fa3a952"
 dependencies = [
  "libc 0.2.177",
  "signal-hook-registry",
