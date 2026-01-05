@@ -17,7 +17,7 @@ rust_library {
     name: "libreqwest",
     crate_name: "reqwest",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.12.26",
+    cargo_pkg_version: "0.12.28",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
