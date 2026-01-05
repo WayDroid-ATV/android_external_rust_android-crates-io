@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.2
+
+### Fixes
+
+- Made `enable_mmu` unsafe.
+
+## 0.4.1 (yanked)
+
+### Improvements
+
+- Made `set_exception_vector` public.
+- Made `enable_mmu` public.
+
 ## 0.4.0
 
 ### Breaking changes
