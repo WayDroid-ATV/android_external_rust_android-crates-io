@@ -105,7 +105,7 @@ If the `tokio` feature is enabled, this crate will inherit the MSRV of the selec
 [serde_json]: https://crates.io/crates/serde_json
 */
 
-#![doc(html_root_url = "https://docs.rs/fs-err/3.2.0")]
+#![doc(html_root_url = "https://docs.rs/fs-err/3.2.2")]
 #![deny(missing_debug_implementations, missing_docs)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
@@ -263,12 +263,17 @@ pub fn canonicalize<P: AsRef<Path>>(path: P) -> io::Result<PathBuf> {
 
 /// Creates a new hard link on the filesystem.
 ///
+/// The `link` path will be a link pointing to the `original` path. Note that
+/// systems often require these two paths to both be located on the same
+/// filesystem.
+///
 /// Wrapper for [`fs::hard_link`](https://doc.rust-lang.org/stable/std/fs/fn.hard_link.html).
-pub fn hard_link<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> io::Result<()> {
-    let src = src.as_ref();
-    let dst = dst.as_ref();
-    fs::hard_link(src, dst)
-        .map_err(|source| SourceDestError::build(source, SourceDestErrorKind::HardLink, src, dst))
+pub fn hard_link<P: AsRef<Path>, Q: AsRef<Path>>(original: P, link: Q) -> io::Result<()> {
+    let original = original.as_ref();
+    let link = link.as_ref();
+    fs::hard_link(original, link).map_err(|source| {
+        SourceDestError::build(source, SourceDestErrorKind::HardLink, link, original)
+    })
 }
 
 /// Reads a symbolic link, returning the file that the link points to.
@@ -289,15 +294,20 @@ pub fn rename<P: AsRef<Path>, Q: AsRef<Path>>(from: P, to: Q) -> io::Result<()> 
         .map_err(|source| SourceDestError::build(source, SourceDestErrorKind::Rename, from, to))
 }
 
+/// Creates a new symbolic link on the filesystem.
+///
+/// The `link` path will be a symbolic link pointing to the `original` path.
+///
 /// Wrapper for [`fs::soft_link`](https://doc.rust-lang.org/stable/std/fs/fn.soft_link.html).
 #[deprecated = "replaced with std::os::unix::fs::symlink and \
 std::os::windows::fs::{symlink_file, symlink_dir}"]
-pub fn soft_link<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> io::Result<()> {
-    let src = src.as_ref();
-    let dst = dst.as_ref();
+pub fn soft_link<P: AsRef<Path>, Q: AsRef<Path>>(original: P, link: Q) -> io::Result<()> {
+    let original = original.as_ref();
+    let link = link.as_ref();
     #[allow(deprecated)]
-    fs::soft_link(src, dst)
-        .map_err(|source| SourceDestError::build(source, SourceDestErrorKind::SoftLink, src, dst))
+    fs::soft_link(original, link).map_err(|source| {
+        SourceDestError::build(source, SourceDestErrorKind::SoftLink, link, original)
+    })
 }
 
 /// Query the metadata about a file without following symlinks.
