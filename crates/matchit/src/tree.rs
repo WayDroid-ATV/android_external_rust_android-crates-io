@@ -199,7 +199,7 @@ impl<T> Node<T> {
             let next = remaining[0];
 
             // For parameters with a suffix, we have to find the matching suffix or create a new child node.
-            if matches!(state.node().node_type, NodeType::Param { .. }) {
+            if let NodeType::Param { suffix: has_suffix } = state.node().node_type {
                 let terminator = remaining
                     .iter()
                     .position(|&b| b == b'/')
@@ -248,8 +248,10 @@ impl<T> Node<T> {
                     priority: 1,
                     ..Node::default()
                 });
-                let has_suffix = !matches!(*suffix, b"" | b"/");
+
+                let has_suffix = has_suffix || !matches!(*suffix, b"" | b"/");
                 state.node_mut().node_type = NodeType::Param { suffix: has_suffix };
+
                 state = state.set_child(child);
 
                 // If this is the final route segment, insert the value.
@@ -391,11 +393,11 @@ impl<T> Node<T> {
                 }
 
                 // Similarly, if we are inserting a longer prefix, and there is a route that leads to this
-                // parameter that includes a suffix, we have a prefix-suffix conflicts.
-                if common_remaining[common_prefix - 1] != b'/'
-                    && node.suffix_wild_child_in_segment()
-                {
-                    return Err(InsertError::conflict(&route, remaining, node));
+                // parameter that includes a suffix, we have a prefix-suffix conflict.
+                if let Some(i) = common_prefix.checked_sub(1) {
+                    if common_remaining[i] != b'/' && node.suffix_wild_child_in_segment() {
+                        return Err(InsertError::conflict(&route, remaining, node));
+                    }
                 }
             }
 
@@ -409,6 +411,10 @@ impl<T> Node<T> {
     /// Returns `true` if there is a wildcard node that contains a prefix within the current route segment,
     /// i.e. before the next trailing slash
     fn prefix_wild_child_in_segment(&self) -> bool {
+        if matches!(self.node_type, NodeType::Root) && self.prefix.is_empty() {
+            return false;
+        }
+
         if self.prefix.ends_with(b"/") {
             self.children.iter().any(Node::prefix_wild_child_in_segment)
         } else {
@@ -466,7 +472,7 @@ impl<T> Node<T> {
                 return Ok(node);
             };
 
-            // Insering a catch-all route.
+            // Inserting a catch-all route.
             if prefix[wildcard.clone()][1] == b'*' {
                 // Ensure there is no suffix after the parameter, e.g. `/foo/{*x}/bar`.
                 if wildcard.end != prefix.len() {
