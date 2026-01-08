@@ -1,2 +1,4 @@
 clap
 clap_lex
+zerocopy
+zerocopy-derive
