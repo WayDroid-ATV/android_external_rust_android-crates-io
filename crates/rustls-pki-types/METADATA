@@ -1,17 +1,17 @@
 name: "rustls-pki-types"
 description: "Shared types for the rustls PKI ecosystem"
 third_party {
-  version: "1.13.1"
+  version: "1.13.2"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 12
-    day: 9
+    year: 2026
+    month: 1
+    day: 3
   }
   homepage: "https://crates.io/crates/rustls-pki-types"
   identifier {
     type: "crates.io"
     value: "rustls-pki-types"
-    version: "1.13.1"
+    version: "1.13.2"
   }
 }
