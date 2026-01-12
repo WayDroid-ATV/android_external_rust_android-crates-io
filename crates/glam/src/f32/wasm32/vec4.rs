@@ -178,6 +178,19 @@ impl Vec4 {
         self.xyz()
     }
 
+    /// Projects a homogeneous coordinate to 3D space by performing perspective divide.
+    ///
+    /// To project to [`Vec3A`] use [`Vec3A::from_homogeneous()`].
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `self.w` is `0` when `glam_assert` is enabled.
+    #[inline]
+    #[must_use]
+    pub fn project(self) -> Vec3 {
+        Vec3::from_homogeneous(self)
+    }
+
     /// Creates a 4D vector from `self` with the given value of `x`.
     #[inline]
     #[must_use]
@@ -792,6 +805,44 @@ impl Vec4 {
             math::exp(self.y),
             math::exp(self.z),
             math::exp(self.w),
+        )
+    }
+
+    /// Returns a vector containing `2^self` for each element of `self`.
+    #[inline]
+    #[must_use]
+    pub fn exp2(self) -> Self {
+        Self::new(
+            math::exp2(self.x),
+            math::exp2(self.y),
+            math::exp2(self.z),
+            math::exp2(self.w),
+        )
+    }
+
+    /// Returns a vector containing the natural logarithm for each element of `self`.
+    /// This returns NaN when the element is negative and negative infinity when the element is zero.
+    #[inline]
+    #[must_use]
+    pub fn ln(self) -> Self {
+        Self::new(
+            math::ln(self.x),
+            math::ln(self.y),
+            math::ln(self.z),
+            math::ln(self.w),
+        )
+    }
+
+    /// Returns a vector containing the base 2 logarithm for each element of `self`.
+    /// This returns NaN when the element is negative and negative infinity when the element is zero.
+    #[inline]
+    #[must_use]
+    pub fn log2(self) -> Self {
+        Self::new(
+            math::log2(self.x),
+            math::log2(self.y),
+            math::log2(self.z),
+            math::log2(self.w),
         )
     }
 

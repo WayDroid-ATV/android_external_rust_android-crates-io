@@ -199,6 +199,25 @@ impl Vec3A {
         self.xy()
     }
 
+    /// Projects a homogeneous coordinate to 3D space by performing perspective divide.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `v.w` is `0` when `glam_assert` is enabled.
+    #[inline]
+    #[must_use]
+    pub fn from_homogeneous(v: Vec4) -> Self {
+        glam_assert!(v.w != 0.0);
+        Self::from_vec4(v) / v.w
+    }
+
+    /// Creates a homogeneous coordinate from `self`, equivalent to `self.extend(1.0)`.
+    #[inline]
+    #[must_use]
+    pub fn to_homogeneous(self) -> Vec4 {
+        self.extend(1.0)
+    }
+
     // Converts `self` to a `Vec3`.
     #[inline]
     #[must_use]
@@ -828,6 +847,29 @@ impl Vec3A {
     #[must_use]
     pub fn exp(self) -> Self {
         Self::new(math::exp(self.x), math::exp(self.y), math::exp(self.z))
+    }
+
+    /// Returns a vector containing `2^self` for each element of `self`.
+    #[inline]
+    #[must_use]
+    pub fn exp2(self) -> Self {
+        Self::new(math::exp2(self.x), math::exp2(self.y), math::exp2(self.z))
+    }
+
+    /// Returns a vector containing the natural logarithm for each element of `self`.
+    /// This returns NaN when the element is negative and negative infinity when the element is zero.
+    #[inline]
+    #[must_use]
+    pub fn ln(self) -> Self {
+        Self::new(math::ln(self.x), math::ln(self.y), math::ln(self.z))
+    }
+
+    /// Returns a vector containing the base 2 logarithm for each element of `self`.
+    /// This returns NaN when the element is negative and negative infinity when the element is zero.
+    #[inline]
+    #[must_use]
+    pub fn log2(self) -> Self {
+        Self::new(math::log2(self.x), math::log2(self.y), math::log2(self.z))
     }
 
     /// Returns a vector containing each element of `self` raised to the power of `n`.
