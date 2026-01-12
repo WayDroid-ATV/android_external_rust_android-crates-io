@@ -195,7 +195,7 @@ dependencies = [
  "command-fds",
  "config",
  "configparser",
- "const-oid 0.10.1",
+ "const-oid 0.10.2",
  "coset",
  "cov-mark",
  "crates-index",
@@ -1815,9 +1815,9 @@ checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
 name = "const-oid"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0dabb6555f92fb9ee4140454eb5dcd14c7960e1225c6d1a6cc361f032947713e"
+checksum = "a6ef517f0926dd24a1582492c791b6a4818a4d94e789a334894aa15b0d12f55c"
 
 [[package]]
 name = "constant_time_eq"
