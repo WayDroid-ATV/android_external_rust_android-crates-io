@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.85"
 name = "safe-mmio"
-version = "0.2.6"
+version = "0.2.7"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 build = false
 autolib = false
