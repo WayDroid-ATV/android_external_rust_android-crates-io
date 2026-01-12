@@ -206,3 +206,9 @@ rust_test {
         "libryu",
     ],
 }
+
+dirgroup {
+    name: "trusty_dirgroup_external_rust_crates_ryu",
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+    dirs: ["."],
+}
