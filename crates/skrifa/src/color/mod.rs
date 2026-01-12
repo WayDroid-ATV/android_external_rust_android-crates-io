@@ -140,7 +140,7 @@ pub struct ColorStop {
 ///
 /// The client receives the information about the fill type in the
 /// [`fill`](ColorPainter::fill) callback of the [`ColorPainter`] trait.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Brush<'a> {
     /// A solid fill with the color specified by `palette_index`. The respective
     /// color from the CPAL table then needs to be multiplied with `alpha`.
@@ -466,7 +466,7 @@ pub struct ColorPalette<'a> {
     index: u16,
 }
 
-impl<'a> ColorPalette<'a> {
+impl ColorPalette<'_> {
     /// Returns the colors contained within this palette.
     pub fn colors(&self) -> &[Color] {
         self.sub_array
