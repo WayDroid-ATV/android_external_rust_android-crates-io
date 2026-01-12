@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.7
+
+### Improvements
+
+- Added `UniqueMmioPointer::split_some` for arrays and slices.
+
 ## 0.2.6
 
 ### Improvements
