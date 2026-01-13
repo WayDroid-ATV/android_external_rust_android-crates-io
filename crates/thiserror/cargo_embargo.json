@@ -20,5 +20,6 @@
         }
       }
     }
-  ]
+  ],
+  "recovery_available": true
 }

@@ -9,5 +9,6 @@
     "clap_lex": {
       "target_windows": true
     }
-  }
+  },
+  "recovery_available": true
 }

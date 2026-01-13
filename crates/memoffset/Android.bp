@@ -37,34 +37,9 @@ rust_library {
         "//apex_available:anyapex",
     ],
     product_available: true,
+    recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-}
-
-rust_test {
-    name: "memoffset_test_src_lib",
-    host_supported: true,
-    crate_name: "memoffset",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.9.1",
-    crate_root: "src/lib.rs",
-    test_suites: ["general-tests"],
-    auto_gen_config: true,
-    test_options: {
-        unit_test: true,
-    },
-    edition: "2015",
-    features: ["default"],
-    cfgs: [
-        "allow_clippy",
-        "aosp_force_use_std",
-        "doctests",
-        "maybe_uninit",
-        "raw_ref_macros",
-        "stable_const",
-        "stable_offset_of",
-        "tuple_ty",
-    ],
 }
 
 rust_library_rlib {
@@ -97,6 +72,33 @@ rust_library_rlib {
         "libcore.rust_sysroot",
     ],
     product_available: true,
+    recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+}
+
+rust_test {
+    name: "memoffset_test_src_lib",
+    host_supported: true,
+    crate_name: "memoffset",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.9.1",
+    crate_root: "src/lib.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2015",
+    features: ["default"],
+    cfgs: [
+        "allow_clippy",
+        "aosp_force_use_std",
+        "doctests",
+        "maybe_uninit",
+        "raw_ref_macros",
+        "stable_const",
+        "stable_offset_of",
+        "tuple_ty",
+    ],
 }

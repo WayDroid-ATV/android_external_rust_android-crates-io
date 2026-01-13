@@ -24,5 +24,6 @@
     "nix": {
       "add_module_block": "module_block.bp.fragment"
     }
-  }
+  },
+  "recovery_available": true
 }

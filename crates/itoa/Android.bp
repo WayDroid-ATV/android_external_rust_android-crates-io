@@ -47,6 +47,7 @@ rust_library {
         "com.sdv.*",
     ],
     product_available: true,
+    recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
 }

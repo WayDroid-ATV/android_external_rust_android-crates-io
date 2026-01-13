@@ -20,5 +20,6 @@
     "clap": {
       "target_windows": true
     }
-  }
+  },
+  "recovery_available": true
 }

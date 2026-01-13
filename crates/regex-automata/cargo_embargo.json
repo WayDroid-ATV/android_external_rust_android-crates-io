@@ -4,5 +4,6 @@
     "regex-automata": {
       "target_windows": true
     }
-  }
+  },
+  "recovery_available": true
 }

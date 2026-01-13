@@ -33,5 +33,6 @@
         }
       }
     }
-  ]
+  ],
+  "recovery_available": true
 }
