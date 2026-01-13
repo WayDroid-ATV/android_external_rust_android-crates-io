@@ -21,6 +21,7 @@ rust_library {
     cargo_pkg_version: "0.7.0",
     crate_root: "src/lib.rs",
     srcs: [
+        "src/**/*.rs",
         "src/html/benchmark_report.html.tt",
         "src/html/index.html.tt",
         "src/html/report_link.html.tt",
@@ -57,4 +58,5 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    use_expansive_default_srcs: false,
 }

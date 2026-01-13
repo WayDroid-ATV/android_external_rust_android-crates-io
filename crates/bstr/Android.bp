@@ -21,6 +21,7 @@ rust_library {
     cargo_pkg_version: "1.12.1",
     crate_root: "src/lib.rs",
     srcs: [
+        "src/**/*.rs",
         "src/unicode/fsm/grapheme_break_fwd.littleendian.dfa",
         "src/unicode/fsm/grapheme_break_rev.littleendian.dfa",
         "src/unicode/fsm/regional_indicator_rev.littleendian.dfa",
@@ -48,4 +49,5 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    use_expansive_default_srcs: false,
 }

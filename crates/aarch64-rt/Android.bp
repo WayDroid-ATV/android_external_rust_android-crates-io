@@ -20,7 +20,6 @@ rust_library {
     cargo_env_compat: true,
     cargo_pkg_version: "0.4.2",
     crate_root: "src/lib.rs",
-    srcs: ["**/*.S"],
     edition: "2024",
     features: ["exceptions"],
     apex_available: [

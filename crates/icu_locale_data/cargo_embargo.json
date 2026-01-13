@@ -6,7 +6,9 @@
   "min_sdk_version": "29",
   "package": {
     "icu_locale_data": {
-      "extra_srcs": [
+      "srcs": [
+          "src/**/*.rs",
+          "data/mod.rs",
           "data/locale_likely_subtags_extended_v1.rs.data",
           "data/locale_exemplar_characters_auxiliary_v1.rs.data",
           "data/locale_script_direction_v1.rs.data",

@@ -22,6 +22,8 @@ rust_library {
     cargo_pkg_version: "2.1.1",
     crate_root: "src/lib.rs",
     srcs: [
+        "src/**/*.rs",
+        "data/mod.rs",
         "data/locale_likely_subtags_extended_v1.rs.data",
         "data/locale_exemplar_characters_auxiliary_v1.rs.data",
         "data/locale_script_direction_v1.rs.data",
@@ -49,4 +51,5 @@ rust_library {
     no_std: {
         enabled: true,
     },
+    use_expansive_default_srcs: false,
 }

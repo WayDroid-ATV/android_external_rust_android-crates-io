@@ -21,7 +21,10 @@ rust_library {
     cargo_env_compat: true,
     cargo_pkg_version: "0.1.26",
     crate_root: "src/lib.rs",
-    srcs: ["src/v0-large-test-symbols/early-recursion-limit"],
+    srcs: [
+        "src/**/*.rs",
+        "src/v0-large-test-symbols/early-recursion-limit",
+    ],
     edition: "2015",
     features: ["std"],
     apex_available: [
@@ -41,6 +44,7 @@ rust_library {
         features: [],
         enabled: true,
     },
+    use_expansive_default_srcs: false,
 }
 
 rust_test {
@@ -50,7 +54,10 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.1.26",
     crate_root: "src/lib.rs",
-    srcs: ["src/v0-large-test-symbols/early-recursion-limit"],
+    srcs: [
+        "src/**/*.rs",
+        "src/v0-large-test-symbols/early-recursion-limit",
+    ],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -58,4 +65,5 @@ rust_test {
     },
     edition: "2015",
     features: ["std"],
+    use_expansive_default_srcs: false,
 }
