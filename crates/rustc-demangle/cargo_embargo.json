@@ -17,7 +17,8 @@
   "vendor_ramdisk_available": true,
   "package": {
     "rustc-demangle": {
-      "extra_srcs": [
+      "srcs": [
+        "src/**/*.rs",
         "src/v0-large-test-symbols/early-recursion-limit"
       ]
     }

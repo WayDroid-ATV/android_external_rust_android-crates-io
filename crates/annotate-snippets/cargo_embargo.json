@@ -3,7 +3,11 @@
     "annotate-snippets": {
       "device_supported": false,
       "host_first_multilib": true,
-      "extra_srcs": ["examples/expected_type.svg"]
+      "srcs": [
+        "src/**/*.rs",
+        "examples/expected_type.svg",
+        "examples/expected_type.rs"
+      ]
     }
   },
   "run_cargo": false,

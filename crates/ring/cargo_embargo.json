@@ -17,7 +17,8 @@
         "libring-test"
       ],
       "patch": "patches/Android.bp.patch",
-      "extra_srcs": [
+      "srcs": [
+        "src/**/*.rs",
         "src/data/alg-rsa-encryption.der",
         "src/ec/curve25519/ed25519/ed25519_pkcs8_v2_template.der",
         "src/ec/suite_b/ecdsa/ecPublicKey_p256_pkcs8_v1_template.der",

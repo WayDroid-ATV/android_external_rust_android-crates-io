@@ -3,7 +3,8 @@
   "min_sdk_version": "29",
   "package": {
     "bstr": {
-      "extra_srcs": [
+      "srcs": [
+        "src/**/*.rs",
         "src/unicode/fsm/grapheme_break_fwd.littleendian.dfa",
         "src/unicode/fsm/grapheme_break_rev.littleendian.dfa",
         "src/unicode/fsm/regional_indicator_rev.littleendian.dfa",

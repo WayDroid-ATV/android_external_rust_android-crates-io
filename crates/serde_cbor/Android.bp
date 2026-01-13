@@ -21,6 +21,7 @@ rust_library {
     cargo_pkg_version: "0.11.2",
     crate_root: "src/lib.rs",
     srcs: [
+        "src/**/*.rs",
         "tests/crash.cbor",
         "tests/kietaub.cbor",
     ],
@@ -41,6 +42,7 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    use_expansive_default_srcs: false,
 }
 
 rust_test {
@@ -51,6 +53,7 @@ rust_test {
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/bennofs.rs",
     srcs: [
+        "src/**/*.rs",
         "tests/crash.cbor",
         "tests/kietaub.cbor",
     ],
@@ -71,6 +74,7 @@ rust_test {
         "libserde_cbor",
     ],
     proc_macros: ["libserde_derive"],
+    use_expansive_default_srcs: false,
 }
 
 rust_test {
@@ -81,6 +85,7 @@ rust_test {
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/canonical.rs",
     srcs: [
+        "src/**/*.rs",
         "tests/crash.cbor",
         "tests/kietaub.cbor",
     ],
@@ -101,6 +106,7 @@ rust_test {
         "libserde_cbor",
     ],
     proc_macros: ["libserde_derive"],
+    use_expansive_default_srcs: false,
 }
 
 rust_test {
@@ -111,6 +117,7 @@ rust_test {
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/de.rs",
     srcs: [
+        "src/**/*.rs",
         "tests/crash.cbor",
         "tests/kietaub.cbor",
     ],
@@ -131,6 +138,7 @@ rust_test {
         "libserde_cbor",
     ],
     proc_macros: ["libserde_derive"],
+    use_expansive_default_srcs: false,
 }
 
 rust_test {
@@ -141,6 +149,7 @@ rust_test {
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/enum.rs",
     srcs: [
+        "src/**/*.rs",
         "tests/crash.cbor",
         "tests/kietaub.cbor",
     ],
@@ -161,6 +170,7 @@ rust_test {
         "libserde_cbor",
     ],
     proc_macros: ["libserde_derive"],
+    use_expansive_default_srcs: false,
 }
 
 rust_test {
@@ -171,6 +181,7 @@ rust_test {
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/ser.rs",
     srcs: [
+        "src/**/*.rs",
         "tests/crash.cbor",
         "tests/kietaub.cbor",
     ],
@@ -191,6 +202,7 @@ rust_test {
         "libserde_cbor",
     ],
     proc_macros: ["libserde_derive"],
+    use_expansive_default_srcs: false,
 }
 
 rust_test {
@@ -201,6 +213,7 @@ rust_test {
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/std_types.rs",
     srcs: [
+        "src/**/*.rs",
         "tests/crash.cbor",
         "tests/kietaub.cbor",
     ],
@@ -221,6 +234,7 @@ rust_test {
         "libserde_cbor",
     ],
     proc_macros: ["libserde_derive"],
+    use_expansive_default_srcs: false,
 }
 
 rust_test {
@@ -231,6 +245,7 @@ rust_test {
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/tags.rs",
     srcs: [
+        "src/**/*.rs",
         "tests/crash.cbor",
         "tests/kietaub.cbor",
     ],
@@ -251,6 +266,7 @@ rust_test {
         "libserde_cbor",
     ],
     proc_macros: ["libserde_derive"],
+    use_expansive_default_srcs: false,
 }
 
 rust_test {
@@ -261,6 +277,7 @@ rust_test {
     cargo_pkg_version: "0.11.2",
     crate_root: "tests/value.rs",
     srcs: [
+        "src/**/*.rs",
         "tests/crash.cbor",
         "tests/kietaub.cbor",
     ],
@@ -281,4 +298,5 @@ rust_test {
         "libserde_cbor",
     ],
     proc_macros: ["libserde_derive"],
+    use_expansive_default_srcs: false,
 }

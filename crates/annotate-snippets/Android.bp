@@ -19,7 +19,11 @@ rust_library_host {
     cargo_env_compat: true,
     cargo_pkg_version: "0.11.5",
     crate_root: "src/lib.rs",
-    srcs: ["examples/expected_type.svg"],
+    srcs: [
+        "src/**/*.rs",
+        "examples/expected_type.svg",
+        "examples/expected_type.rs",
+    ],
     edition: "2021",
     features: ["default"],
     rustlibs: [
@@ -27,4 +31,5 @@ rust_library_host {
         "libunicode_width",
     ],
     compile_multilib: "first",
+    use_expansive_default_srcs: false,
 }

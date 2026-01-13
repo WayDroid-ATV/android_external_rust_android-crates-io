@@ -5,9 +5,11 @@
   "min_sdk_version": "26",
   "package": {
     "zlib-rs": {
-      "extra_srcs": [
+      "srcs": [
+        "src/**/*.rs",
         "src/deflate/test-data/inflate_buf_error.dat",
-        "src/deflate/test-data/paper-100k.pdf"
+        "src/deflate/test-data/paper-100k.pdf",
+        "README.md"
       ]
     }
   }
