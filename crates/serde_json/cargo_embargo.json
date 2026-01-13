@@ -29,5 +29,6 @@
         "alloc"
       ]
     }
-  ]
+  ],
+  "recovery_available": true
 }

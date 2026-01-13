@@ -22,5 +22,6 @@
         "generate_rulesmk": true,
         "features": []
     }
- ]
+ ],
+  "recovery_available": true
 }

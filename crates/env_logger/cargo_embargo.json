@@ -17,5 +17,6 @@
       },
       "tests": false
     }
-  ]
+  ],
+  "recovery_available": true
 }

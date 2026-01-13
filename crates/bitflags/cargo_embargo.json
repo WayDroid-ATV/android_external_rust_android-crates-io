@@ -21,5 +21,6 @@
     }
   ],
   "run_cargo": false,
-  "generate_rulesmk": true
+  "generate_rulesmk": true,
+  "recovery_available": true
 }
