@@ -32,9 +32,6 @@
         "extra_traits"
       ],
       "tests": false,
-      "module_name_overrides": {
-        "liblibc": "liblibc_nostd"
-      },
       "package": {
         "libc": {
           "host_supported": false,

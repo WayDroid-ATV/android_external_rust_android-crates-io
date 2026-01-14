@@ -41,6 +41,7 @@ rust_test {
 
 rust_library {
     name: "liblibc",
+    defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "libc",
     cargo_env_compat: true,
@@ -66,37 +67,10 @@ rust_library {
     recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-}
-
-rust_library_rlib {
-    name: "liblibc_nostd",
-    defaults: ["rust_baremetal_defaults"],
-    crate_name: "libc",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.2.177",
-    crate_root: "src/lib.rs",
-    edition: "2021",
-    features: ["extra_traits"],
-    cfgs: ["freebsd12"],
-    target: {
-        windows: {
-            enabled: true,
-        },
+    no_std: {
+        features: ["extra_traits"],
+        enabled: true,
     },
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-    prefer_rlib: true,
-    no_stdlibs: true,
-    stdlibs: [
-        "libcompiler_builtins.rust_sysroot",
-        "libcore.rust_sysroot",
-    ],
-    product_available: true,
-    recovery_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
 }
 
 dirgroup {
