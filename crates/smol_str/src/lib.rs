@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![debugger_visualizer(gdb_script_file = "gdb_smolstr_printer.py")]
 
 extern crate alloc;
 
@@ -104,21 +105,26 @@ impl SmolStr {
 impl Clone for SmolStr {
     #[inline]
     fn clone(&self) -> Self {
-        if !self.is_heap_allocated() {
-            // SAFETY: We verified that the payload of `Repr` is a POD
-            return unsafe { core::ptr::read(self as *const SmolStr) };
+        // hint for faster inline / slower heap clones
+        #[cold]
+        #[inline(never)]
+        fn cold_clone(v: &SmolStr) -> SmolStr {
+            SmolStr(v.0.clone())
         }
-        Self(self.0.clone())
+
+        if self.is_heap_allocated() {
+            return cold_clone(self);
+        }
+
+        // SAFETY: We verified that the payload of `Repr` is a POD
+        unsafe { core::ptr::read(self as *const SmolStr) }
     }
 }
 
 impl Default for SmolStr {
     #[inline(always)]
     fn default() -> SmolStr {
-        SmolStr(Repr::Inline {
-            len: InlineSize::_V0,
-            buf: [0; INLINE_CAP],
-        })
+        SmolStr(Repr::Inline { len: InlineSize::_V0, buf: [0; INLINE_CAP] })
     }
 }
 
@@ -216,13 +222,13 @@ impl hash::Hash for SmolStr {
 }
 
 impl fmt::Debug for SmolStr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(self.as_str(), f)
     }
 }
 
 impl fmt::Display for SmolStr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.as_str(), f)
     }
 }
@@ -245,11 +251,8 @@ fn from_buf_and_chars(
 ) -> SmolStr {
     let min_size = iter.size_hint().0 + buf_len;
     if min_size > INLINE_CAP {
-        let heap: String = core::str::from_utf8(&buf[..buf_len])
-            .unwrap()
-            .chars()
-            .chain(iter)
-            .collect();
+        let heap: String =
+            core::str::from_utf8(&buf[..buf_len]).unwrap().chars().chain(iter).collect();
         if heap.len() <= INLINE_CAP {
             // size hint lied
             return SmolStr::new_inline(&heap);
@@ -339,6 +342,7 @@ impl AsRef<[u8]> for SmolStr {
 }
 
 #[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl AsRef<std::ffi::OsStr> for SmolStr {
     #[inline(always)]
     fn as_ref(&self) -> &std::ffi::OsStr {
@@ -347,6 +351,7 @@ impl AsRef<std::ffi::OsStr> for SmolStr {
 }
 
 #[cfg(feature = "std")]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl AsRef<std::path::Path> for SmolStr {
     #[inline(always)]
     fn as_ref(&self) -> &std::path::Path {
@@ -440,8 +445,7 @@ impl FromStr for SmolStr {
 const INLINE_CAP: usize = InlineSize::_V23 as usize;
 const N_NEWLINES: usize = 32;
 const N_SPACES: usize = 128;
-const WS: &str =
-    "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n                                                                                                                                ";
+const WS: &str = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n                                                                                                                                ";
 const _: () = {
     assert!(WS.len() == N_NEWLINES + N_SPACES);
     assert!(WS.as_bytes()[N_NEWLINES - 1] == b'\n');
@@ -490,10 +494,7 @@ impl InlineSize {
 
 #[derive(Clone, Debug)]
 enum Repr {
-    Inline {
-        len: InlineSize,
-        buf: [u8; INLINE_CAP],
-    },
+    Inline { len: InlineSize, buf: [u8; INLINE_CAP] },
     Static(&'static str),
     Heap(Arc<str>),
 }
@@ -521,10 +522,8 @@ impl Repr {
         if len <= N_NEWLINES + N_SPACES {
             let bytes = text.as_bytes();
             let possible_newline_count = cmp::min(len, N_NEWLINES);
-            let newlines = bytes[..possible_newline_count]
-                .iter()
-                .take_while(|&&b| b == b'\n')
-                .count();
+            let newlines =
+                bytes[..possible_newline_count].iter().take_while(|&&b| b == b'\n').count();
             let possible_space_count = len - newlines;
             if possible_space_count <= N_SPACES && bytes[newlines..].iter().all(|&b| b == b' ') {
                 let spaces = possible_space_count;
@@ -576,16 +575,9 @@ impl Repr {
         match (self, other) {
             (Self::Heap(l0), Self::Heap(r0)) => Arc::ptr_eq(l0, r0),
             (Self::Static(l0), Self::Static(r0)) => core::ptr::eq(l0, r0),
-            (
-                Self::Inline {
-                    len: l_len,
-                    buf: l_buf,
-                },
-                Self::Inline {
-                    len: r_len,
-                    buf: r_buf,
-                },
-            ) => l_len == r_len && l_buf == r_buf,
+            (Self::Inline { len: l_len, buf: l_buf }, Self::Inline { len: r_len, buf: r_buf }) => {
+                l_len == r_len && l_buf == r_buf
+            }
             _ => false,
         }
     }
@@ -649,11 +641,7 @@ impl StrExt for str {
         let len = self.len();
         if len <= INLINE_CAP {
             let (buf, rest) = inline_convert_while_ascii(self, u8::to_ascii_lowercase);
-            from_buf_and_chars(
-                buf,
-                len - rest.len(),
-                rest.chars().flat_map(|c| c.to_lowercase()),
-            )
+            from_buf_and_chars(buf, len - rest.len(), rest.chars().flat_map(|c| c.to_lowercase()))
         } else {
             self.to_lowercase().into()
         }
@@ -664,11 +652,7 @@ impl StrExt for str {
         let len = self.len();
         if len <= INLINE_CAP {
             let (buf, rest) = inline_convert_while_ascii(self, u8::to_ascii_uppercase);
-            from_buf_and_chars(
-                buf,
-                len - rest.len(),
-                rest.chars().flat_map(|c| c.to_uppercase()),
-            )
+            from_buf_and_chars(buf, len - rest.len(), rest.chars().flat_map(|c| c.to_uppercase()))
         } else {
             self.to_uppercase().into()
         }
@@ -716,24 +700,24 @@ impl StrExt for str {
     #[inline]
     fn replacen_smolstr(&self, from: &str, to: &str, mut count: usize) -> SmolStr {
         // Fast path for replacing a single ASCII character with another inline.
-        if let [from_u8] = from.as_bytes() {
-            if let [to_u8] = to.as_bytes() {
-                return if self.len() <= count {
-                    // SAFETY: `from_u8` & `to_u8` are ascii
-                    unsafe { replacen_1_ascii(self, |b| if b == from_u8 { *to_u8 } else { *b }) }
-                } else {
-                    unsafe {
-                        replacen_1_ascii(self, |b| {
-                            if b == from_u8 && count != 0 {
-                                count -= 1;
-                                *to_u8
-                            } else {
-                                *b
-                            }
-                        })
-                    }
-                };
-            }
+        if let [from_u8] = from.as_bytes()
+            && let [to_u8] = to.as_bytes()
+        {
+            return if self.len() <= count {
+                // SAFETY: `from_u8` & `to_u8` are ascii
+                unsafe { replacen_1_ascii(self, |b| if b == from_u8 { *to_u8 } else { *b }) }
+            } else {
+                unsafe {
+                    replacen_1_ascii(self, |b| {
+                        if b == from_u8 && count != 0 {
+                            count -= 1;
+                            *to_u8
+                        } else {
+                            *b
+                        }
+                    })
+                }
+            };
         }
 
         let mut result = SmolStrBuilder::new();
@@ -878,10 +862,7 @@ enum SmolStrBuilderRepr {
 impl Default for SmolStrBuilderRepr {
     #[inline]
     fn default() -> Self {
-        SmolStrBuilderRepr::Inline {
-            buf: [0; INLINE_CAP],
-            len: 0,
-        }
+        SmolStrBuilderRepr::Inline { buf: [0; INLINE_CAP], len: 0 }
     }
 }
 
@@ -889,10 +870,7 @@ impl SmolStrBuilder {
     /// Creates a new empty [`SmolStrBuilder`].
     #[must_use]
     pub const fn new() -> Self {
-        Self(SmolStrBuilderRepr::Inline {
-            buf: [0; INLINE_CAP],
-            len: 0,
-        })
+        Self(SmolStrBuilderRepr::Inline { buf: [0; INLINE_CAP], len: 0 })
     }
 
     /// Builds a [`SmolStr`] from `self`.
@@ -974,6 +952,7 @@ impl From<SmolStrBuilder> for SmolStr {
 }
 
 #[cfg(feature = "arbitrary")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arbitrary")))]
 impl<'a> arbitrary::Arbitrary<'a> for SmolStr {
     fn arbitrary(u: &mut arbitrary::Unstructured<'a>) -> Result<Self, arbitrary::Error> {
         let s = <&str>::arbitrary(u)?;
@@ -982,8 +961,10 @@ impl<'a> arbitrary::Arbitrary<'a> for SmolStr {
 }
 
 #[cfg(feature = "borsh")]
+#[cfg_attr(docsrs, doc(cfg(feature = "borsh")))]
 mod borsh;
 #[cfg(feature = "serde")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 mod serde;
 
 #[test]
