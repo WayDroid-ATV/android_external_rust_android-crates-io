@@ -1,17 +1,17 @@
 name: "smol_str"
 description: "small-string optimized string type with O(1) clone"
 third_party {
-  version: "0.3.4"
+  version: "0.3.5"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 11
-    day: 27
+    year: 2026
+    month: 1
+    day: 15
   }
   homepage: "https://crates.io/crates/smol_str"
   identifier {
     type: "crates.io"
     value: "smol_str"
-    version: "0.3.4"
+    version: "0.3.5"
   }
 }
