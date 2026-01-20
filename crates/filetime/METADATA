@@ -1,17 +1,17 @@
 name: "filetime"
 description: "Platform-agnostic accessors of timestamps in File metadata"
 third_party {
-  version: "0.2.26"
+  version: "0.2.27"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 8
-    day: 25
+    year: 2026
+    month: 1
+    day: 19
   }
   homepage: "https://crates.io/crates/filetime"
   identifier {
     type: "crates.io"
     value: "filetime"
-    version: "0.2.26"
+    version: "0.2.27"
   }
 }
