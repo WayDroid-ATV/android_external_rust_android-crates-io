@@ -266,7 +266,7 @@ dependencies = [
  "flate2",
  "fnv",
  "foldhash 0.2.0",
- "font-types 0.10.1",
+ "font-types 0.11.0",
  "foreign-types 0.3.2",
  "foreign-types-shared 0.1.1",
  "form_urlencoded",
