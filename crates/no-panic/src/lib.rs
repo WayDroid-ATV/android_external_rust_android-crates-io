@@ -132,11 +132,12 @@
 //! [Kixunil]: https://github.com/Kixunil
 //! [`dont_panic`]: https://github.com/Kixunil/dont_panic
 
-#![doc(html_root_url = "https://docs.rs/no-panic/0.1.35")]
+#![doc(html_root_url = "https://docs.rs/no-panic/0.1.36")]
 #![allow(
     clippy::doc_markdown,
     clippy::match_same_arms,
-    clippy::missing_panics_doc
+    clippy::missing_panics_doc,
+    clippy::uninlined_format_args
 )]
 #![cfg_attr(all(test, exhaustive), feature(non_exhaustive_omitted_patterns_lint))]
 
@@ -145,6 +146,7 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote;
+use std::mem;
 use syn::parse::{Error, Nothing, Result};
 use syn::{
     parse_quote, FnArg, GenericArgument, Ident, ItemFn, Pat, PatType, Path, PathArguments,
@@ -237,11 +239,12 @@ fn make_impl_trait_wild_in_path(path: &mut Path) {
 
 fn expand_no_panic(mut function: ItemFn) -> TokenStream2 {
     let mut move_self = None;
+    let mut arg_attrs = Vec::new();
     let mut arg_pat = Vec::new();
     let mut arg_val = Vec::new();
     for (i, input) in function.sig.inputs.iter_mut().enumerate() {
         match input {
-            FnArg::Typed(PatType { pat, .. })
+            FnArg::Typed(PatType { attrs, pat, .. })
                 if match pat.as_ref() {
                     Pat::Ident(pat) => pat.ident != "self",
                     _ => true,
@@ -252,9 +255,9 @@ fn expand_no_panic(mut function: ItemFn) -> TokenStream2 {
                 } else {
                     Ident::new(&format!("__arg{}", i), Span::call_site())
                 };
-                arg_pat.push(quote!(#pat));
-                arg_val.push(quote!(#arg_name));
-                *pat = parse_quote!(mut #arg_name);
+                arg_attrs.push(attrs);
+                arg_pat.push(mem::replace(&mut *pat, parse_quote!(mut #arg_name)));
+                arg_val.push(arg_name);
             }
             FnArg::Typed(_) | FnArg::Receiver(_) => {
                 move_self = Some(quote! {
@@ -296,7 +299,7 @@ fn expand_no_panic(mut function: ItemFn) -> TokenStream2 {
     } else {
         Some(Token![unsafe](Span::call_site()))
     };
-    function.block = Box::new(parse_quote!({
+    *function.block = parse_quote!({
         struct __NoPanic;
         #unsafe_extern extern "C" {
             #[link_name = #message]
@@ -313,13 +316,14 @@ fn expand_no_panic(mut function: ItemFn) -> TokenStream2 {
         let __result = (move || #ret {
             #move_self
             #(
+                #(#arg_attrs)*
                 let #arg_pat = #arg_val;
             )*
             #(#stmts)*
         })();
         ::core::mem::forget(__guard);
         __result
-    }));
+    });
 
     quote!(#function)
 }
