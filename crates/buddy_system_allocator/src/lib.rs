@@ -39,7 +39,10 @@ pub use frame::*;
 /// ```
 /// use buddy_system_allocator::*;
 /// # use core::mem::size_of;
-/// let mut heap = Heap::<32>::empty();
+/// // The max order of the buddy system is `ORDER - 1`.
+/// // For example, to create a heap with a maximum block size of 2^32 bytes,
+/// // you should define the heap with `ORDER = 33`.
+/// let mut heap = Heap::<33>::empty();
 /// # let space: [usize; 100] = [0; 100];
 /// # let begin: usize = space.as_ptr() as usize;
 /// # let end: usize = begin + 100 * size_of::<usize>();
@@ -51,7 +54,7 @@ pub use frame::*;
 /// }
 /// ```
 pub struct Heap<const ORDER: usize> {
-    // buddy system with max order of `ORDER`
+    // buddy system with max order of `ORDER - 1`
     free_list: [linked_list::LinkedList; ORDER],
 
     // statistics
@@ -89,7 +92,7 @@ impl<const ORDER: usize> Heap<ORDER> {
         while current_start + size_of::<usize>() <= end {
             let lowbit = current_start & (!current_start + 1);
             let mut size = min(lowbit, prev_power_of_two(end - current_start));
-            
+
             // If the order of size is larger than the max order,
             // split it into smaller blocks.
             let mut order = size.trailing_zeros() as usize;
@@ -153,41 +156,39 @@ impl<const ORDER: usize> Heap<ORDER> {
     }
 
     /// Dealloc a range of memory from the heap
-    pub fn dealloc(&mut self, ptr: NonNull<u8>, layout: Layout) {
+    pub unsafe fn dealloc(&mut self, ptr: NonNull<u8>, layout: Layout) {
         let size = max(
             layout.size().next_power_of_two(),
             max(layout.align(), size_of::<usize>()),
         );
         let class = size.trailing_zeros() as usize;
 
-        unsafe {
-            // Put back into free list
-            self.free_list[class].push(ptr.as_ptr() as *mut usize);
+        // Put back into free list
+        self.free_list[class].push(ptr.as_ptr() as *mut usize);
 
-            // Merge free buddy lists
-            let mut current_ptr = ptr.as_ptr() as usize;
-            let mut current_class = class;
+        // Merge free buddy lists
+        let mut current_ptr = ptr.as_ptr() as usize;
+        let mut current_class = class;
 
-            while current_class < self.free_list.len() - 1 {
-                let buddy = current_ptr ^ (1 << current_class);
-                let mut flag = false;
-                for block in self.free_list[current_class].iter_mut() {
-                    if block.value() as usize == buddy {
-                        block.pop();
-                        flag = true;
-                        break;
-                    }
-                }
-
-                // Free buddy found
-                if flag {
-                    self.free_list[current_class].pop();
-                    current_ptr = min(current_ptr, buddy);
-                    current_class += 1;
-                    self.free_list[current_class].push(current_ptr as *mut usize);
-                } else {
+        while current_class < self.free_list.len() - 1 {
+            let buddy = current_ptr ^ (1 << current_class);
+            let mut flag = false;
+            for block in self.free_list[current_class].iter_mut() {
+                if block.value() as usize == buddy {
+                    block.pop();
+                    flag = true;
                     break;
                 }
+            }
+
+            // Free buddy found
+            if flag {
+                self.free_list[current_class].pop();
+                current_ptr = min(current_ptr, buddy);
+                current_class += 1;
+                self.free_list[current_class].push(current_ptr as *mut usize);
+            } else {
+                break;
             }
         }
 
@@ -211,6 +212,12 @@ impl<const ORDER: usize> Heap<ORDER> {
     }
 }
 
+impl<const ORDER: usize> Default for Heap<ORDER> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<const ORDER: usize> fmt::Debug for Heap<ORDER> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.debug_struct("Heap")
@@ -229,7 +236,10 @@ impl<const ORDER: usize> fmt::Debug for Heap<ORDER> {
 /// ```
 /// use buddy_system_allocator::*;
 /// # use core::mem::size_of;
-/// let mut heap = LockedHeap::<32>::new();
+/// // The max order of the buddy system is `ORDER - 1`.
+/// // For example, to create a heap with a maximum block size of 2^32 bytes,
+/// // you should define the heap with `ORDER = 33`.
+/// let mut heap = LockedHeap::<33>::new();
 /// # let space: [usize; 100] = [0; 100];
 /// # let begin: usize = space.as_ptr() as usize;
 /// # let end: usize = begin + 100 * size_of::<usize>();
@@ -241,6 +251,7 @@ impl<const ORDER: usize> fmt::Debug for Heap<ORDER> {
 /// }
 /// ```
 #[cfg(feature = "use_spin")]
+#[derive(Default)]
 pub struct LockedHeap<const ORDER: usize>(Mutex<Heap<ORDER>>);
 
 #[cfg(feature = "use_spin")]
@@ -287,7 +298,7 @@ unsafe impl<const ORDER: usize> GlobalAlloc for LockedHeap<ORDER> {
 /// Create a locked heap:
 /// ```
 /// use buddy_system_allocator::*;
-/// let heap = LockedHeapWithRescue::new(|heap: &mut Heap<32>, layout: &core::alloc::Layout| {});
+/// let heap = LockedHeapWithRescue::new(|heap: &mut Heap<33>, layout: &core::alloc::Layout| {});
 /// ```
 ///
 /// Before oom, the allocator will try to call rescue function and try for one more time.
