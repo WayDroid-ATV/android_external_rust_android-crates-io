@@ -69,7 +69,7 @@ fn test_heap_add_large() {
     // 512 bytes of space
     let space: [u8; 512] = [0; 512];
     unsafe {
-        heap.add_to_heap(space.as_ptr() as usize, space.as_ptr().add(100) as usize);
+        heap.add_to_heap(space.as_ptr() as usize, space.as_ptr().add(512) as usize);
     }
     let addr = heap.alloc(Layout::from_size_align(1, 1).unwrap());
     assert!(addr.is_ok());
@@ -91,9 +91,10 @@ fn test_heap_oom() {
 
 #[test]
 fn test_heap_oom_rescue() {
-    static mut SPACE: [usize; 100] = [0; 100];
+    const SPACE_SIZE: usize = 100;
+    static mut SPACE: [usize; 100] = [0; SPACE_SIZE];
     let heap = LockedHeapWithRescue::new(|heap: &mut Heap<32>, _layout: &Layout| unsafe {
-        heap.add_to_heap(SPACE.as_ptr() as usize, SPACE.as_ptr().add(100) as usize);
+        heap.init(&raw mut SPACE as usize, SPACE_SIZE);
     });
 
     unsafe {
@@ -112,7 +113,9 @@ fn test_heap_alloc_and_free() {
     }
     for _ in 0..100 {
         let addr = heap.alloc(Layout::from_size_align(1, 1).unwrap()).unwrap();
-        heap.dealloc(addr, Layout::from_size_align(1, 1).unwrap());
+        unsafe {
+            heap.dealloc(addr, Layout::from_size_align(1, 1).unwrap());
+        }
     }
 }
 
@@ -236,5 +239,7 @@ fn test_heap_merge_final_order() {
     let alloc = heap.alloc(layout).unwrap();
 
     // deallocation should not attempt to merge the two contiguous ranges as the next order does not exist
-    heap.dealloc(alloc, layout);
+    unsafe {
+        heap.dealloc(alloc, layout);
+    }
 }
