@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "virtio-bindings"
-version = "0.2.6"
+version = "0.2.7"
 authors = ["Sergio Lopez <slp@redhat.com>"]
 build = false
 autolib = false
