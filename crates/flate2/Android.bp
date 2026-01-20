@@ -17,7 +17,7 @@ rust_test {
     name: "flate2_test_src_lib",
     crate_name: "flate2",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.1.5",
+    cargo_pkg_version: "1.1.8",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -28,14 +28,42 @@ rust_test {
     features: [
         "any_impl",
         "any_zlib",
-        "libz-rs-sys",
         "zlib-rs",
     ],
     rustlibs: [
         "libcrc32fast",
-        "liblibz_rs_sys",
+        "libfutures",
         "libquickcheck",
         "librand",
+        "libzlib_rs",
+    ],
+}
+
+rust_test {
+    name: "flate2_test_tests_capabilities",
+    host_supported: true,
+    crate_name: "capabilities",
+    cargo_env_compat: true,
+    cargo_pkg_version: "1.1.8",
+    crate_root: "tests/capabilities.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "any_impl",
+        "any_zlib",
+        "zlib-rs",
+    ],
+    rustlibs: [
+        "libcrc32fast",
+        "libflate2",
+        "libfutures",
+        "libquickcheck",
+        "librand",
+        "libzlib_rs",
     ],
 }
 
@@ -43,7 +71,7 @@ rust_test {
     name: "flate2_test_tests_early-flush",
     crate_name: "early_flush",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.1.5",
+    cargo_pkg_version: "1.1.8",
     crate_root: "tests/early-flush.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -54,15 +82,15 @@ rust_test {
     features: [
         "any_impl",
         "any_zlib",
-        "libz-rs-sys",
         "zlib-rs",
     ],
     rustlibs: [
         "libcrc32fast",
         "libflate2",
-        "liblibz_rs_sys",
+        "libfutures",
         "libquickcheck",
         "librand",
+        "libzlib_rs",
     ],
 }
 
@@ -70,7 +98,7 @@ rust_test {
     name: "flate2_test_tests_empty-read",
     crate_name: "empty_read",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.1.5",
+    cargo_pkg_version: "1.1.8",
     crate_root: "tests/empty-read.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -81,15 +109,15 @@ rust_test {
     features: [
         "any_impl",
         "any_zlib",
-        "libz-rs-sys",
         "zlib-rs",
     ],
     rustlibs: [
         "libcrc32fast",
         "libflate2",
-        "liblibz_rs_sys",
+        "libfutures",
         "libquickcheck",
         "librand",
+        "libzlib_rs",
     ],
 }
 
@@ -97,7 +125,7 @@ rust_test {
     name: "flate2_test_tests_gunzip",
     crate_name: "gunzip",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.1.5",
+    cargo_pkg_version: "1.1.8",
     crate_root: "tests/gunzip.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -108,15 +136,15 @@ rust_test {
     features: [
         "any_impl",
         "any_zlib",
-        "libz-rs-sys",
         "zlib-rs",
     ],
     rustlibs: [
         "libcrc32fast",
         "libflate2",
-        "liblibz_rs_sys",
+        "libfutures",
         "libquickcheck",
         "librand",
+        "libzlib_rs",
     ],
     data: [
         "tests/corrupt-gz-file.bin",
@@ -131,7 +159,7 @@ rust_test {
     name: "flate2_test_tests_zero-write",
     crate_name: "zero_write",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.1.5",
+    cargo_pkg_version: "1.1.8",
     crate_root: "tests/zero-write.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -142,15 +170,15 @@ rust_test {
     features: [
         "any_impl",
         "any_zlib",
-        "libz-rs-sys",
         "zlib-rs",
     ],
     rustlibs: [
         "libcrc32fast",
         "libflate2",
-        "liblibz_rs_sys",
+        "libfutures",
         "libquickcheck",
         "librand",
+        "libzlib_rs",
     ],
 }
 
@@ -159,18 +187,17 @@ rust_library {
     host_supported: true,
     crate_name: "flate2",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.1.5",
+    cargo_pkg_version: "1.1.8",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
         "any_impl",
         "any_zlib",
-        "libz-rs-sys",
         "zlib-rs",
     ],
     rustlibs: [
         "libcrc32fast",
-        "liblibz_rs_sys",
+        "libzlib_rs",
     ],
     apex_available: [
         "//apex_available:platform",

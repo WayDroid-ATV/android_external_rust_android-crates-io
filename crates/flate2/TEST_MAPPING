@@ -43,5 +43,10 @@
     {
       "name": "flate2_test_tests_zero-write"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "flate2_test_tests_capabilities"
+    }
   ]
 }
