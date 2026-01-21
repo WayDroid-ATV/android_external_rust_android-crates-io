@@ -38,7 +38,7 @@ pub(crate) fn cbor_type_error<T>(value: &Value, want: &'static str) -> Result<T>
         Value::Tag(_, _) => "tag",
         Value::Array(_) => "array",
         Value::Map(_) => "map",
-        _ => "other",
+        _ => "other", // unhittable: `Value` marked as non-exhaustive
     };
     Err(CoseError::UnexpectedItem(got, want))
 }
@@ -164,7 +164,6 @@ pub fn expect_err<T: core::fmt::Debug, E: core::fmt::Debug + core::fmt::Display>
     result: Result<T, E>,
     err_msg: &str,
 ) {
-    #[cfg(not(feature = "std"))]
     use alloc::format;
     match result {
         Ok(_) => {
