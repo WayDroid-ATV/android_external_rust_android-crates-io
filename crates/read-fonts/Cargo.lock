@@ -188,9 +188,9 @@ checksum = "11157ac094ffbdde99aa67b23417ebdd801842852b500e395a45a9c0aac03e4a"
 
 [[package]]
 name = "font-types"
-version = "0.10.1"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "39a654f404bbcbd48ea58c617c2993ee91d1cb63727a37bf2323a4edeed1b8c5"
+checksum = "b1e4d2d0cf79d38430cc9dc9aadec84774bff2e1ba30ae2bf6c16cfce9385a23"
 dependencies = [
  "bytemuck",
  "serde",
@@ -404,7 +404,7 @@ dependencies = [
 
 [[package]]
 name = "read-fonts"
-version = "0.36.0"
+version = "0.37.0"
 dependencies = [
  "bytemuck",
  "core_maths",
