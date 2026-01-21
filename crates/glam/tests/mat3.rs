@@ -132,6 +132,11 @@ macro_rules! impl_mat3_tests {
             should_glam_assert!({ $mat3::from_quat($quat::from_xyzw(0.0, 0.0, 0.0, 0.0)) });
         });
 
+        glam_test!(test_diagonal, {
+            let m = $mat3::from_cols_array(&ARRAY1X9);
+            assert_eq!($newvec3(1.0, 5.0, 9.0), m.diagonal());
+        });
+
         glam_test!(test_mat3_mul_vec3, {
             let m = $mat3::from_axis_angle($vec3::Z, deg(90.0));
             assert_approx_eq!($vec3::NEG_X, m * $vec3::Y);
@@ -140,6 +145,20 @@ macro_rules! impl_mat3_tests {
             assert_approx_eq!($vec3::NEG_X, &m * &$vec3::Y);
 
             assert_approx_eq!($vec3::NEG_X, m.mul_vec3($vec3::Y))
+        });
+
+        glam_test!(test_mat3_mul_transpose_vec3, {
+            let v = $vec3::new(1.0, 2.0, 3.0);
+            let m = $mat3::from_cols_array(&ARRAY1X9);
+            assert_eq!(m.transpose().mul_vec3(v), m.mul_transpose_vec3(v));
+        });
+
+        glam_test!(test_mat3_mul_diagonal, {
+            let v = $vec3::new(1.0, 2.0, 3.0);
+            assert_eq!(
+                $mat3::IDENTITY * $mat3::from_diagonal(v),
+                $mat3::IDENTITY.mul_diagonal_scale(v)
+            );
         });
 
         glam_test!(test_mat3_transform2d, {
@@ -288,29 +307,30 @@ macro_rules! impl_mat3_tests {
         });
 
         glam_test!(test_mat3_inverse, {
-            // assert_eq!(None, $mat3::ZERO.inverse());
-            let inv = $mat3::IDENTITY.inverse();
-            // assert_ne!(None, inv);
-            assert_approx_eq!($mat3::IDENTITY, inv);
+            assert_eq!(None, $mat3::ZERO.try_inverse());
+            assert_eq!($mat3::ZERO, $mat3::ZERO.inverse_or_zero());
+            assert_eq!(Some($mat3::IDENTITY), $mat3::IDENTITY.try_inverse());
+            assert_eq!($mat3::IDENTITY, $mat3::IDENTITY.inverse_or_zero());
+            assert_eq!($mat3::IDENTITY, $mat3::IDENTITY.inverse());
 
             let rotz = $mat3::from_rotation_z(deg(90.0));
+            let rotz_inv = rotz.try_inverse();
+            assert_ne!(None, rotz_inv);
             let rotz_inv = rotz.inverse();
-            // assert_ne!(None, rotz_inv);
-            // let rotz_inv = rotz_inv.unwrap();
             assert_approx_eq!($mat3::IDENTITY, rotz * rotz_inv);
             assert_approx_eq!($mat3::IDENTITY, rotz_inv * rotz);
 
             let scale = $mat3::from_diagonal($vec3::new(4.0, 5.0, 6.0));
+            let scale_inv = scale.try_inverse();
+            assert_ne!(None, scale_inv);
             let scale_inv = scale.inverse();
-            // assert_ne!(None, scale_inv);
-            // let scale_inv = scale_inv.unwrap();
             assert_approx_eq!($mat3::IDENTITY, scale * scale_inv);
             assert_approx_eq!($mat3::IDENTITY, scale_inv * scale);
 
             let m = scale * rotz;
+            let m_inv = m.try_inverse();
+            assert_ne!(None, m_inv);
             let m_inv = m.inverse();
-            // assert_ne!(None, m_inv);
-            // let m_inv = m_inv.unwrap();
             assert_approx_eq!($mat3::IDENTITY, m * m_inv);
             assert_approx_eq!($mat3::IDENTITY, m_inv * m);
             assert_approx_eq!(m_inv, rotz_inv * scale_inv);
@@ -521,6 +541,12 @@ mod mat3a {
         let mat_a = Mat3A::from_axis_angle(Vec3::Z, deg(90.0));
         assert_approx_eq!(vec3a(-1.0, 0.0, 0.0), mat_a * Vec3A::Y);
         assert_approx_eq!(vec3a(-1.0, 0.0, 0.0), mat_a.mul_vec3a(Vec3A::Y));
+    });
+
+    glam_test!(test_mul_transpose_vec3a, {
+        let v = Vec3A::new(1.0, 2.0, 3.0);
+        let m = Mat3A::from_cols_array(&[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        assert_eq!(m.transpose().mul_vec3a(v), m.mul_transpose_vec3a(v));
     });
 
     glam_test!(test_as, {

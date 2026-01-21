@@ -774,6 +774,22 @@ impl Vec3A {
         Self(self.0.trunc())
     }
 
+    /// Returns a vector containing `0.0` if `rhs < self` and 1.0 otherwise.
+    ///
+    /// Similar to glsl's step(edge, x), which translates into edge.step(x)
+    #[inline]
+    #[must_use]
+    pub fn step(self, rhs: Self) -> Self {
+        Self::select(rhs.cmplt(self), Self::ZERO, Self::ONE)
+    }
+
+    /// Returns a vector containing all elements of `self` clamped to the range of `[0, 1]`.
+    #[inline]
+    #[must_use]
+    pub fn saturate(self) -> Self {
+        self.clamp(Self::ZERO, Self::ONE)
+    }
+
     /// Returns a vector containing the fractional part of the vector as `self - self.trunc()`.
     ///
     /// Note that this differs from the GLSL implementation of `fract` which returns
@@ -840,6 +856,42 @@ impl Vec3A {
         )
     }
 
+    /// Returns a vector containing the square root for each element of `self`.
+    /// This returns NaN when the element is negative.
+    #[inline]
+    #[must_use]
+    pub fn sqrt(self) -> Self {
+        Self::new(math::sqrt(self.x), math::sqrt(self.y), math::sqrt(self.z))
+    }
+
+    /// Returns a vector containing the cosine for each element of `self`.
+    #[inline]
+    #[must_use]
+    pub fn cos(self) -> Self {
+        Self::new(math::cos(self.x), math::cos(self.y), math::cos(self.z))
+    }
+
+    /// Returns a vector containing the sine for each element of `self`.
+    #[inline]
+    #[must_use]
+    pub fn sin(self) -> Self {
+        Self::new(math::sin(self.x), math::sin(self.y), math::sin(self.z))
+    }
+
+    /// Returns a tuple of two vectors containing the sine and cosine for each element of `self`.
+    #[inline]
+    #[must_use]
+    pub fn sin_cos(self) -> (Self, Self) {
+        let (sin_x, cos_x) = math::sin_cos(self.x);
+        let (sin_y, cos_y) = math::sin_cos(self.y);
+        let (sin_z, cos_z) = math::sin_cos(self.z);
+
+        (
+            Self::new(sin_x, sin_y, sin_z),
+            Self::new(cos_x, cos_y, cos_z),
+        )
+    }
+
     /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
     #[inline]
     #[must_use]
@@ -865,13 +917,13 @@ impl Vec3A {
     /// `self.distance(rhs)`, the result will be equal to `rhs`. Will not go past `rhs`.
     #[inline]
     #[must_use]
-    pub fn move_towards(&self, rhs: Self, d: f32) -> Self {
-        let a = rhs - *self;
+    pub fn move_towards(self, rhs: Self, d: f32) -> Self {
+        let a = rhs - self;
         let len = a.length();
         if len <= d || len <= 1e-4 {
             return rhs;
         }
-        *self + a / len * d
+        self + a / len * d
     }
 
     /// Calculates the midpoint between `self` and `rhs`.
@@ -1091,7 +1143,7 @@ impl Vec3A {
     /// [`Self::any_orthonormal_vector()`] instead.
     #[inline]
     #[must_use]
-    pub fn any_orthogonal_vector(&self) -> Self {
+    pub fn any_orthogonal_vector(self) -> Self {
         // This can probably be optimized
         if math::abs(self.x) > math::abs(self.y) {
             Self::new(-self.z, 0.0, self.x) // self.cross(Self::Y)
@@ -1109,7 +1161,7 @@ impl Vec3A {
     /// Will panic if `self` is not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
-    pub fn any_orthonormal_vector(&self) -> Self {
+    pub fn any_orthonormal_vector(self) -> Self {
         glam_assert!(self.is_normalized());
         // From https://graphics.pixar.com/library/OrthonormalB/paper.pdf
         let sign = math::signum(self.z);
@@ -1126,7 +1178,7 @@ impl Vec3A {
     /// Will panic if `self` is not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
-    pub fn any_orthonormal_pair(&self) -> (Self, Self) {
+    pub fn any_orthonormal_pair(self) -> (Self, Self) {
         glam_assert!(self.is_normalized());
         // From https://graphics.pixar.com/library/OrthonormalB/paper.pdf
         let sign = math::signum(self.z);
@@ -1184,70 +1236,70 @@ impl Vec3A {
     /// Casts all elements of `self` to `f64`.
     #[inline]
     #[must_use]
-    pub fn as_dvec3(&self) -> crate::DVec3 {
+    pub fn as_dvec3(self) -> crate::DVec3 {
         crate::DVec3::new(self.x as f64, self.y as f64, self.z as f64)
     }
 
     /// Casts all elements of `self` to `i8`.
     #[inline]
     #[must_use]
-    pub fn as_i8vec3(&self) -> crate::I8Vec3 {
+    pub fn as_i8vec3(self) -> crate::I8Vec3 {
         crate::I8Vec3::new(self.x as i8, self.y as i8, self.z as i8)
     }
 
     /// Casts all elements of `self` to `u8`.
     #[inline]
     #[must_use]
-    pub fn as_u8vec3(&self) -> crate::U8Vec3 {
+    pub fn as_u8vec3(self) -> crate::U8Vec3 {
         crate::U8Vec3::new(self.x as u8, self.y as u8, self.z as u8)
     }
 
     /// Casts all elements of `self` to `i16`.
     #[inline]
     #[must_use]
-    pub fn as_i16vec3(&self) -> crate::I16Vec3 {
+    pub fn as_i16vec3(self) -> crate::I16Vec3 {
         crate::I16Vec3::new(self.x as i16, self.y as i16, self.z as i16)
     }
 
     /// Casts all elements of `self` to `u16`.
     #[inline]
     #[must_use]
-    pub fn as_u16vec3(&self) -> crate::U16Vec3 {
+    pub fn as_u16vec3(self) -> crate::U16Vec3 {
         crate::U16Vec3::new(self.x as u16, self.y as u16, self.z as u16)
     }
 
     /// Casts all elements of `self` to `i32`.
     #[inline]
     #[must_use]
-    pub fn as_ivec3(&self) -> crate::IVec3 {
+    pub fn as_ivec3(self) -> crate::IVec3 {
         crate::IVec3::new(self.x as i32, self.y as i32, self.z as i32)
     }
 
     /// Casts all elements of `self` to `u32`.
     #[inline]
     #[must_use]
-    pub fn as_uvec3(&self) -> crate::UVec3 {
+    pub fn as_uvec3(self) -> crate::UVec3 {
         crate::UVec3::new(self.x as u32, self.y as u32, self.z as u32)
     }
 
     /// Casts all elements of `self` to `i64`.
     #[inline]
     #[must_use]
-    pub fn as_i64vec3(&self) -> crate::I64Vec3 {
+    pub fn as_i64vec3(self) -> crate::I64Vec3 {
         crate::I64Vec3::new(self.x as i64, self.y as i64, self.z as i64)
     }
 
     /// Casts all elements of `self` to `u64`.
     #[inline]
     #[must_use]
-    pub fn as_u64vec3(&self) -> crate::U64Vec3 {
+    pub fn as_u64vec3(self) -> crate::U64Vec3 {
         crate::U64Vec3::new(self.x as u64, self.y as u64, self.z as u64)
     }
 
     /// Casts all elements of `self` to `usize`.
     #[inline]
     #[must_use]
-    pub fn as_usizevec3(&self) -> crate::USizeVec3 {
+    pub fn as_usizevec3(self) -> crate::USizeVec3 {
         crate::USizeVec3::new(self.x as usize, self.y as usize, self.z as usize)
     }
 }

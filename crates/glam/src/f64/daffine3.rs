@@ -123,7 +123,7 @@ impl DAffine3 {
     ///
     /// Panics if `slice` is less than 12 elements long.
     #[inline]
-    pub fn write_cols_to_slice(self, slice: &mut [f64]) {
+    pub fn write_cols_to_slice(&self, slice: &mut [f64]) {
         self.matrix3.write_cols_to_slice(&mut slice[0..9]);
         self.translation.write_to_slice(&mut slice[9..12]);
     }
@@ -449,6 +449,13 @@ impl DAffine3 {
             matrix3,
             translation,
         }
+    }
+
+    /// Casts all elements of `self` to `f32`.
+    #[inline]
+    #[must_use]
+    pub fn as_affine3(&self) -> crate::Affine3 {
+        crate::Affine3::from_mat3_translation(self.matrix3.as_mat3(), self.translation.as_vec3())
     }
 
     /// Casts all elements of `self` to `f32`.

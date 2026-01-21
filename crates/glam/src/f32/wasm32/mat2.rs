@@ -191,7 +191,7 @@ impl Mat2 {
     ///
     /// Panics if `slice` is less than 4 elements long.
     #[inline]
-    pub fn write_cols_to_slice(self, slice: &mut [f32]) {
+    pub fn write_cols_to_slice(&self, slice: &mut [f32]) {
         slice[0] = self.x_axis.x;
         slice[1] = self.x_axis.y;
         slice[2] = self.y_axis.x;
@@ -264,6 +264,13 @@ impl Mat2 {
         Self(i32x4_shuffle::<0, 2, 5, 7>(self.0, self.0))
     }
 
+    /// Returns the diagonal of `self`.
+    #[inline]
+    #[must_use]
+    pub fn diagonal(&self) -> Vec2 {
+        Vec2::new(self.x_axis.x, self.y_axis.y)
+    }
+
     /// Returns the determinant of `self`.
     #[inline]
     #[must_use]
@@ -273,6 +280,39 @@ impl Mat2 {
         let prod = f32x4_mul(abcd, dcba);
         let det = f32x4_sub(prod, i32x4_shuffle::<1, 1, 5, 5>(prod, prod));
         f32x4_extract_lane::<0>(det)
+    }
+
+    /// If `CHECKED` is true then if the determinant is zero this function will return a tuple
+    /// containing a zero matrix and false. If the determinant is non zero a tuple containing the
+    /// inverted matrix and true is returned.
+    ///
+    /// If `CHECKED` is false then the determinant is not checked and if it is zero the resulting
+    /// inverted matrix will be invalid. Will panic if the determinant of `self` is zero when
+    /// `glam_assert` is enabled.
+    ///
+    /// A tuple containing the inverted matrix and a bool is used instead of an option here as
+    /// regular Rust enums put the discriminant first which can result in a lot of padding if the
+    /// matrix is aligned.
+    #[inline(always)]
+    #[must_use]
+    fn inverse_checked<const CHECKED: bool>(&self) -> (Self, bool) {
+        use crate::Vec4;
+        const SIGN: v128 = crate::wasm32::v128_from_f32x4([1.0, -1.0, -1.0, 1.0]);
+        let abcd = self.0;
+        let dcba = i32x4_shuffle::<3, 2, 5, 4>(abcd, abcd);
+        let prod = f32x4_mul(abcd, dcba);
+        let sub = f32x4_sub(prod, i32x4_shuffle::<1, 1, 5, 5>(prod, prod));
+        let det = i32x4_shuffle::<0, 0, 4, 4>(sub, sub);
+        if CHECKED {
+            if Vec4(det) == Vec4::ZERO {
+                return (Self::ZERO, false);
+            }
+        } else {
+            glam_assert!(Vec4(det).cmpne(Vec4::ZERO).all());
+        }
+        let tmp = f32x4_div(SIGN, det);
+        let dbca = i32x4_shuffle::<3, 1, 6, 4>(abcd, abcd);
+        (Self(f32x4_mul(dbca, tmp)), true)
     }
 
     /// Returns the inverse of `self`.
@@ -285,16 +325,26 @@ impl Mat2 {
     #[inline]
     #[must_use]
     pub fn inverse(&self) -> Self {
-        const SIGN: v128 = crate::wasm32::v128_from_f32x4([1.0, -1.0, -1.0, 1.0]);
-        let abcd = self.0;
-        let dcba = i32x4_shuffle::<3, 2, 5, 4>(abcd, abcd);
-        let prod = f32x4_mul(abcd, dcba);
-        let sub = f32x4_sub(prod, i32x4_shuffle::<1, 1, 5, 5>(prod, prod));
-        let det = i32x4_shuffle::<0, 0, 4, 4>(sub, sub);
-        let tmp = f32x4_div(SIGN, det);
-        glam_assert!(Mat2(tmp).is_finite());
-        let dbca = i32x4_shuffle::<3, 1, 6, 4>(abcd, abcd);
-        Self(f32x4_mul(dbca, tmp))
+        self.inverse_checked::<false>().0
+    }
+
+    /// Returns the inverse of `self` or `None` if the matrix is not invertible.
+    #[inline]
+    #[must_use]
+    pub fn try_inverse(&self) -> Option<Self> {
+        let (m, is_valid) = self.inverse_checked::<true>();
+        if is_valid {
+            Some(m)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the inverse of `self` or `Mat2::ZERO` if the matrix is not invertible.
+    #[inline]
+    #[must_use]
+    pub fn inverse_or_zero(&self) -> Self {
+        self.inverse_checked::<true>().0
     }
 
     /// Transforms a 2D vector.
@@ -312,6 +362,13 @@ impl Mat2 {
             v128_store(out.as_mut_ptr(), result);
             *(&out.assume_init() as *const v128 as *const Vec2)
         }
+    }
+
+    /// Transforms a 2D vector by the transpose of `self`.
+    #[inline]
+    #[must_use]
+    pub fn mul_transpose_vec2(&self, rhs: Vec2) -> Vec2 {
+        Vec2::new(self.x_axis.dot(rhs), self.y_axis.dot(rhs))
     }
 
     /// Multiplies two 2x2 matrices.
@@ -340,6 +397,15 @@ impl Mat2 {
     #[must_use]
     pub fn mul_scalar(&self, rhs: f32) -> Self {
         Self(f32x4_mul(self.0, f32x4_splat(rhs)))
+    }
+
+    /// Multiply `self` by a scaling vector `scale`.
+    /// This is faster than creating a whole diagonal scaling matrix and then multiplying that.
+    /// This operation is commutative.
+    #[inline]
+    #[must_use]
+    pub fn mul_diagonal_scale(&self, scale: Vec2) -> Self {
+        Self::from_cols(self.x_axis * scale.x, self.y_axis * scale.y)
     }
 
     /// Divides a 2x2 matrix by a scalar.

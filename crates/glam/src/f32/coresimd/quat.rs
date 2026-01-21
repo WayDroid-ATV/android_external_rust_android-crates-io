@@ -190,7 +190,7 @@ impl Quat {
     /// Will panic if any axis is not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
-    pub(crate) fn from_rotation_axes(x_axis: Vec3, y_axis: Vec3, z_axis: Vec3) -> Self {
+    pub fn from_rotation_axes(x_axis: Vec3, y_axis: Vec3, z_axis: Vec3) -> Self {
         glam_assert!(x_axis.is_normalized() && y_axis.is_normalized() && z_axis.is_normalized());
         // Based on https://github.com/microsoft/DirectXMath `XMQuaternionRotationMatrix`
         let (m00, m01, m02) = x_axis.into();
@@ -489,7 +489,7 @@ impl Quat {
     /// `[x, y, z, w]`
     #[inline]
     #[must_use]
-    pub fn to_array(&self) -> [f32; 4] {
+    pub fn to_array(self) -> [f32; 4] {
         [self.x, self.y, self.z, self.w]
     }
 
@@ -651,7 +651,7 @@ impl Quat {
     /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
-    pub fn rotate_towards(&self, rhs: Self, max_angle: f32) -> Self {
+    pub fn rotate_towards(self, rhs: Self, max_angle: f32) -> Self {
         glam_assert!(self.is_normalized() && rhs.is_normalized());
         let angle = self.angle_between(rhs);
         if angle <= 1e-4 {
@@ -816,8 +816,22 @@ impl Quat {
     /// enabled.
     #[inline]
     #[must_use]
-    pub fn from_affine3(a: &crate::Affine3A) -> Self {
-        #[allow(clippy::useless_conversion)]
+    pub fn from_affine3(a: &crate::Affine3) -> Self {
+        Self::from_rotation_axes(a.matrix3.x_axis, a.matrix3.y_axis, a.matrix3.z_axis)
+    }
+
+    /// Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
+    ///
+    /// Note if the input affine matrix contain scales, shears, or other non-rotation
+    /// transformations then the resulting quaternion will be ill-defined.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if any input affine matrix column is not normalized when `glam_assert` is
+    /// enabled.
+    #[inline]
+    #[must_use]
+    pub fn from_affine3a(a: &crate::Affine3A) -> Self {
         Self::from_rotation_axes(
             a.matrix3.x_axis.into(),
             a.matrix3.y_axis.into(),

@@ -17,7 +17,7 @@
 
 {% if scalar_t == "f32" %}
     {% set self_t = "Quat" %}
-    {% set affine3_t = "Affine3A" %}
+    {% set affine3_t = "Affine3" %}
     {% set vec2_t = "Vec2" %}
     {% set vec3_t = "Vec3" %}
     {% set vec4_t = "Vec4" %}
@@ -317,7 +317,7 @@ impl {{ self_t }} {
     /// Will panic if any axis is not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
-    pub(crate) fn from_rotation_axes(x_axis: {{ vec3_t }}, y_axis: {{ vec3_t }}, z_axis: {{ vec3_t }}) -> Self {
+    pub fn from_rotation_axes(x_axis: {{ vec3_t }}, y_axis: {{ vec3_t }}, z_axis: {{ vec3_t }}) -> Self {
         glam_assert!(x_axis.is_normalized() && y_axis.is_normalized() && z_axis.is_normalized());
         // Based on https://github.com/microsoft/DirectXMath `XMQuaternionRotationMatrix`
         let (m00, m01, m02) = x_axis.into();
@@ -626,7 +626,7 @@ impl {{ self_t }} {
     /// `[x, y, z, w]`
     #[inline]
     #[must_use]
-    pub fn to_array(&self) -> [{{ scalar_t }}; 4] {
+    pub fn to_array(self) -> [{{ scalar_t }}; 4] {
         [self.x, self.y, self.z, self.w]
     }
 
@@ -807,7 +807,7 @@ impl {{ self_t }} {
     /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
     #[inline]
     #[must_use]
-    pub fn rotate_towards(&self, rhs: Self, max_angle: {{ scalar_t }}) -> Self {
+    pub fn rotate_towards(self, rhs: Self, max_angle: {{ scalar_t }}) -> Self {
         glam_assert!(self.is_normalized() && rhs.is_normalized());
         let angle = self.angle_between(rhs);
         if angle <= 1e-4 {
@@ -1156,7 +1156,26 @@ impl {{ self_t }} {
     #[inline]
     #[must_use]
     pub fn from_affine3(a: &crate::{{ affine3_t }}) -> Self {
-        #[allow(clippy::useless_conversion)]
+        Self::from_rotation_axes(
+            a.matrix3.x_axis,
+            a.matrix3.y_axis,
+            a.matrix3.z_axis,
+        )
+    }
+
+{% if scalar_t == "f32" %}
+    /// Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
+    ///
+    /// Note if the input affine matrix contain scales, shears, or other non-rotation
+    /// transformations then the resulting quaternion will be ill-defined.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if any input affine matrix column is not normalized when `glam_assert` is
+    /// enabled.
+    #[inline]
+    #[must_use]
+    pub fn from_affine3a(a: &crate::Affine3A) -> Self {
         Self::from_rotation_axes(
             a.matrix3.x_axis.into(),
             a.matrix3.y_axis.into(),
@@ -1164,7 +1183,6 @@ impl {{ self_t }} {
         )
     }
 
-{% if scalar_t == "f32" %}
     /// Multiplies a quaternion and a 3D vector, returning the rotated vector.
     #[inline]
     #[must_use]

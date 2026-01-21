@@ -527,7 +527,7 @@ impl Mat4 {
     ///
     /// Panics if `slice` is less than 16 elements long.
     #[inline]
-    pub fn write_cols_to_slice(self, slice: &mut [f32]) {
+    pub fn write_cols_to_slice(&self, slice: &mut [f32]) {
         slice[0] = self.x_axis.x;
         slice[1] = self.x_axis.y;
         slice[2] = self.x_axis.z;
@@ -634,6 +634,13 @@ impl Mat4 {
         }
     }
 
+    /// Returns the diagonal of `self`.
+    #[inline]
+    #[must_use]
+    pub fn diagonal(&self) -> Vec4 {
+        Vec4::new(self.x_axis.x, self.y_axis.y, self.z_axis.z, self.w_axis.w)
+    }
+
     /// Returns the determinant of `self`.
     #[must_use]
     pub fn determinant(&self) -> f32 {
@@ -674,15 +681,20 @@ impl Mat4 {
         }
     }
 
-    /// Returns the inverse of `self`.
+    /// If `CHECKED` is true then if the determinant is zero this function will return a tuple
+    /// containing a zero matrix and false. If the determinant is non zero a tuple containing the
+    /// inverted matrix and true is returned.
     ///
-    /// If the matrix is not invertible the returned matrix will be invalid.
+    /// If `CHECKED` is false then the determinant is not checked and if it is zero the resulting
+    /// inverted matrix will be invalid. Will panic if the determinant of `self` is zero when
+    /// `glam_assert` is enabled.
     ///
-    /// # Panics
-    ///
-    /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
+    /// A tuple containing the inverted matrix and a bool is used instead of an option here as
+    /// regular Rust enums put the discriminant first which can result in a lot of padding if the
+    /// matrix is aligned.
+    #[inline(always)]
     #[must_use]
-    pub fn inverse(&self) -> Self {
+    fn inverse_checked<const CHECKED: bool>(&self) -> (Self, bool) {
         unsafe {
             // Based on https://github.com/g-truc/glm `glm_mat4_inverse`
             let fac0 = {
@@ -811,17 +823,56 @@ impl Mat4 {
             let row2 = _mm_shuffle_ps(row0, row1, 0b10_00_10_00);
 
             let dot0 = dot4(self.x_axis.0, row2);
-            glam_assert!(dot0 != 0.0);
+
+            if CHECKED {
+                if dot0 == 0.0 {
+                    return (Self::ZERO, false);
+                }
+            } else {
+                glam_assert!(dot0 != 0.0);
+            }
 
             let rcp0 = _mm_set1_ps(dot0.recip());
 
-            Self {
-                x_axis: Vec4(_mm_mul_ps(inv0, rcp0)),
-                y_axis: Vec4(_mm_mul_ps(inv1, rcp0)),
-                z_axis: Vec4(_mm_mul_ps(inv2, rcp0)),
-                w_axis: Vec4(_mm_mul_ps(inv3, rcp0)),
-            }
+            (
+                Self {
+                    x_axis: Vec4(_mm_mul_ps(inv0, rcp0)),
+                    y_axis: Vec4(_mm_mul_ps(inv1, rcp0)),
+                    z_axis: Vec4(_mm_mul_ps(inv2, rcp0)),
+                    w_axis: Vec4(_mm_mul_ps(inv3, rcp0)),
+                },
+                true,
+            )
         }
+    }
+
+    /// Returns the inverse of `self`.
+    ///
+    /// If the matrix is not invertible the returned matrix will be invalid.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
+    #[must_use]
+    pub fn inverse(&self) -> Self {
+        self.inverse_checked::<false>().0
+    }
+
+    /// Returns the inverse of `self` or `None` if the matrix is not invertible.
+    #[must_use]
+    pub fn try_inverse(&self) -> Option<Self> {
+        let (m, is_valid) = self.inverse_checked::<true>();
+        if is_valid {
+            Some(m)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the inverse of `self` or `Mat4::ZERO` if the matrix is not invertible.
+    #[must_use]
+    pub fn inverse_or_zero(&self) -> Self {
+        self.inverse_checked::<true>().0
     }
 
     /// Creates a left-handed view matrix using a camera position, a facing direction and an up
@@ -1362,6 +1413,18 @@ impl Mat4 {
         res
     }
 
+    /// Transforms a 4D vector by the transpose of `self`.
+    #[inline]
+    #[must_use]
+    pub fn mul_transpose_vec4(&self, rhs: Vec4) -> Vec4 {
+        Vec4::new(
+            self.x_axis.dot(rhs),
+            self.y_axis.dot(rhs),
+            self.z_axis.dot(rhs),
+            self.w_axis.dot(rhs),
+        )
+    }
+
     /// Multiplies two 4x4 matrices.
     #[inline]
     #[must_use]
@@ -1392,6 +1455,20 @@ impl Mat4 {
             self.y_axis.mul(rhs),
             self.z_axis.mul(rhs),
             self.w_axis.mul(rhs),
+        )
+    }
+
+    /// Multiply `self` by a scaling vector `scale`.
+    /// This is faster than creating a whole diagonal scaling matrix and then multiplying that.
+    /// This operation is commutative.
+    #[inline]
+    #[must_use]
+    pub fn mul_diagonal_scale(&self, scale: Vec4) -> Self {
+        Self::from_cols(
+            self.x_axis * scale.x,
+            self.y_axis * scale.y,
+            self.z_axis * scale.z,
+            self.w_axis * scale.w,
         )
     }
 
