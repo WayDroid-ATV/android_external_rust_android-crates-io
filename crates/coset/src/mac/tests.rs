@@ -67,7 +67,7 @@ fn test_cose_mac_decode() {
 
 #[test]
 fn test_cose_mac_decode_fail() {
-    let tests = vec![
+    let tests = [
         (
             concat!(
                 "a2",   // 2-map (should be tuple)
@@ -795,4 +795,22 @@ fn test_cose_mac0_verify_tag_no_payload() {
     // Trying to verify with no payload available panics.
     #[allow(deprecated)]
     let _result = mac.verify_tag(external_aad, |tag, data| tagger.verify(tag, data));
+}
+
+#[test]
+fn test_cose_mac0_verify_payload_tag_no_payload() {
+    let tagger = FakeMac {};
+    let external_aad = b"This is the external aad";
+    let mut mac = CoseMac0Builder::new()
+        .protected(HeaderBuilder::new().key_id(b"11".to_vec()).build())
+        .payload(b"This is the data".to_vec())
+        .create_tag(external_aad, |data| tagger.compute(data))
+        .build();
+
+    mac.payload = None;
+    // Trying to verify with no payload emits an error.
+    let result = mac.verify_payload_tag(external_aad, no_payload_err, |tag, data| {
+        tagger.verify(tag, data)
+    });
+    assert_eq!(result, Err(no_payload_err()));
 }

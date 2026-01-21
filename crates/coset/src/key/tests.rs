@@ -16,7 +16,7 @@
 
 use super::*;
 use crate::{cbor::value::Value, iana, util::expect_err, CborOrdering, CborSerializable};
-use alloc::{borrow::ToOwned, string::ToString, vec};
+use alloc::{borrow::ToOwned, format, string::ToString, vec};
 
 #[test]
 fn test_cose_key_encode() {
@@ -205,6 +205,51 @@ fn test_cose_key_encode() {
                 "22", "f4" // -3 (y) => false
             ),
         ),
+        (
+            CoseKeyBuilder::new_ec2_pub_key_sec1_octet_string(
+                iana::EllipticCurve::P_256,
+                &hex::decode("03333333").unwrap(),
+            )
+            .unwrap()
+            .build(),
+            concat!(
+                "a4", // 3-map
+                "01", "02", // 1 (kty) => 2 (EC2)
+                "20", "01", // -1 (crv) => 1 (P_256)
+                "21", "43", "333333", // -2 (x) => 2-bstr
+                "22", "f5", // -3 (y) => true
+            ),
+        ),
+        (
+            CoseKeyBuilder::new_ec2_pub_key_sec1_octet_string(
+                iana::EllipticCurve::P_256,
+                &hex::decode("0201020304").unwrap(),
+            )
+            .unwrap()
+            .build(),
+            concat!(
+                "a4", // 3-map
+                "01", "02", // 1 (kty) => 2 (EC2)
+                "20", "01", // -1 (crv) => 1 (P_256)
+                "21", "44", "01020304", // -2 (x) => 2-bstr
+                "22", "f4", // -3 (y) => false
+            ),
+        ),
+        (
+            CoseKeyBuilder::new_ec2_pub_key_sec1_octet_string(
+                iana::EllipticCurve::P_256,
+                &hex::decode("0412345678").unwrap(),
+            )
+            .unwrap()
+            .build(),
+            concat!(
+                "a4", // 3-map
+                "01", "02", // 1 (kty) => 2 (EC2)
+                "20", "01", // -1 (crv) => 1 (P_256)
+                "21", "42", "1234", // -2 (x) => 2-bstr
+                "22", "42", "5678", // -3 (y) => 2-bstr
+            ),
+        ),
     ];
     for (i, (key, key_data)) in tests.iter().enumerate() {
         let got = key.clone().to_vec().unwrap();
@@ -228,10 +273,45 @@ fn test_cose_key_encode() {
 }
 
 #[test]
+fn test_new_ec2_pub_key_sec1_octet_string_errors() {
+    let tests = [
+        (
+            CoseKeyBuilder::new_ec2_pub_key_sec1_octet_string(
+                iana::EllipticCurve::P_256,
+                &hex::decode("00").unwrap(),
+            )
+            .unwrap_err(),
+            ParseSec1OctetStringError,
+        ),
+        (
+            CoseKeyBuilder::new_ec2_pub_key_sec1_octet_string(
+                iana::EllipticCurve::P_256,
+                &hex::decode("06c2b3a98ffe82").unwrap(),
+            )
+            .unwrap_err(),
+            ParseSec1OctetStringError,
+        ),
+        (
+            CoseKeyBuilder::new_ec2_pub_key_sec1_octet_string(
+                iana::EllipticCurve::P_256,
+                &hex::decode("04112233445566778899").unwrap(),
+            )
+            .unwrap_err(),
+            ParseSec1OctetStringError,
+        ),
+    ];
+    for (i, (got, want)) in tests.iter().enumerate() {
+        assert_eq!(got, want, "case {i}");
+        assert!(!format!("{got}").is_empty());
+        assert!(!format!("{got:?}").is_empty());
+    }
+}
+
+#[test]
 fn test_rfc8152_public_cose_key_decode() {
     // Public keys from RFC8152 section 6.7.1.
     // Note that map contents have been reordered into canonical order.
-    let tests = vec![
+    let tests = [
         (
             CoseKeyBuilder::new_ec2_pub_key(
                 iana::EllipticCurve::P_256,
@@ -313,7 +393,7 @@ fn test_rfc8152_public_cose_key_decode() {
 fn test_rfc8152_private_cose_key_decode() {
     // Private keys from RFC8152 section 6.7.2.
     // Note that map contents have been reordered into canonical order.
-    let tests = vec![
+    let tests = [
         (
             CoseKeyBuilder::new_ec2_priv_key(
                 iana::EllipticCurve::P_256,
@@ -870,5 +950,212 @@ fn test_key_canonicalize() {
         let got = testcase.rfc8949_key.to_vec().unwrap();
         let want = testcase.rfc8949_data.unwrap_or(testcase.key_data);
         assert_eq!(hex::encode(got), want, "Mismatch for {}", testcase.key_data);
+    }
+}
+
+#[test]
+fn test_key_to_sec1_octet_string() {
+    let tests = [
+        (
+            CoseKey {
+                kty: KeyType::Assigned(iana::KeyType::EC2),
+                params: vec![
+                    (
+                        Label::Int(iana::Ec2KeyParameter::X as i64),
+                        Value::Bytes(hex::decode("12").unwrap()),
+                    ),
+                    (
+                        Label::Int(iana::Ec2KeyParameter::Y as i64),
+                        Value::Bytes(hex::decode("34").unwrap()),
+                    ),
+                ],
+                ..Default::default()
+            },
+            Ok("041234"),
+        ),
+        (
+            CoseKey {
+                kty: KeyType::Assigned(iana::KeyType::EC2),
+                params: vec![
+                    (
+                        Label::Int(iana::Ec2KeyParameter::X as i64),
+                        Value::Bytes(hex::decode("13").unwrap()),
+                    ),
+                    (
+                        Label::Int(iana::Ec2KeyParameter::Y as i64),
+                        Value::Bytes(hex::decode("37").unwrap()),
+                    ),
+                    (
+                        Label::Int(iana::Ec2KeyParameter::X as i64),
+                        Value::Bytes(hex::decode("5555").unwrap()),
+                    ),
+                    (
+                        Label::Int(iana::Ec2KeyParameter::Y as i64),
+                        Value::Bytes(hex::decode("8888").unwrap()),
+                    ),
+                ],
+                ..Default::default()
+            },
+            Ok("041337"),
+        ),
+        (
+            CoseKey {
+                kty: KeyType::Assigned(iana::KeyType::EC2),
+                params: vec![
+                    (
+                        Label::Int(iana::Ec2KeyParameter::X as i64),
+                        Value::Bytes(hex::decode("aabbccdd").unwrap()),
+                    ),
+                    (
+                        Label::Int(iana::Ec2KeyParameter::Y as i64),
+                        Value::Bool(false),
+                    ),
+                ],
+                ..Default::default()
+            },
+            Ok("02aabbccdd"),
+        ),
+        (
+            CoseKey {
+                kty: KeyType::Assigned(iana::KeyType::EC2),
+                params: vec![
+                    (
+                        Label::Int(iana::Ec2KeyParameter::X as i64),
+                        Value::Bytes(hex::decode("123456789abcde").unwrap()),
+                    ),
+                    (
+                        Label::Int(iana::Ec2KeyParameter::Y as i64),
+                        Value::Bool(true),
+                    ),
+                ],
+                ..Default::default()
+            },
+            Ok("03123456789abcde"),
+        ),
+        (
+            CoseKey {
+                kty: KeyType::Assigned(iana::KeyType::EC2),
+                params: vec![
+                    (
+                        Label::Int(iana::Ec2KeyParameter::X as i64),
+                        Value::Bytes(hex::decode("111133").unwrap()),
+                    ),
+                    (
+                        Label::Int(iana::Ec2KeyParameter::Y as i64),
+                        Value::Bytes(hex::decode("22222244").unwrap()),
+                    ),
+                ],
+                ..Default::default()
+            },
+            Err(ToSec1OctetStringError::UnequalCoordinateLength),
+        ),
+        (
+            CoseKey {
+                kty: KeyType::Assigned(iana::KeyType::EC2),
+                params: vec![(
+                    Label::Int(iana::Ec2KeyParameter::Y as i64),
+                    Value::Bytes(hex::decode("34").unwrap()),
+                )],
+                ..Default::default()
+            },
+            Err(ToSec1OctetStringError::MissingCoordinate),
+        ),
+        (
+            CoseKey {
+                kty: KeyType::Assigned(iana::KeyType::EC2),
+                params: vec![(
+                    Label::Int(iana::Ec2KeyParameter::X as i64),
+                    Value::Bytes(hex::decode("12").unwrap()),
+                )],
+                ..Default::default()
+            },
+            Err(ToSec1OctetStringError::MissingCoordinate),
+        ),
+        (
+            CoseKey {
+                kty: KeyType::Assigned(iana::KeyType::OKP),
+                params: vec![
+                    (
+                        Label::Int(iana::Ec2KeyParameter::X as i64),
+                        Value::Bytes(hex::decode("12").unwrap()),
+                    ),
+                    (
+                        Label::Int(iana::Ec2KeyParameter::Y as i64),
+                        Value::Bytes(hex::decode("34").unwrap()),
+                    ),
+                ],
+                ..Default::default()
+            },
+            Err(ToSec1OctetStringError::NotEcKey),
+        ),
+        (
+            CoseKey {
+                kty: KeyType::Assigned(iana::KeyType::EC2),
+                params: vec![
+                    (
+                        Label::Int(iana::Ec2KeyParameter::X as i64),
+                        Value::Bytes(hex::decode("12").unwrap()),
+                    ),
+                    (
+                        Label::Int(iana::Ec2KeyParameter::Y as i64),
+                        Value::Text("34".to_string()),
+                    ),
+                ],
+                ..Default::default()
+            },
+            Err(ToSec1OctetStringError::InvalidCoordinateType),
+        ),
+        (
+            CoseKey {
+                kty: KeyType::Assigned(iana::KeyType::EC2),
+                params: vec![
+                    (
+                        Label::Int(iana::Ec2KeyParameter::X as i64),
+                        Value::Integer(0x12.into()),
+                    ),
+                    (
+                        Label::Int(iana::Ec2KeyParameter::Y as i64),
+                        Value::Bytes(hex::decode("34").unwrap()),
+                    ),
+                ],
+                ..Default::default()
+            },
+            Err(ToSec1OctetStringError::InvalidCoordinateType),
+        ),
+        (
+            CoseKeyBuilder::new_ec2_pub_key_sec1_octet_string(
+                iana::EllipticCurve::P_256,
+                &hex::decode("02aa11bb22cc33dd44").unwrap(),
+            )
+            .unwrap()
+            .build(),
+            Ok("02aa11bb22cc33dd44"),
+        ),
+        (
+            CoseKeyBuilder::new_ec2_pub_key_sec1_octet_string(
+                iana::EllipticCurve::P_256,
+                &hex::decode("0379f82de731b98a27").unwrap(),
+            )
+            .unwrap()
+            .build(),
+            Ok("0379f82de731b98a27"),
+        ),
+        (
+            CoseKeyBuilder::new_ec2_pub_key_sec1_octet_string(
+                iana::EllipticCurve::P_256,
+                &hex::decode("0412345678").unwrap(),
+            )
+            .unwrap()
+            .build(),
+            Ok("0412345678"),
+        ),
+    ];
+    for (i, (key, want)) in tests.iter().enumerate() {
+        let got = key.to_sec1_octet_string().map(hex::encode);
+        assert_eq!(got, want.map(str::to_string), "case {i}");
+        if let Err(e) = got {
+            assert!(!format!("{e}").is_empty());
+            assert!(!format!("{e:?}").is_empty());
+        }
     }
 }
