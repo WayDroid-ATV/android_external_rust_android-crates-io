@@ -1,4 +1,12 @@
 {
+  "package": {
+    "smol_str": {
+      "srcs": [
+        "src/*.rs",
+        "src/gdb_smolstr_printer.py"
+      ]
+    }
+  },
   "variants": [
     {
       "features": [

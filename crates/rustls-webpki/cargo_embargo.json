@@ -1,4 +1,12 @@
 {
+  "package": {
+    "rustls-webpki": {
+      "srcs": [
+        "src/**/*.rs",
+        "src/data/*.der"
+      ]
+    }
+  },
   "run_cargo": false,
   "min_sdk_version": "29",
   "features": [
