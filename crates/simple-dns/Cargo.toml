@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "simple-dns"
-version = "0.11.0"
+version = "0.11.2"
 authors = ["Ilson Roberto Balliego Junior <ilson.balliego@gmail.com>"]
 build = false
 autolib = false
