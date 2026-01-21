@@ -59,7 +59,7 @@ impl<T> IppClientBuilder<T> {
         self
     }
 
-    /// Add custom root certificate in PEM or DER format.
+    /// Add a custom root certificate in PEM or DER format.
     pub fn ca_cert<D: AsRef<[u8]>>(mut self, data: D) -> Self {
         self.ca_certs.push(data.as_ref().to_owned());
         self
@@ -71,7 +71,7 @@ impl<T> IppClientBuilder<T> {
         self
     }
 
-    /// Add custom HTTP header
+    /// Add a custom HTTP header
     pub fn http_header<K, V>(mut self, key: K, value: V) -> Self
     where
         K: AsRef<str>,
@@ -168,13 +168,18 @@ pub mod non_blocking {
                 for data in &self.0.ca_certs {
                     let cert =
                         reqwest::Certificate::from_pem(data).or_else(|_| reqwest::Certificate::from_der(data))?;
-                    builder = builder.add_root_certificate(cert);
+                    builder = builder.tls_certs_merge(Some(cert));
                 }
             }
 
             #[cfg(feature = "async-client-rustls")]
             {
-                builder = builder.use_rustls_tls();
+                builder = builder.tls_backend_rustls();
+            }
+
+            #[cfg(feature = "async-client-tls")]
+            {
+                builder = builder.tls_backend_native();
             }
 
             let mut req_builder = builder
