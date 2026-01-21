@@ -478,7 +478,7 @@ impl Mat3A {
     ///
     /// Panics if `slice` is less than 9 elements long.
     #[inline]
-    pub fn write_cols_to_slice(self, slice: &mut [f32]) {
+    pub fn write_cols_to_slice(&self, slice: &mut [f32]) {
         slice[0] = self.x_axis.x;
         slice[1] = self.x_axis.y;
         slice[2] = self.x_axis.z;
@@ -563,11 +563,50 @@ impl Mat3A {
         }
     }
 
+    /// Returns the diagonal of `self`.
+    #[inline]
+    #[must_use]
+    pub fn diagonal(&self) -> Vec3A {
+        Vec3A::new(self.x_axis.x, self.y_axis.y, self.z_axis.z)
+    }
+
     /// Returns the determinant of `self`.
     #[inline]
     #[must_use]
     pub fn determinant(&self) -> f32 {
         self.z_axis.dot(self.x_axis.cross(self.y_axis))
+    }
+
+    /// If `CHECKED` is true then if the determinant is zero this function will return a tuple
+    /// containing a zero matrix and false. If the determinant is non zero a tuple containing the
+    /// inverted matrix and true is returned.
+    ///
+    /// If `CHECKED` is false then the determinant is not checked and if it is zero the resulting
+    /// inverted matrix will be invalid. Will panic if the determinant of `self` is zero when
+    /// `glam_assert` is enabled.
+    ///
+    /// A tuple containing the inverted matrix and a bool is used instead of an option here as
+    /// regular Rust enums put the discriminant first which can result in a lot of padding if the
+    /// matrix is aligned.
+    #[inline(always)]
+    #[must_use]
+    fn inverse_checked<const CHECKED: bool>(&self) -> (Self, bool) {
+        let tmp0 = self.y_axis.cross(self.z_axis);
+        let tmp1 = self.z_axis.cross(self.x_axis);
+        let tmp2 = self.x_axis.cross(self.y_axis);
+        let det = self.z_axis.dot(tmp2);
+        if CHECKED {
+            if det == 0.0 {
+                return (Self::ZERO, false);
+            }
+        } else {
+            glam_assert!(det != 0.0);
+        }
+        let inv_det = Vec3A::splat(det.recip());
+        (
+            Self::from_cols(tmp0.mul(inv_det), tmp1.mul(inv_det), tmp2.mul(inv_det)).transpose(),
+            true,
+        )
     }
 
     /// Returns the inverse of `self`.
@@ -580,13 +619,26 @@ impl Mat3A {
     #[inline]
     #[must_use]
     pub fn inverse(&self) -> Self {
-        let tmp0 = self.y_axis.cross(self.z_axis);
-        let tmp1 = self.z_axis.cross(self.x_axis);
-        let tmp2 = self.x_axis.cross(self.y_axis);
-        let det = self.z_axis.dot(tmp2);
-        glam_assert!(det != 0.0);
-        let inv_det = Vec3A::splat(det.recip());
-        Self::from_cols(tmp0.mul(inv_det), tmp1.mul(inv_det), tmp2.mul(inv_det)).transpose()
+        self.inverse_checked::<false>().0
+    }
+
+    /// Returns the inverse of `self` or `None` if the matrix is not invertible.
+    #[inline]
+    #[must_use]
+    pub fn try_inverse(&self) -> Option<Self> {
+        let (m, is_valid) = self.inverse_checked::<true>();
+        if is_valid {
+            Some(m)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the inverse of `self` or `Mat3A::ZERO` if the matrix is not invertible.
+    #[inline]
+    #[must_use]
+    pub fn inverse_or_zero(&self) -> Self {
+        self.inverse_checked::<true>().0
     }
 
     /// Transforms the given 2D vector as a point.
@@ -701,6 +753,24 @@ impl Mat3A {
         res
     }
 
+    /// Transforms a 3D vector by the transpose of `self`.
+    #[inline]
+    #[must_use]
+    pub fn mul_transpose_vec3(&self, rhs: Vec3) -> Vec3 {
+        self.mul_transpose_vec3a(rhs.into()).into()
+    }
+
+    /// Transforms a [`Vec3A`] by the transpose of `self`.
+    #[inline]
+    #[must_use]
+    pub fn mul_transpose_vec3a(&self, rhs: Vec3A) -> Vec3A {
+        Vec3A::new(
+            self.x_axis.dot(rhs),
+            self.y_axis.dot(rhs),
+            self.z_axis.dot(rhs),
+        )
+    }
+
     /// Multiplies two 3x3 matrices.
     #[inline]
     #[must_use]
@@ -730,6 +800,19 @@ impl Mat3A {
             self.x_axis.mul(rhs),
             self.y_axis.mul(rhs),
             self.z_axis.mul(rhs),
+        )
+    }
+
+    /// Multiply `self` by a scaling vector `scale`.
+    /// This is faster than creating a whole diagonal scaling matrix and then multiplying that.
+    /// This operation is commutative.
+    #[inline]
+    #[must_use]
+    pub fn mul_diagonal_scale(&self, scale: Vec3) -> Self {
+        Self::from_cols(
+            self.x_axis * scale.x,
+            self.y_axis * scale.y,
+            self.z_axis * scale.z,
         )
     }
 
