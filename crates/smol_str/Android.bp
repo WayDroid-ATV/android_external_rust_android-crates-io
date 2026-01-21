@@ -20,6 +20,10 @@ rust_library {
     cargo_env_compat: true,
     cargo_pkg_version: "0.3.5",
     crate_root: "src/lib.rs",
+    srcs: [
+        "src/*.rs",
+        "src/gdb_smolstr_printer.py",
+    ],
     edition: "2024",
     features: [
         "default",
@@ -34,4 +38,5 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    use_expansive_default_srcs: false,
 }
