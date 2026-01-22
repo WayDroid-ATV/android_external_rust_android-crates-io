@@ -1,17 +1,17 @@
 name: "proc-macro2"
 description: "A substitute implementation of the compiler\'s `proc_macro` API to decouple token-based libraries from the procedural macro use case."
 third_party {
-  version: "1.0.104"
+  version: "1.0.105"
   license_type: NOTICE
   last_upgrade_date {
     year: 2026
     month: 1
-    day: 3
+    day: 21
   }
   homepage: "https://crates.io/crates/proc-macro2"
   identifier {
     type: "crates.io"
     value: "proc-macro2"
-    version: "1.0.104"
+    version: "1.0.105"
   }
 }
