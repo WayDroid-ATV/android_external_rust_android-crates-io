@@ -1,17 +1,17 @@
 name: "pest_generator"
 description: "pest code generator"
 third_party {
-  version: "2.8.4"
+  version: "2.8.5"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 11
-    day: 27
+    year: 2026
+    month: 1
+    day: 21
   }
   homepage: "https://crates.io/crates/pest_generator"
   identifier {
     type: "crates.io"
     value: "pest_generator"
-    version: "2.8.4"
+    version: "2.8.5"
   }
 }
