@@ -31,7 +31,6 @@ rust_library {
     edition: "2018",
     features: ["default"],
     rustlibs: ["libcfg_if"],
-    static_libs: ["libuserfaultfd_sys_consts"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -39,6 +38,8 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    static_libs: ["libuserfaultfd_sys_consts"],
+
 }
 
 cc_library_static {
