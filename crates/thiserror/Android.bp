@@ -37,6 +37,7 @@ rust_library {
     recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    sdk_version: "current",
     no_std: {
         features: [],
         enabled: true,
