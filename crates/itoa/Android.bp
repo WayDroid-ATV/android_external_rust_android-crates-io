@@ -45,6 +45,7 @@ rust_library {
         "com.android.uprobestats",
         "com.android.virt",
         "com.sdv.*",
+        "com.?.sdv.*",
     ],
     product_available: true,
     recovery_available: true,

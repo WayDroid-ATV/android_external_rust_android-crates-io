@@ -32,6 +32,7 @@ rust_library {
         "com.android.tethering",
         "com.android.virt",
         "com.sdv.*",
+        "com.?.sdv.*",
     ],
     product_available: true,
     vendor_available: true,

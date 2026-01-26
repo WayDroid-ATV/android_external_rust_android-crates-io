@@ -3,7 +3,8 @@
     "//apex_available:platform",
     "com.android.resolv",
     "com.android.tethering",
-    "com.sdv.*"
+    "com.sdv.*",
+    "com.?.sdv.*"
   ],
   "min_sdk_version": "29",
   "run_cargo": false
