@@ -1,17 +1,17 @@
 name: "android_bp"
 description: "Android.bp parser"
 third_party {
-  version: "0.3.0"
+  version: "0.3.1"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 12
-    day: 17
+    year: 2026
+    month: 1
+    day: 24
   }
   homepage: "https://crates.io/crates/android_bp"
   identifier {
     type: "crates.io"
     value: "android_bp"
-    version: "0.3.0"
+    version: "0.3.1"
   }
 }
