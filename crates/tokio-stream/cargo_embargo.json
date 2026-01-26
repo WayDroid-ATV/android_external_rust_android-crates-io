@@ -2,7 +2,8 @@
   "apex_available": [
     "//apex_available:platform",
     "com.android.bt",
-    "com.sdv.*"
+    "com.sdv.*",
+    "com.?.sdv.*"
   ],
   "features": [
     "fs",

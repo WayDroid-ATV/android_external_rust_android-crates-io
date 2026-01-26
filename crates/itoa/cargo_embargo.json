@@ -1,10 +1,11 @@
 {
-  "generate_rulesmk" : true,
+  "generate_rulesmk": true,
   "apex_available": [
     "//apex_available:platform",
     "com.android.uprobestats",
     "com.android.virt",
-    "com.sdv.*"
+    "com.sdv.*",
+    "com.?.sdv.*"
   ],
   "tests": true,
   "min_sdk_version": "29",
