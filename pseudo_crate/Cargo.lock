@@ -682,9 +682,9 @@ dependencies = [
 
 [[package]]
 name = "android_bp"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9e5389cea0250e70ca9323df3b5b5b31749d4face289c92cd4e99f54b1d6425"
+checksum = "1727448f93bcbbd5002f2de4a45de304e21ccb1cf315016726e02e593ede01d0"
 dependencies = [
  "nom",
 ]

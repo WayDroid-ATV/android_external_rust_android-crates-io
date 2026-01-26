@@ -12,8 +12,14 @@
 [package]
 edition = "2021"
 name = "android_bp"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["tardyp"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Android.bp parser"
 homepage = "https://github.com/tardyp/rs-bp"
 readme = "Readme.md"
@@ -30,6 +36,11 @@ repository = "https://github.com/tardyp/rs-bp"
 
 [lib]
 name = "android_bp"
+path = "src/lib.rs"
+
+[[example]]
+name = "parse_all"
+path = "examples/parse_all.rs"
 
 [dependencies.nom]
 version = "7.1.3"
