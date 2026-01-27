@@ -516,6 +516,7 @@ uniffi_macros
 uniffi_meta
 unsafe-libyaml
 untrusted
+unty
 url
 userfaultfd
 userfaultfd-sys

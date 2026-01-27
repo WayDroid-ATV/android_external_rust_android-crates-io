@@ -1,0 +1,9 @@
+{
+  "run_cargo": false,
+  "module_visibility": {
+    "libunty": [
+      "//external/rust/android-crates-io/crates/bincode"
+    ]
+  },
+  "min_sdk_version": "29"
+}
