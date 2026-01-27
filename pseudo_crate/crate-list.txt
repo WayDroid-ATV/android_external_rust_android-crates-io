@@ -390,6 +390,7 @@ ring
 rtnetlink
 rusb
 rusqlite
+rust-fuzzy-search
 rustc-demangle
 rustc-demangle-capi
 rustc-hash
