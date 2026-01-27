@@ -966,6 +966,9 @@ mod _casts {
         T: 'a + KnownLayout + ?Sized,
         I: Invariants<Validity = Initialized>,
     {
+        // FIXME: Is there any way to teach Rust that, for all `T, A, R`, `T:
+        // Read<A, R>` implies `[u8]: Read<A, R>`?
+
         /// Casts this pointer-to-initialized into a pointer-to-bytes.
         #[allow(clippy::wrong_self_convention)]
         #[must_use]
@@ -973,6 +976,7 @@ mod _casts {
         pub fn as_bytes<R>(self) -> Ptr<'a, [u8], (I::Aliasing, Aligned, Valid)>
         where
             T: Read<I::Aliasing, R>,
+            [u8]: Read<I::Aliasing, R>,
             I::Aliasing: Reference,
         {
             let ptr = self.cast::<_, AsBytesCast, _>();
@@ -1125,9 +1129,9 @@ mod _casts {
         where
             I::Aliasing: Reference,
             U: 'a + ?Sized + KnownLayout + Read<I::Aliasing, R>,
+            [u8]: Read<I::Aliasing, R>,
         {
-            // FIXME(#67): Remove this allow. See NonNulSlicelExt for more
-            // details.
+            // FIXME(#67): Remove this allow. See NonNullExt for more details.
             #[allow(unstable_name_collisions)]
             match self.try_cast_into(CastType::Prefix, meta) {
                 Ok((slf, remainder)) => {
