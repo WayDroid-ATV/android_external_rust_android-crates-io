@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "zerocopy-derive"
-version = "0.8.33"
+version = "0.8.34"
 authors = [
     "Joshua Liebow-Feeser <joshlf@google.com>",
     "Jack Wrenn <jswrenn@amazon.com>",
@@ -37,10 +37,6 @@ repository = "https://github.com/google/zerocopy"
 name = "zerocopy_derive"
 path = "src/lib.rs"
 proc-macro = true
-
-[[test]]
-name = "crate_path"
-path = "tests/crate_path.rs"
 
 [[test]]
 name = "deprecated"
@@ -93,6 +89,14 @@ path = "tests/issue_2117.rs"
 [[test]]
 name = "issue_2835"
 path = "tests/issue_2835.rs"
+
+[[test]]
+name = "issue_2880"
+path = "tests/issue_2880.rs"
+
+[[test]]
+name = "issue_2915"
+path = "tests/issue_2915.rs"
 
 [[test]]
 name = "paths_and_modules"
@@ -178,12 +182,6 @@ features = ["full"]
 
 [dev-dependencies.dissimilar]
 version = "1.0.9"
-
-[dev-dependencies.libc]
-version = "=0.2.163"
-
-[dev-dependencies.once_cell]
-version = "=1.9"
 
 [dev-dependencies.prettyplease]
 version = "=0.2.17"

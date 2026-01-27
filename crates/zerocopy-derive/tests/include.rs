@@ -37,7 +37,7 @@ mod imp {
             primitive::*,
         },
         ::std::{collections::hash_map::DefaultHasher, prelude::v1::*},
-        ::zerocopy::*,
+        ::zerocopy_renamed::*,
     };
 }
 
@@ -59,6 +59,7 @@ pub mod util {
         Copy,
         Clone,
     )]
+    #[zerocopy(crate = "zerocopy_renamed")]
     #[repr(C, align(2))]
     pub struct AU16(pub u16);
 
@@ -121,7 +122,25 @@ pub mod util {
         // SAFETY: This is intentionally unsound; see the preceding comment.
         let ptr = unsafe { ptr.assume_initialized() };
 
-        let ptr = ptr.cast::<_, ::zerocopy::pointer::cast::CastSized, _>();
+        let ptr = ptr.cast::<_, ::zerocopy_renamed::pointer::cast::CastSized, _>();
         assert!(<T as super::imp::TryFromBytes>::is_bit_valid(ptr));
+    }
+
+    pub fn test_is_bit_valid<T: super::imp::TryFromBytes, V: super::imp::IntoBytes>(
+        mut val: V,
+        is_bit_valid: bool,
+    ) {
+        use super::imp::pointer::{cast::CastSized, BecauseExclusive};
+
+        let candidate = ::zerocopy_renamed::Ptr::from_mut(&mut val);
+        let candidate = candidate.forget_aligned();
+        // SAFETY: by `val: impl IntoBytes`, `val` consists entirely of
+        // initialized bytes. It's still unsound because this might let us
+        // overwrite `val` with initialized-but-invalid bytes, but we don't do
+        // that, so no UB is ever exercised.
+        let candidate = unsafe { candidate.assume_initialized() };
+        let candidate = candidate.cast::<T, CastSized, (_, BecauseExclusive)>();
+
+        super::imp::assert_eq!(T::is_bit_valid(candidate), is_bit_valid);
     }
 }
