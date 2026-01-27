@@ -119,6 +119,18 @@ impl<T: Target, C: Connection> GdbStubImpl<T, C> {
                     res.write_str(";QStartNoAckMode+")?;
                 }
 
+                if target.use_fork_stop_reason() {
+                    res.write_str(";fork-events+")?;
+                }
+
+                if target.use_vfork_stop_reason() {
+                    res.write_str(";vfork-events+")?;
+                }
+
+                if target.use_vforkdone_stop_reason() {
+                    res.write_str(";vforkdone-events+")?;
+                }
+
                 if let Some(resume_ops) = target.base_ops().resume_ops() {
                     let (reverse_cont, reverse_step) = match resume_ops {
                         ResumeOps::MultiThread(ops) => (
@@ -220,6 +232,10 @@ impl<T: Target, C: Connection> GdbStubImpl<T, C> {
 
                 if target.support_libraries_svr4().is_some() {
                     res.write_str(";qXfer:libraries-svr4:read+")?;
+                }
+
+                if target.support_libraries().is_some() {
+                    res.write_str(";qXfer:libraries:read+")?;
                 }
 
                 HandlerStatus::Handled
