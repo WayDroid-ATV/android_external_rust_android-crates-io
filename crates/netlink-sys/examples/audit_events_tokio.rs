@@ -15,9 +15,9 @@
 
 use std::process;
 
-use netlink_packet_audit::{
-    AuditMessage, NetlinkBuffer, NetlinkMessage, StatusMessage, NLM_F_ACK,
-    NLM_F_REQUEST,
+use netlink_packet_audit::{AuditMessage, StatusMessage};
+use netlink_packet_core::{
+    NetlinkBuffer, NetlinkMessage, NLM_F_ACK, NLM_F_REQUEST,
 };
 
 use netlink_sys::{
@@ -31,7 +31,7 @@ const AUDIT_STATUS_PID: u32 = 4;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let kernel_unicast: SocketAddr = SocketAddr::new(0, 0);
-    let mut socket = TokioSocket::new(NETLINK_AUDIT).unwrap();
+    let socket = TokioSocket::new(NETLINK_AUDIT).unwrap();
 
     let mut status = StatusMessage::new();
     status.enabled = 1;
