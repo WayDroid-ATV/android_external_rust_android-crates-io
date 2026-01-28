@@ -1,17 +1,17 @@
 name: "socket2"
 description: "Utilities for handling networking sockets with a maximal amount of configuration possible intended."
 third_party {
-  version: "0.6.1"
+  version: "0.6.2"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 12
-    day: 2
+    year: 2026
+    month: 1
+    day: 27
   }
   homepage: "https://crates.io/crates/socket2"
   identifier {
     type: "crates.io"
     value: "socket2"
-    version: "0.6.1"
+    version: "0.6.2"
   }
 }
