@@ -1,3 +1,11 @@
+Due to a doxxing incident bincode development has officially ceased and will not resume. Updates will only be pushed to the in the unlikely event of CVEs. Do not contact us for any other reason.
+
+To those of you who bothered doxxing us. Go touch grass and maybe for once consider your actions have consequences for real people.
+
+Fuck off and worst regards, The Bincode Team
+
+# Virtue
+
 A crate that allows you to mostly-safely cast one type into another type.
 
 This is mostly useful for generic functions, e.g.

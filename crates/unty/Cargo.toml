@@ -13,8 +13,8 @@
 edition = "2021"
 rust-version = "1.56.1"
 name = "unty"
-version = "0.0.4"
-authors = ["Victor Koenders <bincode@trang.ar>"]
+version = "0.0.5"
+authors = []
 build = false
 autolib = false
 autobins = false
