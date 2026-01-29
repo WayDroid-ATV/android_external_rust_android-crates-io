@@ -28,7 +28,7 @@
  */
 use crate::internals::{ProcessedOffset, WideRow420InversionHandler, WideRowInversionHandler};
 use crate::numerics::qrshr;
-use crate::yuv_error::check_rgba_destination;
+use crate::yuv_error::{check_rgba_destination, split_rgba_destination};
 use crate::yuv_support::*;
 use crate::{YuvError, YuvPlanarImage};
 #[cfg(feature = "rayon")]
@@ -386,6 +386,8 @@ fn yuv_to_rgbx_impl<const DESTINATION_CHANNELS: u8, const SAMPLING: u8, const PR
     check_rgba_destination(rgba, rgba_stride, image.width, image.height, channels)?;
     image.check_constraints(chroma_subsampling)?;
 
+    let rgba = split_rgba_destination(rgba, rgba_stride, image.width, image.height, channels);
+
     let chroma_range = get_yuv_range(8, range);
     let kr_kb = matrix.get_kr_kb();
 
@@ -615,23 +617,27 @@ fn yuv_to_rgbx_impl<const DESTINATION_CHANNELS: u8, const SAMPLING: u8, const PR
         }
     };
 
+    let y_plane = image.projected_y_plane();
+    let u_plane = image.projected_u_plane(chroma_subsampling);
+    let v_plane = image.projected_v_plane(chroma_subsampling);
+
     if chroma_subsampling == YuvChromaSubsampling::Yuv444 {
         let iter;
         #[cfg(feature = "rayon")]
         {
             iter = rgba
                 .par_chunks_exact_mut(rgba_stride as usize)
-                .zip(image.y_plane.par_chunks_exact(image.y_stride as usize))
-                .zip(image.u_plane.par_chunks_exact(image.u_stride as usize))
-                .zip(image.v_plane.par_chunks_exact(image.v_stride as usize));
+                .zip(y_plane.par_chunks(image.y_stride as usize))
+                .zip(u_plane.par_chunks(image.u_stride as usize))
+                .zip(v_plane.par_chunks(image.v_stride as usize));
         }
         #[cfg(not(feature = "rayon"))]
         {
             iter = rgba
                 .chunks_exact_mut(rgba_stride as usize)
-                .zip(image.y_plane.chunks_exact(image.y_stride as usize))
-                .zip(image.u_plane.chunks_exact(image.u_stride as usize))
-                .zip(image.v_plane.chunks_exact(image.v_stride as usize));
+                .zip(y_plane.chunks(image.y_stride as usize))
+                .zip(u_plane.chunks(image.u_stride as usize))
+                .zip(v_plane.chunks(image.v_stride as usize));
         }
         iter.for_each(|(((rgba, y_plane), u_plane), v_plane)| {
             let y_plane = &y_plane[..image.width as usize];
@@ -682,24 +688,24 @@ fn yuv_to_rgbx_impl<const DESTINATION_CHANNELS: u8, const SAMPLING: u8, const PR
         {
             iter = rgba
                 .par_chunks_exact_mut(rgba_stride as usize)
-                .zip(image.y_plane.par_chunks_exact(image.y_stride as usize))
-                .zip(image.u_plane.par_chunks_exact(image.u_stride as usize))
-                .zip(image.v_plane.par_chunks_exact(image.v_stride as usize));
+                .zip(y_plane.par_chunks(image.y_stride as usize))
+                .zip(u_plane.par_chunks(image.u_stride as usize))
+                .zip(v_plane.par_chunks(image.v_stride as usize));
         }
         #[cfg(not(feature = "rayon"))]
         {
             iter = rgba
                 .chunks_exact_mut(rgba_stride as usize)
-                .zip(image.y_plane.chunks_exact(image.y_stride as usize))
-                .zip(image.u_plane.chunks_exact(image.u_stride as usize))
-                .zip(image.v_plane.chunks_exact(image.v_stride as usize));
+                .zip(y_plane.chunks(image.y_stride as usize))
+                .zip(u_plane.chunks(image.u_stride as usize))
+                .zip(v_plane.chunks(image.v_stride as usize));
         }
         iter.for_each(|(((rgba, y_plane), u_plane), v_plane)| {
             process_halved_chroma_row(
-                &y_plane[0..image.width as usize],
-                &u_plane[0..(image.width as usize).div_ceil(2)],
-                &v_plane[0..(image.width as usize).div_ceil(2)],
-                &mut rgba[0..image.width as usize * channels],
+                &y_plane[..image.width as usize],
+                &u_plane[..(image.width as usize).div_ceil(2)],
+                &v_plane[..(image.width as usize).div_ceil(2)],
+                &mut rgba[..image.width as usize * channels],
             );
         });
     } else if chroma_subsampling == YuvChromaSubsampling::Yuv420 {
@@ -708,53 +714,41 @@ fn yuv_to_rgbx_impl<const DESTINATION_CHANNELS: u8, const SAMPLING: u8, const PR
         {
             iter = rgba
                 .par_chunks_exact_mut(rgba_stride as usize * 2)
-                .zip(image.y_plane.par_chunks_exact(image.y_stride as usize * 2))
-                .zip(image.u_plane.par_chunks_exact(image.u_stride as usize))
-                .zip(image.v_plane.par_chunks_exact(image.v_stride as usize));
+                .zip(y_plane.par_chunks(image.y_stride as usize * 2))
+                .zip(u_plane.par_chunks(image.u_stride as usize))
+                .zip(v_plane.par_chunks(image.v_stride as usize));
         }
         #[cfg(not(feature = "rayon"))]
         {
             iter = rgba
                 .chunks_exact_mut(rgba_stride as usize * 2)
-                .zip(image.y_plane.chunks_exact(image.y_stride as usize * 2))
-                .zip(image.u_plane.chunks_exact(image.u_stride as usize))
-                .zip(image.v_plane.chunks_exact(image.v_stride as usize));
+                .zip(y_plane.chunks(image.y_stride as usize * 2))
+                .zip(u_plane.chunks(image.u_stride as usize))
+                .zip(v_plane.chunks(image.v_stride as usize));
         }
         iter.for_each(|(((rgba, y_plane), u_plane), v_plane)| {
             let (rgba0, rgba1) = rgba.split_at_mut(rgba_stride as usize);
             let (y_plane0, y_plane1) = y_plane.split_at(image.y_stride as usize);
             process_doubled_chroma_row(
-                &y_plane0[0..image.width as usize],
-                &y_plane1[0..image.width as usize],
-                &u_plane[0..(image.width as usize).div_ceil(2)],
-                &v_plane[0..(image.width as usize).div_ceil(2)],
-                &mut rgba0[0..image.width as usize * channels],
-                &mut rgba1[0..image.width as usize * channels],
+                &y_plane0[..image.width as usize],
+                &y_plane1[..image.width as usize],
+                &u_plane[..(image.width as usize).div_ceil(2)],
+                &v_plane[..(image.width as usize).div_ceil(2)],
+                &mut rgba0[..image.width as usize * channels],
+                &mut rgba1[..image.width as usize * channels],
             );
         });
 
         if image.height & 1 != 0 {
-            let rgba = rgba.chunks_exact_mut(rgba_stride as usize).last().unwrap();
-            let u_plane = image
-                .u_plane
-                .chunks_exact(image.u_stride as usize)
-                .last()
-                .unwrap();
-            let v_plane = image
-                .v_plane
-                .chunks_exact(image.v_stride as usize)
-                .last()
-                .unwrap();
-            let y_plane = image
-                .y_plane
-                .chunks_exact(image.y_stride as usize)
-                .last()
-                .unwrap();
+            let rgba = rgba.chunks_mut(rgba_stride as usize).last().unwrap();
+            let u_plane = u_plane.chunks(image.u_stride as usize).last().unwrap();
+            let v_plane = v_plane.chunks(image.v_stride as usize).last().unwrap();
+            let y_plane = y_plane.chunks(image.y_stride as usize).last().unwrap();
             process_halved_chroma_row(
-                &y_plane[0..image.width as usize],
-                &u_plane[0..(image.width as usize).div_ceil(2)],
-                &v_plane[0..(image.width as usize).div_ceil(2)],
-                &mut rgba[0..image.width as usize * channels],
+                &y_plane[..image.width as usize],
+                &u_plane[..(image.width as usize).div_ceil(2)],
+                &v_plane[..(image.width as usize).div_ceil(2)],
+                &mut rgba[..image.width as usize * channels],
             );
         }
     } else {
@@ -1667,10 +1661,12 @@ mod tests {
 
     #[test]
     fn test_yuv420_round_trip_full_range() {
-        fn matrix(yuv_accuracy: YuvConversionMode, max_diff: i32) {
-            let image_width = 256usize;
-            let image_height = 256usize;
-
+        fn matrix(
+            image_width: usize,
+            image_height: usize,
+            yuv_accuracy: YuvConversionMode,
+            max_diff: i32,
+        ) {
             let random_point_x = rand::rng().random_range(0..image_width);
             let random_point_y = rand::rng().random_range(0..image_height);
 
@@ -1813,11 +1809,20 @@ mod tests {
                 );
             }
         }
-        matrix(YuvConversionMode::Balanced, 80);
+
+        let random_width = rand::rng().random_range(1..256);
+        let random_height = rand::rng().random_range(1..256);
+
+        matrix(random_width, random_height, YuvConversionMode::Balanced, 80);
         #[cfg(feature = "fast_mode")]
-        matrix(YuvConversionMode::Fast, 80);
+        matrix(random_width, random_height, YuvConversionMode::Fast, 80);
         #[cfg(feature = "professional_mode")]
-        matrix(YuvConversionMode::Professional, 72);
+        matrix(
+            random_width,
+            random_height,
+            YuvConversionMode::Professional,
+            72,
+        );
     }
 
     #[test]
