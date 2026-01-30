@@ -1,0 +1,14 @@
+{
+  "min_sdk_version": "29",
+  "run_cargo": false,
+  "module_name_overrides": {
+    "libnix": "libnix_0_30_1",
+    "external_rust_crates_nix_license": "external_rust_crates_nix-0.30.1_license"
+  },
+  "package": {
+    "nix": {
+      "add_module_block": "module_block.bp.fragment"
+    }
+  },
+  "recovery_available": true
+}
