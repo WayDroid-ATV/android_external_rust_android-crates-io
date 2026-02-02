@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/subtle"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/subtle/subtle-2.6.1.crate"
+    type: "crates.io"
+    value: "subtle"
     version: "2.6.1"
   }
 }
