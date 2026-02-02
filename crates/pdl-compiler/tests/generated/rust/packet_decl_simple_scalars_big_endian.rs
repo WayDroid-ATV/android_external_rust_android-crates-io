@@ -41,6 +41,11 @@ impl Foo {
         self.z
     }
 }
+impl Default for Foo {
+    fn default() -> Foo {
+        Foo { x: 0, y: 0, z: 0 }
+    }
+}
 impl Packet for Foo {
     fn encoded_len(&self) -> usize {
         6

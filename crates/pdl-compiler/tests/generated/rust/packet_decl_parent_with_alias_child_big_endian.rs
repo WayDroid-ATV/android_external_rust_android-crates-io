@@ -32,6 +32,11 @@ pub enum Enum8 {
     B = 0x1,
     C = 0x2,
 }
+impl Default for Enum8 {
+    fn default() -> Enum8 {
+        Enum8::A
+    }
+}
 impl TryFrom<u8> for Enum8 {
     type Error = u8;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
@@ -93,11 +98,12 @@ pub struct Parent {
     pub v: Enum8,
     pub payload: Vec<u8>,
 }
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ParentChild {
     AliasChild(AliasChild),
     NormalChild(NormalChild),
+    #[default]
     None,
 }
 impl Parent {
@@ -115,6 +121,14 @@ impl Parent {
     }
     pub fn v(&self) -> Enum8 {
         self.v
+    }
+}
+impl Default for Parent {
+    fn default() -> Parent {
+        Parent {
+            v: Default::default(),
+            payload: vec![],
+        }
     }
 }
 impl Packet for Parent {
@@ -178,11 +192,12 @@ impl TryFrom<Parent> for AliasChild {
         (&parent).try_into()
     }
 }
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum AliasChildChild {
     NormalGrandChild1(NormalGrandChild1),
     NormalGrandChild2(NormalGrandChild2),
+    #[default]
     None,
 }
 impl AliasChild {
@@ -214,6 +229,14 @@ impl AliasChild {
     }
     pub fn v(&self) -> Enum8 {
         self.v
+    }
+}
+impl Default for AliasChild {
+    fn default() -> AliasChild {
+        AliasChild {
+            v: Default::default(),
+            payload: vec![],
+        }
     }
 }
 impl Packet for AliasChild {
@@ -278,6 +301,11 @@ impl NormalChild {
     }
     pub fn v(&self) -> Enum8 {
         Enum8::A
+    }
+}
+impl Default for NormalChild {
+    fn default() -> NormalChild {
+        NormalChild {}
     }
 }
 impl Packet for NormalChild {
@@ -366,6 +394,11 @@ impl NormalGrandChild1 {
     }
     pub fn v(&self) -> Enum8 {
         Enum8::B
+    }
+}
+impl Default for NormalGrandChild1 {
+    fn default() -> NormalGrandChild1 {
+        NormalGrandChild1 {}
     }
 }
 impl Packet for NormalGrandChild1 {
@@ -466,6 +499,13 @@ impl NormalGrandChild2 {
     }
     pub fn v(&self) -> Enum8 {
         Enum8::C
+    }
+}
+impl Default for NormalGrandChild2 {
+    fn default() -> NormalGrandChild2 {
+        NormalGrandChild2 {
+            payload: vec![],
+        }
     }
 }
 impl Packet for NormalGrandChild2 {

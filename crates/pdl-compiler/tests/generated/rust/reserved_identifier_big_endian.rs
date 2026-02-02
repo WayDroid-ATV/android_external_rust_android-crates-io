@@ -33,6 +33,11 @@ impl Test {
         self.r#type
     }
 }
+impl Default for Test {
+    fn default() -> Test {
+        Test { r#type: 0 }
+    }
+}
 impl Packet for Test {
     fn encoded_len(&self) -> usize {
         1

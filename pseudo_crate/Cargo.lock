@@ -190,7 +190,7 @@ dependencies = [
  "clap_complete",
  "clap_derive",
  "clap_lex",
- "codespan-reporting 0.13.1",
+ "codespan-reporting",
  "combine",
  "command-fds",
  "config",
@@ -1721,16 +1721,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7caa3f9de89ddbe2c607f4101924c5abec803763ae9534e4f4d7d8f84aa81f0"
 dependencies = [
  "cc",
-]
-
-[[package]]
-name = "codespan-reporting"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3538270d33cc669650c4b093848450d380def10c331d38c768e34cac80576e6e"
-dependencies = [
- "termcolor",
- "unicode-width 0.1.11",
 ]
 
 [[package]]
@@ -3804,7 +3794,7 @@ dependencies = [
  "libc 0.2.177",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.5.10",
+ "socket2 0.6.2",
  "system-configuration",
  "tokio",
  "tower-service",
@@ -5974,12 +5964,12 @@ dependencies = [
 
 [[package]]
 name = "pdl-compiler"
-version = "0.4.2"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d9106e8134cf4ed0d5dafb2eee25e30381449be38557c42c6b1283c096dec01"
+checksum = "57894db50b6797527462664d06d48bb1a707693966d8ea488e8c243a2de51b05"
 dependencies = [
  "argh",
- "codespan-reporting 0.11.1",
+ "codespan-reporting",
  "heck 0.4.1",
  "pest",
  "pest_derive",
@@ -6564,7 +6554,7 @@ dependencies = [
  "quinn-udp",
  "rustc-hash 2.1.1",
  "rustls",
- "socket2 0.5.10",
+ "socket2 0.6.2",
  "thiserror 2.0.16",
  "tokio",
  "tracing",
@@ -6602,7 +6592,7 @@ dependencies = [
  "cfg_aliases",
  "libc 0.2.177",
  "once_cell",
- "socket2 0.5.10",
+ "socket2 0.6.2",
  "tracing",
  "windows-sys 0.60.2",
 ]

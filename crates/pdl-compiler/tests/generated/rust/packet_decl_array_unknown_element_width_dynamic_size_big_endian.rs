@@ -33,6 +33,11 @@ impl Foo {
         &self.a
     }
 }
+impl Default for Foo {
+    fn default() -> Foo {
+        Foo { a: vec![] }
+    }
+}
 impl Packet for Foo {
     fn encoded_len(&self) -> usize {
         5 + (self.a.len() * 2)
@@ -82,6 +87,11 @@ pub struct Bar {
 impl Bar {
     pub fn x(&self) -> &Vec<Foo> {
         &self.x
+    }
+}
+impl Default for Bar {
+    fn default() -> Bar {
+        Bar { x: vec![] }
     }
 }
 impl Packet for Bar {

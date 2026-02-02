@@ -31,6 +31,11 @@ pub enum Enum16 {
     A = 0x1,
     B = 0x2,
 }
+impl Default for Enum16 {
+    fn default() -> Enum16 {
+        Enum16::A
+    }
+}
 impl TryFrom<u16> for Enum16 {
     type Error = u16;
     fn try_from(value: u16) -> Result<Self, Self::Error> {
@@ -81,11 +86,12 @@ pub struct Foo {
     pub b: Enum16,
     pub payload: Vec<u8>,
 }
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum FooChild {
     Bar(Bar),
     Baz(Baz),
+    #[default]
     None,
 }
 impl Foo {
@@ -106,6 +112,15 @@ impl Foo {
     }
     pub fn b(&self) -> Enum16 {
         self.b
+    }
+}
+impl Default for Foo {
+    fn default() -> Foo {
+        Foo {
+            a: 0,
+            b: Default::default(),
+            payload: vec![],
+        }
     }
 }
 impl Packet for Foo {
@@ -245,6 +260,11 @@ impl Bar {
         100
     }
 }
+impl Default for Bar {
+    fn default() -> Bar {
+        Bar { x: 0, b: Default::default() }
+    }
+}
 impl Packet for Bar {
     fn encoded_len(&self) -> usize {
         5
@@ -343,6 +363,11 @@ impl Baz {
     }
     pub fn b(&self) -> Enum16 {
         Enum16::B
+    }
+}
+impl Default for Baz {
+    fn default() -> Baz {
+        Baz { y: 0, a: 0 }
     }
 }
 impl Packet for Baz {

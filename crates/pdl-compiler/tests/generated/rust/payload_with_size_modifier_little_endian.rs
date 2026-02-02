@@ -33,6 +33,11 @@ impl Test {
         &self.payload
     }
 }
+impl Default for Test {
+    fn default() -> Test {
+        Test { payload: vec![] }
+    }
+}
 impl Packet for Test {
     fn encoded_len(&self) -> usize {
         1 + self.payload.len()

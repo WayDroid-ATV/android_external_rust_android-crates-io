@@ -30,6 +30,11 @@ impl<T: std::fmt::Debug> std::fmt::Debug for Private<T> {
 pub enum Enum8 {
     A = 0x0,
 }
+impl Default for Enum8 {
+    fn default() -> Enum8 {
+        Enum8::A
+    }
+}
 impl TryFrom<u8> for Enum8 {
     type Error = u8;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
@@ -86,10 +91,11 @@ impl From<Enum8> for u64 {
 pub struct Parent {
     pub v: Enum8,
 }
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ParentChild {
     Child(Child),
+    #[default]
     None,
 }
 impl Parent {
@@ -103,6 +109,11 @@ impl Parent {
     }
     pub fn v(&self) -> Enum8 {
         self.v
+    }
+}
+impl Default for Parent {
+    fn default() -> Parent {
+        Parent { v: Default::default() }
     }
 }
 impl Packet for Parent {
@@ -173,6 +184,11 @@ impl Child {
     }
     pub fn v(&self) -> Enum8 {
         Enum8::A
+    }
+}
+impl Default for Child {
+    fn default() -> Child {
+        Child {}
     }
 }
 impl Packet for Child {

@@ -33,6 +33,11 @@ impl Foo {
         self.b
     }
 }
+impl Default for Foo {
+    fn default() -> Foo {
+        Foo { b: 0 }
+    }
+}
 impl Packet for Foo {
     fn encoded_len(&self) -> usize {
         8

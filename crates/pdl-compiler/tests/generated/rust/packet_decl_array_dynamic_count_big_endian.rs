@@ -37,6 +37,11 @@ impl Foo {
         &self.x
     }
 }
+impl Default for Foo {
+    fn default() -> Foo {
+        Foo { padding: 0, x: vec![] }
+    }
+}
 impl Packet for Foo {
     fn encoded_len(&self) -> usize {
         1 + (self.x.len() * 3)
