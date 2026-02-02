@@ -10,8 +10,8 @@ third_party {
   }
   homepage: "https://crates.io/crates/rand_xorshift"
   identifier {
-    type: "Archive"
-    value: "https://static.crates.io/crates/rand_xorshift/rand_xorshift-0.3.0.crate"
+    type: "crates.io"
+    value: "rand_xorshift"
     version: "0.3.0"
   }
 }

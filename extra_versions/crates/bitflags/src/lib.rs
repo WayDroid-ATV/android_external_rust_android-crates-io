@@ -275,8 +275,7 @@
 //!
 //! Users should generally avoid defining a flag with a value of zero.
 
-// ANDROID: Use std to allow building as a dylib.
-#![cfg_attr(not(any(test, android_dylib)), no_std)]
+#![cfg_attr(not(test), no_std)]
 #![doc(html_root_url = "https://docs.rs/bitflags/1.3.2")]
 
 #[doc(hidden)]
