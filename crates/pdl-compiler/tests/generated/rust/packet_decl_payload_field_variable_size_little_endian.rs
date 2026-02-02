@@ -41,6 +41,11 @@ impl Foo {
         self.b
     }
 }
+impl Default for Foo {
+    fn default() -> Foo {
+        Foo { a: 0, b: 0, payload: vec![] }
+    }
+}
 impl Packet for Foo {
     fn encoded_len(&self) -> usize {
         4 + self.payload.len()

@@ -33,6 +33,11 @@ impl Foo {
         &self.inner
     }
 }
+impl Default for Foo {
+    fn default() -> Foo {
+        Foo { inner: vec![] }
+    }
+}
 impl Packet for Foo {
     fn encoded_len(&self) -> usize {
         self.inner.len()
@@ -63,6 +68,14 @@ impl Bar {
     }
     pub fn x(&self) -> &[Foo; 1] {
         &self.x
+    }
+}
+impl Default for Bar {
+    fn default() -> Bar {
+        Bar {
+            padding: 0,
+            x: std::array::from_fn(|_| Default::default()),
+        }
     }
 }
 impl Packet for Bar {

@@ -31,6 +31,11 @@ pub enum Foo {
     FooBar = 0x1,
     Baz = 0x2,
 }
+impl Default for Foo {
+    fn default() -> Foo {
+        Foo::FooBar
+    }
+}
 impl TryFrom<u32> for Foo {
     type Error = u32;
     fn try_from(value: u32) -> Result<Self, Self::Error> {
@@ -77,6 +82,13 @@ pub struct Bar {
 impl Bar {
     pub fn x(&self) -> &[Foo; 5] {
         &self.x
+    }
+}
+impl Default for Bar {
+    fn default() -> Bar {
+        Bar {
+            x: std::array::from_fn(|_| Default::default()),
+        }
     }
 }
 impl Packet for Bar {

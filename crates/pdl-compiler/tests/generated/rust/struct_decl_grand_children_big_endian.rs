@@ -31,6 +31,11 @@ pub enum Enum16 {
     A = 0x1,
     B = 0x2,
 }
+impl Default for Enum16 {
+    fn default() -> Enum16 {
+        Enum16::A
+    }
+}
 impl TryFrom<u16> for Enum16 {
     type Error = u16;
     fn try_from(value: u16) -> Result<Self, Self::Error> {
@@ -82,10 +87,11 @@ pub struct Parent {
     pub baz: Enum16,
     pub payload: Vec<u8>,
 }
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ParentChild {
     Child(Child),
+    #[default]
     None,
 }
 impl Parent {
@@ -112,6 +118,16 @@ impl Parent {
     }
     pub fn baz(&self) -> Enum16 {
         self.baz
+    }
+}
+impl Default for Parent {
+    fn default() -> Parent {
+        Parent {
+            foo: Default::default(),
+            bar: Default::default(),
+            baz: Default::default(),
+            payload: vec![],
+        }
     }
 }
 impl Packet for Parent {
@@ -237,10 +253,11 @@ impl TryFrom<Parent> for Child {
         (&parent).try_into()
     }
 }
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ChildChild {
     GrandChild(GrandChild),
+    #[default]
     None,
 }
 impl Child {
@@ -311,6 +328,16 @@ impl Child {
     }
     pub fn foo(&self) -> Enum16 {
         Enum16::A
+    }
+}
+impl Default for Child {
+    fn default() -> Child {
+        Child {
+            quux: Default::default(),
+            bar: Default::default(),
+            baz: Default::default(),
+            payload: vec![],
+        }
     }
 }
 impl Packet for Child {
@@ -400,10 +427,11 @@ impl TryFrom<Parent> for GrandChild {
         (&packet).try_into()
     }
 }
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum GrandChildChild {
     GrandGrandChild(GrandGrandChild),
+    #[default]
     None,
 }
 impl GrandChild {
@@ -460,6 +488,14 @@ impl GrandChild {
     }
     pub fn bar(&self) -> Enum16 {
         Enum16::A
+    }
+}
+impl Default for GrandChild {
+    fn default() -> GrandChild {
+        GrandChild {
+            baz: Default::default(),
+            payload: vec![],
+        }
     }
 }
 impl Packet for GrandChild {
@@ -609,6 +645,11 @@ impl GrandGrandChild {
     }
     pub fn baz(&self) -> Enum16 {
         Enum16::A
+    }
+}
+impl Default for GrandGrandChild {
+    fn default() -> GrandGrandChild {
+        GrandGrandChild { payload: vec![] }
     }
 }
 impl Packet for GrandGrandChild {

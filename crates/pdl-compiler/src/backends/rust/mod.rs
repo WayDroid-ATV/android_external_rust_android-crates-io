@@ -210,6 +210,23 @@ fn constraint_value_str(fields: &[&'_ ast::Field], constraint: &ast::Constraint)
     }
 }
 
+/// Return the default value for a field.
+/// Only concrete data fields are considered for inclusion,
+/// other kinds will yield an unreachable! error.
+fn data_field_default(field: &ast::Field) -> proc_macro2::TokenStream {
+    match &field.desc {
+        _ if field.cond.is_some() => quote! { None },
+        ast::FieldDesc::Scalar { .. } => quote! { 0 },
+        ast::FieldDesc::Typedef { .. } => quote! { Default::default() },
+        ast::FieldDesc::Array { width: Some(_), size: Some(size), .. } => quote! { [0; #size] },
+        ast::FieldDesc::Array { size: Some(_), .. } => {
+            quote! { std::array::from_fn(|_| Default::default()) }
+        }
+        ast::FieldDesc::Array { .. } => quote! { vec![] },
+        _ => unreachable!(),
+    }
+}
+
 fn implements_copy(scope: &analyzer::Scope<'_>, field: &ast::Field) -> bool {
     match &field.desc {
         ast::FieldDesc::Scalar { .. } => true,
@@ -454,7 +471,10 @@ fn generate_root_packet_decl(
             }
         })
         .collect::<Vec<_>>();
+    let data_field_defaults =
+        data_fields.iter().copied().map(data_field_default).collect::<Vec<_>>();
     let payload_field = decl.payload().map(|_| quote! { pub payload: Vec<u8>, });
+    let payload_default = decl.payload().map(|_| quote! { payload: vec![], });
     let payload_accessor =
         decl.payload().map(|_| quote! { pub fn payload(&self) -> &[u8] { &self.payload } });
 
@@ -509,14 +529,30 @@ fn generate_root_packet_decl(
     let child_struct = (!children_decl.is_empty()).then(|| {
         let children_ids = children_decl.iter().map(|decl| decl.id().unwrap().to_ident());
         quote! {
-            #[derive(Debug, Clone, PartialEq, Eq)]
+            #[derive(Default, Debug, Clone, PartialEq, Eq)]
             #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
             pub enum #child_name {
                 #( #children_ids(#children_ids), )*
+                #[default]
                 None,
             }
         }
     });
+
+    // Provide the implementation of the default trait.
+    // #[derive(Default)] unfortunately does not support fixed sized arrays of length larger
+    // than 32, which forces us to write a manual implementation.
+    // https://github.com/rust-lang/rust/issues/61415
+    let default_impl = quote! {
+        impl Default for #name {
+            fn default() -> #name {
+                #name {
+                    #( #data_field_ids: #data_field_defaults, )*
+                    #payload_default
+                }
+            }
+        }
+    };
 
     // Provide the implementation of the specialization function.
     // The specialization function is only provided for declarations that have
@@ -544,6 +580,8 @@ fn generate_root_packet_decl(
             }
             )*
         }
+
+        #default_impl
 
         impl Packet for #name {
             #encoded_len
@@ -593,7 +631,10 @@ fn generate_derived_packet_decl(
             }
         })
         .collect::<Vec<_>>();
+    let data_field_defaults =
+        data_fields.iter().copied().map(data_field_default).collect::<Vec<_>>();
     let payload_field = decl.payload().map(|_| quote! { pub payload: Vec<u8>, });
+    let payload_default = decl.payload().map(|_| quote! { payload: vec![], });
     let payload_accessor =
         decl.payload().map(|_| quote! { pub fn payload(&self) -> &[u8] { &self.payload } });
 
@@ -849,10 +890,11 @@ fn generate_derived_packet_decl(
     let child_struct = (!children_decl.is_empty()).then(|| {
         let children_ids = children_decl.iter().map(|decl| decl.id().unwrap().to_ident());
         quote! {
-            #[derive(Debug, Clone, PartialEq, Eq)]
+            #[derive(Default, Debug, Clone, PartialEq, Eq)]
             #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
             pub enum #child_name {
                 #( #children_ids(#children_ids), )*
+                #[default]
                 None,
             }
         }
@@ -863,6 +905,21 @@ fn generate_derived_packet_decl(
     // child packets.
     let specialize = (!children_decl.is_empty())
         .then(|| generate_specialize_impl(scope, schema, decl, id, &data_fields).unwrap());
+
+    // Provide the implementation of the default trait.
+    // #[derive(Default)] unfortunately does not support fixed sized arrays of length larger
+    // than 32, which forces us to write a manual implementation.
+    // https://github.com/rust-lang/rust/issues/61415
+    let default_impl = quote! {
+        impl Default for #name {
+            fn default() -> #name {
+                #name {
+                    #( #data_field_ids: #data_field_defaults, )*
+                    #payload_default
+                }
+            }
+        }
+    };
 
     quote! {
         #[derive(Debug, Clone, PartialEq, Eq)]
@@ -897,6 +954,8 @@ fn generate_derived_packet_decl(
             }
             )*
         }
+
+        #default_impl
 
         impl Packet for #name {
             #encoded_len
@@ -1003,6 +1062,27 @@ fn generate_enum_decl(id: &str, tags: &[ast::Tag], width: usize) -> proc_macro2:
         }
     }
 
+    // Generate the default enum value.
+    // The default value is the first tag of the enum.
+    // If the first tag identifies a range, then the first value
+    // of the range is used.
+    let default_value = match &tags[0] {
+        ast::Tag::Value(ast::TagValue { id, .. }) => {
+            let id = format_tag_ident(id);
+            quote! { #name::#id }
+        }
+        ast::Tag::Range(ast::TagRange { tags, .. }) if !tags.is_empty() => {
+            let id = format_tag_ident(&tags[0].id);
+            quote! { #name::#id }
+        }
+        ast::Tag::Range(ast::TagRange { id, range, .. }) => {
+            let id = format_tag_ident(id);
+            let value = format_value(*range.start());
+            quote! { #name::#id(Private(#value)) }
+        }
+        ast::Tag::Other(_) => todo!(),
+    };
+
     // Generate the cases for parsing the enum value from an integer.
     let mut from_cases = vec![];
     for tag in tags.iter() {
@@ -1085,6 +1165,12 @@ fn generate_enum_decl(id: &str, tags: &[ast::Tag], width: usize) -> proc_macro2:
             #(#variants,)*
         }
 
+        impl Default for #name {
+            fn default() -> #name {
+                #default_value
+            }
+        }
+
         impl TryFrom<#backing_type> for #name {
             type Error = #backing_type;
             fn try_from(value: #backing_type) -> Result<Self, Self::Error> {
@@ -1129,7 +1215,6 @@ fn generate_custom_field_decl(
     let id = id.to_ident();
     let backing_type = types::Integer::new(width);
     let backing_type_str = proc_macro2::Literal::string(&format!("u{}", backing_type.width));
-    let max_value = mask_bits(width, &format!("u{}", backing_type.width));
     let size = proc_macro2::Literal::usize_unsuffixed(width / 8);
 
     let read_value = types::get_uint(endianness, width, &format_ident!("buf"));
@@ -1186,7 +1271,7 @@ fn generate_custom_field_decl(
 
     if backing_type.width == width {
         quote! {
-            #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
+            #[derive(Default, Debug, Clone, Copy, Hash, Eq, PartialEq)]
             #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
             #[cfg_attr(feature = "serde", serde(from = #backing_type_str, into = #backing_type_str))]
             pub struct #id(#backing_type);
@@ -1200,8 +1285,9 @@ fn generate_custom_field_decl(
             }
         }
     } else {
+        let max_value = mask_bits(width, &format!("u{}", backing_type.width));
         quote! {
-            #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
+            #[derive(Default, Debug, Clone, Copy, Hash, Eq, PartialEq)]
             #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
             #[cfg_attr(feature = "serde", serde(try_from = #backing_type_str, into = #backing_type_str))]
             pub struct #id(#backing_type);
@@ -1666,12 +1752,14 @@ mod tests {
     test_pdl!(
         packet_decl_custom_field,
         r#"
-          custom_field Bar1 : 24 "exact"
-          custom_field Bar2 : 32 "truncated"
+          custom_field Bar1 : 24 "truncated"
+          custom_field Bar2 : 32 "exact"
+          custom_field Bar3 : 64 "maximum width"
 
           packet Foo {
             a: Bar1,
             b: Bar2,
+            c: Bar3,
           }
         "#
     );

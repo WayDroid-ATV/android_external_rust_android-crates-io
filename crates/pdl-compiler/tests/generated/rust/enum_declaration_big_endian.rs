@@ -31,6 +31,11 @@ pub enum IncompleteTruncatedClosed {
     A = 0x0,
     B = 0x1,
 }
+impl Default for IncompleteTruncatedClosed {
+    fn default() -> IncompleteTruncatedClosed {
+        IncompleteTruncatedClosed::A
+    }
+}
 impl TryFrom<u8> for IncompleteTruncatedClosed {
     type Error = u8;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
@@ -96,6 +101,11 @@ pub enum IncompleteTruncatedOpen {
     A,
     B,
     Unknown(Private<u8>),
+}
+impl Default for IncompleteTruncatedOpen {
+    fn default() -> IncompleteTruncatedOpen {
+        IncompleteTruncatedOpen::A
+    }
 }
 impl TryFrom<u8> for IncompleteTruncatedOpen {
     type Error = u8;
@@ -165,6 +175,11 @@ pub enum IncompleteTruncatedClosedWithRange {
     X,
     Y,
     B(Private<u8>),
+}
+impl Default for IncompleteTruncatedClosedWithRange {
+    fn default() -> IncompleteTruncatedClosedWithRange {
+        IncompleteTruncatedClosedWithRange::A
+    }
 }
 impl TryFrom<u8> for IncompleteTruncatedClosedWithRange {
     type Error = u8;
@@ -237,6 +252,11 @@ pub enum IncompleteTruncatedOpenWithRange {
     Y,
     B(Private<u8>),
     Unknown(Private<u8>),
+}
+impl Default for IncompleteTruncatedOpenWithRange {
+    fn default() -> IncompleteTruncatedOpenWithRange {
+        IncompleteTruncatedOpenWithRange::A
+    }
 }
 impl TryFrom<u8> for IncompleteTruncatedOpenWithRange {
     type Error = u8;
@@ -315,6 +335,11 @@ pub enum CompleteTruncated {
     F = 0x5,
     G = 0x6,
     H = 0x7,
+}
+impl Default for CompleteTruncated {
+    fn default() -> CompleteTruncated {
+        CompleteTruncated::A
+    }
 }
 impl TryFrom<u8> for CompleteTruncated {
     type Error = u8;
@@ -395,6 +420,11 @@ pub enum CompleteTruncatedWithRange {
     Y,
     B(Private<u8>),
 }
+impl Default for CompleteTruncatedWithRange {
+    fn default() -> CompleteTruncatedWithRange {
+        CompleteTruncatedWithRange::A
+    }
+}
 impl TryFrom<u8> for CompleteTruncatedWithRange {
     type Error = u8;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
@@ -464,6 +494,11 @@ pub enum CompleteWithRange {
     A,
     B,
     C(Private<u8>),
+}
+impl Default for CompleteWithRange {
+    fn default() -> CompleteWithRange {
+        CompleteWithRange::A
+    }
 }
 impl TryFrom<u8> for CompleteWithRange {
     type Error = u8;

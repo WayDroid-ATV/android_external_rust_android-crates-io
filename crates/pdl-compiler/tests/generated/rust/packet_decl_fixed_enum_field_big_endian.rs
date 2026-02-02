@@ -31,6 +31,11 @@ pub enum Enum7 {
     A = 0x1,
     B = 0x2,
 }
+impl Default for Enum7 {
+    fn default() -> Enum7 {
+        Enum7::A
+    }
+}
 impl TryFrom<u8> for Enum7 {
     type Error = u8;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
@@ -97,6 +102,11 @@ pub struct Foo {
 impl Foo {
     pub fn b(&self) -> u64 {
         self.b
+    }
+}
+impl Default for Foo {
+    fn default() -> Foo {
+        Foo { b: 0 }
     }
 }
 impl Packet for Foo {
