@@ -1,16 +1,4 @@
-#![warn(
-    clippy::default_trait_access,
-    clippy::dbg_macro,
-    clippy::print_stdout,
-    clippy::unimplemented,
-    clippy::use_self,
-    missing_copy_implementations,
-    missing_docs,
-    non_snake_case,
-    non_upper_case_globals,
-    rust_2018_idioms,
-    unreachable_pub
-)]
+//! Snake Case unit tests for enum_as_inner crate
 
 use enum_as_inner::EnumAsInner;
 
@@ -26,7 +14,7 @@ pub mod name_collisions {
 #[allow(unused_imports)]
 use name_collisions::*;
 
-#[derive(Debug, EnumAsInner)]
+#[derive(Debug, EnumAsInner, Copy, Clone)]
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
 enum MixedCaseVariants {
@@ -54,6 +42,11 @@ fn test_rust_unnamed() {
 
     assert_eq!(*mixed.as_rust_is_cool_though().unwrap(), 42);
     assert_eq!(mixed.into_rust_is_cool_though().unwrap(), 42);
+
+    unsafe {
+        assert_eq!(*mixed.as_rust_is_cool_though_unchecked(), 42);
+        assert_eq!(mixed.into_rust_is_cool_though_unchecked(), 42);
+    }
 }
 
 #[test]
@@ -66,4 +59,9 @@ fn test_ymca_named() {
 
     assert_eq!(*mixed.as_ymca().unwrap(), (-32_768));
     assert_eq!(mixed.into_ymca().unwrap(), (-32_768));
+
+    unsafe {
+        assert_eq!(*mixed.as_ymca_unchecked(), (-32_768));
+        assert_eq!(mixed.into_ymca_unchecked(), (-32_768));
+    }
 }

@@ -1,16 +1,4 @@
-#![warn(
-    clippy::default_trait_access,
-    clippy::dbg_macro,
-    clippy::print_stdout,
-    clippy::unimplemented,
-    clippy::use_self,
-    missing_copy_implementations,
-    missing_docs,
-    non_snake_case,
-    non_upper_case_globals,
-    rust_2018_idioms,
-    unreachable_pub
-)]
+//! Generic unit tests for enum_as_inner crate.
 
 use enum_as_inner::EnumAsInner;
 
@@ -46,6 +34,11 @@ fn with_generics() {
     assert_eq!(with_generics.into_a().unwrap(), 100);
     assert_eq!(*with_generics.as_a().unwrap(), 100);
     assert_eq!(*with_generics.as_a_mut().unwrap(), 100);
+    unsafe {
+        assert_eq!(with_generics.into_a_unchecked(), 100);
+        assert_eq!(*with_generics.as_a_unchecked(), 100);
+        assert_eq!(*with_generics.as_a_mut_unchecked(), 100);
+    }
 
     assert!(with_generics.into_b().is_err());
     assert!(with_generics.as_b().is_none());

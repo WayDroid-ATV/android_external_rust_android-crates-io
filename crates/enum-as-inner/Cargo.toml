@@ -12,9 +12,10 @@
 [package]
 edition = "2018"
 name = "enum-as-inner"
-version = "0.6.1"
+version = "0.7.0"
 authors = ["Benjamin Fry <benjaminfry@me.com>"]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -67,3 +68,18 @@ version = "1.0"
 
 [dependencies.syn]
 version = "2.0"
+
+[lints.clippy]
+dbg_macro = "warn"
+default_trait_access = "warn"
+print_stdout = "warn"
+unimplemented = "warn"
+use_self = "warn"
+
+[lints.rust]
+missing_copy_implementations = "warn"
+missing_docs = "warn"
+non_snake_case = "warn"
+non_upper_case_globals = "warn"
+rust_2018_idioms = "warn"
+unreachable_pub = "warn"
