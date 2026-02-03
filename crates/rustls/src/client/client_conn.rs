@@ -6,7 +6,7 @@ use core::{fmt, mem};
 use pki_types::{ServerName, UnixTime};
 
 use super::handy::NoClientSessionStorage;
-use super::hs;
+use super::hs::{self, ClientHelloInput};
 #[cfg(feature = "std")]
 use crate::WantsVerifier;
 use crate::builder::ConfigBuilder;
@@ -19,7 +19,7 @@ use crate::error::Error;
 use crate::kernel::KernelConnection;
 use crate::log::trace;
 use crate::msgs::enums::NamedGroup;
-use crate::msgs::handshake::ClientExtension;
+use crate::msgs::handshake::ClientExtensionsInput;
 use crate::msgs::persist;
 use crate::suites::{ExtractedSecrets, SupportedCipherSuite};
 use crate::sync::Arc;
@@ -313,9 +313,9 @@ impl ClientConfig {
         // Safety assumptions:
         // 1. that the provider has been installed (explicitly or implicitly)
         // 2. that the process-level default provider is usable with the supplied protocol versions.
-        Self::builder_with_provider(Arc::clone(
-            CryptoProvider::get_default_or_install_from_crate_features(),
-        ))
+        Self::builder_with_provider(
+            CryptoProvider::get_default_or_install_from_crate_features().clone(),
+        )
         .with_protocol_versions(versions)
         .unwrap()
     }
@@ -395,6 +395,10 @@ impl ClientConfig {
     /// extra care.
     pub fn dangerous(&mut self) -> danger::DangerousClientConfig<'_> {
         danger::DangerousClientConfig { cfg: self }
+    }
+
+    pub(super) fn needs_key_share(&self) -> bool {
+        self.supports_version(ProtocolVersion::TLSv1_3)
     }
 
     /// We support a given TLS version if it's quoted in the configured
@@ -634,7 +638,7 @@ mod connection {
 
     use pki_types::ServerName;
 
-    use super::ClientConnectionData;
+    use super::{ClientConnectionData, ClientExtensionsInput};
     use crate::ClientConfig;
     use crate::client::EchStatus;
     use crate::common_state::Protocol;
@@ -703,7 +707,7 @@ mod connection {
         /// we behave in the TLS protocol, `name` is the
         /// name of the server we want to talk to.
         pub fn new(config: Arc<ClientConfig>, name: ServerName<'static>) -> Result<Self, Error> {
-            Self::new_with_alpn(Arc::clone(&config), name, config.alpn_protocols.clone())
+            Self::new_with_alpn(config.clone(), name, config.alpn_protocols.clone())
         }
 
         /// Make a new ClientConnection with custom ALPN protocols.
@@ -716,8 +720,7 @@ mod connection {
                 inner: ConnectionCommon::from(ConnectionCore::for_client(
                     config,
                     name,
-                    alpn_protocols,
-                    Vec::new(),
+                    ClientExtensionsInput::from_alpn(alpn_protocols),
                     Protocol::Tcp,
                 )?),
             })
@@ -772,6 +775,11 @@ mod connection {
         /// Return the connection's Encrypted Client Hello (ECH) status.
         pub fn ech_status(&self) -> EchStatus {
             self.inner.core.data.ech_status
+        }
+
+        /// Returns the number of TLS1.3 tickets that have been received.
+        pub fn tls13_tickets_received(&self) -> u32 {
+            self.inner.tls13_tickets_received
         }
 
         /// Return true if the connection was made with a `ClientConfig` that is FIPS compatible.
@@ -836,8 +844,7 @@ impl ConnectionCore<ClientConnectionData> {
     pub(crate) fn for_client(
         config: Arc<ClientConfig>,
         name: ServerName<'static>,
-        alpn_protocols: Vec<Vec<u8>>,
-        extra_exts: Vec<ClientExtension>,
+        extra_exts: ClientExtensionsInput<'static>,
         proto: Protocol,
     ) -> Result<Self, Error> {
         let mut common_state = CommonState::new(Side::Client);
@@ -854,7 +861,8 @@ impl ConnectionCore<ClientConnectionData> {
             sendable_plaintext: None,
         };
 
-        let state = hs::start_handshake(name, alpn_protocols, extra_exts, config, &mut cx)?;
+        let input = ClientHelloInput::new(name, &extra_exts, &mut cx, config)?;
+        let state = input.start_handshake(extra_exts, &mut cx)?;
         Ok(Self::new(state, data, common_state))
     }
 
@@ -875,7 +883,11 @@ impl UnbufferedClientConnection {
     /// Make a new ClientConnection. `config` controls how we behave in the TLS protocol, `name` is
     /// the name of the server we want to talk to.
     pub fn new(config: Arc<ClientConfig>, name: ServerName<'static>) -> Result<Self, Error> {
-        Self::new_with_alpn(Arc::clone(&config), name, config.alpn_protocols.clone())
+        Self::new_with_extensions(
+            config.clone(),
+            name,
+            ClientExtensionsInput::from_alpn(config.alpn_protocols.clone()),
+        )
     }
 
     /// Make a new UnbufferedClientConnection with custom ALPN protocols.
@@ -884,12 +896,23 @@ impl UnbufferedClientConnection {
         name: ServerName<'static>,
         alpn_protocols: Vec<Vec<u8>>,
     ) -> Result<Self, Error> {
+        Self::new_with_extensions(
+            config,
+            name,
+            ClientExtensionsInput::from_alpn(alpn_protocols),
+        )
+    }
+
+    fn new_with_extensions(
+        config: Arc<ClientConfig>,
+        name: ServerName<'static>,
+        extensions: ClientExtensionsInput<'static>,
+    ) -> Result<Self, Error> {
         Ok(Self {
             inner: UnbufferedConnectionCommon::from(ConnectionCore::for_client(
                 config,
                 name,
-                alpn_protocols,
-                Vec::new(),
+                extensions,
                 Protocol::Tcp,
             )?),
         })
@@ -918,6 +941,11 @@ impl UnbufferedClientConnection {
         self.inner
             .core
             .dangerous_into_kernel_connection()
+    }
+
+    /// Returns the number of TLS1.3 tickets that have been received.
+    pub fn tls13_tickets_received(&self) -> u32 {
+        self.inner.tls13_tickets_received
     }
 }
 

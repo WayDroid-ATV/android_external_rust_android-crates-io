@@ -30,7 +30,7 @@ pub(crate) mod hmac;
 pub(crate) mod kx;
 #[path = "../ring/quic.rs"]
 pub(crate) mod quic;
-#[cfg(any(feature = "std", feature = "hashbrown"))]
+#[cfg(feature = "std")]
 pub(crate) mod ticketer;
 #[cfg(feature = "tls12")]
 pub(crate) mod tls12;
@@ -157,8 +157,10 @@ static SUPPORTED_SIG_ALGS: WebPkiSupportedAlgorithms = WebPkiSupportedAlgorithms
     all: &[
         webpki_algs::ECDSA_P256_SHA256,
         webpki_algs::ECDSA_P256_SHA384,
+        webpki_algs::ECDSA_P256_SHA512,
         webpki_algs::ECDSA_P384_SHA256,
         webpki_algs::ECDSA_P384_SHA384,
+        webpki_algs::ECDSA_P384_SHA512,
         webpki_algs::ECDSA_P521_SHA256,
         webpki_algs::ECDSA_P521_SHA384,
         webpki_algs::ECDSA_P521_SHA512,
@@ -169,7 +171,9 @@ static SUPPORTED_SIG_ALGS: WebPkiSupportedAlgorithms = WebPkiSupportedAlgorithms
         webpki_algs::RSA_PKCS1_2048_8192_SHA256,
         webpki_algs::RSA_PKCS1_2048_8192_SHA384,
         webpki_algs::RSA_PKCS1_2048_8192_SHA512,
-        webpki_algs::RSA_PKCS1_3072_8192_SHA384,
+        webpki_algs::RSA_PKCS1_2048_8192_SHA256_ABSENT_PARAMS,
+        webpki_algs::RSA_PKCS1_2048_8192_SHA384_ABSENT_PARAMS,
+        webpki_algs::RSA_PKCS1_2048_8192_SHA512_ABSENT_PARAMS,
     ],
     mapping: &[
         // Note: for TLS1.2 the curve is not fixed by SignatureScheme. For TLS1.3 it is.
@@ -191,7 +195,11 @@ static SUPPORTED_SIG_ALGS: WebPkiSupportedAlgorithms = WebPkiSupportedAlgorithms
         ),
         (
             SignatureScheme::ECDSA_NISTP521_SHA512,
-            &[webpki_algs::ECDSA_P521_SHA512],
+            &[
+                webpki_algs::ECDSA_P521_SHA512,
+                webpki_algs::ECDSA_P384_SHA512,
+                webpki_algs::ECDSA_P256_SHA512,
+            ],
         ),
         (SignatureScheme::ED25519, &[webpki_algs::ED25519]),
         (
@@ -246,7 +254,7 @@ pub static ALL_KX_GROUPS: &[&dyn SupportedKxGroup] = &[
     kx_group::SECP384R1,
 ];
 
-#[cfg(any(feature = "std", feature = "hashbrown"))]
+#[cfg(feature = "std")]
 pub use ticketer::Ticketer;
 
 /// Compatibility shims between ring 0.16.x and 0.17.x API
@@ -282,6 +290,8 @@ pub(super) fn unspecified_err(_e: aws_lc_rs::error::Unspecified) -> Error {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
+
     #[cfg(feature = "fips")]
     #[test]
     fn default_suites_are_fips() {
@@ -296,5 +306,26 @@ mod tests {
     #[test]
     fn default_suites() {
         assert_eq!(super::DEFAULT_CIPHER_SUITES, super::ALL_CIPHER_SUITES);
+    }
+
+    #[test]
+    fn certificate_sig_algs() {
+        // `all` should not contain duplicates (not incorrect, but a waste of time)
+        assert_eq!(
+            super::SUPPORTED_SIG_ALGS
+                .all
+                .iter()
+                .map(|alg| {
+                    (
+                        alg.public_key_alg_id()
+                            .as_ref()
+                            .to_vec(),
+                        alg.signature_alg_id().as_ref().to_vec(),
+                    )
+                })
+                .collect::<HashSet<_>>()
+                .len(),
+            super::SUPPORTED_SIG_ALGS.all.len(),
+        );
     }
 }
