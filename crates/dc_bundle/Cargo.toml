@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.68"
 name = "dc_bundle"
-version = "0.37.2"
+version = "0.38.2"
 authors = ["DesignCompose Team <aae-design-compose@google.com>"]
 build = "build.rs"
 autolib = false
@@ -49,6 +49,9 @@ version = "0.11"
 
 [dependencies.thiserror]
 version = "2.0.11"
+
+[dev-dependencies.tempfile]
+version = "3.3.0"
 
 [build-dependencies.protobuf-codegen]
 version = "=3.7.2"
