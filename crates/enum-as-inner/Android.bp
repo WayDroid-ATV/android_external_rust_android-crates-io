@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libenum_as_inner",
     crate_name: "enum_as_inner",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.6.1",
+    cargo_pkg_version: "0.7.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     rustlibs: [

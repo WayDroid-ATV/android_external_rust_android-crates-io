@@ -244,7 +244,7 @@ dependencies = [
  "dyn-clone",
  "either",
  "elf",
- "enum-as-inner",
+ "enum-as-inner 0.7.0",
  "enum-primitive-derive",
  "enumn",
  "env_filter",
@@ -2643,6 +2643,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "enum-as-inner"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0359ee92f81184d7985519e474bda2a5738476334edd3746c9b1265c067afe70"
+dependencies = [
+ "heck 0.5.0",
+ "proc-macro2 1.0.105",
+ "quote 1.0.44",
+ "syn 2.0.114",
+]
+
+[[package]]
 name = "enum-primitive-derive"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4457,7 +4469,7 @@ checksum = "04c123c0ee550cedc10474ccb5ed10da580eaf015ef48a63b72991653a3fec69"
 dependencies = [
  "base64 0.22.1",
  "bytes",
- "enum-as-inner",
+ "enum-as-inner 0.6.1",
  "enum-primitive-derive",
  "futures-executor",
  "futures-util",
