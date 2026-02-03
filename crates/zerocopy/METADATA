@@ -1,17 +1,17 @@
 name: "zerocopy"
 description: "Zerocopy makes zero-cost memory manipulation effortless. We write \"unsafe\" so you don\'t have to."
 third_party {
-  version: "0.8.34"
+  version: "0.8.37"
   license_type: NOTICE
   last_upgrade_date {
     year: 2026
-    month: 1
-    day: 27
+    month: 2
+    day: 2
   }
   homepage: "https://crates.io/crates/zerocopy"
   identifier {
     type: "crates.io"
     value: "zerocopy"
-    version: "0.8.34"
+    version: "0.8.37"
   }
 }

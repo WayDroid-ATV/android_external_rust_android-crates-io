@@ -375,7 +375,8 @@ use core::{
 #[cfg(feature = "std")]
 use std::io;
 
-use crate::pointer::invariant::{self, BecauseExclusive};
+#[doc(hidden)]
+pub use crate::pointer::invariant::{self, BecauseExclusive};
 #[doc(hidden)]
 pub use crate::pointer::PtrInner;
 pub use crate::{
@@ -887,6 +888,12 @@ pub trait PointerMetadata: Copy + Eq + Debug {
     /// `elems`. No other types are currently supported.
     fn from_elem_count(elems: usize) -> Self;
 
+    /// Converts `self` to an element count.
+    ///
+    /// If `Self = ()`, this returns `0`. If `Self = usize`, this returns
+    /// `self`. No other types are currently supported.
+    fn to_elem_count(self) -> usize;
+
     /// Computes the size of the object with the given layout and pointer
     /// metadata.
     ///
@@ -909,6 +916,11 @@ impl PointerMetadata for () {
     fn from_elem_count(_elems: usize) -> () {}
 
     #[inline]
+    fn to_elem_count(self) -> usize {
+        0
+    }
+
+    #[inline]
     fn size_for_metadata(self, layout: DstLayout) -> Option<usize> {
         match layout.size_info {
             SizeInfo::Sized { size } => Some(size),
@@ -923,6 +935,11 @@ impl PointerMetadata for usize {
     #[inline]
     fn from_elem_count(elems: usize) -> usize {
         elems
+    }
+
+    #[inline]
+    fn to_elem_count(self) -> usize {
+        self
     }
 
     #[inline]
@@ -1103,6 +1120,29 @@ const _: () = unsafe {
 pub const STRUCT_VARIANT_ID: i128 = -1;
 #[doc(hidden)]
 pub const UNION_VARIANT_ID: i128 = -2;
+#[doc(hidden)]
+pub const REPR_C_UNION_VARIANT_ID: i128 = -3;
+
+/// # Safety
+///
+/// `Self::ProjectToTag` must satisfy its safety invariant.
+#[doc(hidden)]
+pub unsafe trait HasTag {
+    fn only_derive_is_allowed_to_implement_this_trait()
+    where
+        Self: Sized;
+
+    /// The type's enum tag, or `()` for non-enum types.
+    type Tag: Immutable;
+
+    /// A pointer projection from `Self` to its tag.
+    ///
+    /// # Safety
+    ///
+    /// It must be the case that, for all `slf: Ptr<'_, Self, I>`, it is sound
+    /// to project from `slf` to `Ptr<'_, Self::Tag, I>` using this projection.
+    type ProjectToTag: pointer::cast::Project<Self, Self::Tag>;
+}
 
 /// Projects a given field from `Self`.
 ///
@@ -1114,10 +1154,13 @@ pub const UNION_VARIANT_ID: i128 = -2;
 ///
 /// A field `f` is `HasField` for `Self` if and only if:
 ///
-/// - If `Self` is a struct or union type, then `VARIANT_ID` is
+/// - If `Self` has the layout of a struct or union type, then `VARIANT_ID` is
 ///   `STRUCT_VARIANT_ID` or `UNION_VARIANT_ID` respectively; otherwise, if
-///   `Self` is an enum type, `VARIANT_ID` is the numerical index of the enum
-///   variant in which `f` appears.
+///   `Self` has the layout of an enum type, `VARIANT_ID` is the numerical index
+///   of the enum variant in which `f` appears. Note that `Self` does not need
+///   to actually *be* such a type – it just needs to have the same layout as
+///   such a type. For example, a `#[repr(transparent)]` wrapper around an enum
+///   has the same layout as that enum.
 /// - If `f` has name `n`, `FIELD_ID` is `zerocopy::ident_id!(n)`; otherwise,
 ///   if `f` is at index `i`, `FIELD_ID` is `zerocopy::ident_id!(i)`.
 /// - `Field` is a type with the same visibility as `f`.
@@ -1130,7 +1173,9 @@ pub const UNION_VARIANT_ID: i128 = -2;
 ///
 /// The implementation of `project` must satisfy its safety post-condition.
 #[doc(hidden)]
-pub unsafe trait HasField<Field, const VARIANT_ID: i128, const FIELD_ID: i128> {
+pub unsafe trait HasField<Field, const VARIANT_ID: i128, const FIELD_ID: i128>:
+    HasTag
+{
     fn only_derive_is_allowed_to_implement_this_trait()
     where
         Self: Sized;
@@ -1149,6 +1194,106 @@ pub unsafe trait HasField<Field, const VARIANT_ID: i128, const FIELD_ID: i128> {
     /// `slf`'s referent, and has the same provenance as `slf`.
     #[must_use]
     fn project(slf: PtrInner<'_, Self>) -> *mut Self::Type;
+}
+
+/// Projects a given field from `Self`.
+///
+/// Implementations of this trait encode the conditions under which a field can
+/// be projected from a `Ptr<'_, Self, I>`, and how the invariants of that
+/// [`Ptr`] (`I`) determine the invariants of pointers projected from it. In
+/// other words, it is a type-level function over invariants; `I` goes in,
+/// `Self::Invariants` comes out.
+///
+/// # Safety
+///
+/// `T: ProjectField<Field, I, VARIANT_ID, FIELD_ID>` if, for a
+/// `ptr: Ptr<'_, T, I>` such that `T::is_projectable(ptr).is_ok()`,
+/// `<T as HasField<Field, VARIANT_ID, FIELD_ID>>::project(ptr.as_inner())`
+/// conforms to `T::Invariants`.
+#[doc(hidden)]
+pub unsafe trait ProjectField<Field, I, const VARIANT_ID: i128, const FIELD_ID: i128>:
+    HasField<Field, VARIANT_ID, FIELD_ID>
+where
+    I: invariant::Invariants,
+{
+    fn only_derive_is_allowed_to_implement_this_trait()
+    where
+        Self: Sized;
+
+    /// The invariants of the projected field pointer, with respect to the
+    /// invariants, `I`, of the containing pointer. The aliasing dimension of
+    /// the invariants is guaranteed to remain unchanged.
+    type Invariants: invariant::Invariants<Aliasing = I::Aliasing>;
+
+    /// The failure mode of projection. `()` if the projection is fallible,
+    /// otherwise [`core::convert::Infallible`].
+    type Error;
+
+    /// Is the given field projectable from `ptr`?
+    ///
+    /// If a field with [`Self::Invariants`] is projectable from the referent,
+    /// this function produces an `Ok(ptr)` from which the projection can be
+    /// made; otherwise `Err`.
+    ///
+    /// This method must be overriden if the field's projectability depends on
+    /// the value of the bytes in `ptr`.
+    #[inline(always)]
+    fn is_projectable<'a>(_ptr: Ptr<'a, Self::Tag, I>) -> Result<(), Self::Error> {
+        trait IsInfallible {
+            const IS_INFALLIBLE: bool;
+        }
+
+        struct Projection<T, Field, I, const VARIANT_ID: i128, const FIELD_ID: i128>(
+            PhantomData<(Field, I, T)>,
+        )
+        where
+            T: ?Sized + HasField<Field, VARIANT_ID, FIELD_ID>,
+            I: invariant::Invariants;
+
+        impl<T, Field, I, const VARIANT_ID: i128, const FIELD_ID: i128> IsInfallible
+            for Projection<T, Field, I, VARIANT_ID, FIELD_ID>
+        where
+            T: ?Sized + HasField<Field, VARIANT_ID, FIELD_ID>,
+            I: invariant::Invariants,
+        {
+            const IS_INFALLIBLE: bool = {
+                let is_infallible = match VARIANT_ID {
+                    // For nondestructive projections of struct and union
+                    // fields, the projected field's satisfaction of
+                    // `Invariants` does not depend on the value of the
+                    // referent. This default implementation of `is_projectable`
+                    // is non-destructive, as it does not overwrite any part of
+                    // the referent.
+                    crate::STRUCT_VARIANT_ID | crate::UNION_VARIANT_ID => true,
+                    _enum_variant => {
+                        use crate::invariant::{Validity, ValidityKind};
+                        match I::Validity::KIND {
+                            // The `Uninit` and `Initialized` validity
+                            // invariants do not depend on the enum's tag. In
+                            // particular, we don't actually care about what
+                            // variant is present – we can treat *any* range of
+                            // uninitialized or initialized memory as containing
+                            // an uninitialized or initialized instance of *any*
+                            // type – the type itself is irrelevant.
+                            ValidityKind::Uninit | ValidityKind::Initialized => true,
+                            // The projectability of an enum field from an
+                            // `AsInitialized` or `Valid` state is a dynamic
+                            // property of its tag.
+                            ValidityKind::AsInitialized | ValidityKind::Valid => false,
+                        }
+                    }
+                };
+                const_assert!(is_infallible);
+                is_infallible
+            };
+        }
+
+        const_assert!(
+            <Projection<Self, Field, I, VARIANT_ID, FIELD_ID> as IsInfallible>::IS_INFALLIBLE
+        );
+
+        Ok(())
+    }
 }
 
 /// Analyzes whether a type is [`FromZeros`].
@@ -1348,14 +1493,12 @@ pub use zerocopy_derive::Immutable;
 // # Safety (Internal)
 //
 // If `T: Immutable`, unsafe code *inside of this crate* may assume that, given
-// `t: &T`, `t` does not contain any [`UnsafeCell`]s at any byte location
-// within the byte range addressed by `t`. This includes ranges of length 0
-// (e.g., `UnsafeCell<()>` and `[UnsafeCell<u8>; 0]`). If a type implements
-// `Immutable` which violates this assumptions, it may cause this crate to
-// exhibit [undefined behavior].
+// `t: &T`, `t` does not permit interior mutation of its referent. Because
+// [`UnsafeCell`] is the only type which permits interior mutation, it is
+// sufficient (though not necessary) to guarantee that `T` contains no
+// `UnsafeCell`s.
 //
 // [`UnsafeCell`]: core::cell::UnsafeCell
-// [undefined behavior]: https://raphlinus.github.io/programming/rust/2018/08/17/undefined-behavior.html
 #[cfg_attr(
     feature = "derive",
     doc = "[derive]: zerocopy_derive::Immutable",
@@ -1570,7 +1713,7 @@ pub unsafe trait TryFromBytes {
     /// [`UnsafeCell`]: core::cell::UnsafeCell
     /// [`Shared`]: invariant::Shared
     #[doc(hidden)]
-    fn is_bit_valid<A: invariant::Reference>(candidate: Maybe<'_, Self, A>) -> bool;
+    fn is_bit_valid(candidate: Maybe<'_, Self>) -> bool;
 
     /// Attempts to interpret the given `source` as a `&Self`.
     ///
@@ -1657,11 +1800,6 @@ pub unsafe trait TryFromBytes {
                 // This call may panic. If that happens, it doesn't cause any soundness
                 // issues, as we have not generated any invalid state which we need to
                 // fix before returning.
-                //
-                // Note that one panic or post-monomorphization error condition is
-                // calling `try_into_valid` (and thus `is_bit_valid`) with a shared
-                // pointer when `Self: !Immutable`. Since `Self: Immutable`, this panic
-                // condition will not happen.
                 match source.try_into_valid() {
                     Ok(valid) => Ok(valid.as_ref()),
                     Err(e) => {
@@ -1936,16 +2074,9 @@ pub unsafe trait TryFromBytes {
                 // This call may panic. If that happens, it doesn't cause any soundness
                 // issues, as we have not generated any invalid state which we need to
                 // fix before returning.
-                //
-                // Note that one panic or post-monomorphization error condition is
-                // calling `try_into_valid` (and thus `is_bit_valid`) with a shared
-                // pointer when `Self: !Immutable`. Since `Self: Immutable`, this panic
-                // condition will not happen.
                 match source.try_into_valid() {
                     Ok(source) => Ok(source.as_mut()),
-                    Err(e) => {
-                        Err(e.map_src(|src| src.as_bytes::<BecauseExclusive>().as_mut()).into())
-                    }
+                    Err(e) => Err(e.map_src(|src| src.as_bytes().as_mut()).into()),
                 }
             }
             Err(e) => Err(e.map_src(Ptr::as_mut).into()),
@@ -2231,11 +2362,6 @@ pub unsafe trait TryFromBytes {
                 // This call may panic. If that happens, it doesn't cause any soundness
                 // issues, as we have not generated any invalid state which we need to
                 // fix before returning.
-                //
-                // Note that one panic or post-monomorphization error condition is
-                // calling `try_into_valid` (and thus `is_bit_valid`) with a shared
-                // pointer when `Self: !Immutable`. Since `Self: Immutable`, this panic
-                // condition will not happen.
                 match source.try_into_valid() {
                     Ok(source) => Ok(source.as_ref()),
                     Err(e) => {
@@ -2518,16 +2644,9 @@ pub unsafe trait TryFromBytes {
                 // This call may panic. If that happens, it doesn't cause any soundness
                 // issues, as we have not generated any invalid state which we need to
                 // fix before returning.
-                //
-                // Note that one panic or post-monomorphization error condition is
-                // calling `try_into_valid` (and thus `is_bit_valid`) with a shared
-                // pointer when `Self: !Immutable`. Since `Self: Immutable`, this panic
-                // condition will not happen.
                 match source.try_into_valid() {
                     Ok(source) => Ok(source.as_mut()),
-                    Err(e) => {
-                        Err(e.map_src(|src| src.as_bytes::<BecauseExclusive>().as_mut()).into())
-                    }
+                    Err(e) => Err(e.map_src(|src| src.as_bytes().as_mut()).into()),
                 }
             }
             Err(e) => Err(e.map_src(Ptr::as_mut).into()),
@@ -2915,11 +3034,6 @@ fn try_ref_from_prefix_suffix<T: TryFromBytes + KnownLayout + Immutable + ?Sized
             // This call may panic. If that happens, it doesn't cause any soundness
             // issues, as we have not generated any invalid state which we need to
             // fix before returning.
-            //
-            // Note that one panic or post-monomorphization error condition is
-            // calling `try_into_valid` (and thus `is_bit_valid`) with a shared
-            // pointer when `Self: !Immutable`. Since `Self: Immutable`, this panic
-            // condition will not happen.
             match source.try_into_valid() {
                 Ok(valid) => Ok((valid.as_ref(), prefix_suffix.as_ref())),
                 Err(e) => Err(e.map_src(|src| src.as_bytes::<BecauseImmutable>().as_ref()).into()),
@@ -2940,14 +3054,9 @@ fn try_mut_from_prefix_suffix<T: IntoBytes + TryFromBytes + KnownLayout + ?Sized
             // This call may panic. If that happens, it doesn't cause any soundness
             // issues, as we have not generated any invalid state which we need to
             // fix before returning.
-            //
-            // Note that one panic or post-monomorphization error condition is
-            // calling `try_into_valid` (and thus `is_bit_valid`) with a shared
-            // pointer when `Self: !Immutable`. Since `Self: Immutable`, this panic
-            // condition will not happen.
             match candidate.try_into_valid() {
                 Ok(valid) => Ok((valid.as_mut(), prefix_suffix.as_mut())),
-                Err(e) => Err(e.map_src(|src| src.as_bytes::<BecauseExclusive>().as_mut()).into()),
+                Err(e) => Err(e.map_src(|src| src.as_bytes().as_mut()).into()),
             }
         }
         Err(e) => Err(e.map_src(Ptr::as_mut).into()),
@@ -2978,7 +3087,7 @@ unsafe fn try_read_from<S, T: TryFromBytes>(
     // via `c_ptr` so long as it is live, so we don't need to worry about the
     // fact that `c_ptr` may have more restricted validity than `candidate`.
     let c_ptr = unsafe { c_ptr.assume_validity::<invariant::Initialized>() };
-    let c_ptr = c_ptr.transmute();
+    let mut c_ptr = c_ptr.cast::<_, crate::pointer::cast::CastSized, _>();
 
     // Since we don't have `T: KnownLayout`, we hack around that by using
     // `Wrapping<T>`, which implements `KnownLayout` even if `T` doesn't.
@@ -2986,12 +3095,7 @@ unsafe fn try_read_from<S, T: TryFromBytes>(
     // This call may panic. If that happens, it doesn't cause any soundness
     // issues, as we have not generated any invalid state which we need to fix
     // before returning.
-    //
-    // Note that one panic or post-monomorphization error condition is calling
-    // `try_into_valid` (and thus `is_bit_valid`) with a shared pointer when
-    // `Self: !Immutable`. Since `Self: Immutable`, this panic condition will
-    // not happen.
-    if !Wrapping::<T>::is_bit_valid(c_ptr.forget_aligned()) {
+    if !Wrapping::<T>::is_bit_valid(c_ptr.reborrow_shared().forget_aligned()) {
         return Err(ValidityError::new(source).into());
     }
 
@@ -4752,7 +4856,7 @@ pub unsafe trait FromBytes: FromZeros {
         // cannot be violated even though `buf` may have more permissive bit
         // validity than `ptr`.
         let ptr = unsafe { ptr.assume_validity::<invariant::Initialized>() };
-        let ptr = ptr.as_bytes::<BecauseExclusive>();
+        let ptr = ptr.as_bytes();
         src.read_exact(ptr.as_mut())?;
         // SAFETY: `buf` entirely consists of initialized bytes, and `Self` is
         // `FromBytes`.
@@ -5120,10 +5224,8 @@ pub unsafe trait IntoBytes {
         //   initialized.
         // - Since `slf` is derived from `self`, and `self` is an immutable
         //   reference, the only other references to this memory region that
-        //   could exist are other immutable references, and those don't allow
-        //   mutation. `Self: Immutable` prohibits types which contain
-        //   `UnsafeCell`s, which are the only types for which this rule
-        //   wouldn't be sufficient.
+        //   could exist are other immutable references, which by `Self:
+        //   Immutable` don't permit mutation.
         // - The total size of the resulting slice is no larger than
         //   `isize::MAX` because no allocation produced by safe code can be
         //   larger than `isize::MAX`.
@@ -6234,7 +6336,7 @@ mod tests {
 
     #[test]
     fn test_object_safety() {
-        fn _takes_no_cell(_: &dyn Immutable) {}
+        fn _takes_immutable(_: &dyn Immutable) {}
         fn _takes_unaligned(_: &dyn Unaligned) {}
     }
 

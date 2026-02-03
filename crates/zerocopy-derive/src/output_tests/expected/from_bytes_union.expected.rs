@@ -13,15 +13,12 @@
 const _: () = {
     unsafe impl ::zerocopy::TryFromBytes for Foo
     where
-        u8: ::zerocopy::TryFromBytes + ::zerocopy::Immutable,
+        u8: ::zerocopy::TryFromBytes,
     {
         fn only_derive_is_allowed_to_implement_this_trait() {}
-        fn is_bit_valid<___ZerocopyAliasing>(
-            _candidate: ::zerocopy::Maybe<Self, ___ZerocopyAliasing>,
-        ) -> ::zerocopy::util::macro_util::core_reexport::primitive::bool
-        where
-            ___ZerocopyAliasing: ::zerocopy::pointer::invariant::Reference,
-        {
+        fn is_bit_valid(
+            _candidate: ::zerocopy::Maybe<Self>,
+        ) -> ::zerocopy::util::macro_util::core_reexport::primitive::bool {
             if false {
                 fn assert_is_from_bytes<T>()
                 where
@@ -47,6 +44,25 @@ const _: () = {
     #[automatically_derived]
     const _: () = {
         enum ẕa {}
+        #[allow(
+            deprecated,
+            private_bounds,
+            non_local_definitions,
+            non_camel_case_types,
+            non_upper_case_globals,
+            non_snake_case,
+            non_ascii_idents,
+            clippy::missing_inline_in_public_items,
+        )]
+        #[deny(ambiguous_associated_items)]
+        #[automatically_derived]
+        const _: () = {
+            unsafe impl ::zerocopy::HasTag for Foo {
+                fn only_derive_is_allowed_to_implement_this_trait() {}
+                type Tag = ();
+                type ProjectToTag = ::zerocopy::pointer::cast::CastToUnit;
+            }
+        };
         #[allow(
             deprecated,
             private_bounds,
@@ -101,7 +117,7 @@ const _: () = {
 const _: () = {
     unsafe impl ::zerocopy::FromZeros for Foo
     where
-        u8: ::zerocopy::FromZeros + ::zerocopy::Immutable,
+        u8: ::zerocopy::FromZeros,
     {
         fn only_derive_is_allowed_to_implement_this_trait() {}
     }
@@ -121,7 +137,7 @@ const _: () = {
 const _: () = {
     unsafe impl ::zerocopy::FromBytes for Foo
     where
-        u8: ::zerocopy::FromBytes + ::zerocopy::Immutable,
+        u8: ::zerocopy::FromBytes,
     {
         fn only_derive_is_allowed_to_implement_this_trait() {}
     }
