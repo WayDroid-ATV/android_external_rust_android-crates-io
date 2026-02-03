@@ -1,17 +1,17 @@
 name: "pdl-runtime"
 description: "PDL\'s runtime library"
 third_party {
-  version: "0.4.2"
+  version: "0.4.4"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 9
-    day: 27
+    year: 2026
+    month: 2
+    day: 2
   }
   homepage: "https://crates.io/crates/pdl-runtime"
   identifier {
     type: "crates.io"
     value: "pdl-runtime"
-    version: "0.4.2"
+    version: "0.4.4"
   }
 }
