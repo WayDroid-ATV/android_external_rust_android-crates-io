@@ -228,7 +228,18 @@ impl PaddingCheck {
 #[derive(Clone)]
 pub(crate) enum Trait {
     KnownLayout,
-    HasField { variant_id: Box<Expr>, field: Box<Type>, field_id: Box<Expr> },
+    HasTag,
+    HasField {
+        variant_id: Box<Expr>,
+        field: Box<Type>,
+        field_id: Box<Expr>,
+    },
+    ProjectField {
+        variant_id: Box<Expr>,
+        field: Box<Type>,
+        field_id: Box<Expr>,
+        invariants: Box<Type>,
+    },
     Immutable,
     TryFromBytes,
     FromZeros,
@@ -254,7 +265,9 @@ impl ToTokens for Trait {
         // [2] https://doc.rust-lang.org/beta/unstable-book/compiler-flags/fmt-debug.html
         let s = match self {
             Trait::HasField { .. } => "HasField",
+            Trait::ProjectField { .. } => "ProjectField",
             Trait::KnownLayout => "KnownLayout",
+            Trait::HasTag => "HasTag",
             Trait::Immutable => "Immutable",
             Trait::TryFromBytes => "TryFromBytes",
             Trait::FromZeros => "FromZeros",
@@ -271,7 +284,11 @@ impl ToTokens for Trait {
             Trait::HasField { variant_id, field, field_id } => {
                 Some(parse_quote!(<#field, #variant_id, #field_id>))
             }
+            Trait::ProjectField { variant_id, field, field_id, invariants } => {
+                Some(parse_quote!(<#field, #invariants, #variant_id, #field_id>))
+            }
             Trait::KnownLayout
+            | Trait::HasTag
             | Trait::Immutable
             | Trait::TryFromBytes
             | Trait::FromZeros
@@ -345,6 +362,7 @@ pub(crate) struct ImplBlockBuilder<'a> {
     field_type_trait_bounds: FieldBounds<'a>,
     self_type_trait_bounds: SelfBounds<'a>,
     padding_check: Option<PaddingCheck>,
+    param_extras: Vec<GenericParam>,
     inner_extras: Option<TokenStream>,
     outer_extras: Option<TokenStream>,
 }
@@ -363,6 +381,7 @@ impl<'a> ImplBlockBuilder<'a> {
             field_type_trait_bounds,
             self_type_trait_bounds: SelfBounds::None,
             padding_check: None,
+            param_extras: Vec::new(),
             inner_extras: None,
             outer_extras: None,
         }
@@ -375,6 +394,11 @@ impl<'a> ImplBlockBuilder<'a> {
 
     pub(crate) fn padding_check<P: Into<Option<PaddingCheck>>>(mut self, padding_check: P) -> Self {
         self.padding_check = padding_check.into();
+        self
+    }
+
+    pub(crate) fn param_extras(mut self, param_extras: Vec<GenericParam>) -> Self {
+        self.param_extras.extend(param_extras);
         self
     }
 
@@ -518,13 +542,30 @@ impl<'a> ImplBlockBuilder<'a> {
             .chain(self_bounds.iter());
 
         // The parameters with trait bounds, but without type defaults.
-        let params = self.ctx.ast.generics.params.clone().into_iter().map(|mut param| {
-            match &mut param {
-                GenericParam::Type(ty) => ty.default = None,
-                GenericParam::Const(cnst) => cnst.default = None,
-                GenericParam::Lifetime(_) => {}
-            }
-            quote!(#param)
+        let mut params: Vec<_> = self
+            .ctx
+            .ast
+            .generics
+            .params
+            .clone()
+            .into_iter()
+            .map(|mut param| {
+                match &mut param {
+                    GenericParam::Type(ty) => ty.default = None,
+                    GenericParam::Const(cnst) => cnst.default = None,
+                    GenericParam::Lifetime(_) => {}
+                }
+                parse_quote!(#param)
+            })
+            .chain(self.param_extras)
+            .collect();
+
+        // For MSRV purposes, ensure that lifetimes precede types precede const
+        // generics.
+        params.sort_by_cached_key(|param| match param {
+            GenericParam::Lifetime(_) => 0,
+            GenericParam::Type(_) => 1,
+            GenericParam::Const(_) => 2,
         });
 
         // The identifiers of the parameters without trait bounds or type
@@ -632,7 +673,7 @@ pub(crate) fn generate_tag_enum(ctx: &Ctx, repr: &EnumRepr, data: &DataEnum) -> 
     quote! {
         #repr
         #[allow(dead_code)]
-        enum ___ZerocopyTag {
+        pub enum ___ZerocopyTag {
             #(#variants,)*
         }
 
@@ -661,5 +702,56 @@ pub(crate) fn enum_size_from_repr(repr: &EnumRepr) -> Result<usize, Error> {
         )),
         Compound(Spanned { t: Primitive(U8 | I8), span: _ }, _align) => Ok(8),
         Compound(Spanned { t: Primitive(U16 | I16), span: _ }, _align) => Ok(16),
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod testutil {
+    use proc_macro2::TokenStream;
+    use syn::visit::{self, Visit};
+
+    /// Checks for hygiene violations in the generated code.
+    ///
+    /// # Panics
+    ///
+    /// Panics if a hygiene violation is found.
+    pub(crate) fn check_hygiene(ts: TokenStream) {
+        struct AmbiguousItemVisitor;
+
+        impl<'ast> Visit<'ast> for AmbiguousItemVisitor {
+            fn visit_path(&mut self, i: &'ast syn::Path) {
+                if i.segments.len() > 1 && i.segments.first().unwrap().ident == "Self" {
+                    panic!(
+                    "Found ambiguous path `{}` in generated output. \
+                     All associated item access must be fully qualified (e.g., `<Self as Trait>::Item`) \
+                     to prevent hygiene issues.",
+                    quote::quote!(#i)
+                );
+                }
+                visit::visit_path(self, i);
+            }
+        }
+
+        let file = syn::parse2::<syn::File>(ts).expect("failed to parse generated output as File");
+        AmbiguousItemVisitor.visit_file(&file);
+    }
+
+    #[test]
+    fn test_check_hygiene_success() {
+        check_hygiene(quote::quote! {
+            fn foo() {
+                let _ = <Self as Trait>::Item;
+            }
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "Found ambiguous path `Self :: Ambiguous`")]
+    fn test_check_hygiene_failure() {
+        check_hygiene(quote::quote! {
+            fn foo() {
+                let _ = Self::Ambiguous;
+            }
+        });
     }
 }

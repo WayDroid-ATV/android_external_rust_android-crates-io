@@ -19,15 +19,17 @@ pub use {inner::PtrInner, transmute::*};
 #[doc(hidden)]
 pub use {
     invariant::{BecauseExclusive, BecauseImmutable, Read},
-    ptr::Ptr,
+    ptr::*,
 };
+
+use crate::wrappers::ReadOnly;
 
 /// A shorthand for a maybe-valid, maybe-aligned reference. Used as the argument
 /// to [`TryFromBytes::is_bit_valid`].
 ///
 /// [`TryFromBytes::is_bit_valid`]: crate::TryFromBytes::is_bit_valid
 pub type Maybe<'a, T, Aliasing = invariant::Shared, Alignment = invariant::Unaligned> =
-    Ptr<'a, T, (Aliasing, Alignment, invariant::Initialized)>;
+    Ptr<'a, ReadOnly<T>, (Aliasing, Alignment, invariant::Initialized)>;
 
 /// Checks if the referent is zeroed.
 pub(crate) fn is_zeroed<T, I>(ptr: Ptr<'_, T, I>) -> bool
@@ -36,7 +38,7 @@ where
     I: invariant::Invariants<Validity = invariant::Initialized>,
     I::Aliasing: invariant::Reference,
 {
-    ptr.as_bytes::<BecauseImmutable>().as_ref().iter().all(|&byte| byte == 0)
+    ptr.as_bytes().as_ref().iter().all(|&byte| byte == 0)
 }
 
 #[doc(hidden)]
@@ -255,6 +257,46 @@ pub mod cast {
         }
     }
 
+    // SAFETY: All `repr(C)` union fields exist at offset 0 within the union [1],
+    // and so any union projection is actually a cast (ie, preserves address).
+    //
+    // [1] Per
+    //     https://doc.rust-lang.org/1.92.0/reference/type-layout.html#reprc-unions,
+    //     it's not *technically* guaranteed that non-maximally-sized fields
+    //     are at offset 0, but it's clear that this is the intention of `repr(C)`
+    //     unions. It says:
+    //
+    //     > A union declared with `#[repr(C)]` will have the same size and
+    //     > alignment as an equivalent C union declaration in the C language for
+    //     > the target platform.
+    //
+    //     Note that this only mentions size and alignment, not layout. However,
+    //     C unions *do* guarantee that all fields start at offset 0. [2]
+    //
+    //     This is also reinforced by
+    //     https://doc.rust-lang.org/1.92.0/reference/items/unions.html#r-items.union.fields.offset:
+    //
+    //     > Fields might have a non-zero offset (except when the C
+    //     > representation is used); in that case the bits starting at the
+    //     > offset of the fields are read
+    //
+    // [2] Per https://port70.net/~nsz/c/c11/n1570.html#6.7.2.1p16:
+    //
+    //     > The size of a union is sufficient to contain the largest of its
+    //     > members. The value of at most one of the members can be stored in a
+    //     > union object at any time. A pointer to a union object, suitably
+    //     > converted, points to each of its members (or if a member is a
+    //     > bit-field, then to the unit in which it resides), and vice versa.
+    //
+    // FIXME(https://github.com/rust-lang/unsafe-code-guidelines/issues/595):
+    // Cite the documentation once it's updated.
+    unsafe impl<T: ?Sized, F, const FIELD_ID: i128> Cast<T, T::Type>
+        for Projection<F, { crate::REPR_C_UNION_VARIANT_ID }, FIELD_ID>
+    where
+        T: HasField<F, { crate::REPR_C_UNION_VARIANT_ID }, FIELD_ID>,
+    {
+    }
+
     /// A transitive sequence of projections.
     ///
     /// Given `TU: Project` and `UV: Project`, `TransitiveProject<_, TU, UV>` is
@@ -315,7 +357,8 @@ pub mod cast {
     }
 
     /// A cast from `T` to `[u8]`.
-    pub(crate) struct AsBytesCast;
+    #[allow(missing_copy_implementations, missing_debug_implementations)]
+    pub struct AsBytesCast;
 
     // SAFETY: `project` constructs a pointer with the same address as `src`
     // and with a referent of the same size as `*src`. It does this using
@@ -346,4 +389,20 @@ pub mod cast {
 
     // SAFETY: The `Project::project` impl preserves the set of referent bytes.
     unsafe impl<T: ?Sized + KnownLayout> CastExact<T, [u8]> for AsBytesCast {}
+
+    /// A cast from any type to `()`.
+    #[allow(missing_copy_implementations, missing_debug_implementations)]
+    pub struct CastToUnit;
+
+    // SAFETY: The `project` implementation projects to a subset of its
+    // argument's referent using provenance-preserving operations.
+    unsafe impl<T: ?Sized> Project<T, ()> for CastToUnit {
+        #[inline(always)]
+        fn project(src: PtrInner<'_, T>) -> *mut () {
+            src.as_ptr().cast::<()>()
+        }
+    }
+
+    // SAFETY: The `project` implementation preserves referent address.
+    unsafe impl<T: ?Sized> Cast<T, ()> for CastToUnit {}
 }

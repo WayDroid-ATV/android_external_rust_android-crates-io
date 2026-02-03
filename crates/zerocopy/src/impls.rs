@@ -14,6 +14,7 @@ use core::{
 };
 
 use super::*;
+use crate::pointer::cast::{CastSizedExact, CastUnsized};
 
 // SAFETY: Per the reference [1], "the unit tuple (`()`) ... is guaranteed as a
 // zero-sized type to have a size of 0 and an alignment of 1."
@@ -108,11 +109,10 @@ assert_unaligned!(bool);
 //   pattern 0x01.
 const _: () = unsafe {
     unsafe_impl!(=> TryFromBytes for bool; |byte| {
-        let byte = byte.transmute::<u8, invariant::Valid, _>();
+        let byte = byte.transmute_with::<u8, invariant::Valid, CastSizedExact, BecauseImmutable>();
         *byte.unaligned_as_ref() < 2
     })
 };
-impl_size_eq!(bool, u8);
 
 // SAFETY:
 // - `Immutable`: `char` self-evidently does not contain any `UnsafeCell`s.
@@ -138,13 +138,11 @@ const _: () = unsafe { unsafe_impl!(char: Immutable, FromZeros, IntoBytes) };
 //   `char`.
 const _: () = unsafe {
     unsafe_impl!(=> TryFromBytes for char; |c| {
-        let c = c.transmute::<Unalign<u32>, invariant::Valid, _>();
+        let c = c.transmute_with::<Unalign<u32>, invariant::Valid, CastSizedExact, BecauseImmutable>();
         let c = c.read_unaligned().into_inner();
         char::from_u32(c).is_some()
     });
 };
-
-impl_size_eq!(char, Unalign<u32>);
 
 // SAFETY: Per the Reference [1], `str` has the same layout as `[u8]`.
 // - `Immutable`: `[u8]` does not contain any `UnsafeCell`s.
@@ -173,21 +171,17 @@ const _: () = unsafe { unsafe_impl!(str: Immutable, FromZeros, IntoBytes, Unalig
 //   Returns `Err` if the slice is not UTF-8.
 const _: () = unsafe {
     unsafe_impl!(=> TryFromBytes for str; |c| {
-        let c = c.transmute::<[u8], invariant::Valid, _>();
+        let c = c.transmute_with::<[u8], invariant::Valid, CastUnsized, BecauseImmutable>();
         let c = c.unaligned_as_ref();
         core::str::from_utf8(c).is_ok()
     })
 };
 
-impl_size_eq!(str, [u8]);
-
 macro_rules! unsafe_impl_try_from_bytes_for_nonzero {
     ($($nonzero:ident[$prim:ty]),*) => {
         $(
             unsafe_impl!(=> TryFromBytes for $nonzero; |n| {
-                impl_size_eq!($nonzero, Unalign<$prim>);
-
-                let n = n.transmute::<Unalign<$prim>, invariant::Valid, _>();
+                let n = n.transmute_with::<Unalign<$prim>, invariant::Valid, CastSizedExact, BecauseImmutable>();
                 $nonzero::new(n.read_unaligned().into_inner()).is_some()
             });
         )*
@@ -404,13 +398,13 @@ mod atomics {
     use super::*;
 
     macro_rules! impl_traits_for_atomics {
-        ($($atomics:ident [$primitives:ident]),* $(,)?) => {
+        ($($atomics:tt [$primitives:ty]),* $(,)?) => {
             $(
                 impl_known_layout!($atomics);
-                impl_for_transmute_from!(=> TryFromBytes for $atomics [UnsafeCell<$primitives>]);
-                impl_for_transmute_from!(=> FromZeros for $atomics [UnsafeCell<$primitives>]);
-                impl_for_transmute_from!(=> FromBytes for $atomics [UnsafeCell<$primitives>]);
-                impl_for_transmute_from!(=> IntoBytes for $atomics [UnsafeCell<$primitives>]);
+                impl_for_transmute_from!(=> FromZeros for $atomics [$primitives]);
+                impl_for_transmute_from!(=> FromBytes for $atomics [$primitives]);
+                impl_for_transmute_from!(=> TryFromBytes for $atomics [$primitives]);
+                impl_for_transmute_from!(=> IntoBytes for $atomics [$primitives]);
             )*
         };
     }
@@ -425,7 +419,6 @@ mod atomics {
         ($($($tyvar:ident)? => $atomic:ty [$prim:ty]),*) => {{
             crate::util::macros::__unsafe();
 
-            use core::cell::UnsafeCell;
             use crate::pointer::{SizeEq, TransmuteFrom, invariant::Valid};
 
             $(
@@ -436,16 +429,7 @@ mod atomics {
                 // the same size and bit validity.
                 unsafe impl<$($tyvar)?> TransmuteFrom<$prim, Valid, Valid> for $atomic {}
 
-                impl<$($tyvar)?> SizeEq<$atomic> for $prim {
-                    type CastFrom = $crate::pointer::cast::CastSizedExact;
-                }
-                impl<$($tyvar)?> SizeEq<$prim> for $atomic {
-                    type CastFrom = $crate::pointer::cast::CastSizedExact;
-                }
-                impl<$($tyvar)?> SizeEq<$atomic> for UnsafeCell<$prim> {
-                    type CastFrom = $crate::pointer::cast::CastSizedExact;
-                }
-                impl<$($tyvar)?> SizeEq<UnsafeCell<$prim>> for $atomic {
+                impl<$($tyvar)?> SizeEq<ReadOnly<$atomic>> for ReadOnly<$prim> {
                     type CastFrom = $crate::pointer::cast::CastSizedExact;
                 }
 
@@ -475,10 +459,9 @@ mod atomics {
         impl_traits_for_atomics!(AtomicU8[u8], AtomicI8[i8]);
 
         impl_known_layout!(AtomicBool);
-
-        impl_for_transmute_from!(=> TryFromBytes for AtomicBool [UnsafeCell<bool>]);
-        impl_for_transmute_from!(=> FromZeros for AtomicBool [UnsafeCell<bool>]);
-        impl_for_transmute_from!(=> IntoBytes for AtomicBool [UnsafeCell<bool>]);
+        impl_for_transmute_from!(=> FromZeros for AtomicBool [bool]);
+        impl_for_transmute_from!(=> TryFromBytes for AtomicBool [bool]);
+        impl_for_transmute_from!(=> IntoBytes for AtomicBool [bool]);
 
         // SAFETY: Per [1], `AtomicBool`, `AtomicU8`, and `AtomicI8` have the
         // same size as `bool`, `u8`, and `i8` respectively. Since a type's
@@ -622,12 +605,11 @@ mod atomics {
 
         impl_traits_for_atomics!(AtomicUsize[usize], AtomicIsize[isize]);
 
-        impl_known_layout!(T => AtomicPtr<T>);
-
         // FIXME(#170): Implement `FromBytes` and `IntoBytes` once we implement
         // those traits for `*mut T`.
-        impl_for_transmute_from!(T => TryFromBytes for AtomicPtr<T> [UnsafeCell<*mut T>]);
-        impl_for_transmute_from!(T => FromZeros for AtomicPtr<T> [UnsafeCell<*mut T>]);
+        impl_known_layout!(T => AtomicPtr<T>);
+        impl_for_transmute_from!(T => TryFromBytes for AtomicPtr<T> [*mut T]);
+        impl_for_transmute_from!(T => FromZeros for AtomicPtr<T> [*mut T]);
 
         // SAFETY: `AtomicUsize` and `AtomicIsize` have the same size and bit
         // validity as `usize` and `isize` respectively [1][2].
@@ -676,10 +658,10 @@ const _: () = unsafe {
     assert_unaligned!(PhantomData<()>, PhantomData<u8>, PhantomData<u64>);
 };
 
-impl_for_transmute_from!(T: TryFromBytes => TryFromBytes for Wrapping<T>[<T>]);
-impl_for_transmute_from!(T: FromZeros => FromZeros for Wrapping<T>[<T>]);
-impl_for_transmute_from!(T: FromBytes => FromBytes for Wrapping<T>[<T>]);
-impl_for_transmute_from!(T: IntoBytes => IntoBytes for Wrapping<T>[<T>]);
+impl_for_transmute_from!(T: TryFromBytes => TryFromBytes for Wrapping<T>[T]);
+impl_for_transmute_from!(T: FromZeros => FromZeros for Wrapping<T>[T]);
+impl_for_transmute_from!(T: FromBytes => FromBytes for Wrapping<T>[T]);
+impl_for_transmute_from!(T: IntoBytes => IntoBytes for Wrapping<T>[T]);
 assert_unaligned!(Wrapping<()>, Wrapping<u8>);
 
 // SAFETY: Per [1], `Wrapping<T>` has the same layout as `T`. Since its single
@@ -750,10 +732,10 @@ assert_unaligned!(CoreMaybeUninit<()>, CoreMaybeUninit<u8>);
 // [2] https://doc.rust-lang.org/1.85.0/std/mem/struct.ManuallyDrop.html#impl-Deref-for-ManuallyDrop%3CT%3E
 const _: () = unsafe { unsafe_impl!(T: ?Sized + Immutable => Immutable for ManuallyDrop<T>) };
 
-impl_for_transmute_from!(T: ?Sized + TryFromBytes => TryFromBytes for ManuallyDrop<T>[<T>]);
-impl_for_transmute_from!(T: ?Sized + FromZeros => FromZeros for ManuallyDrop<T>[<T>]);
-impl_for_transmute_from!(T: ?Sized + FromBytes => FromBytes for ManuallyDrop<T>[<T>]);
-impl_for_transmute_from!(T: ?Sized + IntoBytes => IntoBytes for ManuallyDrop<T>[<T>]);
+impl_for_transmute_from!(T: ?Sized + TryFromBytes => TryFromBytes for ManuallyDrop<T>[T]);
+impl_for_transmute_from!(T: ?Sized + FromZeros => FromZeros for ManuallyDrop<T>[T]);
+impl_for_transmute_from!(T: ?Sized + FromBytes => FromBytes for ManuallyDrop<T>[T]);
+impl_for_transmute_from!(T: ?Sized + IntoBytes => IntoBytes for ManuallyDrop<T>[T]);
 // SAFETY: `ManuallyDrop<T>` has the same layout as `T` [1], and thus has the
 // same alignment as `T`.
 //
@@ -772,6 +754,30 @@ const _: () = {
         missing_docs
     )]
     pub enum value {}
+
+    // SAFETY: See safety comment on `ProjectToTag`.
+    unsafe impl<T: ?Sized> HasTag for ManuallyDrop<T> {
+        #[inline]
+        fn only_derive_is_allowed_to_implement_this_trait()
+        where
+            Self: Sized,
+        {
+        }
+
+        type Tag = ();
+
+        // SAFETY: It is trivially sound to project any pointer to a pointer to
+        // a type of size zero and alignment 1 (which `()` is [1]). Such a
+        // pointer will trivially satisfy its aliasing and validity requirements
+        // (since it has a zero-sized referent), and its alignment requirement
+        // (since it is aligned to 1).
+        //
+        // [1] Per https://doc.rust-lang.org/1.92.0/reference/type-layout.html#r-layout.tuple.unit:
+        //
+        //     [T]he unit tuple (`()`)... is guaranteed as a zero-sized type to
+        //     have a size of 0 and an alignment of 1.
+        type ProjectToTag = crate::pointer::cast::CastToUnit;
+    }
 
     // SAFETY: `ManuallyDrop<T>` has a field of type `T` at offset `0` without
     // any safety invariants beyond those of `T`.  Its existence is not
@@ -792,14 +798,14 @@ const _: () = {
         HasField<value, { crate::STRUCT_VARIANT_ID }, { crate::ident_id!(value) }>
         for ManuallyDrop<T>
     {
-        type Type = T;
-
         #[inline]
         fn only_derive_is_allowed_to_implement_this_trait()
         where
             Self: Sized,
         {
         }
+
+        type Type = T;
 
         #[inline(always)]
         fn project(slf: PtrInner<'_, Self>) -> *mut T {
@@ -816,10 +822,10 @@ const _: () = {
     }
 };
 
-impl_for_transmute_from!(T: ?Sized + TryFromBytes => TryFromBytes for Cell<T>[UnsafeCell<T>]);
-impl_for_transmute_from!(T: ?Sized + FromZeros => FromZeros for Cell<T>[UnsafeCell<T>]);
-impl_for_transmute_from!(T: ?Sized + FromBytes => FromBytes for Cell<T>[UnsafeCell<T>]);
-impl_for_transmute_from!(T: ?Sized + IntoBytes => IntoBytes for Cell<T>[UnsafeCell<T>]);
+impl_for_transmute_from!(T: ?Sized + TryFromBytes => TryFromBytes for Cell<T>[T]);
+impl_for_transmute_from!(T: ?Sized + FromZeros => FromZeros for Cell<T>[T]);
+impl_for_transmute_from!(T: ?Sized + FromBytes => FromBytes for Cell<T>[T]);
+impl_for_transmute_from!(T: ?Sized + IntoBytes => IntoBytes for Cell<T>[T]);
 // SAFETY: `Cell<T>` has the same in-memory representation as `T` [1], and thus
 // has the same alignment as `T`.
 //
@@ -828,9 +834,9 @@ impl_for_transmute_from!(T: ?Sized + IntoBytes => IntoBytes for Cell<T>[UnsafeCe
 //   `Cell<T>` has the same in-memory representation as its inner type `T`.
 const _: () = unsafe { unsafe_impl!(T: ?Sized + Unaligned => Unaligned for Cell<T>) };
 
-impl_for_transmute_from!(T: ?Sized + FromZeros => FromZeros for UnsafeCell<T>[<T>]);
-impl_for_transmute_from!(T: ?Sized + FromBytes => FromBytes for UnsafeCell<T>[<T>]);
-impl_for_transmute_from!(T: ?Sized + IntoBytes => IntoBytes for UnsafeCell<T>[<T>]);
+impl_for_transmute_from!(T: ?Sized + FromZeros => FromZeros for UnsafeCell<T>[T]);
+impl_for_transmute_from!(T: ?Sized + FromBytes => FromBytes for UnsafeCell<T>[T]);
+impl_for_transmute_from!(T: ?Sized + IntoBytes => IntoBytes for UnsafeCell<T>[T]);
 // SAFETY: `UnsafeCell<T>` has the same in-memory representation as `T` [1], and
 // thus has the same alignment as `T`.
 //
@@ -851,29 +857,8 @@ unsafe impl<T: TryFromBytes + ?Sized> TryFromBytes for UnsafeCell<T> {
     }
 
     #[inline]
-    fn is_bit_valid<A: invariant::Reference>(candidate: Maybe<'_, Self, A>) -> bool {
-        // The only way to implement this function is using an exclusive-aliased
-        // pointer. `UnsafeCell`s cannot be read via shared-aliased pointers
-        // (other than by using `unsafe` code, which we can't use since we can't
-        // guarantee how our users are accessing or modifying the `UnsafeCell`).
-        //
-        // `is_bit_valid` is documented as panicking or failing to monomorphize
-        // if called with a shared-aliased pointer on a type containing an
-        // `UnsafeCell`. In practice, it will always be a monomorphization error.
-        // Since `is_bit_valid` is `#[doc(hidden)]` and only called directly
-        // from this crate, we only need to worry about our own code incorrectly
-        // calling `UnsafeCell::is_bit_valid`. The post-monomorphization error
-        // makes it easier to test that this is truly the case, and also means
-        // that if we make a mistake, it will cause downstream code to fail to
-        // compile, which will immediately surface the mistake and give us a
-        // chance to fix it quickly.
-        let c = candidate.into_exclusive_or_pme();
-
-        // SAFETY: Since `UnsafeCell<T>` and `T` have the same layout and bit
-        // validity, `UnsafeCell<T>` is bit-valid exactly when its wrapped `T`
-        // is. Thus, this is a sound implementation of
-        // `UnsafeCell::is_bit_valid`.
-        T::is_bit_valid(c.get_mut())
+    fn is_bit_valid(candidate: Maybe<'_, Self>) -> bool {
+        T::is_bit_valid(candidate.transmute::<_, _, BecauseImmutable>())
     }
 }
 
@@ -902,11 +887,15 @@ unsafe impl<T: TryFromBytes + ?Sized> TryFromBytes for UnsafeCell<T> {
 const _: () = unsafe {
     unsafe_impl!(const N: usize, T: Immutable => Immutable for [T; N]);
     unsafe_impl!(const N: usize, T: TryFromBytes => TryFromBytes for [T; N]; |c| {
+        let c: Ptr<'_, [ReadOnly<T>; N], _> = c.cast::<_, crate::pointer::cast::CastSized, _>();
+        let c: Ptr<'_, [ReadOnly<T>], _> = c.as_slice();
+        let c: Ptr<'_, ReadOnly<[T]>, _> = c.cast::<_, crate::pointer::cast::CastUnsized, _>();
+
         // Note that this call may panic, but it would still be sound even if it
         // did. `is_bit_valid` does not promise that it will not panic (in fact,
         // it explicitly warns that it's a possibility), and we have not
         // violated any safety invariants that we must fix before returning.
-        <[T] as TryFromBytes>::is_bit_valid(c.as_slice())
+        <[T] as TryFromBytes>::is_bit_valid(c)
     });
     unsafe_impl!(const N: usize, T: FromZeros => FromZeros for [T; N]);
     unsafe_impl!(const N: usize, T: FromBytes => FromBytes for [T; N]);
@@ -915,6 +904,8 @@ const _: () = unsafe {
     assert_unaligned!([(); 0], [(); 1], [u8; 0], [u8; 1]);
     unsafe_impl!(T: Immutable => Immutable for [T]);
     unsafe_impl!(T: TryFromBytes => TryFromBytes for [T]; |c| {
+        let c: Ptr<'_, [ReadOnly<T>], _> = c.cast::<_, crate::pointer::cast::CastUnsized, _>();
+
         // SAFETY: Per the reference [1]:
         //
         //   An array of `[T; N]` has a size of `size_of::<T>() * N` and the
@@ -1019,8 +1010,8 @@ mod tuples {
             // SAFETY: If all fields in `c` are `is_bit_valid`, so too is `c`.
             unsafe_impl!($($head_T: TryFromBytes,)* $next_T: TryFromBytes => TryFromBytes for ($($head_T,)* $next_T,); |c| {
                 let mut c = c;
-                $(TryFromBytes::is_bit_valid(c.reborrow().project::<_, { crate::ident_id!($head_I) }>()) &&)*
-                    TryFromBytes::is_bit_valid(c.reborrow().project::<_, { crate::ident_id!($next_I) }>())
+                $(TryFromBytes::is_bit_valid(into_inner!(c.reborrow().project::<_, { crate::STRUCT_VARIANT_ID }, { crate::ident_id!($head_I) }>())) &&)*
+                    TryFromBytes::is_bit_valid(into_inner!(c.reborrow().project::<_, { crate::STRUCT_VARIANT_ID }, { crate::ident_id!($next_I) }>()))
             });
 
             // SAFETY: If all fields in `Self` are `FromZeros`, so too is `Self`.
@@ -1028,6 +1019,29 @@ mod tuples {
 
             // SAFETY: If all fields in `Self` are `FromBytes`, so too is `Self`.
             unsafe_impl!($($head_T: FromBytes,)* $next_T: FromBytes => FromBytes for ($($head_T,)* $next_T,));
+
+            // SAFETY: See safety comment on `ProjectToTag`.
+            unsafe impl<$($head_T,)* $next_T> crate::HasTag for ($($head_T,)* $next_T,) {
+                #[inline]
+                fn only_derive_is_allowed_to_implement_this_trait()
+                where
+                    Self: Sized
+                {}
+
+                type Tag = ();
+
+                // SAFETY: It is trivially sound to project any pointer to a
+                // pointer to a type of size zero and alignment 1 (which `()` is
+                // [1]). Such a pointer will trivially satisfy its aliasing and
+                // validity requirements (since it has a zero-sized referent),
+                // and its alignment requirement (since it is aligned to 1).
+                //
+                // [1] Per https://doc.rust-lang.org/1.92.0/reference/type-layout.html#r-layout.tuple.unit:
+                //
+                //     [T]he unit tuple (`()`)... is guaranteed as a zero-sized
+                //     type to have a size of 0 and an alignment of 1.
+                type ProjectToTag = crate::pointer::cast::CastToUnit;
+            }
 
             // Generate impls that depend on tuple index.
             impl_tuple!(@variants
@@ -1081,6 +1095,84 @@ mod tuples {
                     // `slf`.
                     unsafe { core::ptr::addr_of_mut!((*slf).$CurrI) }
                 }
+            }
+
+            // SAFETY: See comments on items.
+            unsafe impl<Aliasing, Alignment, $($AllT),+> crate::ProjectField<
+                (),
+                (Aliasing, Alignment, crate::invariant::Uninit),
+                { crate::STRUCT_VARIANT_ID },
+                { crate::ident_id!($CurrI)}
+            > for ($($AllT,)+)
+            where
+                Aliasing: crate::invariant::Aliasing,
+                Alignment: crate::invariant::Alignment,
+            {
+                #[inline]
+                fn only_derive_is_allowed_to_implement_this_trait()
+                where
+                    Self: Sized
+                {}
+
+                // SAFETY: Tuples are product types whose fields are
+                // well-aligned, so projection preserves both the alignment and
+                // validity invariants of the outer pointer.
+                type Invariants = (Aliasing, Alignment, crate::invariant::Uninit);
+
+                // SAFETY: Tuples are product types and so projection is infallible;
+                type Error = core::convert::Infallible;
+            }
+
+            // SAFETY: See comments on items.
+            unsafe impl<Aliasing, Alignment, $($AllT),+> crate::ProjectField<
+                (),
+                (Aliasing, Alignment, crate::invariant::Initialized),
+                { crate::STRUCT_VARIANT_ID },
+                { crate::ident_id!($CurrI)}
+            > for ($($AllT,)+)
+            where
+                Aliasing: crate::invariant::Aliasing,
+                Alignment: crate::invariant::Alignment,
+            {
+                #[inline]
+                fn only_derive_is_allowed_to_implement_this_trait()
+                where
+                    Self: Sized
+                {}
+
+                // SAFETY: Tuples are product types whose fields are
+                // well-aligned, so projection preserves both the alignment and
+                // validity invariants of the outer pointer.
+                type Invariants = (Aliasing, Alignment, crate::invariant::Initialized);
+
+                // SAFETY: Tuples are product types and so projection is infallible;
+                type Error = core::convert::Infallible;
+            }
+
+            // SAFETY: See comments on items.
+            unsafe impl<Aliasing, Alignment, $($AllT),+> crate::ProjectField<
+                (),
+                (Aliasing, Alignment, crate::invariant::Valid),
+                { crate::STRUCT_VARIANT_ID },
+                { crate::ident_id!($CurrI)}
+            > for ($($AllT,)+)
+            where
+                Aliasing: crate::invariant::Aliasing,
+                Alignment: crate::invariant::Alignment,
+            {
+                #[inline]
+                fn only_derive_is_allowed_to_implement_this_trait()
+                where
+                    Self: Sized
+                {}
+
+                // SAFETY: Tuples are product types whose fields are
+                // well-aligned, so projection preserves both the alignment and
+                // validity invariants of the outer pointer.
+                type Invariants = (Aliasing, Alignment, crate::invariant::Valid);
+
+                // SAFETY: Tuples are product types and so projection is infallible;
+                type Error = core::convert::Infallible;
             }
 
             // Recurse to the next index.
@@ -1275,7 +1367,6 @@ mod simd {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pointer::invariant;
 
     #[test]
     fn test_impls() {
@@ -1288,18 +1379,18 @@ mod tests {
         // types must implement `TryFromBytesTestable` directly (ie using
         // `impl_try_from_bytes_testable!`).
         trait TryFromBytesTestable {
-            fn with_passing_test_cases<F: Fn(Box<Self>)>(f: F);
+            fn with_passing_test_cases<F: Fn(Box<ReadOnly<Self>>)>(f: F);
             fn with_failing_test_cases<F: Fn(&mut [u8])>(f: F);
         }
 
         impl<T: FromBytes> TryFromBytesTestable for T {
-            fn with_passing_test_cases<F: Fn(Box<Self>)>(f: F) {
+            fn with_passing_test_cases<F: Fn(Box<ReadOnly<Self>>)>(f: F) {
                 // Test with a zeroed value.
-                f(Self::new_box_zeroed().unwrap());
+                f(ReadOnly::<Self>::new_box_zeroed().unwrap());
 
                 let ffs = {
-                    let mut t = Self::new_zeroed();
-                    let ptr: *mut T = &mut t;
+                    let mut t = ReadOnly::new(Self::new_zeroed());
+                    let ptr: *mut T = ReadOnly::as_mut(&mut t);
                     // SAFETY: `T: FromBytes`
                     unsafe { ptr::write_bytes(ptr.cast::<u8>(), 0xFF, mem::size_of::<T>()) };
                     t
@@ -1316,9 +1407,9 @@ mod tests {
             ($($tys:ty),*) => {
                 $(
                     impl TryFromBytesTestable for Option<$tys> {
-                        fn with_passing_test_cases<F: Fn(Box<Self>)>(f: F) {
+                        fn with_passing_test_cases<F: Fn(Box<ReadOnly<Self>>)>(f: F) {
                             // Test with a zeroed value.
-                            f(Box::new(None));
+                            f(Box::new(ReadOnly::new(None)));
                         }
 
                         fn with_failing_test_cases<F: Fn(&mut [u8])>(f: F) {
@@ -1356,9 +1447,17 @@ mod tests {
             // Implements only the methods; caller must invoke this from inside
             // an impl block.
             (@methods @success $($success_case:expr),* $(, @failure $($failure_case:expr),*)?) => {
-                fn with_passing_test_cases<F: Fn(Box<Self>)>(_f: F) {
+                fn with_passing_test_cases<F: Fn(Box<ReadOnly<Self>>)>(_f: F) {
                     $(
-                        _f(Box::<Self>::from($success_case));
+                        let bx = Box::<Self>::from($success_case);
+                        let ro: Box<ReadOnly<_>> = {
+                            let raw = Box::into_raw(bx);
+                            // SAFETY: `ReadOnly<T>` has the same layout and bit
+                            // validity as `T`.
+                            #[allow(clippy::as_conversions)]
+                            unsafe { Box::from_raw(raw as *mut _) }
+                        };
+                        _f(ro);
                     )*
                 }
 
@@ -1458,17 +1557,15 @@ mod tests {
 
             pub(super) trait TestIsBitValidShared<T: ?Sized> {
                 #[allow(clippy::needless_lifetimes)]
-                fn test_is_bit_valid_shared<'ptr, A: invariant::Reference>(
-                    &self,
-                    candidate: Maybe<'ptr, T, A>,
-                ) -> Option<bool>;
+                fn test_is_bit_valid_shared<'ptr>(&self, candidate: Maybe<'ptr, T>)
+                    -> Option<bool>;
             }
 
             impl<T: TryFromBytes + Immutable + ?Sized> TestIsBitValidShared<T> for AutorefWrapper<T> {
                 #[allow(clippy::needless_lifetimes)]
-                fn test_is_bit_valid_shared<'ptr, A: invariant::Reference>(
+                fn test_is_bit_valid_shared<'ptr>(
                     &self,
-                    candidate: Maybe<'ptr, T, A>,
+                    candidate: Maybe<'ptr, T>,
                 ) -> Option<bool> {
                     Some(T::is_bit_valid(candidate))
                 }
@@ -1522,12 +1619,12 @@ mod tests {
 
             pub(super) trait TestAsBytes<T: ?Sized> {
                 #[allow(clippy::needless_lifetimes)]
-                fn test_as_bytes<'slf, 't>(&'slf self, t: &'t T) -> Option<&'t [u8]>;
+                fn test_as_bytes<'slf, 't>(&'slf self, t: &'t ReadOnly<T>) -> Option<&'t [u8]>;
             }
 
             impl<T: IntoBytes + Immutable + ?Sized> TestAsBytes<T> for AutorefWrapper<T> {
                 #[allow(clippy::needless_lifetimes)]
-                fn test_as_bytes<'slf, 't>(&'slf self, t: &'t T) -> Option<&'t [u8]> {
+                fn test_as_bytes<'slf, 't>(&'slf self, t: &'t ReadOnly<T>) -> Option<&'t [u8]> {
                     Some(t.as_bytes())
                 }
             }
@@ -1574,9 +1671,9 @@ mod tests {
                 #[allow(unused, non_local_definitions)]
                 impl AutorefWrapper<$ty> {
                     #[allow(clippy::needless_lifetimes)]
-                    fn test_is_bit_valid_shared<'ptr, A: invariant::Reference>(
+                    fn test_is_bit_valid_shared<'ptr>(
                         &mut self,
-                        candidate: Maybe<'ptr, $ty, A>,
+                        candidate: Maybe<'ptr, $ty>,
                     ) -> Option<bool> {
                         assert_on_allowlist!(
                             test_is_bit_valid_shared($ty):
@@ -1634,7 +1731,7 @@ mod tests {
                         None
                     }
 
-                    fn test_as_bytes(&mut self, _t: &$ty) -> Option<&[u8]> {
+                    fn test_as_bytes(&mut self, _t: &ReadOnly<$ty>) -> Option<&[u8]> {
                         assert_on_allowlist!(
                             test_as_bytes($ty):
                             Option<&'static UnsafeCell<NotZerocopy>>,
@@ -1685,7 +1782,7 @@ mod tests {
                     let c = unsafe { c.assume_initialized() };
                     let res = w.test_is_bit_valid_shared(c);
                     if let Some(res) = res {
-                        assert!(res, "{}::is_bit_valid({:?}) (shared `Ptr`): got false, expected true", stringify!($ty), val);
+                        assert!(res, "{}::is_bit_valid (shared `Ptr`): got false, expected true", stringify!($ty));
                     }
 
                     let c = Ptr::from_mut(&mut *val);
@@ -1693,9 +1790,9 @@ mod tests {
                     // SAFETY: FIXME(#899): This is unsound. `$ty` is not
                     // necessarily `IntoBytes`, but that's the corner we've
                     // backed ourselves into by using `Ptr::from_ref`.
-                    let c = unsafe { c.assume_initialized() };
-                    let res = <$ty as TryFromBytes>::is_bit_valid(c);
-                    assert!(res, "{}::is_bit_valid({:?}) (exclusive `Ptr`): got false, expected true", stringify!($ty), val);
+                    let mut c = unsafe { c.assume_initialized() };
+                    let res = <$ty as TryFromBytes>::is_bit_valid(c.reborrow_shared());
+                    assert!(res, "{}::is_bit_valid (exclusive `Ptr`): got false, expected true", stringify!($ty));
 
                     // `bytes` is `Some(val.as_bytes())` if `$ty: IntoBytes +
                     // Immutable` and `None` otherwise.
@@ -1706,7 +1803,7 @@ mod tests {
                     // Immutable` and `None` otherwise.
                     let res = bytes.and_then(|bytes| ww.test_try_from_ref(bytes));
                     if let Some(res) = res {
-                        assert!(res.is_some(), "{}::try_ref_from_bytes({:?}): got `None`, expected `Some`", stringify!($ty), val);
+                        assert!(res.is_some(), "{}::try_ref_from_bytes: got `None`, expected `Some`", stringify!($ty));
                     }
 
                     if let Some(bytes) = bytes {
@@ -1730,13 +1827,13 @@ mod tests {
 
                         let res = ww.test_try_from_mut(bytes_mut);
                         if let Some(res) = res {
-                            assert!(res.is_some(), "{}::try_mut_from_bytes({:?}): got `None`, expected `Some`", stringify!($ty), val);
+                            assert!(res.is_some(), "{}::try_mut_from_bytes: got `None`, expected `Some`", stringify!($ty));
                         }
                     }
 
                     let res = bytes.and_then(|bytes| ww.test_try_read_from(bytes));
                     if let Some(res) = res {
-                        assert!(res.is_some(), "{}::try_read_from_bytes({:?}): got `None`, expected `Some`", stringify!($ty), val);
+                        assert!(res.is_some(), "{}::try_read_from_bytes: got `None`, expected `Some`", stringify!($ty));
                     }
                 });
                 #[allow(clippy::as_conversions)]
