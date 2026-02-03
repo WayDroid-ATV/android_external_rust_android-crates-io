@@ -18,14 +18,14 @@ rust_test {
     host_supported: true,
     crate_name: "mod",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.4",
+    cargo_pkg_version: "0.4.0",
     crate_root: "tests/mod.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
         unit_test: true,
     },
-    edition: "2021",
+    edition: "2024",
     features: ["std"],
     rustlibs: [
         "libcfg_if",
@@ -39,9 +39,9 @@ rust_library {
     host_supported: true,
     crate_name: "getrandom",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.4",
+    cargo_pkg_version: "0.4.0",
     crate_root: "src/lib.rs",
-    edition: "2021",
+    edition: "2024",
     features: ["std"],
     rustlibs: [
         "libcfg_if",
