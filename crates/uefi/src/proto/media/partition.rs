@@ -3,7 +3,7 @@
 //! Partition information protocol.
 
 use crate::proto::unsafe_protocol;
-use crate::{guid, Char16, Guid};
+use crate::{Char16, Guid, guid};
 
 newtype_enum! {
     /// MBR OS type.
@@ -221,7 +221,11 @@ newtype_enum! {
     }
 }
 
+/// Partition Info [`Protocol`].
+///
 /// Protocol for accessing partition information.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[allow(missing_debug_implementations)]
 #[repr(C)]
 #[repr(packed)]

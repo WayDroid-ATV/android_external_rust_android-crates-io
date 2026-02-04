@@ -51,9 +51,26 @@ pub fn uefi_revision() -> Revision {
 
 /// Call `f` with a slice of [`ConfigTableEntry`]. Each entry provides access to
 /// a vendor-specific table.
-pub fn with_config_table<F, R>(f: F) -> R
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use uefi::system::with_config_table;
+/// use uefi::table::cfg::ConfigTableEntry;
+///
+/// with_config_table(|slice| {
+///     for i in slice {
+///         match i.guid {
+///             ConfigTableEntry::ACPI_GUID => println!("Found ACPI1"),
+///             ConfigTableEntry::ACPI2_GUID => println!("Found ACPI2"),
+///             guid => println!("Found {}", guid),
+///         }
+///     }
+/// });
+/// ```
+pub fn with_config_table<F, R>(mut f: F) -> R
 where
-    F: Fn(&[ConfigTableEntry]) -> R,
+    F: FnMut(&[ConfigTableEntry]) -> R,
 {
     let st = table::system_table_raw_panicking();
     // SAFETY: valid per requirements of `set_system_table`.
@@ -66,6 +83,7 @@ where
     } else {
         unsafe { slice::from_raw_parts(ptr, len) }
     };
+
     f(slice)
 }
 
@@ -75,9 +93,9 @@ where
 ///
 /// This function will panic if called after exiting boot services, or if stdin
 /// is not available.
-pub fn with_stdin<F, R>(f: F) -> R
+pub fn with_stdin<F, R>(mut f: F) -> R
 where
-    F: Fn(&mut Input) -> R,
+    F: FnMut(&mut Input) -> R,
 {
     let st = table::system_table_raw_panicking();
     // SAFETY: valid per requirements of `set_system_table`.
@@ -101,9 +119,9 @@ where
 ///
 /// This function will panic if called after exiting boot services, or if stdout
 /// is not available.
-pub fn with_stdout<F, R>(f: F) -> R
+pub fn with_stdout<F, R>(mut f: F) -> R
 where
-    F: Fn(&mut Output) -> R,
+    F: FnMut(&mut Output) -> R,
 {
     let st = table::system_table_raw_panicking();
     // SAFETY: valid per requirements of `set_system_table`.
@@ -127,9 +145,9 @@ where
 ///
 /// This function will panic if called after exiting boot services, or if stderr
 /// is not available.
-pub fn with_stderr<F, R>(f: F) -> R
+pub fn with_stderr<F, R>(mut f: F) -> R
 where
-    F: Fn(&mut Output) -> R,
+    F: FnMut(&mut Output) -> R,
 {
     let st = table::system_table_raw_panicking();
     // SAFETY: valid per requirements of `set_system_table`.
@@ -145,4 +163,26 @@ where
     let stderr = unsafe { &mut *stderr };
 
     f(stderr)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[allow(dead_code)]
+    #[allow(clippy::assertions_on_constants)]
+    fn with_config_table_compile_test() {
+        assert!(false, "compile test only");
+
+        let mut acpi2_address = None;
+
+        with_config_table(|slice| {
+            for i in slice {
+                if i.guid == ConfigTableEntry::ACPI2_GUID {
+                    acpi2_address = Some(i.address);
+                    break;
+                }
+            }
+        });
+    }
 }

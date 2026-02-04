@@ -47,7 +47,11 @@ pub struct DisplayOnly(pub bool);
 #[derive(Clone, Copy, Debug)]
 pub struct AllowShortcuts(pub bool);
 
+/// Device Path to Text [`Protocol`].
+///
 /// Protocol for converting a [`DevicePath`] or `DevicePathNode`] to a string.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(DevicePathToTextProtocol::GUID)]
@@ -99,7 +103,11 @@ impl DevicePathToText {
     }
 }
 
+/// Device Path from Text [`Protocol`].
+///
 /// Protocol for converting a string to a [`DevicePath`] or `DevicePathNode`].
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol("05c99a21-c70f-4ad2-8a5f-35df3343f51e")]
@@ -122,7 +130,7 @@ impl DevicePathFromText {
             let ptr = (self.0.convert_text_to_device_node)(text_device_node.as_ptr().cast());
             NonNull::new(ptr.cast_mut())
                 .map(|p| PoolDevicePathNode(PoolAllocation::new(p.cast())))
-                .ok_or(Status::OUT_OF_RESOURCES.into())
+                .ok_or_else(|| Status::OUT_OF_RESOURCES.into())
         }
     }
 
@@ -139,7 +147,7 @@ impl DevicePathFromText {
             let ptr = (self.0.convert_text_to_device_path)(text_device_path.as_ptr().cast());
             NonNull::new(ptr.cast_mut())
                 .map(|p| PoolDevicePath(PoolAllocation::new(p.cast())))
-                .ok_or(Status::OUT_OF_RESOURCES.into())
+                .ok_or_else(|| Status::OUT_OF_RESOURCES.into())
         }
     }
 }

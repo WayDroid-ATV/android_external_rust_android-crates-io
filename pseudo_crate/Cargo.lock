@@ -614,7 +614,7 @@ dependencies = [
  "ucd-trie",
  "ucs2",
  "uefi",
- "uefi-macros 0.19.0",
+ "uefi-macros",
  "uefi-raw",
  "uguid",
  "unicode-bidi",
@@ -2663,7 +2663,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0359ee92f81184d7985519e474bda2a5738476334edd3746c9b1265c067afe70"
 dependencies = [
  "heck 0.5.0",
- "proc-macro2 1.0.105",
+ "proc-macro2 1.0.106",
  "quote 1.0.44",
  "syn 2.0.114",
 ]
@@ -8812,29 +8812,18 @@ dependencies = [
 
 [[package]]
 name = "uefi"
-version = "0.35.0"
+version = "0.36.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da7569ceafb898907ff764629bac90ac24ba4203c38c33ef79ee88c74aa35b11"
+checksum = "71fe9058b73ee2b6559524af9e33199c13b2485ddbf3ad1181b68051cdc50c17"
 dependencies = [
  "bitflags 2.10.0",
  "cfg-if",
  "log",
  "ptr_meta",
  "ucs2",
- "uefi-macros 0.18.1",
+ "uefi-macros",
  "uefi-raw",
  "uguid",
-]
-
-[[package]]
-name = "uefi-macros"
-version = "0.18.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3dad47b3af8f99116c0f6d4d669c439487d9aaf1c8d9480d686cda6f3a8aa23"
-dependencies = [
- "proc-macro2 1.0.106",
- "quote 1.0.44",
- "syn 2.0.114",
 ]
 
 [[package]]
@@ -8850,9 +8839,9 @@ dependencies = [
 
 [[package]]
 name = "uefi-raw"
-version = "0.11.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cad96b8baaf1615d3fdd0f03d04a0b487d857c1b51b19dcbfe05e2e3c447b78"
+checksum = "7f64fe59e11af447d12fd60a403c74106eb104309f34b4c6dbce6e927d97da9d"
 dependencies = [
  "bitflags 2.10.0",
  "uguid",
@@ -8860,9 +8849,9 @@ dependencies = [
 
 [[package]]
 name = "uguid"
-version = "2.2.0"
+version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab14ea9660d240e7865ce9d54ecdbd1cd9fa5802ae6f4512f093c7907e921533"
+checksum = "0c8352f8c05e47892e7eaf13b34abd76a7f4aeaf817b716e88789381927f199c"
 
 [[package]]
 name = "unescaper"
@@ -10163,7 +10152,7 @@ checksum = "0c0f9bfd77e6a48eccf51359e3ae77140a7f50b1e2ebfe62422d8afdaffab17a"
 dependencies = [
  "anyhow",
  "prettyplease 0.2.37",
- "proc-macro2 1.0.105",
+ "proc-macro2 1.0.106",
  "quote 1.0.44",
  "syn 2.0.114",
  "wit-bindgen-core",

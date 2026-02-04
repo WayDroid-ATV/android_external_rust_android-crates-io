@@ -13,6 +13,8 @@ use core::fmt::{self, Debug, Display, Formatter};
 use core::{ptr, slice};
 use uefi_raw::protocol::driver::ComponentName2Protocol;
 
+/// Component Name1 [`Protocol`].
+///
 /// Protocol that provides human-readable names for a driver and for each of the
 /// controllers that the driver is managing.
 ///
@@ -27,6 +29,7 @@ use uefi_raw::protocol::driver::ComponentName2Protocol;
 ///
 /// [ISO 639-2]: https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
 /// [RFC 4646]: https://www.rfc-editor.org/rfc/rfc4646
+/// [`Protocol`]: uefi::proto::Protocol
 #[deprecated = "deprecated in UEFI 2.1; use ComponentName2 where possible"]
 #[unsafe_protocol(ComponentName2Protocol::DEPRECATED_COMPONENT_NAME_GUID)]
 #[derive(Debug)]
@@ -43,7 +46,9 @@ impl ComponentName1 {
     /// English is encoded as "eng".
     ///
     /// [ISO 639-2]: https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
-    pub const fn supported_languages(&self) -> core::result::Result<LanguageIter, LanguageError> {
+    pub const fn supported_languages(
+        &self,
+    ) -> core::result::Result<LanguageIter<'_>, LanguageError> {
         LanguageIter::new(self.0.supported_languages, LanguageIterKind::V1)
     }
 
@@ -85,6 +90,8 @@ impl ComponentName1 {
     }
 }
 
+/// Component Name2 [`Protocol`].
+///
 /// Protocol that provides human-readable names for a driver and for each of the
 /// controllers that the driver is managing.
 ///
@@ -99,6 +106,7 @@ impl ComponentName1 {
 ///
 /// [ISO 639-2]: https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
 /// [RFC 4646]: https://www.rfc-editor.org/rfc/rfc4646
+/// [`Protocol`]: uefi::proto::Protocol
 #[unsafe_protocol(ComponentName2Protocol::GUID)]
 #[derive(Debug)]
 #[repr(transparent)]
@@ -110,7 +118,9 @@ impl ComponentName2 {
     /// as "en".
     ///
     /// [RFC 4646]: https://www.rfc-editor.org/rfc/rfc4646
-    pub const fn supported_languages(&self) -> core::result::Result<LanguageIter, LanguageError> {
+    pub const fn supported_languages(
+        &self,
+    ) -> core::result::Result<LanguageIter<'_>, LanguageError> {
         LanguageIter::new(self.0.supported_languages, LanguageIterKind::V2)
     }
 
@@ -185,7 +195,7 @@ impl ComponentName {
     /// [ISO 639-2]: https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
     /// [RFC 4646]: https://www.rfc-editor.org/rfc/rfc4646
     #[allow(clippy::missing_const_for_fn)] // false-positive since Rust 1.86
-    pub fn supported_languages(&self) -> core::result::Result<LanguageIter, LanguageError> {
+    pub fn supported_languages(&self) -> core::result::Result<LanguageIter<'_>, LanguageError> {
         match self {
             Self::V1(cn1) => cn1.supported_languages(),
             Self::V2(cn2) => cn2.supported_languages(),
@@ -246,7 +256,7 @@ pub enum LanguageError {
 impl Display for LanguageError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Ascii { index } => write!(f, "invalid character at index: {}", index),
+            Self::Ascii { index } => write!(f, "invalid character at index: {index}"),
         }
     }
 }
@@ -347,17 +357,19 @@ fn language_to_cstr(language: &str) -> Result<LanguageCStr> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::vec::Vec;
     use LanguageIterKind::{V1, V2};
+    use alloc::vec::Vec;
 
     #[test]
     fn test_language_iter_v1() {
         // Empty string.
         let data = "\0";
-        assert!(LanguageIter::new(data.as_ptr(), V1)
-            .unwrap()
-            .next()
-            .is_none());
+        assert!(
+            LanguageIter::new(data.as_ptr(), V1)
+                .unwrap()
+                .next()
+                .is_none()
+        );
 
         // Two languages.
         let data = "engfra\0";
@@ -389,10 +401,12 @@ mod tests {
     fn test_language_iter_v2() {
         // Empty string.
         let data = "\0";
-        assert!(LanguageIter::new(data.as_ptr(), V2)
-            .unwrap()
-            .next()
-            .is_none());
+        assert!(
+            LanguageIter::new(data.as_ptr(), V2)
+                .unwrap()
+                .next()
+                .is_none()
+        );
 
         // Two languages.
         let data = "en;fr\0";

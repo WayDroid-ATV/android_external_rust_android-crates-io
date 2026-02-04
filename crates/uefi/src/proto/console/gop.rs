@@ -54,21 +54,24 @@
 
 use crate::proto::unsafe_protocol;
 use crate::util::usize_from_u32;
-use crate::{boot, Result, StatusExt};
+use crate::{Result, StatusExt, boot};
 use core::fmt::{Debug, Formatter};
 use core::marker::PhantomData;
 use core::ptr::{self, NonNull};
 use uefi_raw::protocol::console::{
-    GraphicsOutputBltOperation, GraphicsOutputModeInformation, GraphicsOutputProtocol,
-    GraphicsOutputProtocolMode,
+    GraphicsOutputBltOperation, GraphicsOutputBltPixel, GraphicsOutputModeInformation,
+    GraphicsOutputProtocol, GraphicsOutputProtocolMode,
 };
 
 pub use uefi_raw::protocol::console::PixelBitmask;
 
-/// Provides access to the video hardware's frame buffer.
+/// Graphics Output [`Protocol`] (GOP). Provides access to the video hardware's
+/// frame buffer.
 ///
-/// The GOP can be used to set the properties of the frame buffer,
-/// and also allows the app to access the in-memory buffer.
+/// The GOP can be used to set the properties of the framebuffer, and also
+/// allows the app to access the in-memory buffer.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(GraphicsOutputProtocol::GUID)]
@@ -104,7 +107,7 @@ impl GraphicsOutput {
 
     /// Returns a [`ModeIter`].
     #[must_use]
-    pub const fn modes(&self) -> ModeIter {
+    pub const fn modes(&self) -> ModeIter<'_> {
         ModeIter {
             gop: self,
             current: 0,
@@ -198,7 +201,8 @@ impl GraphicsOutput {
                     match src_region {
                         BltRegion::Full => (self.0.blt)(
                             &mut self.0,
-                            buffer.as_ptr() as *mut _,
+                            // SAFETY: The buffer is only used for reading.
+                            buffer.as_ptr().cast::<GraphicsOutputBltPixel>().cast_mut(),
                             GraphicsOutputBltOperation::BLT_BUFFER_TO_VIDEO,
                             0,
                             0,
@@ -214,7 +218,8 @@ impl GraphicsOutput {
                             px_stride,
                         } => (self.0.blt)(
                             &mut self.0,
-                            buffer.as_ptr() as *mut _,
+                            // SAFETY: The buffer is only used for reading.
+                            buffer.as_ptr().cast::<GraphicsOutputBltPixel>().cast_mut(),
                             GraphicsOutputBltOperation::BLT_BUFFER_TO_VIDEO,
                             src_x,
                             src_y,
@@ -295,7 +300,7 @@ impl GraphicsOutput {
     }
 
     /// Access the frame buffer directly
-    pub fn frame_buffer(&mut self) -> FrameBuffer {
+    pub fn frame_buffer(&mut self) -> FrameBuffer<'_> {
         assert!(
             self.current_mode_info().pixel_format() != PixelFormat::BltOnly,
             "Cannot access the framebuffer in a Blt-only mode"
@@ -569,7 +574,7 @@ impl FrameBuffer<'_> {
     ///
     /// On some implementations this framebuffer pointer can be used after
     /// exiting boot services, but that is not guaranteed by the UEFI Specification.
-    pub fn as_mut_ptr(&mut self) -> *mut u8 {
+    pub const fn as_mut_ptr(&mut self) -> *mut u8 {
         self.base
     }
 

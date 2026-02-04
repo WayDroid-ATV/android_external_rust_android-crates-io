@@ -7,9 +7,16 @@ use crate::{Result, StatusExt};
 use core::ops::Range;
 use uefi_raw::protocol::memory_protection::MemoryAttributeProtocol;
 
+#[cfg(doc)]
+use crate::Status;
+
+/// Memory Attribute [`Protocol`] for Memory Protection.
+///
 /// Protocol for getting and setting memory protection attributes.
 ///
 /// Corresponds to the C type `EFI_MEMORY_ATTRIBUTE_PROTOCOL`.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[repr(transparent)]
 #[derive(Debug)]
 #[unsafe_protocol(MemoryAttributeProtocol::GUID)]
@@ -30,7 +37,6 @@ impl MemoryProtection {
     /// [`READ_PROTECT`]: MemoryAttribute::READ_PROTECT
     /// [`EXECUTE_PROTECT`]: MemoryAttribute::EXECUTE_PROTECT
     /// [`READ_ONLY`]: MemoryAttribute::READ_ONLY
-    /// [`Status::NO_MAPPING`]: crate::Status::NO_MAPPING
     /// [UEFI page size]: uefi::boot::PAGE_SIZE
     pub fn get_memory_attributes(
         &self,
@@ -92,7 +98,7 @@ impl MemoryProtection {
 }
 
 /// Convert a byte `Range` to `(base_address, length)`.
-fn range_to_base_and_len(r: Range<PhysicalAddress>) -> (PhysicalAddress, PhysicalAddress) {
+const fn range_to_base_and_len(r: Range<PhysicalAddress>) -> (PhysicalAddress, PhysicalAddress) {
     (r.start, r.end.checked_sub(r.start).unwrap())
 }
 

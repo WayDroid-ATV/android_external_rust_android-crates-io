@@ -16,7 +16,12 @@ pub mod pass_thru;
 
 /// Represents the protocol for ATA Pass Thru command handling.
 ///
-/// This type defines the protocols supported for passing commands through the ATA controller.
+/// This type defines the protocols supported for passing ATA commands through to an
+/// ATA compliant controller. Over time, multiple possible transports for ATA commands
+/// have evolved. The UEFI spec generically abstracts all of these transports below
+/// this one protocol, so old PATA drives and controllers, as well as modern AHCI-only
+/// SATA controllers are supported with the same set of APIs.
+/// see: <https://uefi.org/specs/PI/1.8/V5_IDE_Controller.html>
 pub use uefi_raw::protocol::ata::AtaPassThruCommandProtocol;
 
 /// Represents an ATA request built for execution on an ATA controller.
@@ -43,7 +48,7 @@ pub struct AtaRequestBuilder<'a> {
 impl<'a> AtaRequestBuilder<'a> {
     /// Creates a new [`AtaRequestBuilder`] with the specified alignment, command, and protocol.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `io_align`: The I/O buffer alignment required for the ATA controller.
     /// - `command`: The ATA command byte specifying the operation to execute.
     /// - `protocol`: The protocol type for the command (e.g., DMA, UDMA, etc.).
@@ -87,9 +92,38 @@ impl<'a> AtaRequestBuilder<'a> {
         })
     }
 
+    // # PIO
+    // ########################################################################
+
+    /// Creates a builder for a PIO write operation.
+    ///
+    /// Since the ATA specification mandates the support for PIO mode for all
+    /// compliant drives and controllers, this is the protocol variant with the
+    /// highest compatibility in the field.
+    /// So probing, (sending ATA IDENTIFY commands to device ports to find out
+    /// whether there is actually a device connected to it) should probably be
+    /// done using this method most of the time.
+    /// If this errors with Status "UNSUPPORTED", try UDMA next.
+    ///
+    /// # Arguments
+    /// - `io_align`: The I/O buffer alignment required for the ATA controller.
+    /// - `command`: The ATA command byte specifying the write operation.
+    ///
+    /// # Returns
+    /// `Result<Self, LayoutError>` indicating success or memory allocation failure.
+    ///
+    /// # Errors
+    /// This method can fail due to alignment or memory allocation issues.
+    pub fn read_pio(io_align: u32, command: u8) -> Result<Self, LayoutError> {
+        Self::new(io_align, command, AtaPassThruCommandProtocol::PIO_DATA_IN)
+    }
+
+    // # UDMA
+    // ########################################################################
+
     /// Creates a builder for a UDMA read operation.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `io_align`: The I/O buffer alignment required for the ATA controller.
     /// - `command`: The ATA command byte specifying the read operation.
     ///
@@ -104,7 +138,7 @@ impl<'a> AtaRequestBuilder<'a> {
 
     /// Creates a builder for a UDMA write operation.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `io_align`: The I/O buffer alignment required for the ATA controller.
     /// - `command`: The ATA command byte specifying the write operation.
     ///
@@ -196,7 +230,7 @@ impl<'a> AtaRequestBuilder<'a> {
 
     /// Uses a user-supplied buffer for reading data from the device.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `bfr`: A mutable reference to an [`AlignedBuffer`] that will be used to store data read from the device.
     ///
     /// # Returns
@@ -216,7 +250,7 @@ impl<'a> AtaRequestBuilder<'a> {
 
     /// Adds a newly allocated read buffer to the built ATA request.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `len`: The size of the buffer (in bytes) to allocate for receiving data.
     ///
     /// # Returns
@@ -234,7 +268,7 @@ impl<'a> AtaRequestBuilder<'a> {
 
     /// Uses a user-supplied buffer for writing data to the device.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `bfr`: A mutable reference to an [`AlignedBuffer`] containing the data to be written to the device.
     ///
     /// # Returns
@@ -255,7 +289,7 @@ impl<'a> AtaRequestBuilder<'a> {
     /// Adds a newly allocated write buffer to the built ATA request that is filled from the
     /// given data buffer. (Done for memory alignment and lifetime purposes)
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `data`: A slice of bytes representing the data to be written.
     ///
     /// # Returns
@@ -294,7 +328,7 @@ impl<'a> AtaResponse<'a> {
     /// # Returns
     /// A reference to the [`AtaStatusBlock`] containing details about the status of the executed operation.
     #[must_use]
-    pub fn status(&self) -> &'a AtaStatusBlock {
+    pub const fn status(&self) -> &'a AtaStatusBlock {
         unsafe {
             self.req
                 .asb
@@ -310,7 +344,7 @@ impl<'a> AtaResponse<'a> {
     /// # Returns
     /// `Option<&[u8]>`: A slice of the data read from the device, or `None` if no read buffer was used.
     #[must_use]
-    pub fn read_buffer(&self) -> Option<&'a [u8]> {
+    pub const fn read_buffer(&self) -> Option<&'a [u8]> {
         if self.req.packet.in_data_buffer.is_null() {
             return None;
         }

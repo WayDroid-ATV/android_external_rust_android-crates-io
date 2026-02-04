@@ -22,7 +22,7 @@
 //! [`proto`]: crate::proto
 
 pub use uefi_raw::table::boot::{
-    EventType, MemoryAttribute, MemoryDescriptor, MemoryType, Tpl, PAGE_SIZE,
+    EventType, MemoryAttribute, MemoryDescriptor, MemoryType, PAGE_SIZE, Tpl,
 };
 
 use crate::data_types::PhysicalAddress;
@@ -37,14 +37,15 @@ use crate::proto::{BootPolicy, Protocol, ProtocolPointer};
 use crate::runtime::{self, ResetType};
 use crate::table::Revision;
 use crate::util::opt_nonnull_to_ptr;
-use crate::{table, Char16, Error, Event, Guid, Handle, Result, Status, StatusExt};
+use crate::{Char16, Error, Event, Guid, Handle, Result, Status, StatusExt, table};
 use core::ffi::c_void;
 use core::mem::MaybeUninit;
 use core::ops::{Deref, DerefMut};
 use core::ptr::{self, NonNull};
 use core::sync::atomic::{AtomicPtr, Ordering};
+use core::time::Duration;
 use core::{mem, slice};
-use uefi_raw::table::boot::{InterfaceType, TimerDelay};
+use uefi_raw::table::boot::{AllocateType as RawAllocateType, InterfaceType, TimerDelay};
 #[cfg(feature = "alloc")]
 use {alloc::vec::Vec, uefi::ResultExt};
 
@@ -120,28 +121,46 @@ pub unsafe fn raise_tpl(tpl: Tpl) -> TplGuard {
     }
 }
 
-/// Allocates memory pages from the system.
+/// Allocates a consecutive set of memory pages using the UEFI allocator.
 ///
-/// UEFI OS loaders should allocate memory of the type `LoaderData`.
+/// The buffer will be [`PAGE_SIZE`] aligned. Callers are responsible for
+/// freeing the memory using [`free_pages`].
+///
+/// # Arguments
+/// - `allocation_type`: The [`AllocateType`] to choose the allocation strategy.
+/// - `memory_type`: The [`MemoryType`] used to persist the allocation in the
+///   UEFI memory map. Typically, UEFI OS loaders should allocate memory of
+///   type [`MemoryType::LOADER_DATA`].
+///- `count`: Number of pages to allocate.
+///
+/// # Safety
+///
+/// Using this function is safe, but it returns a raw pointer to uninitialized
+/// memory. The memory must be initialized before creating a reference to it
+/// or reading from it eventually.
 ///
 /// # Errors
 ///
 /// * [`Status::OUT_OF_RESOURCES`]: allocation failed.
 /// * [`Status::INVALID_PARAMETER`]: `mem_ty` is [`MemoryType::PERSISTENT_MEMORY`],
-///   [`MemoryType::UNACCEPTED`], or in the range [`MemoryType::MAX`]`..=0x6fff_ffff`.
+///   [`MemoryType::UNACCEPTED`], or in the range <code>[MemoryType::MAX]..=0x6fff_ffff</code>.
 /// * [`Status::NOT_FOUND`]: the requested pages could not be found.
-pub fn allocate_pages(ty: AllocateType, mem_ty: MemoryType, count: usize) -> Result<NonNull<u8>> {
+pub fn allocate_pages(
+    allocation_type: AllocateType,
+    memory_type: MemoryType,
+    count: usize,
+) -> Result<NonNull<u8>> {
     let bt = boot_services_raw_panicking();
     let bt = unsafe { bt.as_ref() };
 
-    let (ty, initial_addr) = match ty {
-        AllocateType::AnyPages => (0, 0),
-        AllocateType::MaxAddress(addr) => (1, addr),
-        AllocateType::Address(addr) => (2, addr),
+    let (ty, initial_addr) = match allocation_type {
+        AllocateType::AnyPages => (RawAllocateType::ANY_PAGES, 0),
+        AllocateType::MaxAddress(addr) => (RawAllocateType::MAX_ADDRESS, addr),
+        AllocateType::Address(addr) => (RawAllocateType::ADDRESS, addr),
     };
 
     let mut addr1 = initial_addr;
-    unsafe { (bt.allocate_pages)(ty, mem_ty, count, &mut addr1) }.to_result()?;
+    unsafe { (bt.allocate_pages)(ty, memory_type, count, &mut addr1) }.to_result()?;
 
     // The UEFI spec allows `allocate_pages` to return a valid allocation at
     // address zero. Rust does not allow writes through a null pointer (which
@@ -155,7 +174,7 @@ pub fn allocate_pages(ty: AllocateType, mem_ty: MemoryType, count: usize) -> Res
     // not yet been freed, so if this allocation succeeds it should be at a
     // non-zero address.
     let mut addr2 = initial_addr;
-    let r = unsafe { (bt.allocate_pages)(ty, mem_ty, count, &mut addr2) }.to_result();
+    let r = unsafe { (bt.allocate_pages)(ty, memory_type, count, &mut addr2) }.to_result();
 
     // Free the original allocation (ignoring errors).
     let _unused = unsafe { (bt.free_pages)(addr1, count) };
@@ -189,22 +208,37 @@ pub unsafe fn free_pages(ptr: NonNull<u8>, count: usize) -> Result {
     unsafe { (bt.free_pages)(addr, count) }.to_result()
 }
 
-/// Allocates from a memory pool. The pointer will be 8-byte aligned.
+/// Allocates a consecutive region of bytes using the UEFI allocator.
+///
+/// The buffer will be 8-byte aligned. Callers are responsible for freeing the
+/// memory using [`free_pool`].
+///
+/// # Arguments
+/// - `memory_type`: The [`MemoryType`] used to persist the allocation in the
+///   UEFI memory map. Typically, UEFI OS loaders should allocate memory of
+///   type [`MemoryType::LOADER_DATA`].
+///- `size`: Number of bytes to allocate.
+///
+/// # Safety
+///
+/// Using this function is safe, but it returns a raw pointer to uninitialized
+/// memory. The memory must be initialized before creating a reference to it
+/// or reading from it eventually.
 ///
 /// # Errors
 ///
 /// * [`Status::OUT_OF_RESOURCES`]: allocation failed.
 /// * [`Status::INVALID_PARAMETER`]: `mem_ty` is [`MemoryType::PERSISTENT_MEMORY`],
-///   [`MemoryType::UNACCEPTED`], or in the range [`MemoryType::MAX`]`..=0x6fff_ffff`.
-pub fn allocate_pool(mem_ty: MemoryType, size: usize) -> Result<NonNull<u8>> {
+///   [`MemoryType::UNACCEPTED`], or in the range <code>[MemoryType::MAX]..=0x6fff_ffff</code>.
+pub fn allocate_pool(memory_type: MemoryType, size: usize) -> Result<NonNull<u8>> {
     let bt = boot_services_raw_panicking();
     let bt = unsafe { bt.as_ref() };
 
     let mut buffer = ptr::null_mut();
-    let ptr =
-        unsafe { (bt.allocate_pool)(mem_ty, size, &mut buffer) }.to_result_with_val(|| buffer)?;
+    let ptr = unsafe { (bt.allocate_pool)(memory_type, size, &mut buffer) }
+        .to_result_with_val(|| buffer)?;
 
-    Ok(NonNull::new(ptr).expect("allocate_pool must not return a null pointer if successful"))
+    NonNull::new(ptr).ok_or_else(|| Status::OUT_OF_RESOURCES.into())
 }
 
 /// Frees memory allocated by [`allocate_pool`].
@@ -276,7 +310,7 @@ pub(crate) fn memory_map_size() -> MemoryMapMeta {
 /// the right allocation size for the memory map to prevent
 /// [`Status::BUFFER_TOO_SMALL`].
 ///
-/// # Parameters
+/// # Arguments
 ///
 /// - `mt`: The memory type for the backing memory on the UEFI heap.
 ///   Usually, this is [`MemoryType::LOADER_DATA`]. You can also use a
@@ -497,7 +531,9 @@ pub fn check_event(event: Event) -> Result<bool> {
     }
 }
 
-/// Places the supplied `event` in the signaled state. If `event` is already in
+/// Places the supplied `event` in the signaled state.
+///
+/// If `event` is already in
 /// the signaled state, the function returns successfully. If `event` is of type
 /// [`NOTIFY_SIGNAL`], the event's notification function is scheduled to be
 /// invoked at the event's notification task priority level.
@@ -712,12 +748,14 @@ pub unsafe fn install_protocol_interface(
     .to_result_with_val(|| unsafe { Handle::from_ptr(handle) }.unwrap())
 }
 
-/// Reinstalls a protocol interface on a device handle. `old_interface` is replaced with `new_interface`.
-/// These interfaces may be the same, in which case the registered protocol notifications occur for the handle
-/// without replacing the interface.
+/// Reinstalls a protocol interface on a device handle. `old_interface` is
+/// replaced with `new_interface`.
 ///
-/// As with `install_protocol_interface`, any process that has registered to wait for the installation of
-/// the interface is notified.
+/// These interfaces may be the same, in which case the registered protocol
+/// notifications occur for the handle without replacing the interface.
+///
+/// As with `install_protocol_interface`, any process that has registered to
+/// wait for the installation of the interface is notified.
 ///
 /// # Safety
 ///
@@ -819,12 +857,14 @@ pub fn protocols_per_handle(handle: Handle) -> Result<ProtocolsPerHandle> {
         })
 }
 
-/// Locates the handle of a device on the device path that supports the specified protocol.
+/// Locates the handle of a device on the [`DevicePath`] that supports the
+/// specified [`Protocol`].
 ///
-/// The `device_path` is updated to point at the remaining part of the [`DevicePath`] after
-/// the part that matched the protocol. For example, it can be used with a device path
-/// that contains a file path to strip off the file system portion of the device path,
-/// leaving the file path and handle to the file system driver needed to access the file.
+/// The `device_path` is updated to point at the remaining part that matched the
+/// protocol. For example, this function can be used with a device path that
+/// contains a file path to strip off the file system portion of the device
+/// path, leaving the file path and handle to the file system driver needed to
+/// access the file.
 ///
 /// If the first node of `device_path` matches the protocol, the `device_path`
 /// is advanced to the device path terminator node. If `device_path` is a
@@ -925,7 +965,7 @@ pub fn locate_handle_buffer(search_ty: SearchType) -> Result<HandleBuffer> {
         })
 }
 
-/// Returns all the handles implementing a certain protocol.
+/// Returns all the handles implementing a certain [`Protocol`].
 ///
 /// # Errors
 ///
@@ -1004,7 +1044,7 @@ pub fn get_handle_for_protocol<P: ProtocolPointer + ?Sized>() -> Result<Handle> 
         .ok_or_else(|| Status::NOT_FOUND.into())
 }
 
-/// Opens a protocol interface for a handle.
+/// Opens a [`Protocol`] interface for a handle.
 ///
 /// See also [`open_protocol_exclusive`], which provides a safe subset of this
 /// functionality.
@@ -1067,7 +1107,7 @@ pub unsafe fn open_protocol<P: ProtocolPointer + ?Sized>(
     })
 }
 
-/// Opens a protocol interface for a handle in exclusive mode.
+/// Opens a [`Protocol`] interface for a handle in exclusive mode.
 ///
 /// If successful, a [`ScopedProtocol`] is returned that will automatically
 /// close the protocol interface when dropped.
@@ -1095,7 +1135,7 @@ pub fn open_protocol_exclusive<P: ProtocolPointer + ?Sized>(
     }
 }
 
-/// Tests whether a handle supports a protocol.
+/// Tests whether a handle supports a [`Protocol`].
 ///
 /// Returns `Ok(true)` if the handle supports the protocol, `Ok(false)` if not.
 ///
@@ -1423,10 +1463,12 @@ pub fn set_watchdog_timer(
         .to_result()
 }
 
-/// Stalls execution for the given number of microseconds.
-pub fn stall(microseconds: usize) {
+/// Stalls execution for the given duration.
+pub fn stall(duration: Duration) {
     let bt = boot_services_raw_panicking();
     let bt = unsafe { bt.as_ref() };
+
+    let microseconds = duration.as_micros() as usize;
 
     unsafe {
         // No error conditions are defined in the spec for this function, so
@@ -1507,7 +1549,7 @@ impl Deref for ProtocolsPerHandle {
 }
 
 /// A buffer returned by [`locate_handle_buffer`] that contains an array of
-/// [`Handle`]s that support the requested protocol.
+/// [`Handle`]s that support the requested [`Protocol`].
 #[derive(Debug, Eq, PartialEq)]
 pub struct HandleBuffer {
     count: usize,
@@ -1528,7 +1570,7 @@ impl Deref for HandleBuffer {
     }
 }
 
-/// An open protocol interface. Automatically closes the protocol
+/// An open [`Protocol`] interface. Automatically closes the protocol
 /// interface on drop.
 ///
 /// Most protocols have interface data associated with them. `ScopedProtocol`

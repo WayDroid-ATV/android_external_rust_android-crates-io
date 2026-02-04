@@ -5,15 +5,17 @@
 //! This protocol is used in the boot services environment to perform
 //! lexical comparison functions on Unicode strings for given languages.
 
-use crate::data_types::{CStr16, CStr8};
+use crate::data_types::{CStr8, CStr16};
 use crate::proto::unsafe_protocol;
 use core::cmp::Ordering;
 use core::fmt::{self, Display, Formatter};
 use uefi_raw::protocol::string::UnicodeCollationProtocol;
 
-/// The Unicode Collation Protocol.
+/// Unicode Collation [`Protocol`].
 ///
 /// Used to perform case-insensitive comparisons of strings.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(UnicodeCollationProtocol::GUID)]
@@ -37,13 +39,13 @@ impl UnicodeCollation {
     ///
     /// The following syntax can be used to build the string `pattern`:
     ///
-    /// |Pattern Character            |Meaning                                           |
-    /// |-----------------------------|--------------------------------------------------|
-    /// |*                            | Match 0 or more characters                       |
-    /// |?                            | Match any one character                          |
-    /// |[`char1` `char2`...`charN`]| Match any character in the set                   |
-    /// |[`char1`-`char2`]          | Match any character between `char1` and `char2`|
-    /// |`char`                      | Match the character `char`                      |
+    /// |Pattern Character              |Meaning                                           |
+    /// |-------------------------------|--------------------------------------------------|
+    /// |*                              | Match 0 or more characters                       |
+    /// |?                              | Match any one character                          |
+    /// |``[`char1` `char2`...`charN`]``| Match any character in the set                   |
+    /// |``[`char1`-`char2`]``          | Match any character between `char1` and `char2`|
+    /// |`char`                         | Match the character `char`                      |
     ///
     /// For example, the pattern "*.Fw" will match all strings that end
     /// in ".FW", ".fw", ".Fw" or ".fW". The pattern "[a-z]" will match any
@@ -52,7 +54,7 @@ impl UnicodeCollation {
     /// any single character followed by a "." followed by any string.
     #[must_use]
     pub fn metai_match(&self, s: &CStr16, pattern: &CStr16) -> bool {
-        unsafe { (self.0.metai_match)(&self.0, s.as_ptr().cast(), pattern.as_ptr().cast()) }
+        unsafe { (self.0.metai_match)(&self.0, s.as_ptr().cast(), pattern.as_ptr().cast()) }.into()
     }
 
     /// Converts the characters in `s` to lower case characters.
@@ -130,7 +132,7 @@ impl UnicodeCollation {
                 buf.as_mut_ptr(),
             )
         };
-        if failed {
+        if bool::from(failed) {
             Err(StrConversionError::ConversionFailed)
         } else {
             // After the conversion, there is a possibility that the converted string

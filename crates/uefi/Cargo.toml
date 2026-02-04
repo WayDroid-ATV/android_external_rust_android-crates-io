@@ -10,10 +10,10 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
-rust-version = "1.81"
+edition = "2024"
+rust-version = "1.85.1"
 name = "uefi"
-version = "0.35.0"
+version = "0.36.1"
 authors = ["The Rust OSDev team"]
 build = false
 autolib = false
@@ -37,6 +37,7 @@ categories = [
 ]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/rust-osdev/uefi-rs"
+resolver = "2"
 
 [package.metadata.docs.rs]
 all-features = true
@@ -47,7 +48,7 @@ rustdoc-args = [
 
 [features]
 alloc = []
-default = ["log-debugcon"]
+default = []
 global_allocator = []
 log-debugcon = []
 logger = []
@@ -90,10 +91,10 @@ optional = true
 version = "0.3.3"
 
 [dependencies.uefi-macros]
-version = "0.18.1"
+version = "0.19.0"
 
 [dependencies.uefi-raw]
-version = "0.11.0"
+version = "0.13.0"
 
 [dependencies.uguid]
-version = "=2.2.0"
+version = "2.2.1"

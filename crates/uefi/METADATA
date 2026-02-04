@@ -1,17 +1,17 @@
 name: "uefi"
 description: "This crate makes it easy to develop Rust software that leverages safe, convenient, and performant abstractions for UEFI functionality."
 third_party {
-  version: "0.35.0"
+  version: "0.36.1"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 8
-    day: 13
+    year: 2026
+    month: 2
+    day: 4
   }
   homepage: "https://crates.io/crates/uefi"
   identifier {
     type: "crates.io"
     value: "uefi"
-    version: "0.35.0"
+    version: "0.36.1"
   }
 }

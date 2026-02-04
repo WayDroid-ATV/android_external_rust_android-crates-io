@@ -2,21 +2,19 @@
 
 //! LoadFile and LoadFile2 protocols.
 
-use crate::proto::unsafe_protocol;
 #[cfg(doc)]
 use crate::Status;
-#[cfg(all(feature = "alloc", feature = "unstable"))]
-use alloc::alloc::Global;
+use crate::proto::unsafe_protocol;
 use uefi_raw::protocol::media::{LoadFile2Protocol, LoadFileProtocol};
 #[cfg(feature = "alloc")]
 use {
-    crate::{mem::make_boxed, proto::device_path::DevicePath, Result, StatusExt},
+    crate::{Result, StatusExt, mem::make_boxed, proto::device_path::DevicePath},
     alloc::boxed::Box,
     uefi::proto::BootPolicy,
     uefi_raw::Boolean,
 };
 
-/// Load File Protocol.
+/// Load File [`Protocol`].
 ///
 /// Used to obtain files, that are primarily boot options, from arbitrary
 /// devices.
@@ -33,6 +31,8 @@ use {
 /// EFI_LOAD_FILE_PROTOCOL and the LoadFile() function. In this case the
 /// LoadFile() function implements the policy of interpreting the File Path
 /// value.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(LoadFileProtocol::GUID)]
@@ -41,7 +41,7 @@ pub struct LoadFile(LoadFileProtocol);
 impl LoadFile {
     /// Causes the driver to load a specified file.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `file_path` The device specific path of the file to load.
     /// - `boot_policy` The [`BootPolicy`] to use.
     ///
@@ -88,17 +88,12 @@ impl LoadFile {
             status.to_result_with_err(|_| Some(size)).map(|_| buf)
         };
 
-        #[cfg(not(feature = "unstable"))]
         let file: Box<[u8]> = make_boxed::<[u8], _>(fetch_data_fn)?;
-
-        #[cfg(feature = "unstable")]
-        let file = make_boxed::<[u8], _, _>(fetch_data_fn, Global)?;
-
         Ok(file)
     }
 }
 
-/// Load File2 Protocol.
+/// Load File2 [`Protocol`].
 ///
 /// The Load File2 protocol is used to obtain files from arbitrary devices that
 /// are not boot options.
@@ -109,6 +104,8 @@ impl LoadFile {
 /// arbitrary devices that are not boot options. It is used by LoadImage() when
 /// its BootOption parameter is FALSE and the FilePath does not have an instance
 /// of the EFI_SIMPLE_FILE_SYSTEM_PROTOCOL.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(LoadFile2Protocol::GUID)]
@@ -117,7 +114,7 @@ pub struct LoadFile2(LoadFile2Protocol);
 impl LoadFile2 {
     /// Causes the driver to load a specified file.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `file_path` The device specific path of the file to load.
     ///
     /// # Errors
@@ -154,11 +151,7 @@ impl LoadFile2 {
             status.to_result_with_err(|_| Some(size)).map(|_| buf)
         };
 
-        #[cfg(not(feature = "unstable"))]
         let file: Box<[u8]> = make_boxed::<[u8], _>(fetch_data_fn)?;
-
-        #[cfg(feature = "unstable")]
-        let file = make_boxed::<[u8], _, _>(fetch_data_fn, Global)?;
 
         Ok(file)
     }
