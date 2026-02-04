@@ -1,6 +1,5 @@
 {
   "features":[
-    "__common",
     "balance",
     "buffer",
     "discover",
