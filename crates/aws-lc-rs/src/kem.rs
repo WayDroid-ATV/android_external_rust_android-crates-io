@@ -85,7 +85,7 @@ pub const ML_KEM_1024: Algorithm<AlgorithmId> = Algorithm {
     shared_secret_size: ML_KEM_1024_SHARED_SECRET_LENGTH,
 };
 
-use crate::aws_lc::{NID_ML_KEM_1024, NID_ML_KEM_768};
+use crate::aws_lc::{NID_MLKEM1024, NID_MLKEM768};
 
 /// An identifier for a KEM algorithm.
 pub trait AlgorithmIdentifier:
@@ -172,8 +172,8 @@ pub enum AlgorithmId {
 impl AlgorithmIdentifier for AlgorithmId {
     fn nid(self) -> i32 {
         match self {
-            AlgorithmId::MlKem768 => NID_ML_KEM_768,
-            AlgorithmId::MlKem1024 => NID_ML_KEM_1024,
+            AlgorithmId::MlKem768 => NID_MLKEM768,
+            AlgorithmId::MlKem1024 => NID_MLKEM1024,
         }
     }
 }
@@ -234,7 +234,7 @@ where
 
         if 1 != unsafe {
             EVP_PKEY_decapsulate(
-                *ctx.as_mut(),
+                ctx.as_mut_ptr(),
                 shared_secret.as_mut_ptr(),
                 &mut shared_secret_len,
                 // AWS-LC incorrectly has this as an unqualified `uint8_t *`, it should be qualified with const
@@ -308,7 +308,7 @@ where
 
         if 1 != unsafe {
             EVP_PKEY_encapsulate(
-                *ctx.as_mut(),
+                ctx.as_mut_ptr(),
                 ciphertext.as_mut_ptr(),
                 &mut ciphertext_len,
                 shared_secret.as_mut_ptr(),

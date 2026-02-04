@@ -1,8 +1,8 @@
 diff --git a/src/lib.rs b/src/lib.rs
-index d30c35e6a..8a7a808ab 100644
+index c4e41c8..0c1cf5b 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -192,7 +192,6 @@ pub mod iv;
+@@ -193,7 +193,6 @@ pub mod iv;
  mod pqdsa;
  mod ptr;
  pub mod rsa;
@@ -12,7 +12,7 @@ index d30c35e6a..8a7a808ab 100644
  pub(crate) use debug::derive_debug_via_id;
 diff --git a/src/tls_prf.rs b/src/tls_prf.rs
 deleted file mode 100644
-index e729ff7a2..000000000
+index 39600a7..0000000
 --- a/src/tls_prf.rs
 +++ /dev/null
 @@ -1,372 +0,0 @@
@@ -180,7 +180,7 @@ index e729ff7a2..000000000
 -
 -    if 1 != indicator_check!(unsafe {
 -        CRYPTO_tls1_prf(
--            *digest,
+-            digest.as_const_ptr(),
 -            output.as_mut_ptr(),
 -            output.len(),
 -            secret.as_ptr(),
