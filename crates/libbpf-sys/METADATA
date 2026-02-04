@@ -1,17 +1,17 @@
 name: "libbpf-sys"
 description: "Rust bindings to libbpf from the Linux kernel"
 third_party {
-  version: "1.4.3+v1.4.5"
+  version: "1.6.2+v1.6.2"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 8
-    day: 22
+    year: 2026
+    month: 2
+    day: 4
   }
   homepage: "https://crates.io/crates/libbpf-sys"
   identifier {
     type: "crates.io"
     value: "libbpf-sys"
-    version: "1.4.3+v1.4.5"
+    version: "1.6.2+v1.6.2"
   }
 }
