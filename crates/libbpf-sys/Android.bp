@@ -17,10 +17,10 @@ rust_library {
     name: "liblibbpf_sys",
     crate_name: "libbpf_sys",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.4.3+v1.4.5",
+    cargo_pkg_version: "1.6.2+v1.6.2",
     crate_root: "src/lib.rs",
     srcs: [":liblibbpf_bindgen"],
-    edition: "2018",
+    edition: "2021",
     features: ["bindgen"],
     apex_available: [
         "//apex_available:platform",

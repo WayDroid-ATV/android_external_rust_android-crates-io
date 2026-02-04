@@ -4,12 +4,13 @@ use std::env;
 use std::ffi;
 use std::fs;
 use std::fs::read_dir;
+use std::fs::File;
+use std::io;
 use std::path;
 use std::path::Path;
 use std::process;
 
 use nix::fcntl;
-
 
 fn emit_rerun_directives_for_contents(dir: &Path) {
     for result in read_dir(dir).unwrap() {
@@ -57,6 +58,8 @@ fn generate_bindings(src_dir: path::PathBuf) {
         &path::PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR should always be set"));
 
     bindgen::Builder::default()
+        .rust_target(env!("CARGO_PKG_RUST_VERSION").parse().expect("valid"))
+        .disable_header_comment()
         .derive_default(true)
         .explicit_padding(true)
         .default_enum_style(bindgen::EnumVariation::Consts)
@@ -69,6 +72,7 @@ fn generate_bindings(src_dir: path::PathBuf) {
         .allowlist_function("btf_.+")
         .allowlist_function("libbpf_.+")
         .allowlist_function("perf_.+")
+        .allowlist_function("ring__.+")
         .allowlist_function("ring_buffer_.+")
         .allowlist_function("user_ring_buffer_.+")
         .allowlist_function("vdprintf")
@@ -156,7 +160,12 @@ fn main() {
         let compiler = cc::Build::new().try_get_compiler().expect(
             "a C compiler is required to compile libbpf-sys using the vendored copy of libbpf",
         );
-        let cflags = compiler.cflags_env();
+        let mut cflags = compiler.cflags_env();
+        println!("cargo:rerun-if-env-changed=LIBBPF_SYS_EXTRA_CFLAGS");
+        if let Some(extra_cflags) = env::var_os("LIBBPF_SYS_EXTRA_CFLAGS") {
+            cflags.push(" ");
+            cflags.push(extra_cflags);
+        }
         (Some(compiler), cflags)
     } else {
         (None, ffi::OsString::new())
@@ -164,12 +173,12 @@ fn main() {
 
     if vendored_zlib {
         make_zlib(compiler.as_ref().unwrap(), &src_dir, &out_dir);
-        cflags.push(&format!(" -I{}/zlib/", src_dir.display()));
+        cflags.push(format!(" -I{}/zlib/", src_dir.display()));
     }
 
     if vendored_libelf {
         make_elfutils(compiler.as_ref().unwrap(), &src_dir, &out_dir);
-        cflags.push(&format!(" -I{}/elfutils/libelf/", src_dir.display()));
+        cflags.push(format!(" -I{}/elfutils/libelf/", src_dir.display()));
     }
 
     if vendored_libbpf {
@@ -194,13 +203,32 @@ fn main() {
     );
     println!("cargo:include={}/include", out_dir.to_string_lossy());
 
-    println!("cargo:rerun-if-env-changed=LD_LIBRARY_PATH");
-    if let Ok(ld_path) = env::var("LD_LIBRARY_PATH") {
-        for path in ld_path.split(':') {
+    println!("cargo:rerun-if-env-changed=LIBBPF_SYS_LIBRARY_PATH");
+    if let Ok(lib_path) = env::var("LIBBPF_SYS_LIBRARY_PATH") {
+        for path in lib_path.split(':') {
             if !path.is_empty() {
                 println!("cargo:rustc-link-search=native={}", path);
             }
         }
+    }
+}
+
+fn open_lockable(path: &Path) -> io::Result<File> {
+    let result = File::options()
+        .read(true)
+        // Open with write permissions because flock(2) may require them
+        // on some platforms.
+        .write(true)
+        .open(path);
+    match result {
+        Ok(file) => Ok(file),
+        Err(err) if err.kind() == io::ErrorKind::PermissionDenied => {
+            // On a read-only file system we may not be able to open
+            // with write permissions. So just open for reading and hope
+            // for the best.
+            File::open(path)
+        },
+        e @ Err(..) => e,
     }
 }
 
@@ -209,7 +237,7 @@ fn make_zlib(compiler: &cc::Tool, src_dir: &path::Path, out_dir: &path::Path) {
     // lock README such that if two crates are trying to compile
     // this at the same time (eg libbpf-rs libbpf-cargo)
     // they wont trample each other
-    let file = std::fs::File::open(src_dir.join("README")).unwrap();
+    let file = open_lockable(&src_dir.join("README")).unwrap();
     let _lock = fcntl::Flock::lock(file, fcntl::FlockArg::LockExclusive).unwrap();
 
     let status = process::Command::new("./configure")
@@ -229,7 +257,7 @@ fn make_zlib(compiler: &cc::Tool, src_dir: &path::Path, out_dir: &path::Path) {
     let status = process::Command::new("make")
         .arg("install")
         .arg("-j")
-        .arg(&format!("{}", num_cpus()))
+        .arg(format!("{}", num_cpus()))
         .current_dir(&src_dir)
         .status()
         .expect("could not execute make");
@@ -250,7 +278,7 @@ fn make_elfutils(compiler: &cc::Tool, src_dir: &path::Path, out_dir: &path::Path
     // lock README such that if two crates are trying to compile
     // this at the same time (eg libbpf-rs libbpf-cargo)
     // they wont trample each other
-    let file = std::fs::File::open(src_dir.join("elfutils/README")).unwrap();
+    let file = open_lockable(&src_dir.join("elfutils/README")).unwrap();
     let _lock = fcntl::Flock::lock(file, fcntl::FlockArg::LockExclusive).unwrap();
 
     let flags = compiler
@@ -276,7 +304,7 @@ fn make_elfutils(compiler: &cc::Tool, src_dir: &path::Path, out_dir: &path::Path
     let status = process::Command::new("autoreconf")
         .arg("--install")
         .arg("--force")
-        .current_dir(&src_dir.join("elfutils"))
+        .current_dir(src_dir.join("elfutils"))
         .status()
         .expect("could not execute make");
 
@@ -288,9 +316,23 @@ fn make_elfutils(compiler: &cc::Tool, src_dir: &path::Path, out_dir: &path::Path
         .arg("--enable-maintainer-mode")
         .arg("--disable-debuginfod")
         .arg("--disable-libdebuginfod")
+        .arg("--disable-demangler")
         .arg("--without-zstd")
         .arg("--prefix")
-        .arg(&src_dir.join("elfutils/prefix_dir"))
+        .arg(src_dir.join("elfutils/prefix_dir"))
+        .arg("--host")
+        .arg({
+            let arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
+            let arch = match arch.as_str() {
+                "riscv64gc" => "riscv64",
+                "riscv32gc" => "riscv32",
+                other => other,
+            };
+            let vendor = env::var("CARGO_CFG_TARGET_VENDOR").unwrap();
+            let env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
+            let os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+            format!("{arch}-{vendor}-{os}-{env}")
+        })
         .arg("--libdir")
         .arg(out_dir)
         .env("CC", compiler.path())
@@ -298,18 +340,30 @@ fn make_elfutils(compiler: &cc::Tool, src_dir: &path::Path, out_dir: &path::Path
         .env("CFLAGS", &cflags)
         .env("CXXFLAGS", &cflags)
         .env("LDFLAGS", &out_lib)
-        .current_dir(&src_dir.join("elfutils"))
+        .current_dir(src_dir.join("elfutils"))
         .status()
         .expect("could not execute make");
 
     assert!(status.success(), "make failed");
 
+    // Build in elfutils/lib because building libelf requires it.
+    let status = process::Command::new("make")
+        .arg("-j")
+        .arg(format!("{}", num_cpus()))
+        .arg("BUILD_STATIC_ONLY=y")
+        .current_dir(src_dir.join("elfutils/lib"))
+        .status()
+        .expect("could not execute make");
+
+    assert!(status.success(), "make failed");
+
+    // Build libelf only
     let status = process::Command::new("make")
         .arg("install")
         .arg("-j")
-        .arg(&format!("{}", num_cpus()))
+        .arg(format!("{}", num_cpus()))
         .arg("BUILD_STATIC_ONLY=y")
-        .current_dir(&src_dir.join("elfutils"))
+        .current_dir(src_dir.join("elfutils/libelf"))
         .status()
         .expect("could not execute make");
 
@@ -317,7 +371,7 @@ fn make_elfutils(compiler: &cc::Tool, src_dir: &path::Path, out_dir: &path::Path
 
     let status = process::Command::new("make")
         .arg("distclean")
-        .current_dir(&src_dir.join("elfutils"))
+        .current_dir(src_dir.join("elfutils"))
         .status()
         .expect("could not execute make");
 
@@ -339,7 +393,7 @@ fn make_libbpf(
     let status = process::Command::new("make")
         .arg("install")
         .arg("-j")
-        .arg(&format!("{}", num_cpus()))
+        .arg(format!("{}", num_cpus()))
         .env("BUILD_STATIC_ONLY", "y")
         .env("PREFIX", "/")
         .env("LIBDIR", "")
