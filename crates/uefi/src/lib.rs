@@ -96,7 +96,7 @@
 //! Rust string literals are UTF-8 encoded and thus, not compatible with most
 //! UEFI interfaces. We provide [`CStr16`] and [`CString16`] for proper working
 //! with UCS-2 strings, including various transformation functions from standard
-//! Rust strings. You can use [`ctr16!`] to create UCS-2 string literals at
+//! Rust strings. You can use [`cstr16!`] to create UCS-2 string literals at
 //! compile time.
 //!
 //! ## Tables
@@ -120,6 +120,10 @@
 //!
 //! ## Optional Cargo crate features
 //!
+//! A list of recommended default features follows below.
+//!
+//! ### Feature List
+//!
 //! - `alloc`: Enable functionality requiring the [`alloc`] crate from
 //!   the Rust standard library. For example, methods that return a
 //!   `Vec` rather than filling a statically-sized array. This requires
@@ -130,15 +134,16 @@
 //!   allocator. This is a simple allocator that relies on the UEFI pool
 //!   allocator. You can choose to provide your own allocator instead of
 //!   using this feature, or no allocator at all if you don't need to
-//!   dynamically allocate any memory.
+//!   dynamically allocate any memory. Note that even without that feature,
+//!   some code might use the internal UEFI allocator.
 //! - `logger`: Logging implementation for the standard [`log`] crate
 //!   that prints output to the UEFI console. No buffering is done; this
 //!   is not a high-performance logger.
+//! - `log-debugcon`: Whether the logger set up by `logger` should also log
+//!   to the debugcon device (available in QEMU or Cloud Hypervisor on x86).
 //! - `panic_handler`: Add a default panic handler that logs to `stdout`.
-//! - `unstable`: Enable functionality that depends on [unstable
-//!   features] in the nightly compiler.
-//!   As example, in conjunction with the `alloc`-feature, this gate allows
-//!   the `allocator_api` on certain functions.
+//! - `unstable`: Enable functionality that depends on [unstable features] in
+//!   the Rust compiler (nightly version).
 //! - `qemu`: Enable some code paths to adapt their execution when executed
 //!   in QEMU, such as using the special `qemu-exit` device when the panic
 //!   handler is called.
@@ -146,6 +151,16 @@
 //! Some of these features, such as the `logger` or `panic_handler` features,
 //! only unfold their potential when you invoke `uefi::helpers::init` as soon
 //! as possible in your application.
+//!
+//! ### Recommended Default Features
+//!
+//! In typical use-cases, the following features are useful for you:
+//! - Building a UEFI image:
+//!   - Recommended: `alloc`, `global_allocator`, `logger`, `panic_handler`
+//!   - Optional: `log-debugcon`, `qemu`, `unstable`
+//! - Building another application/library:
+//!   - Recommended: `alloc`
+//!   - Optional: `unstable`
 //!
 //! # Discuss and Contribute
 //!
@@ -198,12 +213,12 @@
 //! [UEFI]: https://uefi.org/
 //! [Zulip]: https://rust-osdev.zulipchat.com
 //! [`GlobalAlloc`]: alloc::alloc::GlobalAlloc
-//! [`ctr16!`]: crate::cstr16
-//! [`entry-macro`]: uefi_macros::entry
+//! [`cstr16!`]: crate::cstr16
 //! [`r-efi`]: https://crates.io/crates/r-efi
 //! [`unsafe_protocol`]: proto::unsafe_protocol
 //! [apache]: https://github.com/rust-osdev/uefi-rs/blob/main/uefi/LICENSE-APACHE
 //! [contributing]: https://github.com/rust-osdev/uefi-rs/blob/main/CONTRIBUTING.md
+//! [entry-macro]: uefi_macros::entry
 //! [issue tracker]: https://github.com/rust-osdev/uefi-rs/issues
 //! [mit]: https://github.com/rust-osdev/uefi-rs/blob/main/uefi/LICENSE-MIT
 //! [rustc-uefi-std]: https://doc.rust-lang.org/nightly/rustc/platform-support/unknown-uefi.html
@@ -212,8 +227,7 @@
 //! [uefi-std-tr-issue]: https://github.com/rust-lang/rust/issues/100499
 //! [unstable features]: https://doc.rust-lang.org/unstable-book/
 
-#![cfg_attr(all(feature = "unstable", feature = "alloc"), feature(allocator_api))]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![no_std]
 #![deny(
     clippy::all,
@@ -258,7 +272,7 @@ mod util;
 
 #[cfg(feature = "alloc")]
 pub use data_types::CString16;
-pub use data_types::{CStr16, CStr8, Char16, Char8, Event, Guid, Handle, Identify};
+pub use data_types::{CStr8, CStr16, Char8, Char16, Event, Guid, Handle, Identify};
 pub use result::{Error, Result, ResultExt, Status, StatusExt};
 /// Re-export ucs2_cstr so that it can be used in the implementation of the
 /// cstr16 macro. It is hidden since it's not intended to be used directly.

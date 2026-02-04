@@ -23,6 +23,8 @@ pub use exception::ExceptionType;
 mod context;
 mod exception;
 
+/// Debug support [`Protocol`].
+///
 /// The debugging support protocol allows debuggers to connect to a UEFI machine.
 /// It is expected that there will typically be two instances of the EFI Debug Support protocol in the system.
 /// One associated with the native processor instruction set (IA-32, x64, ARM, RISC-V, or Itanium processor
@@ -31,26 +33,28 @@ mod exception;
 /// one for any given instruction set.
 ///
 /// NOTE: OVMF only implements this protocol interface for the virtual EBC processor
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(C)]
 #[unsafe_protocol("2755590c-6f3c-42fa-9ea4-a3ba543cda25")]
 pub struct DebugSupport {
     isa: ProcessorArch,
     get_maximum_processor_index:
-        extern "efiapi" fn(this: &mut DebugSupport, max_processor_index: &mut usize) -> Status,
+        extern "efiapi" fn(this: &mut Self, max_processor_index: &mut usize) -> Status,
     register_periodic_callback: unsafe extern "efiapi" fn(
-        this: &mut DebugSupport,
+        this: &mut Self,
         processor_index: usize,
         periodic_callback: Option<unsafe extern "efiapi" fn(SystemContext)>,
     ) -> Status,
     register_exception_callback: unsafe extern "efiapi" fn(
-        this: &mut DebugSupport,
+        this: &mut Self,
         processor_index: usize,
         exception_callback: Option<unsafe extern "efiapi" fn(ExceptionType, SystemContext)>,
         exception_type: ExceptionType,
     ) -> Status,
     invalidate_instruction_cache: unsafe extern "efiapi" fn(
-        this: &mut DebugSupport,
+        this: &mut Self,
         processor_index: usize,
         start: *mut c_void,
         length: u64,
@@ -178,26 +182,30 @@ pub enum ProcessorArch: u32 => {
     RISCV_128   = 0x5128,
 }}
 
+/// Debug Port [`Protocol`].
+///
 /// The debug port protocol abstracts the underlying debug port
 /// hardware, whether it is a regular Serial port or something else.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(C)]
 #[unsafe_protocol("eba4e8d2-3858-41ec-a281-2647ba9660d0")]
 pub struct DebugPort {
-    reset: extern "efiapi" fn(this: &DebugPort) -> Status,
+    reset: extern "efiapi" fn(this: &Self) -> Status,
     write: extern "efiapi" fn(
-        this: &DebugPort,
+        this: &Self,
         timeout: u32,
         buffer_size: &mut usize,
         buffer: *const c_void,
     ) -> Status,
     read: extern "efiapi" fn(
-        this: &DebugPort,
+        this: &Self,
         timeout: u32,
         buffer_size: &mut usize,
         buffer: *mut c_void,
     ) -> Status,
-    poll: extern "efiapi" fn(this: &DebugPort) -> Status,
+    poll: extern "efiapi" fn(this: &Self) -> Status,
 }
 
 impl DebugPort {

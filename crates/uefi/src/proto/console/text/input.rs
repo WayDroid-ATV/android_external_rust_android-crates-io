@@ -5,7 +5,9 @@ use crate::{Char16, Event, Result, Status, StatusExt};
 use core::mem::MaybeUninit;
 use uefi_raw::protocol::console::{InputKey, SimpleTextInputProtocol};
 
-/// Interface for text-based input devices.
+/// Simple Text Input [`Protocol`]. Interface for text-based input devices.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(SimpleTextInputProtocol::GUID)]
@@ -46,7 +48,7 @@ impl Input {
     /// fn read_keyboard_events(input: &mut Input) -> Result {
     ///     loop {
     ///         // Pause until a keyboard event occurs.
-    ///         let mut events = unsafe { [input.wait_for_key_event().unwrap()] };
+    ///         let mut events = [input.wait_for_key_event().unwrap()];
     ///         boot::wait_for_event(&mut events).discard_errdata()?;
     ///
     ///         let u_key = Char16::try_from('u').unwrap();

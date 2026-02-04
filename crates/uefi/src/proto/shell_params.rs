@@ -3,13 +3,15 @@
 //! `ShellParams` protocol
 
 use crate::proto::unsafe_protocol;
-use crate::{data_types, Char16};
+use crate::{Char16, data_types};
 use core::slice::from_raw_parts;
 use uefi_raw::protocol::shell_params::ShellParametersProtocol;
 
 use crate::CStr16;
 
-/// The ShellParameters protocol.
+/// The ShellParameters [`Protocol`].
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(ShellParametersProtocol::GUID)]

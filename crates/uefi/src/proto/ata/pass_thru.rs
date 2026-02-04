@@ -3,15 +3,16 @@
 //! ATA Pass Thru Protocol.
 
 use super::{AtaRequest, AtaResponse};
+use crate::StatusExt;
 use crate::mem::{AlignedBuffer, PoolAllocation};
 use crate::proto::device_path::PoolDevicePathNode;
-use crate::StatusExt;
 use core::alloc::LayoutError;
+use core::cell::UnsafeCell;
 use core::ptr::{self, NonNull};
 use uefi_macros::unsafe_protocol;
+use uefi_raw::Status;
 use uefi_raw::protocol::ata::AtaPassThruProtocol;
 use uefi_raw::protocol::device_path::DevicePathProtocol;
-use uefi_raw::Status;
 
 /// Mode structure with controller-specific information.
 pub type AtaPassThruMode = uefi_raw::protocol::ata::AtaPassThruMode;
@@ -33,7 +34,7 @@ pub type AtaPassThruMode = uefi_raw::protocol::ata::AtaPassThruMode;
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(AtaPassThruProtocol::GUID)]
-pub struct AtaPassThru(AtaPassThruProtocol);
+pub struct AtaPassThru(UnsafeCell<AtaPassThruProtocol>);
 
 impl AtaPassThru {
     /// Retrieves the mode structure for the Extended SCSI Pass Thru protocol.
@@ -42,7 +43,9 @@ impl AtaPassThru {
     /// The [`AtaPassThruMode`] structure containing configuration details of the protocol.
     #[must_use]
     pub fn mode(&self) -> AtaPassThruMode {
-        unsafe { (*self.0.mode).clone() }
+        let mut mode = unsafe { (*(*self.0.get()).mode).clone() };
+        mode.io_align = mode.io_align.max(1); // 0 and 1 is the same, says UEFI spec
+        mode
     }
 
     /// Retrieves the I/O buffer alignment required by this SCSI channel.
@@ -60,7 +63,7 @@ impl AtaPassThru {
     /// The `ata` api will validate that your buffers have the correct alignment and error
     /// if they don't.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `len`: The size (in bytes) of the buffer to allocate.
     ///
     /// # Returns
@@ -99,16 +102,12 @@ impl AtaPassThru {
 /// available / connected device using [`AtaDevice::execute_command`] before doing anything meaningful.
 #[derive(Debug)]
 pub struct AtaDevice<'a> {
-    proto: &'a AtaPassThruProtocol,
+    proto: &'a UnsafeCell<AtaPassThruProtocol>,
     port: u16,
     pmp: u16,
 }
 
 impl AtaDevice<'_> {
-    fn proto_mut(&mut self) -> *mut AtaPassThruProtocol {
-        ptr::from_ref(self.proto).cast_mut()
-    }
-
     /// Returns the port number of the device.
     ///
     /// # Details
@@ -140,7 +139,9 @@ impl AtaDevice<'_> {
     /// - [`Status::DEVICE_ERROR`] A device error occurred while attempting to reset the specified ATA device.
     /// - [`Status::TIMEOUT`] A timeout occurred while attempting to reset the specified ATA device.
     pub fn reset(&mut self) -> crate::Result<()> {
-        unsafe { (self.proto.reset_device)(self.proto_mut(), self.port, self.pmp).to_result() }
+        unsafe {
+            ((*self.proto.get()).reset_device)(self.proto.get(), self.port, self.pmp).to_result()
+        }
     }
 
     /// Get the final device path node for this device.
@@ -150,17 +151,22 @@ impl AtaDevice<'_> {
     pub fn path_node(&self) -> crate::Result<PoolDevicePathNode> {
         unsafe {
             let mut path_ptr: *const DevicePathProtocol = ptr::null();
-            (self.proto.build_device_path)(self.proto, self.port, self.pmp, &mut path_ptr)
-                .to_result()?;
+            ((*self.proto.get()).build_device_path)(
+                self.proto.get(),
+                self.port,
+                self.pmp,
+                &mut path_ptr,
+            )
+            .to_result()?;
             NonNull::new(path_ptr.cast_mut())
                 .map(|p| PoolDevicePathNode(PoolAllocation::new(p.cast())))
-                .ok_or(Status::OUT_OF_RESOURCES.into())
+                .ok_or_else(|| Status::OUT_OF_RESOURCES.into())
         }
     }
 
     /// Executes a command on the device.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `req`: The request structure containing details about the command to execute.
     ///
     /// # Returns
@@ -182,8 +188,8 @@ impl AtaDevice<'_> {
     ) -> crate::Result<AtaResponse<'req>> {
         req.packet.acb = &req.acb;
         unsafe {
-            (self.proto.pass_thru)(
-                self.proto_mut(),
+            ((*self.proto.get()).pass_thru)(
+                self.proto.get(),
                 self.port,
                 self.pmp,
                 &mut req.packet,
@@ -201,7 +207,7 @@ impl AtaDevice<'_> {
 /// is actually available and connected!
 #[derive(Debug)]
 pub struct AtaDeviceIterator<'a> {
-    proto: &'a AtaPassThruProtocol,
+    proto: &'a UnsafeCell<AtaPassThruProtocol>,
     // when there are no more devices on this port -> get next port
     end_of_port: bool,
     prev_port: u16,
@@ -214,7 +220,9 @@ impl<'a> Iterator for AtaDeviceIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         loop {
             if self.end_of_port {
-                let result = unsafe { (self.proto.get_next_port)(self.proto, &mut self.prev_port) };
+                let result = unsafe {
+                    ((*self.proto.get()).get_next_port)(self.proto.get(), &mut self.prev_port)
+                };
                 match result {
                     Status::SUCCESS => self.end_of_port = false,
                     Status::NOT_FOUND => return None, // no more ports / devices. End of list
@@ -231,7 +239,11 @@ impl<'a> Iterator for AtaDeviceIterator<'a> {
             //   to the port! A port where the device is directly connected uses a pmp-value of 0xFFFF.
             let was_first = self.prev_pmp == 0xFFFF;
             let result = unsafe {
-                (self.proto.get_next_device)(self.proto, self.prev_port, &mut self.prev_pmp)
+                ((*self.proto.get()).get_next_device)(
+                    self.proto.get(),
+                    self.prev_port,
+                    &mut self.prev_pmp,
+                )
             };
             match result {
                 Status::SUCCESS => {

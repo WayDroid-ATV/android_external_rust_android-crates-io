@@ -11,6 +11,9 @@ use uefi_raw::protocol::scsi::{
     ScsiIoDataDirection, ScsiIoHostAdapterStatus, ScsiIoScsiRequestPacket, ScsiIoTargetStatus,
 };
 
+#[cfg(doc)]
+use crate::Status;
+
 pub mod pass_thru;
 
 /// Represents the data direction for a SCSI request.
@@ -43,7 +46,7 @@ pub struct ScsiRequestBuilder<'a> {
 impl ScsiRequestBuilder<'_> {
     /// Creates a new instance with the specified data direction and alignment.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `direction`: Specifies the direction of data transfer (READ, WRITE, or BIDIRECTIONAL).
     /// - `io_align`: Specifies the required alignment for data buffers. (SCSI Controller specific!)
     #[must_use]
@@ -81,7 +84,7 @@ impl ScsiRequestBuilder<'_> {
     /// - READ
     /// - MODE_SENSE
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `io_align`: Specifies the required alignment for data buffers.
     #[must_use]
     pub fn read(io_align: u32) -> Self {
@@ -94,7 +97,7 @@ impl ScsiRequestBuilder<'_> {
     /// - WRITE
     /// - MODE_SELECT
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `io_align`: Specifies the required alignment for data buffers.
     #[must_use]
     pub fn write(io_align: u32) -> Self {
@@ -106,7 +109,7 @@ impl ScsiRequestBuilder<'_> {
     /// Some examples of SCSI bidirectional commands are:
     /// - SEND DIAGNOSTIC
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `io_align`: Specifies the required alignment for data buffers.
     #[must_use]
     pub fn bidirectional(io_align: u32) -> Self {
@@ -117,14 +120,14 @@ impl ScsiRequestBuilder<'_> {
 impl<'a> ScsiRequestBuilder<'a> {
     /// Sets a timeout for the SCSI request.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `timeout`: A [`Duration`] representing the maximum time allowed for the request.
     ///   The value is converted to 100-nanosecond units.
     ///
     /// # Description
     /// By default (without calling this method, or by calling with [`Duration::ZERO`]),
     /// SCSI requests have no timeout.
-    /// Setting a timeout here will cause SCSI commands to potentially fail with [`crate::Status::TIMEOUT`].
+    /// Setting a timeout here will cause SCSI commands to potentially fail with [`Status::TIMEOUT`].
     #[must_use]
     pub const fn with_timeout(mut self, timeout: Duration) -> Self {
         self.req.packet.timeout = (timeout.as_nanos() / 100) as u64;
@@ -136,7 +139,7 @@ impl<'a> ScsiRequestBuilder<'a> {
 
     /// Uses a user-supplied buffer for reading data from the device.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `bfr`: A mutable reference to an [`AlignedBuffer`] that will be used to store data read from the device.
     ///
     /// # Returns
@@ -156,7 +159,7 @@ impl<'a> ScsiRequestBuilder<'a> {
 
     /// Adds a newly allocated read buffer to the built SCSI request.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `len`: The size of the buffer (in bytes) to allocate for receiving data.
     ///
     /// # Returns
@@ -174,7 +177,7 @@ impl<'a> ScsiRequestBuilder<'a> {
 
     /// Adds a newly allocated sense buffer to the built SCSI request.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `len`: The size of the buffer (in bytes) to allocate for receiving sense data.
     ///
     /// # Returns
@@ -192,7 +195,7 @@ impl<'a> ScsiRequestBuilder<'a> {
 
     /// Uses a user-supplied buffer for writing data to the device.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `bfr`: A mutable reference to an [`AlignedBuffer`] containing the data to be written to the device.
     ///
     /// # Returns
@@ -213,7 +216,7 @@ impl<'a> ScsiRequestBuilder<'a> {
     /// Adds a newly allocated write buffer to the built SCSI request that is filled from the
     /// given data buffer. (Done for memory alignment and lifetime purposes)
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `data`: A slice of bytes representing the data to be written.
     ///
     /// # Returns
@@ -232,7 +235,7 @@ impl<'a> ScsiRequestBuilder<'a> {
 
     /// Uses a user-supplied Command Data Block (CDB) buffer.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `data`: A mutable reference to an [`AlignedBuffer`] containing the CDB to be sent to the device.
     ///
     /// # Returns
@@ -256,7 +259,7 @@ impl<'a> ScsiRequestBuilder<'a> {
     /// Adds a newly allocated Command Data Block (CDB) buffer to the built SCSI request that is filled from the
     /// given data buffer. (Done for memory alignment and lifetime purposes)
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `data`: A slice of bytes representing the command to be sent.
     ///
     /// # Returns
@@ -300,7 +303,7 @@ impl<'a> ScsiResponse<'a> {
     /// # Safety
     /// - If the buffer pointer is `NULL`, the method returns `None` and avoids dereferencing it.
     #[must_use]
-    pub fn read_buffer(&self) -> Option<&'a [u8]> {
+    pub const fn read_buffer(&self) -> Option<&'a [u8]> {
         if self.0.packet.in_data_buffer.is_null() {
             return None;
         }
@@ -320,7 +323,7 @@ impl<'a> ScsiResponse<'a> {
     /// # Safety
     /// - If the buffer pointer is `NULL`, the method returns `None` and avoids dereferencing it.
     #[must_use]
-    pub fn sense_data(&self) -> Option<&'a [u8]> {
+    pub const fn sense_data(&self) -> Option<&'a [u8]> {
         if self.0.packet.sense_data.is_null() {
             return None;
         }

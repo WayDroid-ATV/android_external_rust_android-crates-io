@@ -117,13 +117,9 @@ pub trait Align {
     /// this will return 7. Returns 0 if `val == 0`.
     #[must_use]
     fn offset_up_to_alignment(val: usize) -> usize {
-        assert!(Self::alignment() != 0);
+        assert_ne!(Self::alignment(), 0);
         let r = val % Self::alignment();
-        if r == 0 {
-            0
-        } else {
-            Self::alignment() - r
-        }
+        if r == 0 { 0 } else { Self::alignment() - r }
     }
 
     /// Round `val` up so that it is aligned.
@@ -162,18 +158,20 @@ mod guid;
 pub use guid::{Guid, Identify};
 
 pub mod chars;
-pub use chars::{Char16, Char8};
+pub use chars::{Char8, Char16};
 
 #[macro_use]
 mod opaque;
 
 mod strs;
 pub use strs::{
-    CStr16, CStr8, EqStrUntilNul, FromSliceWithNulError, FromStrWithBufError, PoolString,
+    CStr8, CStr16, EqStrUntilNul, FromSliceWithNulError, FromStrWithBufError, PoolString,
     UnalignedCStr16Error,
 };
 
-/// These functions are used in the implementation of the [`cstr8`] macro.
+/// These functions are used in the implementation of the [`cstr8!`] macro.
+///
+/// [`cstr8!`]: crate::cstr8
 #[doc(hidden)]
 pub use strs::{str_num_latin1_chars, str_to_latin1};
 

@@ -1,32 +1,44 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Device Path protocol
+//! The UEFI device path [`Protocol`], i.e., UEFI device paths.
 //!
-//! A UEFI device path is a very flexible structure for encoding a
-//! programmatic path such as a hard drive or console.
+//! This module provides high-level wrappers to work with UEFI device paths.
+//! Please find additional low-level information in the
+//! [device path section of `uefi-raw`].
 //!
-//! A device path is made up of a packed list of variable-length nodes of
-//! various types. The entire device path is terminated with an
-//! [`END_ENTIRE`] node. A device path _may_ contain multiple device-path
-//! instances separated by [`END_INSTANCE`] nodes, but typical paths contain
-//! only a single instance (in which case no `END_INSTANCE` node is needed).
+//! # Terminology: Device Paths, Device Path Instances, and Device Path Nodes
+//! An open UEFI device path [`Protocol`], also called _device path_, is a
+//! flexible and structured sequence of binary nodes that describes a route from
+//! the UEFI root to a particular device, controller, or file.
+//!
+//! An entire device path can be made up of multiple device path instances,
+//! and each instance is made up of multiple device path nodes. A device path
+//! _may_ contain multiple device-path instances, but typical paths contain only
+//! a single instance.
+//!
+//! Each node represents a step in the path: PCI device, partition, filesystem,
+//! file path, etc. Each node represents a step in the path: PCI device,
+//! partition, filesystem, file path, etc.
 //!
 //! Example of what a device path containing two instances (each comprised of
 //! three nodes) might look like:
 //!
 //! ```text
-//! ┌──────┬─────┬──────────────╥───────┬──────────┬────────────┐
-//! │ ACPI │ PCI │ END_INSTANCE ║ CDROM │ FILEPATH │ END_ENTIRE │
-//! └──────┴─────┴──────────────╨───────┴──────────┴────────────┘
-//! ↑                           ↑                               ↑
-//! ├─── DevicePathInstance ────╨────── DevicePathInstance ─────┤
-//! │                                                           │
-//! └─────────────────── Entire DevicePath ─────────────────────┘
+//! ┌──────┬──────┬──────────────╥───────┬──────────┬────────────┐
+//! │ ACPI │ PCI  │ END_INSTANCE ║ CDROM │ FILEPATH │ END_ENTIRE │
+//! └──────┴──────┴──────────────╨───────┴──────────┴────────────┘
+//! ↑      ↑      ↑              ↑       ↑          ↑            ↑
+//! ├─Node─╨─Node─╨─────Node─────╨─Node──╨───Node───╨────Node────┤
+//! ↑                            ↑                               ↑
+//! ├─── DevicePathInstance ─────╨────── DevicePathInstance ─────┤
+//! │                                                            │
+//! └──────────────────── Entire DevicePath ─────────────────────┘
 //! ```
 //!
 //! # Types
 //!
-//! To represent device paths, this module provides several types:
+//! This module defines several types used to represent device paths.
+//! For constructing device paths, see the [`build`] module.
 //!
 //! * [`DevicePath`] is the root type that represents a full device
 //!   path, containing one or more device path instance. It ends with an
@@ -69,11 +81,19 @@
 //! Note: the API provided by this module is currently mostly limited to
 //! reading existing device paths rather than constructing new ones.
 //!
+//! # Submodules
+//!
+//! - utilities to construct device paths: [`build`]
+//! - utilities to transform device paths to a textual representation: [`text`]
+//! - DevicePathUtilities protocol:: [`util`]
+//!
+//!
 //! [`END_ENTIRE`]: DeviceSubType::END_ENTIRE
 //! [`END_INSTANCE`]: DeviceSubType::END_INSTANCE
 //! [`Protocol`]: crate::proto::Protocol
 //! [`device_type`]: DevicePathNode::device_type
 //! [`sub_type`]: DevicePathNode::sub_type
+//! [device path section of `uefi-raw`]: uefi_raw::protocol::device_path
 
 pub mod build;
 pub mod text;
@@ -82,17 +102,16 @@ pub mod util;
 mod device_path_gen;
 
 pub use device_path_gen::{
-    acpi, bios_boot_spec, end, hardware, media, messaging, DevicePathNodeEnum,
+    DevicePathNodeEnum, acpi, bios_boot_spec, end, hardware, media, messaging,
 };
 pub use uefi_raw::protocol::device_path::{DeviceSubType, DeviceType};
 
 use crate::mem::PoolAllocation;
-use crate::proto::{unsafe_protocol, ProtocolPointer};
+use crate::proto::{ProtocolPointer, unsafe_protocol};
 use core::ffi::c_void;
 use core::fmt::{self, Debug, Display, Formatter};
 use core::ops::Deref;
 use ptr_meta::Pointee;
-
 use uefi_raw::protocol::device_path::DevicePathProtocol;
 #[cfg(feature = "alloc")]
 use {
@@ -278,7 +297,7 @@ impl DevicePathNode {
 
     /// Convert from a generic [`DevicePathNode`] reference to an enum
     /// of more specific node types.
-    pub fn as_enum(&self) -> Result<DevicePathNodeEnum, NodeConversionError> {
+    pub fn as_enum(&self) -> Result<DevicePathNodeEnum<'_>, NodeConversionError> {
         DevicePathNodeEnum::try_from(self)
     }
 
@@ -332,9 +351,14 @@ impl<'a> TryFrom<&'a [u8]> for &'a DevicePathNode {
     }
 }
 
-/// A single device path instance that ends with either an [`END_INSTANCE`]
-/// or [`END_ENTIRE`] node. Use [`DevicePath::instance_iter`] to get the
-/// path instances in a [`DevicePath`].
+/// A single device path instance within a fully-qualified [`DevicePath`], which
+/// ends with either an [`END_INSTANCE`] or [`END_ENTIRE`] node.
+///
+/// An instance is one of possibly multiple complete route to the target, e.g.,
+/// a file can be located via network device one or two.
+///
+/// Use [`DevicePath::instance_iter`] to get the path instances in a
+/// [`DevicePath`].
 ///
 /// See the [module-level documentation] for more details.
 ///
@@ -354,7 +378,7 @@ impl DevicePathInstance {
     ///
     /// [`DevicePathNodes`]: DevicePathNode
     #[must_use]
-    pub const fn node_iter(&self) -> DevicePathNodeIterator {
+    pub const fn node_iter(&self) -> DevicePathNodeIterator<'_> {
         DevicePathNodeIterator {
             nodes: &self.data,
             stop_condition: StopCondition::AnyEndNode,
@@ -400,21 +424,54 @@ impl ToOwned for DevicePathInstance {
     }
 }
 
-/// Device path protocol.
+/// High-level representation of the UEFI [device path protocol], often simply
+/// referred to as "device path".
 ///
-/// Can be used on any device handle to obtain generic path/location information
-/// concerning the physical device or logical device. If the handle does not
-/// logically map to a physical device, the handle may not necessarily support
-/// the device path protocol. The device path describes the location of the
-/// device the handle is for. The size of the Device Path can be determined from
-/// the structures that make up the Device Path.
+/// This type represents an entire device path, possibly consisting of multiple
+/// [`DevicePathInstance`]s and [`DevicePathNode`]s.
+///
+/// Further, this Rust type is a DST and therefore typically exists as reference
+/// to parse underlying data correspondingly. To get an owned device path, you
+/// can use [`DevicePath::to_owned`].
 ///
 /// See the [module-level documentation] for more details.
 ///
+/// # Usage
+/// This type implements [`Protocol`] and therefore can be used on any
+/// device handle to obtain generic path/location information concerning the
+/// physical device or logical device. If the handle does not logically map to a
+/// physical device, the handle may not necessarily support the device path
+/// protocol. The device path describes the location of the device the handle is
+/// for. The size of the Device Path can be determined from the structures that
+/// make up the Device Path.
+///
+/// # Example
+/// ```rust,no_run
+/// use uefi::Handle;
+/// use uefi::boot::{open_protocol_exclusive, ScopedProtocol};
+/// use uefi::proto::device_path::DevicePath;
+/// use uefi::proto::device_path::text::{AllowShortcuts, DisplayOnly};
+/// use uefi::proto::loaded_image::LoadedImage;
+///
+/// fn open_device_path(image_handle: Handle) {
+///     let loaded_image = open_protocol_exclusive::<LoadedImage>(image_handle).unwrap();
+///     let device_handle = loaded_image.device().unwrap();
+///     let device_path: ScopedProtocol<DevicePath>
+///         = open_protocol_exclusive::<DevicePath>(device_handle).unwrap();
+///     log::debug!(
+///         "Device path: {}",
+///         device_path.to_string(DisplayOnly(true), AllowShortcuts(true)).unwrap()
+///     );
+/// }
+/// ```
+///
 /// [module-level documentation]: crate::proto::device_path
 /// [`END_ENTIRE`]: DeviceSubType::END_ENTIRE
+/// [`DevicePathProtocol`]: uefi_raw::protocol::device_path::DevicePathProtocol
+/// [`Protocol`]: uefi::proto::Protocol
+/// [device path protocol]: uefi_raw::protocol::device_path
 #[repr(C, packed)]
-#[unsafe_protocol(uefi_raw::protocol::device_path::DevicePathProtocol::GUID)]
+#[unsafe_protocol(DevicePathProtocol::GUID)]
 #[derive(Eq, Pointee)]
 pub struct DevicePath {
     data: [u8],
@@ -500,7 +557,7 @@ impl DevicePath {
 
     /// Get an iterator over the [`DevicePathInstance`]s in this path.
     #[must_use]
-    pub const fn instance_iter(&self) -> DevicePathInstanceIterator {
+    pub const fn instance_iter(&self) -> DevicePathInstanceIterator<'_> {
         DevicePathInstanceIterator {
             remaining_path: Some(self),
         }
@@ -511,7 +568,7 @@ impl DevicePath {
     /// [`is_end_entire`][DevicePathNode::is_end_entire] is true. That ending
     /// path is not returned by the iterator.
     #[must_use]
-    pub const fn node_iter(&self) -> DevicePathNodeIterator {
+    pub const fn node_iter(&self) -> DevicePathNodeIterator<'_> {
         DevicePathNodeIterator {
             nodes: &self.data,
             stop_condition: StopCondition::EndEntireNode,
@@ -729,12 +786,15 @@ pub enum NodeConversionError {
     UnsupportedType,
 }
 
+/// Loaded Image Device Path [`Protocol`].
+///
 /// Protocol for accessing the device path that was passed in to [`load_image`]
 /// when loading a PE/COFF image.
 ///
 /// The layout of this type is the same as a [`DevicePath`].
 ///
 /// [`load_image`]: crate::boot::load_image
+/// [`Protocol`]: uefi::proto::Protocol
 #[repr(transparent)]
 #[unsafe_protocol("bc62157e-3e33-4fec-9920-2d3b36d750df")]
 #[derive(Debug, Pointee)]
@@ -879,7 +939,6 @@ fn open_utility_protocol() -> Result<ScopedProtocol<DevicePathUtilities>, Device
 mod tests {
     use super::*;
     use alloc::vec::Vec;
-    use core::mem::{size_of, size_of_val};
 
     /// Create a node to `path` from raw data.
     fn add_node(path: &mut Vec<u8>, device_type: u8, sub_type: u8, node_data: &[u8]) {

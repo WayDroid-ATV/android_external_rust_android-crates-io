@@ -60,7 +60,9 @@ impl Align for MemoryDescriptor {
 pub struct MemoryMapKey(pub(crate) usize);
 
 /// A structure containing the meta attributes associated with a call to
-/// `GetMemoryMap` of UEFI. Note that all values refer to the time this was
+/// `GetMemoryMap` of UEFI.
+///
+/// Note that all values refer to the time this was
 /// called. All following invocations (hidden, subtle, and asynchronous ones)
 /// will likely invalidate this.
 #[derive(Copy, Clone, Debug)]
@@ -105,12 +107,11 @@ impl MemoryMapMeta {
 #[cfg(test)]
 mod tests_mmap_artificial {
     use super::*;
-    use core::mem::{size_of, size_of_val};
 
-    fn buffer_to_map(buffer: &mut [MemoryDescriptor]) -> MemoryMapRefMut {
+    fn buffer_to_map(buffer: &mut [MemoryDescriptor]) -> MemoryMapRefMut<'_> {
         let mmap_len = size_of_val(buffer);
         let mmap = {
-            unsafe { core::slice::from_raw_parts_mut(buffer.as_mut_ptr() as *mut u8, mmap_len) }
+            unsafe { core::slice::from_raw_parts_mut(buffer.as_mut_ptr().cast::<u8>(), mmap_len) }
         };
 
         MemoryMapRefMut::new(

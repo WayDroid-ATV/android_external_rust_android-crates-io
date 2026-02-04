@@ -2,8 +2,8 @@
 
 use uefi_raw::Status;
 
-use super::chars::{Char16, Char8, NUL_16, NUL_8};
 use super::UnalignedSlice;
+use super::chars::{Char8, Char16, NUL_8, NUL_16};
 use crate::mem::PoolAllocation;
 use crate::polyfill::maybe_uninit_slice_assume_init_ref;
 use core::borrow::Borrow;
@@ -31,7 +31,7 @@ pub enum FromSliceUntilNulError {
 impl Display for FromSliceUntilNulError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidChar(usize) => write!(f, "invalid character at index {}", usize),
+            Self::InvalidChar(usize) => write!(f, "invalid character at index {usize}"),
             Self::NoNul => write!(f, "no nul character"),
         }
     }
@@ -56,8 +56,8 @@ pub enum FromSliceWithNulError {
 impl Display for FromSliceWithNulError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidChar(usize) => write!(f, "invalid character at index {}", usize),
-            Self::InteriorNul(usize) => write!(f, "interior null character at index {}", usize),
+            Self::InvalidChar(usize) => write!(f, "invalid character at index {usize}"),
+            Self::InteriorNul(usize) => write!(f, "interior null character at index {usize}"),
             Self::NotNulTerminated => write!(f, "not null-terminated"),
         }
     }
@@ -85,8 +85,8 @@ pub enum UnalignedCStr16Error {
 impl Display for UnalignedCStr16Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidChar(usize) => write!(f, "invalid character at index {}", usize),
-            Self::InteriorNul(usize) => write!(f, "interior null character at index {}", usize),
+            Self::InvalidChar(usize) => write!(f, "invalid character at index {usize}"),
+            Self::InteriorNul(usize) => write!(f, "interior null character at index {usize}"),
             Self::NotNulTerminated => write!(f, "not null-terminated"),
             Self::BufferTooSmall => write!(f, "buffer too small"),
         }
@@ -112,8 +112,8 @@ pub enum FromStrWithBufError {
 impl Display for FromStrWithBufError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidChar(usize) => write!(f, "invalid character at index {}", usize),
-            Self::InteriorNul(usize) => write!(f, "interior null character at index {}", usize),
+            Self::InvalidChar(usize) => write!(f, "invalid character at index {usize}"),
+            Self::InteriorNul(usize) => write!(f, "interior null character at index {usize}"),
             Self::BufferTooSmall => write!(f, "buffer too small"),
         }
     }
@@ -569,7 +569,7 @@ impl CStr16 {
 
     /// Returns an iterator over this C string
     #[must_use]
-    pub const fn iter(&self) -> CStr16Iter {
+    pub const fn iter(&self) -> CStr16Iter<'_> {
         CStr16Iter {
             inner: self,
             pos: 0,
@@ -745,7 +745,7 @@ impl PoolString {
     pub unsafe fn new(text: *const Char16) -> crate::Result<Self> {
         NonNull::new(text.cast_mut())
             .map(|p| Self(PoolAllocation::new(p.cast())))
-            .ok_or(Status::OUT_OF_RESOURCES.into())
+            .ok_or_else(|| Status::OUT_OF_RESOURCES.into())
     }
 }
 
@@ -770,6 +770,7 @@ impl UnalignedSlice<'_, u16> {
 }
 
 /// The EqStrUntilNul trait helps to compare Rust strings against UEFI string types (UCS-2 strings).
+///
 /// The given generic implementation of this trait enables us that we only have to
 /// implement one direction (`left.eq_str_until_nul(&right)`) for each UEFI string type and we
 /// get the other direction (`right.eq_str_until_nul(&left)`) for free. Hence, the relation is
@@ -801,7 +802,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{cstr16, cstr8};
+    use crate::{cstr8, cstr16};
     use alloc::format;
     use alloc::string::String;
 
@@ -993,10 +994,10 @@ mod tests {
     fn test_unaligned_cstr16() {
         let mut buf = [0u16; 6];
         let us = unsafe {
-            let ptr = buf.as_mut_ptr() as *mut u8;
+            let ptr = buf.as_mut_ptr().cast::<u8>();
             // Intentionally create an unaligned u16 pointer. This
             // leaves room for five u16 characters.
-            let ptr = ptr.add(1) as *mut u16;
+            let ptr = ptr.add(1).cast::<u16>();
             // Write out the "test" string.
             ptr.add(0).write_unaligned(b't'.into());
             ptr.add(1).write_unaligned(b'e'.into());

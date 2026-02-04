@@ -4,10 +4,21 @@
 
 use crate::protocol::device_path::DevicePathProtocol;
 use crate::table::Header;
-use crate::{Boolean, Char16, Event, Guid, Handle, PhysicalAddress, Status, VirtualAddress};
+use crate::{
+    Boolean, Char16, Event, Guid, Handle, PhysicalAddress, Status, VirtualAddress, newtype_enum,
+};
 use bitflags::bitflags;
 use core::ffi::c_void;
 use core::ops::RangeInclusive;
+
+newtype_enum! {
+    pub enum AllocateType: u32 => {
+        ANY_PAGES = 0,
+        MAX_ADDRESS = 1,
+        ADDRESS = 2,
+        MAX_ALLOCATE_TYPE = 3,
+    }
+}
 
 /// Table of pointers to all the boot services.
 #[derive(Debug)]
@@ -21,7 +32,7 @@ pub struct BootServices {
 
     // Memory allocation functions
     pub allocate_pages: unsafe extern "efiapi" fn(
-        alloc_ty: u32,
+        alloc_ty: AllocateType,
         mem_ty: MemoryType,
         count: usize,
         addr: *mut PhysicalAddress,

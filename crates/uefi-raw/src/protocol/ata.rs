@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use super::device_path::DevicePathProtocol;
-use crate::{Event, Status};
+use crate::{Event, Status, newtype_enum};
 use core::ffi::c_void;
-use uguid::{guid, Guid};
+use uguid::{Guid, guid};
 
 bitflags::bitflags! {
     /// ATA Controller attributes.

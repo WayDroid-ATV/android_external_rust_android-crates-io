@@ -12,7 +12,7 @@
 //! [TCG]: https://trustedcomputinggroup.org/
 //! [TPM]: https://en.wikipedia.org/wiki/Trusted_Platform_Module
 
-use super::{v1, AlgorithmId, EventType, HashAlgorithm, PcrIndex};
+use super::{AlgorithmId, EventType, HashAlgorithm, PcrIndex, v1};
 use crate::data_types::{Align, PhysicalAddress, UnalignedSlice};
 use crate::proto::unsafe_protocol;
 use crate::util::{ptr_write_unaligned_and_add, usize_from_u32};
@@ -25,9 +25,6 @@ use uefi_raw::protocol::tcg::v2::{Tcg2EventHeader as EventHeader, Tcg2Protocol};
 
 #[cfg(feature = "alloc")]
 use {crate::mem::make_boxed, alloc::boxed::Box};
-
-#[cfg(all(feature = "unstable", feature = "alloc"))]
-use alloc::alloc::Global;
 
 pub use uefi_raw::protocol::tcg::v2::{
     Tcg2EventLogFormat as EventLogFormat, Tcg2HashAlgorithmBitmap,
@@ -183,17 +180,7 @@ impl PcrEventInputs {
         event_type: EventType,
         event_data: &[u8],
     ) -> Result<Box<Self>> {
-        #[cfg(not(feature = "unstable"))]
-        {
-            make_boxed(|buf| Self::new_in_buffer(buf, pcr_index, event_type, event_data))
-        }
-        #[cfg(feature = "unstable")]
-        {
-            make_boxed(
-                |buf| Self::new_in_buffer(buf, pcr_index, event_type, event_data),
-                Global,
-            )
-        }
+        make_boxed(|buf| Self::new_in_buffer(buf, pcr_index, event_type, event_data))
     }
 }
 
@@ -336,7 +323,7 @@ pub struct EventLog<'a> {
 impl EventLog<'_> {
     /// Iterator of events in the log.
     #[must_use]
-    pub fn iter(&self) -> EventLogIter {
+    pub fn iter(&self) -> EventLogIter<'_> {
         if let Some(header) = self.header() {
             // Advance past the header
             let location = unsafe { self.location.add(header.size_in_bytes) };
@@ -356,7 +343,7 @@ impl EventLog<'_> {
     }
 
     /// Header at the beginning of the event log.
-    fn header(&self) -> Option<EventLogHeader> {
+    fn header(&self) -> Option<EventLogHeader<'_>> {
         // The spec is unclear if the header is present when there are
         // no entries, so lets assume that `self.location` will be null
         // if there's no header, and otherwise valid.
@@ -513,7 +500,7 @@ impl<'a> PcrEvent<'a> {
 
     /// Digests of the data hashed for this event.
     #[must_use]
-    pub fn digests(&self) -> PcrEventDigests {
+    pub fn digests(&self) -> PcrEventDigests<'_> {
         PcrEventDigests {
             data: self.digests,
             algorithm_digest_sizes: self.algorithm_digest_sizes.clone(),
@@ -556,12 +543,11 @@ impl<'a> Iterator for EventLogIter<'a> {
     }
 }
 
-/// Protocol for interacting with TPM devices.
-///
-/// This protocol can be used for interacting with older TPM 1.1/1.2
-/// devices, but most firmware only uses it for TPM 2.0.
+/// Trusted Computing Group [`Protocol`] (TCG) for TPM 2.0 devices.
 ///
 /// The corresponding C type is `EFI_TCG2_PROTOCOL`.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(Tcg2Protocol::GUID)]
@@ -579,7 +565,7 @@ impl Tcg {
 
     /// Get the V1 event log. This provides events in the same format as a V1
     /// TPM, so all events use SHA-1 hashes.
-    pub fn get_event_log_v1(&mut self) -> Result<v1::EventLog> {
+    pub fn get_event_log_v1(&mut self) -> Result<v1::EventLog<'_>> {
         let mut location = 0;
         let mut last_entry = 0;
         let mut truncated = 0;
@@ -608,7 +594,7 @@ impl Tcg {
     }
 
     /// Get the V2 event log. This format allows for a flexible list of hash types.
-    pub fn get_event_log_v2(&mut self) -> Result<EventLog> {
+    pub fn get_event_log_v2(&mut self) -> Result<EventLog<'_>> {
         let mut location = 0;
         let mut last_entry = 0;
         let mut truncated = 0;

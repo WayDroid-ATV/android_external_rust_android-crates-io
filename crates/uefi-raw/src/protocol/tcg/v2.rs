@@ -13,7 +13,7 @@
 //! [TPM]: https://en.wikipedia.org/wiki/Trusted_Platform_Module
 
 use super::EventType;
-use crate::{guid, Guid, PhysicalAddress, Status};
+use crate::{Guid, PhysicalAddress, Status, guid};
 use bitflags::bitflags;
 use core::ffi::c_void;
 
@@ -111,7 +111,7 @@ pub struct Tcg2BootServiceCapability {
 }
 
 bitflags! {
-    /// Flags for the [`Tcg::hash_log_extend_event`] function.
+    /// Flags for the [`Tcg2Protocol::hash_log_extend_event`] function.
     #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
     #[repr(transparent)]
     pub struct Tcg2HashLogExtendEventFlags: u64 {

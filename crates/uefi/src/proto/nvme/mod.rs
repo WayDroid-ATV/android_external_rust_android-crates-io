@@ -87,7 +87,7 @@ pub struct NvmeRequestBuilder<'buffers> {
 impl<'buffers> NvmeRequestBuilder<'buffers> {
     /// Creates a new builder for configuring an NVMe request.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `io_align`: Memory alignment requirements for buffers.
     /// - `opcode`: The opcode for the NVMe command.
     /// - `queue_type`: Specifies the type of queue the command should be placed into.
@@ -142,7 +142,7 @@ impl<'buffers> NvmeRequestBuilder<'buffers> {
 
     /// Uses a user-supplied buffer for reading data from the device.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `bfr`: A mutable reference to an [`AlignedBuffer`] that will be used to store data read from the device.
     ///
     /// # Returns
@@ -165,7 +165,7 @@ impl<'buffers> NvmeRequestBuilder<'buffers> {
 
     /// Adds a newly allocated transfer buffer to the built NVMe request.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `len`: The size of the buffer (in bytes) to allocate for receiving data.
     ///
     /// # Returns
@@ -183,7 +183,7 @@ impl<'buffers> NvmeRequestBuilder<'buffers> {
 
     /// Uses a user-supplied metadata buffer.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `bfr`: A mutable reference to an [`AlignedBuffer`] that will be used to store metadata.
     ///
     /// # Returns
@@ -206,7 +206,7 @@ impl<'buffers> NvmeRequestBuilder<'buffers> {
 
     /// Adds a newly allocated metadata buffer to the built NVMe request.
     ///
-    /// # Parameters
+    /// # Arguments
     /// - `len`: The size of the buffer (in bytes) to allocate for storing metadata.
     ///
     /// # Returns
@@ -247,7 +247,7 @@ impl<'buffers> NvmeResponse<'buffers> {
     /// # Returns
     /// `Option<&[u8]>`: A slice of the transfer buffer, or `None` if the request was started without.
     #[must_use]
-    pub fn transfer_buffer(&self) -> Option<&'buffers [u8]> {
+    pub const fn transfer_buffer(&self) -> Option<&'buffers [u8]> {
         if self.req.packet.transfer_buffer.is_null() {
             return None;
         }
@@ -264,7 +264,7 @@ impl<'buffers> NvmeResponse<'buffers> {
     /// # Returns
     /// `Option<&[u8]>`: A slice of the metadata buffer, or `None` if the request was started without.
     #[must_use]
-    pub fn metadata_buffer(&self) -> Option<&'buffers [u8]> {
+    pub const fn metadata_buffer(&self) -> Option<&'buffers [u8]> {
         if self.req.packet.meta_data_buffer.is_null() {
             return None;
         }

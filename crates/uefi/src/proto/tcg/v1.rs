@@ -24,9 +24,6 @@ use uefi_raw::protocol::tcg::v1::{TcgBootServiceCapability, TcgProtocol};
 #[cfg(feature = "alloc")]
 use {crate::mem::make_boxed, alloc::boxed::Box};
 
-#[cfg(all(feature = "unstable", feature = "alloc"))]
-use alloc::alloc::Global;
-
 pub use uefi_raw::protocol::tcg::v1::TcgVersion as Version;
 
 /// 20-byte SHA-1 digest.
@@ -157,17 +154,7 @@ impl PcrEvent {
         digest: Sha1Digest,
         event_data: &[u8],
     ) -> Result<Box<Self>> {
-        #[cfg(not(feature = "unstable"))]
-        {
-            make_boxed(|buf| Self::new_in_buffer(buf, pcr_index, event_type, digest, event_data))
-        }
-        #[cfg(feature = "unstable")]
-        {
-            make_boxed(
-                |buf| Self::new_in_buffer(buf, pcr_index, event_type, digest, event_data),
-                Global,
-            )
-        }
+        make_boxed(|buf| Self::new_in_buffer(buf, pcr_index, event_type, digest, event_data))
     }
 
     /// PCR index for the event.
@@ -276,7 +263,7 @@ impl EventLog<'_> {
 
     /// Iterator of events in the log.
     #[must_use]
-    pub const fn iter(&self) -> EventLogIter {
+    pub const fn iter(&self) -> EventLogIter<'_> {
         EventLogIter {
             log: self,
             location: self.location,
@@ -331,9 +318,11 @@ impl<'a> Iterator for EventLogIter<'a> {
     }
 }
 
-/// Protocol for interacting with TPM 1.1 and 1.2 devices.
+/// Trusted Computing Group [`Protocol`] (TCG) for TPM 1.1 and 1.2 devices.
 ///
 /// The corresponding C type is `EFI_TCG_PROTOCOL`.
+///
+/// [`Protocol`]: uefi::proto::Protocol
 #[derive(Debug)]
 #[repr(transparent)]
 #[unsafe_protocol(TcgProtocol::GUID)]
@@ -356,7 +345,7 @@ pub struct StatusCheck<'a> {
 impl Tcg {
     /// Get information about the protocol and TPM device, as well as
     /// the TPM event log.
-    pub fn status_check(&mut self) -> Result<StatusCheck> {
+    pub fn status_check(&mut self) -> Result<StatusCheck<'_>> {
         let mut protocol_capability = TcgBootServiceCapability::default();
         let mut feature_flags = 0;
         let mut event_log_location = 0;
@@ -427,14 +416,13 @@ impl Tcg {
         data_to_hash: Option<&[u8]>,
     ) -> Result {
         let hash_data;
-        let hash_data_len;
-        if let Some(data_to_hash) = data_to_hash {
+        let hash_data_len = if let Some(data_to_hash) = data_to_hash {
             hash_data = data_to_hash.as_ptr() as PhysicalAddress;
-            hash_data_len = u64::try_from(data_to_hash.len()).unwrap();
+            u64::try_from(data_to_hash.len()).unwrap()
         } else {
             hash_data = 0;
-            hash_data_len = 0;
-        }
+            0
+        };
 
         // Don't bother returning these, it's not very useful info.
         let mut event_number = 0;
