@@ -153,13 +153,14 @@
 
 #![warn(missing_docs)]
 #![warn(clippy::exhaustive_enums)]
-#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
+#![cfg_attr(aws_lc_rs_docsrs, feature(doc_cfg))]
 
 extern crate alloc;
 extern crate bssl_sys as aws_lc;
 
 pub mod aead;
 pub mod agreement;
+pub mod cmac;
 pub mod constant_time;
 pub mod digest;
 pub mod error;
@@ -259,6 +260,7 @@ pub fn try_fips_cpu_jitter_entropy() -> Result<(), &'static str> {
     } else {
         Err("FIPS CPU Jitter Entropy not enabled!")
     }
+    #[cfg(not(feature = "fips"))]
     Err("FIPS CPU Jitter Entropy not enabled!")
 }
 
