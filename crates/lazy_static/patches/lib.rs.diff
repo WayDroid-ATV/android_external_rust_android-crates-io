@@ -3,27 +3,27 @@
  src/lib.rs | 13 +++++++------
  1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git b/src/lib.rs a/src/lib.rs
-index cada0dc6..0d9d46e0 100644
---- b/src/lib.rs
-+++ a/src/lib.rs
-@@ -104,12 +104,13 @@ This crate provides one cargo feature:
- #[doc(hidden)]
- pub mod lazy;
+diff --git a/src/lib.rs b/src/lib.rs
+index 5003fa2..f63be3e 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -97,12 +97,13 @@ This crate provides one cargo feature:
+ #![doc(html_root_url = "https://docs.rs/lazy_static/1.5.0")]
+ #![no_std]
  
--#[cfg(test)]
+-#[cfg(doctest)]
 -#[macro_use]
 -extern crate doc_comment;
 -
--#[cfg(test)]
+-#[cfg(doctest)]
 -doctest!("../README.md");
 +// ANDROID: disable tests that require doc_comment crate.
-+//#[cfg(test)]
++//#[cfg(doctest)]
 +//#[macro_use]
 +//extern crate doc_comment;
 +//
-+//#[cfg(test)]
-+//`doctest!("../README.md");
++//#[cfg(doctest)]
++//doctest!("../README.md");
  
- #[cfg(feature = "spin_no_std")]
- #[path="core_lazy.rs"]
+ #[cfg_attr(feature = "spin_no_std", path = "core_lazy.rs")]
+ #[cfg_attr(not(feature = "spin_no_std"), path = "inline_lazy.rs")]

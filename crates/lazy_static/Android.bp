@@ -18,7 +18,7 @@ rust_test {
     host_supported: true,
     crate_name: "test",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.4.0",
+    cargo_pkg_version: "1.5.0",
     crate_root: "tests/test.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -34,7 +34,7 @@ rust_library {
     host_supported: true,
     crate_name: "lazy_static",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.4.0",
+    cargo_pkg_version: "1.5.0",
     crate_root: "src/lib.rs",
     edition: "2015",
     apex_available: [
@@ -51,7 +51,7 @@ rust_library_rlib {
     defaults: ["rust_baremetal_defaults"],
     crate_name: "lazy_static",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.4.0",
+    cargo_pkg_version: "1.5.0",
     crate_root: "src/lib.rs",
     edition: "2015",
     features: [
