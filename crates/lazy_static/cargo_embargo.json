@@ -1,12 +1,14 @@
 {
   "min_sdk_version": "29",
   "module_blocklist": [
-    "lazy_static_test_tests_no_std"
+    "lazy_static_test_tests_no_std",
+    "lazy_static_test_tests_ui"
   ],
   "package": {
     "lazy_static": {
       "dep_blocklist": [
-        "libdoc_comment"
+        "libdoc_comment",
+        "libtrybuild"
       ],
       "rulesmk_patch": "patches/rules.mk.diff"
     }

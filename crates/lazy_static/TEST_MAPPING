@@ -28,12 +28,7 @@
       "path": "system/cros-codecs"
     }
   ],
-  "presubmit": [
-    {
-      "name": "lazy_static_test_tests_test"
-    }
-  ],
-  "presubmit-rust": [
+  "postsubmit": [
     {
       "name": "lazy_static_test_tests_test"
     }
