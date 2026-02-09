@@ -1,3 +1,18 @@
+# 0.4.3
+
+* Don't exclude .c files from release package.
+
+# 0.4.2
+
+* Fix double-close on pipe unregister (#200).
+* Don't include development scripts in release package (195).
+
+# signal-hook-mio-0.3.0
+# signal-hook-tokio-0.4.0
+# signal-hook-async-std-0.4.0
+
+* Release to bump dependency on signal-hook.
+
 # 0.4.1
 
 * Don't pin specific dependency versions accidentally.

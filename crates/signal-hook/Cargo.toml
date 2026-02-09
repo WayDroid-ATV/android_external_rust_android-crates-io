@@ -13,12 +13,23 @@
 edition = "2018"
 rust-version = "1.66"
 name = "signal-hook"
-version = "0.4.1"
+version = "0.4.3"
 authors = [
     "Michal 'vorner' Vaner <vorner@vorner.cz>",
     "Thomas Himmelstoss <thimm@posteo.de>",
 ]
 build = "build.rs"
+include = [
+    "CHANGELOG.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+    "README.md",
+    "build.rs",
+    "src/**/*.rs",
+    "src/**/*.c",
+    "tests/**/*.rs",
+    "examples/**/*.rs",
+]
 autolib = false
 autobins = false
 autoexamples = false
