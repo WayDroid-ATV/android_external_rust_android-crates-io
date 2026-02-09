@@ -219,7 +219,7 @@ dependencies = [
  "dashmap",
  "dasp_sample",
  "data-encoding",
- "dc_bundle 0.38.2",
+ "dc_bundle",
  "dc_layout",
  "debug_tree",
  "der",
@@ -2195,20 +2195,6 @@ checksum = "d7a1e2f27636f116493b8b860f5546edb47c8d8f8ea73e1d2a20be88e28d1fea"
 
 [[package]]
 name = "dc_bundle"
-version = "0.37.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0355e64b741c6c0855e57778deee442658108d366f2d5d85984aa6f32d5375b5"
-dependencies = [
- "log",
- "protobuf 3.7.2",
- "protobuf-codegen",
- "serde",
- "serde_bytes",
- "thiserror 2.0.16",
-]
-
-[[package]]
-name = "dc_bundle"
 version = "0.38.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1934aa17a5018fc6bc650000bb353cf25aab751ba5da292f03a22810f41685a7"
@@ -2223,12 +2209,12 @@ dependencies = [
 
 [[package]]
 name = "dc_layout"
-version = "0.37.2"
+version = "0.38.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "645d909a766cdd69239efa80fb348f236a6cfb88de934500ebe73f5cdda98c1c"
+checksum = "b89da23aae16c7e2477a730aad572dad4fc034a62f604050e1d8c7481d915fb4"
 dependencies = [
  "android_logger 0.13.3",
- "dc_bundle 0.37.2",
+ "dc_bundle",
  "log",
  "protobuf 3.7.2",
  "serde",
