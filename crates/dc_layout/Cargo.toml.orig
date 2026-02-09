@@ -1,0 +1,26 @@
+[package]
+name = "dc_layout"
+description = "Figma node layout library for Android"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+rust-version.workspace = true
+homepage = "https://google.github.io/automotive-design-compose"
+repository = "https://github.com/google/automotive-design-compose"
+readme = "README.md"
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+dc_bundle.workspace = true
+log.workspace = true
+android_logger.workspace = true
+serde.workspace = true
+taffy.workspace = true
+protobuf.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+lazy_static.workspace = true
