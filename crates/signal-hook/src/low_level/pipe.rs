@@ -126,14 +126,6 @@ impl AsFd for WakeFd {
     }
 }
 
-impl Drop for WakeFd {
-    fn drop(&mut self) {
-        unsafe {
-            libc::close(self.fd.as_raw_fd());
-        }
-    }
-}
-
 pub(crate) fn wake(pipe: BorrowedFd<'_>, method: WakeMethod) {
     unsafe {
         // This writes some data into the pipe.
@@ -229,11 +221,12 @@ mod tests {
     #[test]
     fn register_with_socket() -> Result<(), Error> {
         let (mut read, write) = UnixStream::pair()?;
-        register(libc::SIGUSR1, write)?;
+        let id = register(libc::SIGUSR1, write)?;
         wakeup();
         let mut buff = [0; 1];
         read.read_exact(&mut buff)?;
         assert_eq!(b"X", &buff);
+        crate::low_level::unregister(id);
         Ok(())
     }
 
@@ -241,7 +234,7 @@ mod tests {
     #[cfg(not(target_os = "haiku"))]
     fn register_dgram_socket() -> Result<(), Error> {
         let (read, write) = UnixDatagram::pair()?;
-        register(libc::SIGUSR1, write)?;
+        let id = register(libc::SIGUSR1, write)?;
         wakeup();
         let mut buff = [0; 1];
         // The attempt to detect if it is socket can generate an empty message. Therefore, do a few
@@ -249,6 +242,7 @@ mod tests {
         for _ in 0..3 {
             let len = read.recv(&mut buff)?;
             if len == 1 && &buff == b"X" {
+                crate::low_level::unregister(id);
                 return Ok(());
             }
         }
@@ -259,11 +253,12 @@ mod tests {
     fn register_with_pipe() -> Result<(), Error> {
         let mut fds = [0; 2];
         unsafe { assert_eq!(0, libc::pipe(fds.as_mut_ptr())) };
-        register_raw(libc::SIGUSR1, unsafe { OwnedFd::from_raw_fd(fds[1]) })?;
+        let id = register_raw(libc::SIGUSR1, unsafe { OwnedFd::from_raw_fd(fds[1]) })?;
         wakeup();
         let mut buff = [0; 1];
         unsafe { assert_eq!(1, libc::read(fds[0], buff.as_mut_ptr() as *mut _, 1)) }
         assert_eq!(b"X", &buff);
+        crate::low_level::unregister(id);
         Ok(())
     }
 }
