@@ -13,6 +13,7 @@
     }
   },
   "min_sdk_version": "29",
+  "recovery_available": true,
   "run_cargo": false,
   "tests": true
 }
