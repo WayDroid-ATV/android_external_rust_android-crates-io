@@ -30,13 +30,13 @@ To use `tikv-jemallocator` add it as a dependency:
 [dependencies]
 
 [target.'cfg(not(target_env = "msvc"))'.dependencies]
-tikv-jemallocator = "0.5"
+tikv-jemallocator = "0.6"
 ```
 
 To set `tikv_jemallocator::Jemalloc` as the global allocator add this to your project:
 
 ```rust
-# main.rs
+// main.rs
 #[cfg(not(target_env = "msvc"))]
 use tikv_jemallocator::Jemalloc;
 
@@ -65,12 +65,18 @@ other targets are only tested on Rust nightly.
 | `powerpc64le-unknown-linux-gnu`     | ✓         | ✓       | ✗            |
 | `x86_64-unknown-linux-gnu` (tier 1) | ✓         | ✓       | ✓            |
 | **MacOSX targets:**                 | **build** | **run** | **jemalloc** |
-| `x86_64-apple-darwin` (tier 1)      | ✓         | ✓       | ✗            |
+| `aarch64-apple-darwin`              | ✓         | ✓       | ✗            |
 
 ## Features
 
-The `tikv-jemallocator` crate re-exports the [features of the `tikv-jemalloc-sys`
-dependency](https://github.com/tikv/jemallocator/blob/master/jemalloc-sys/README.md).
+This crate provides following cargo feature flags:
+
+* `alloc_trait` When the `alloc_trait` feature of this crate is enabled, it also implements the `Alloc` trait, allowing usage in collections.
+
+* `default` feature is `background_threads_runtime_support`.
+
+* The `tikv-jemallocator` crate re-exports the [features of the `tikv-jemalloc-sys`
+dependency](https://github.com/tikv/jemallocator/blob/master/jemalloc-sys/README.md#features).
 
 ## License
 
