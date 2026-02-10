@@ -13,7 +13,7 @@
 edition = "2024"
 rust-version = "1.85"
 name = "getrandom"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["The Rand Project Developers"]
 build = "build.rs"
 exclude = [".*"]
@@ -37,7 +37,10 @@ features = [
     "std",
     "sys_rng",
 ]
-rustdoc-args = ['--cfg getrandom_backend="extern_impl"']
+rustdoc-args = [
+    "--cfg",
+    'getrandom_backend="extern_impl"',
+]
 
 [package.metadata.cross.target.x86_64-unknown-netbsd]
 pre-build = [
