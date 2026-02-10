@@ -1,6 +1,7 @@
 {
   "apex_available": [
     "//apex_available:platform",
+    "com.android.configinfrastructure",
     "com.android.resolv",
     "com.android.tethering",
     "com.android.virt",
