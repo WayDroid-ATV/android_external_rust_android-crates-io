@@ -1,17 +1,17 @@
 name: "tikv-jemallocator"
 description: "A Rust allocator backed by jemalloc"
 third_party {
-  version: "0.5.4"
+  version: "0.6.1"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 5
-    day: 16
+    year: 2026
+    month: 1
+    day: 30
   }
   homepage: "https://crates.io/crates/tikv-jemallocator"
   identifier {
     type: "crates.io"
     value: "tikv-jemallocator"
-    version: "0.5.4"
+    version: "0.6.1"
   }
 }

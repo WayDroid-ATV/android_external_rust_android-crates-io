@@ -1,17 +1,17 @@
 name: "tikv-jemalloc-sys"
 description: "Rust FFI bindings to jemalloc"
 third_party {
-  version: "0.5.4+5.3.0-patched"
+  version: "0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 5
-    day: 16
+    year: 2026
+    month: 1
+    day: 30
   }
   homepage: "https://crates.io/crates/tikv-jemalloc-sys"
   identifier {
     type: "crates.io"
     value: "tikv-jemalloc-sys"
-    version: "0.5.4+5.3.0-patched"
+    version: "0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7"
   }
 }
