@@ -134,7 +134,7 @@
 //! </details>
 
 #![no_std]
-#![doc(html_root_url = "https://docs.rs/linkme/0.3.31")]
+#![doc(html_root_url = "https://docs.rs/linkme/0.3.35")]
 #![deny(unsafe_op_in_unsafe_fn)]
 #![allow(
     clippy::doc_markdown,
@@ -148,11 +148,13 @@
 )]
 
 mod distributed_slice;
+mod private;
 
-// Not public API.
 #[doc(hidden)]
-#[path = "private.rs"]
-pub mod __private;
+pub mod __private_android {
+    #[doc(hidden)]
+    pub use crate::private::*;
+}
 
 pub use linkme_impl::*;
 

@@ -1,10 +1,11 @@
+use crate::private::Slice;
 use core::fmt::{self, Debug};
+#[cfg(any(target_os = "uefi", target_os = "windows"))]
 use core::hint;
 use core::mem;
+use core::num::NonZeroUsize;
 use core::ops::Deref;
 use core::slice;
-
-use crate::__private::Slice;
 
 /// Collection of static elements that are gathered into a contiguous section of
 /// the binary by the linker.
@@ -131,10 +132,11 @@ use crate::__private::Slice;
 /// ```
 pub struct DistributedSlice<T: ?Sized + Slice> {
     name: &'static str,
+    stride: NonZeroUsize,
     section_start: StaticPtr<T::Element>,
     section_stop: StaticPtr<T::Element>,
-    dupcheck_start: StaticPtr<usize>,
-    dupcheck_stop: StaticPtr<usize>,
+    dupcheck_start: StaticPtr<isize>,
+    dupcheck_stop: StaticPtr<isize>,
 }
 
 struct StaticPtr<T> {
@@ -155,39 +157,7 @@ impl<T> Clone for StaticPtr<T> {
 
 impl<T> DistributedSlice<[T]> {
     #[doc(hidden)]
-    #[cfg(any(
-        target_os = "none",
-        target_os = "linux",
-        target_os = "macos",
-        target_os = "ios",
-        target_os = "tvos",
-        target_os = "android",
-        target_os = "fuchsia",
-        target_os = "illumos",
-        target_os = "freebsd",
-        target_os = "openbsd",
-        target_os = "psp",
-    ))]
-    pub const unsafe fn private_new(
-        name: &'static str,
-        section_start: *const T,
-        section_stop: *const T,
-        dupcheck_start: *const usize,
-        dupcheck_stop: *const usize,
-    ) -> Self {
-        DistributedSlice {
-            name,
-            section_start: StaticPtr { ptr: section_start },
-            section_stop: StaticPtr { ptr: section_stop },
-            dupcheck_start: StaticPtr {
-                ptr: dupcheck_start,
-            },
-            dupcheck_stop: StaticPtr { ptr: dupcheck_stop },
-        }
-    }
-
-    #[doc(hidden)]
-    #[cfg(any(target_os = "uefi", target_os = "windows"))]
+    #[track_caller]
     pub const unsafe fn private_new(
         name: &'static str,
         section_start: *const [T; 0],
@@ -195,19 +165,24 @@ impl<T> DistributedSlice<[T]> {
         dupcheck_start: *const (),
         dupcheck_stop: *const (),
     ) -> Self {
+        let Some(stride) = NonZeroUsize::new(mem::size_of::<T>()) else {
+            panic!("#[distributed_slice] requires that the slice element type has nonzero size");
+        };
+
         DistributedSlice {
             name,
+            stride,
             section_start: StaticPtr {
-                ptr: section_start as *const T,
+                ptr: section_start.cast::<T>(),
             },
             section_stop: StaticPtr {
-                ptr: section_stop as *const T,
+                ptr: section_stop.cast::<T>(),
             },
             dupcheck_start: StaticPtr {
-                ptr: dupcheck_start as *const usize,
+                ptr: dupcheck_start.cast::<isize>(),
             },
             dupcheck_stop: StaticPtr {
-                ptr: dupcheck_stop as *const usize,
+                ptr: dupcheck_stop.cast::<isize>(),
             },
         }
     }
@@ -258,16 +233,10 @@ impl<T> DistributedSlice<[T]> {
             panic!("duplicate #[distributed_slice] with name \"{}\"", self.name);
         }
 
-        let stride = mem::size_of::<T>();
         let start = self.section_start.ptr;
         let stop = self.section_stop.ptr;
         let byte_offset = stop as usize - start as usize;
-        let len = match byte_offset.checked_div(stride) {
-            Some(len) => len,
-            // The #[distributed_slice] call checks `size_of::<T>() > 0` before
-            // using the unsafe `private_new`.
-            None => unsafe { hint::unreachable_unchecked() },
-        };
+        let len = byte_offset / self.stride;
 
         // On Windows, the implementation involves growing a &[T; 0] to
         // encompass elements that we have asked the linker to place immediately

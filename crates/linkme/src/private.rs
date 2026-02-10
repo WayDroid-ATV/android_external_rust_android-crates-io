@@ -1,9 +1,7 @@
 #[doc(hidden)]
-pub use core::assert;
-#[doc(hidden)]
 pub use core::mem;
 #[doc(hidden)]
-pub use core::primitive::usize;
+pub use core::primitive::isize;
 #[doc(hidden)]
 pub use core::ptr;
 
