@@ -52,7 +52,7 @@ impl PciAddress {
 
 impl fmt::Display for PciAddress {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:02x}-{:02x}:{:02x}.{}", self.segment(), self.bus(), self.device(), self.function())
+        write!(f, "{:04x}:{:02x}:{:02x}.{}", self.segment(), self.bus(), self.device(), self.function())
     }
 }
 
@@ -321,7 +321,7 @@ impl EndpointHeader {
             match bar.get_bits(1..3) {
                 0b00 => {
                     let size = unsafe {
-                        access.write(self.0, offset, 0xfffffff0);
+                        access.write(self.0, offset, 0xffffffff);
                         let mut readback = access.read(self.0, offset);
                         access.write(self.0, offset, address);
 
@@ -349,7 +349,7 @@ impl EndpointHeader {
                     let address_upper = unsafe { access.read(self.0, offset + 4) };
 
                     let size = unsafe {
-                        access.write(self.0, offset, 0xfffffff0);
+                        access.write(self.0, offset, 0xffffffff);
                         access.write(self.0, offset + 4, 0xffffffff);
                         let mut readback_low = access.read(self.0, offset);
                         let readback_high = access.read(self.0, offset + 4);
@@ -531,6 +531,30 @@ impl PciPciBridgeHeader {
         let data = unsafe { access.read(self.0, 0x18).get_bits(16..24) };
         data as u8
     }
+
+    pub fn update_bus_number<F>(&self, access: impl ConfigRegionAccess, f: F)
+    where
+        F: FnOnce(BusNumber) -> BusNumber,
+    {
+        let mut data = unsafe { access.read(self.0, 0x18) };
+        let new_bus = f(BusNumber {
+            primary: data.get_bits(0..8) as u8,
+            secondary: data.get_bits(8..16) as u8,
+            subordinate: data.get_bits(16..24) as u8,
+        });
+        data.set_bits(16..24, new_bus.subordinate.into());
+        data.set_bits(8..16, new_bus.secondary.into());
+        data.set_bits(0..8, new_bus.primary.into());
+        unsafe {
+            access.write(self.0, 0x18, data);
+        }
+    }
+}
+
+pub struct BusNumber {
+    pub primary: u8,
+    pub secondary: u8,
+    pub subordinate: u8,
 }
 
 pub const MAX_BARS: usize = 6;
