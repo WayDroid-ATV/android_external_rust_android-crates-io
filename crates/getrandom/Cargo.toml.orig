@@ -1,6 +1,6 @@
 [package]
 name = "getrandom"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2024"
 rust-version = "1.85" # Sync tests.yml and README.md.
 authors = ["The Rand Project Developers"]
@@ -13,7 +13,7 @@ exclude = [".*"]
 
 [package.metadata.docs.rs]
 features = ["std", "sys_rng"]
-rustdoc-args = ["--cfg getrandom_backend=\"extern_impl\""]
+rustdoc-args = ["--cfg", "getrandom_backend=\"extern_impl\""]
 
 [features]
 # Implement From<getrandom::Error> for std::io::Error and
