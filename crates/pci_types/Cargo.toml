@@ -12,9 +12,10 @@
 [package]
 edition = "2021"
 name = "pci_types"
-version = "0.10.0"
+version = "0.10.1"
 authors = ["Isaac Woods"]
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
