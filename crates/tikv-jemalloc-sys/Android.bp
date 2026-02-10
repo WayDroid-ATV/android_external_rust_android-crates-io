@@ -17,7 +17,7 @@ rust_library_host {
     name: "libtikv_jemalloc_sys",
     crate_name: "tikv_jemalloc_sys",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7",
+    cargo_pkg_version: "0.5.4+5.3.0-patched",
     crate_root: "src/lib.rs",
     static_libs: ["libjemalloc5_je_prefixed"],
     edition: "2018",
