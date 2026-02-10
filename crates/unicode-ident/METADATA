@@ -1,17 +1,17 @@
 name: "unicode-ident"
 description: "Determine whether characters have the XID_Start or XID_Continue properties according to Unicode Standard Annex #31"
 third_party {
-  version: "1.0.22"
+  version: "1.0.23"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 12
-    day: 2
+    year: 2026
+    month: 2
+    day: 9
   }
   homepage: "https://crates.io/crates/unicode-ident"
   identifier {
     type: "crates.io"
     value: "unicode-ident"
-    version: "1.0.22"
+    version: "1.0.23"
   }
 }
