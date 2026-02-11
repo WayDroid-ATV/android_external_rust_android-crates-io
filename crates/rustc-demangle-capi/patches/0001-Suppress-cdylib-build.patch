@@ -12,19 +12,19 @@ Change-Id: I1deb453a8095bc69f963e765b28333752ec483ff
 ---
  Cargo.toml | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
-
 diff --git a/Cargo.toml b/Cargo.toml
-index 5828d25..9ab660e 100644
+index 60ee5ea..e0a772f 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
-@@ -20,6 +20,6 @@ repository = "https://github.com/alexcrichton/rustc-demangle"
+@@ -28,10 +28,7 @@ repository = "https://github.com/alexcrichton/rustc-demangle"
  
  [lib]
  name = "rustc_demangle"
--crate-type = ["staticlib", "cdylib"]
+-crate-type = [
+-    "staticlib",
+-    "cdylib",
+-]
 +crate-type = ["lib"]
+ path = "src/lib.rs"
+ 
  [dependencies.rustc-demangle]
- version = "0.1.16"
--- 
-2.33.0.rc1.237.g0d66db33f3-goog
-
