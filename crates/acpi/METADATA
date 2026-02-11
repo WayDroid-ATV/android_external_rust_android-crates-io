@@ -1,17 +1,17 @@
 name: "acpi"
 description: "A pure-Rust library for interacting with ACPI"
 third_party {
-  version: "6.0.1"
+  version: "6.1.0"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 8
-    day: 29
+    year: 2026
+    month: 2
+    day: 11
   }
   homepage: "https://crates.io/crates/acpi"
   identifier {
     type: "crates.io"
     value: "acpi"
-    version: "6.0.1"
+    version: "6.1.0"
   }
 }

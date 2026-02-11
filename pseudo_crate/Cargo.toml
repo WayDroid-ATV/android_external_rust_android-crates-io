@@ -9,7 +9,7 @@ license = "Apache-2.0"
 [dependencies]
 aarch64-paging = "=0.7.0"
 aarch64-rt = "=0.4.2"
-acpi = "=6.0.1"
+acpi = "=6.1.0"
 adler2 = "=2.0.1"
 ahash = "=0.8.12"
 aho-corasick = "=1.1.4"
