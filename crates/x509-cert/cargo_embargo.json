@@ -7,6 +7,7 @@
   "module_visibility": {
     "libx509_cert": [
       "//packages/modules/Virtualization:__subpackages__",
+      "//system/core/trusty/keymint/provisioning:__subpackages__",
       "//system/keymint:__subpackages__",
       "//system/security/keystore2/tests:__subpackages__",
       "//system/security/keystore2/test_utils:__subpackages__"
