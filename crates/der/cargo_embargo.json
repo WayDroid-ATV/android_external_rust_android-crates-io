@@ -18,6 +18,7 @@
       "//external/rust/android-crates-io/crates/pkcs8:__subpackages__",
       "//external/rust/android-crates-io/crates/x509-cert:__subpackages__",
       "//packages/modules/Virtualization:__subpackages__",
+      "//system/core/trusty/keymint/provisioning:__subpackages__",
       "//system/keymint:__subpackages__",
       "//system/security/keystore2:__subpackages__",
       "//system/software_defined_vehicle/middleware/service_discovery/sdv_sd_agent:__subpackages__"
