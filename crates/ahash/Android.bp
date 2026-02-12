@@ -21,23 +21,13 @@ rust_library {
     cargo_pkg_version: "0.8.12",
     crate_root: "src/lib.rs",
     edition: "2018",
-    arch: {
-        arm64: {
-            features: ["folded_multiply"],
-        },
-        x86_64: {
-            features: ["folded_multiply"],
-        },
-    },
     features: [
         "default",
         "getrandom",
         "runtime-rng",
         "std",
     ],
-    cfgs: [
-        "specialize",
-    ],
+    cfgs: ["specialize"],
     rustlibs: [
         "libcfg_if",
         "libgetrandom",
@@ -51,4 +41,13 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    arch: {
+        arm64: {
+            features: ["folded_multiply"],
+        },
+        x86_64: {
+            features: ["folded_multiply"],
+        },
+    },
+
 }
