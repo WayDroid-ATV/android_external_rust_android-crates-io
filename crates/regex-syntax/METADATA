@@ -1,17 +1,17 @@
 name: "regex-syntax"
 description: "A regular expression parser."
 third_party {
-  version: "0.8.8"
+  version: "0.8.9"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 10
-    day: 29
+    year: 2026
+    month: 2
+    day: 11
   }
   homepage: "https://crates.io/crates/regex-syntax"
   identifier {
     type: "crates.io"
     value: "regex-syntax"
-    version: "0.8.8"
+    version: "0.8.9"
   }
 }
