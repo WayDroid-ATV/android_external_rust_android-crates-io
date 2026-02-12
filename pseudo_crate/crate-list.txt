@@ -246,6 +246,7 @@ kernlog
 khronos
 khronos-egl
 kobject-uevent
+kurbo
 lazy_static
 lazycell
 libbpf-rs
