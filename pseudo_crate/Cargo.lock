@@ -360,6 +360,7 @@ dependencies = [
  "khronos",
  "khronos-egl",
  "kobject-uevent",
+ "kurbo",
  "lazy_static",
  "lazycell",
  "libbpf-rs",
@@ -2768,6 +2769,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "euclid"
+version = "0.22.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df61bf483e837f88d5c2291dcf55c67be7e676b3a51acc48db3a7b163b91ed63"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "evdev"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4731,6 +4741,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b7f0d6a1db283ff342c373c82788157bb28293bbb3f41ceee9fd2c4d3f0d7780"
 dependencies = [
  "thiserror 2.0.16",
+]
+
+[[package]]
+name = "kurbo"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7564e90fe3c0d5771e1f0bc95322b21baaeaa0d9213fa6a0b61c99f8b17b3bfb"
+dependencies = [
+ "arrayvec",
+ "euclid",
+ "smallvec",
 ]
 
 [[package]]
