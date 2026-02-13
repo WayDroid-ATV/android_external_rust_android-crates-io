@@ -10,9 +10,10 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
+edition = "2024"
+rust-version = "1.87"
 name = "pdl-runtime"
-version = "0.4.4"
+version = "0.5.0"
 authors = [
     "Henri Chataing <henrichataing@google.com>",
     "David de Jesus Duarte <licorne@google.com>",
@@ -35,7 +36,6 @@ keywords = [
 categories = ["parsing"]
 license = "Apache-2.0"
 repository = "https://github.com/google/pdl/"
-resolver = "1"
 
 [lib]
 name = "pdl_runtime"

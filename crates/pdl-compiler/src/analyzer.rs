@@ -35,6 +35,34 @@ pub enum Size {
     Unknown,
 }
 
+/// Represent the width of an array element.
+#[derive(Debug, Clone, Copy)]
+#[allow(unused)]
+pub enum ElementSize {
+    /// Static size in octets.
+    Static(usize),
+    /// Dynamic size in octets given by an element size field.
+    Dynamic,
+    /// The element size is unspecified and varies for each element
+    /// (e.g. TLV array).
+    Unknown,
+}
+
+/// Represent the dimension of an array field, i.e., the number of elements
+/// given via a static count, a count field, a size field, or unknown.
+#[derive(Debug, Clone, Copy)]
+#[allow(unused)]
+pub enum ArraySize {
+    /// The array has a fixed number of elements.
+    StaticCount(usize),
+    /// The number of elements in the array is given by a count field.
+    DynamicCount,
+    /// The size of the array in octets is given by a count field.
+    DynamicSize,
+    /// The array size is unspecified and varies based on remaining bytes
+    Unknown,
+}
+
 // TODO: use derive(Default) when UWB is using Rust 1.62.0.
 #[allow(clippy::derivable_impls)]
 impl Default for Size {
@@ -510,6 +538,37 @@ impl Schema {
     }
 }
 
+/// Compute the element size of an array field.
+pub fn element_size(scope: &Scope<'_>, schema: &Schema, decl: &Decl, field: &Field) -> ElementSize {
+    match &field.desc {
+        FieldDesc::Array { width: Some(width), .. } => ElementSize::Static(width / 8),
+        FieldDesc::Array { id, type_id: Some(type_id), .. } => {
+            let element_decl = scope.typedef.get(type_id).unwrap();
+            if let Some(width) = schema.total_size(element_decl.key).static_() {
+                ElementSize::Static(width / 8)
+            } else if decl.element_size(id).is_some() {
+                ElementSize::Dynamic
+            } else {
+                ElementSize::Unknown
+            }
+        }
+        _ => ElementSize::Unknown,
+    }
+}
+
+/// Compute the size of an array field.
+pub fn array_size(decl: &Decl, field: &Field) -> ArraySize {
+    match &field.desc {
+        FieldDesc::Array { size: Some(count), .. } => ArraySize::StaticCount(*count),
+        FieldDesc::Array { id, .. } => match decl.array_size(id) {
+            Some(Field { desc: FieldDesc::Count { .. }, .. }) => ArraySize::DynamicCount,
+            Some(Field { desc: FieldDesc::Size { .. }, .. }) => ArraySize::DynamicSize,
+            _ => ArraySize::Unknown,
+        },
+        _ => ArraySize::Unknown,
+    }
+}
+
 /// Return the bit-width of a scalar value.
 fn bit_width(value: usize) -> usize {
     usize::BITS as usize - value.leading_zeros() as usize
@@ -535,13 +594,17 @@ fn scalar_max(width: usize) -> usize {
 ///      - undeclared test identifier
 ///      - invalid test identifier
 ///      - recursive declaration
-fn check_decl_identifiers(file: &File, scope: &Scope) -> Result<(), Diagnostics> {
+///
+/// Returns a copy of the file where the declarations have been
+/// reordered by topological sort to remove forward references.
+fn check_decl_identifiers(file: &File, scope: &Scope) -> Result<File, Diagnostics> {
     enum Mark {
         Temporary,
         Permanent,
     }
     #[derive(Default)]
     struct Context<'d> {
+        history: Vec<Decl>,
         visited: HashMap<&'d str, Mark>,
     }
 
@@ -669,6 +732,7 @@ fn check_decl_identifiers(file: &File, scope: &Scope) -> Result<(), Diagnostics>
         }
 
         // Done visiting current declaration.
+        context.history.push(decl.clone());
         context.visited.insert(decl_id, Mark::Permanent);
     }
 
@@ -677,10 +741,12 @@ fn check_decl_identifiers(file: &File, scope: &Scope) -> Result<(), Diagnostics>
     let mut context = Default::default();
     for decl in &file.declarations {
         match &decl.desc {
-            DeclDesc::Checksum { .. } | DeclDesc::CustomField { .. } | DeclDesc::Enum { .. } => (),
-            DeclDesc::Packet { .. } | DeclDesc::Struct { .. } | DeclDesc::Group { .. } => {
-                bfs(decl, &mut context, scope, &mut diagnostics)
-            }
+            DeclDesc::Checksum { .. }
+            | DeclDesc::CustomField { .. }
+            | DeclDesc::Enum { .. }
+            | DeclDesc::Packet { .. }
+            | DeclDesc::Struct { .. }
+            | DeclDesc::Group { .. } => bfs(decl, &mut context, scope, &mut diagnostics),
             DeclDesc::Test { type_id, .. } => match scope.typedef.get(type_id) {
                 None => diagnostics.push(
                     Diagnostic::error()
@@ -701,7 +767,14 @@ fn check_decl_identifiers(file: &File, scope: &Scope) -> Result<(), Diagnostics>
         }
     }
 
-    diagnostics.err_or(())
+    diagnostics.err_or(File {
+        version: file.version.clone(),
+        file: file.file,
+        comments: file.comments.clone(),
+        endianness: file.endianness,
+        declarations: context.history,
+        max_key: file.max_key,
+    })
 }
 
 /// Check field identifiers.
@@ -1845,18 +1918,19 @@ fn desugar_flags(file: &mut File) {
 /// from the analysis.
 pub fn analyze(file: &File) -> Result<File, Diagnostics> {
     let scope = Scope::new(file)?;
-    check_decl_identifiers(file, &scope)?;
-    check_field_identifiers(file)?;
-    check_enum_declarations(file)?;
-    check_size_fields(file)?;
-    check_fixed_fields(file, &scope)?;
-    check_payload_fields(file)?;
-    check_array_fields(file)?;
-    check_padding_fields(file)?;
-    check_checksum_fields(file, &scope)?;
-    check_optional_fields(file)?;
-    check_group_constraints(file, &scope)?;
-    let mut file = inline_groups(file)?;
+    let file = check_decl_identifiers(file, &scope)?;
+    let scope = Scope::new(&file).unwrap();
+    check_field_identifiers(&file)?;
+    check_enum_declarations(&file)?;
+    check_size_fields(&file)?;
+    check_fixed_fields(&file, &scope)?;
+    check_payload_fields(&file)?;
+    check_array_fields(&file)?;
+    check_padding_fields(&file)?;
+    check_checksum_fields(&file, &scope)?;
+    check_optional_fields(&file)?;
+    check_group_constraints(&file, &scope)?;
+    let mut file = inline_groups(&file)?;
     desugar_flags(&mut file);
     let scope = Scope::new(&file)?;
     check_decl_constraints(&file, &scope)?;
@@ -3213,6 +3287,76 @@ mod test {
         little_endian_packets
         packet A {
             a : 12[],
+        }
+        "#
+        );
+    }
+
+    #[test]
+    fn test_decl_ordering() {
+        valid!(
+            r#"
+        little_endian_packets
+        packet A {
+            b: B,
+        }
+
+        enum B : 8 {
+            X = 0,
+            Y = 1,
+            Z = 127,
+        }
+        "#
+        );
+
+        valid!(
+            r#"
+        little_endian_packets
+        packet A {
+            b: B,
+        }
+
+        struct B {
+            a: 7,
+            b: 9,
+        }
+        "#
+        );
+
+        valid!(
+            r#"
+        little_endian_packets
+        packet A {
+            f: F,
+        }
+
+        custom_field F : 8 "f"
+        "#
+        );
+
+        valid!(
+            r#"
+        little_endian_packets
+        packet A {
+            G,
+        }
+
+        group G {
+            a: 8,
+        }
+        "#
+        );
+
+        valid!(
+            r#"
+        little_endian_packets
+        packet A : B {
+            b: 16,
+        }
+
+        packet B {
+            a: 8,
+            _payload_
         }
         "#
         );

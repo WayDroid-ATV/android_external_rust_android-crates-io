@@ -18,9 +18,9 @@ rust_library_host {
     host_cross_supported: false,
     crate_name: "pdl_compiler",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.5.0",
     crate_root: "src/lib.rs",
-    edition: "2021",
+    edition: "2024",
     features: [
         "default",
         "genco",
@@ -51,9 +51,9 @@ rust_binary_host {
     host_cross_supported: false,
     crate_name: "pdlc",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.4.4",
+    cargo_pkg_version: "0.5.0",
     crate_root: "src/main.rs",
-    edition: "2021",
+    edition: "2024",
     features: [
         "default",
         "genco",
@@ -141,6 +141,8 @@ filegroup {
 rust_test_host {
     name: "pdl_tests",
     host_cross_supported: false,
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.0.0",
     srcs: ["src/main.rs"],
     rustlibs: [
         "libargh",
