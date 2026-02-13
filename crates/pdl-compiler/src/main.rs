@@ -24,6 +24,7 @@ use pdl_compiler::{analyzer, ast, backends, parser};
 enum OutputFormat {
     Java,
     JSON,
+    Python,
     Rust,
     RustLegacy,
 }
@@ -34,11 +35,12 @@ impl std::str::FromStr for OutputFormat {
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         match input.to_lowercase().as_str() {
             "json" => Ok(Self::JSON),
+            "python" => Ok(Self::Python),
             "rust" => Ok(Self::Rust),
             "java" => Ok(Self::Java),
             "rust_legacy" => Ok(Self::RustLegacy),
             _ => Err(format!(
-                "could not parse {input:?}, valid option are 'json', 'rust', 'rust_legacy'."
+                "could not parse {input:?}, valid option are 'json', 'python', 'rust', 'rust_legacy'."
             )),
         }
     }
@@ -66,8 +68,8 @@ struct Opt {
     test_file: Option<String>,
 
     #[argh(positional)]
-    /// input file.
-    input_file: String,
+    /// input files.
+    input_file: Option<String>,
 
     #[argh(option)]
     /// exclude declarations from the generated output.
@@ -75,7 +77,8 @@ struct Opt {
 
     #[argh(option)]
     /// custom_field import paths.
-    /// For the rust backend this is a path e.g. "module::CustomField" or "super::CustomField".
+    /// For the rust backend, declares a list of qualified paths like "module::CustomField".
+    /// For the python backend, declares a list of qualified paths like "module.CustomField".
     custom_field: Vec<String>,
 
     #[cfg(feature = "java")]
@@ -104,9 +107,9 @@ fn filter_declarations(file: ast::File, exclude_declarations: &[String]) -> ast:
     }
 }
 
-fn generate_backend(opt: &Opt) -> Result<(), String> {
+fn generate_backend(opt: &Opt, input_file: &str) -> Result<(), String> {
     let mut sources = ast::SourceDatabase::new();
-    match parser::parse_file(&mut sources, &opt.input_file) {
+    match parser::parse_file(&mut sources, input_file) {
         Ok(file) => {
             let file = filter_declarations(file, &opt.exclude_declaration);
             let analyzed_file = match analyzer::analyze(&file) {
@@ -126,6 +129,18 @@ fn generate_backend(opt: &Opt) -> Result<(), String> {
             match opt.output_format {
                 OutputFormat::JSON => {
                     println!("{}", backends::json::generate(&file).unwrap());
+                    Ok(())
+                }
+                OutputFormat::Python => {
+                    println!(
+                        "{}",
+                        backends::python::generate(
+                            &sources,
+                            &analyzed_file,
+                            opt.custom_field.first().map(String::as_str),
+                            &opt.exclude_declaration
+                        )
+                    );
                     Ok(())
                 }
                 OutputFormat::Rust => {
@@ -174,7 +189,7 @@ fn generate_backend(opt: &Opt) -> Result<(), String> {
     }
 }
 
-fn generate_tests(opt: &Opt, test_file: &str) -> Result<(), String> {
+fn generate_tests(opt: &Opt, test_file: &str, _input_file: &str) -> Result<(), String> {
     match opt.output_format {
         OutputFormat::Rust => {
             println!("{}", backends::rust::test::generate_tests(test_file)?);
@@ -199,7 +214,7 @@ fn generate_tests(opt: &Opt, test_file: &str) -> Result<(), String> {
                 test_file,
                 std::path::Path::new(output_dir),
                 package.clone(),
-                &opt.input_file,
+                _input_file,
                 &opt.exclude_declaration,
             )
         }
@@ -214,13 +229,19 @@ fn main() -> Result<(), String> {
     let opt: Opt = argh::from_env();
 
     if opt.version {
-        println!("Packet Description Language parser version 1.0");
+        println!("pdlc {}\nCopyright (C) 2026 Google LLC", env!("CARGO_PKG_VERSION"));
         return Ok(());
     }
 
+    let Some(input_file) = opt.input_file.as_ref() else {
+        return Err("No input file is specified".to_owned());
+    };
+
     if let Some(test_file) = opt.test_file.as_ref() {
-        generate_tests(&opt, test_file)
+        generate_tests(&opt, test_file, input_file)?
     } else {
-        generate_backend(&opt)
+        generate_backend(&opt, input_file)?
     }
+
+    Ok(())
 }

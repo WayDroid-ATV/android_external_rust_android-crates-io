@@ -6099,9 +6099,9 @@ dependencies = [
 
 [[package]]
 name = "pdl-compiler"
-version = "0.4.4"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57894db50b6797527462664d06d48bb1a707693966d8ea488e8c243a2de51b05"
+checksum = "967d899a1898c68a840d5c52c5a260bcd37e63fed9f58baf915e9ad91d5983c9"
 dependencies = [
  "argh",
  "codespan-reporting",
@@ -6118,9 +6118,9 @@ dependencies = [
 
 [[package]]
 name = "pdl-runtime"
-version = "0.4.4"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d934da2156b83145e5ecbc7f91256226d292cd9be610817c7cd385f9278a7ee"
+checksum = "afc6caba5208d721a607e4831836b4d075c5d063dfd431931e68e432fb3f47ae"
 dependencies = [
  "bytes",
  "thiserror 1.0.49",

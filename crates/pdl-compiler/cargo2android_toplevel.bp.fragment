@@ -59,6 +59,8 @@ filegroup {
 rust_test_host {
     name: "pdl_tests",
     host_cross_supported: false,
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.0.0",
     srcs: ["src/main.rs"],
     rustlibs: [
         "libargh",
