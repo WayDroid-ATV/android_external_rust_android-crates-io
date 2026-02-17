@@ -41,7 +41,7 @@ s! {
 
     pub struct sockaddr_storage {
         pub ss_family: crate::sa_family_t,
-        __ss_padding: Padding<[c_char; 26usize]>,
+        pub __ss_padding: [c_char; 26usize],
     }
 
     pub struct sockaddr_in {

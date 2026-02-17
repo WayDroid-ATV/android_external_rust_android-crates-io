@@ -12,13 +12,13 @@ s! {
         pub mscsr_mask: c_uint,
         pub _fpreg: [[c_uchar; 8]; 16],
         pub _xmm: [[c_uchar; 16]; 16],
-        _reserved_416_511: Padding<[c_uchar; 96]>,
+        pub _reserved_416_511: [c_uchar; 96],
     }
 
     pub struct xstate_hdr {
         pub bv: c_ulong,
         pub xcomp_bv: c_ulong,
-        _reserved: Padding<[c_uchar; 48]>,
+        pub _reserved: [c_uchar; 48],
     }
 
     pub struct savefpu {
