@@ -24,7 +24,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! predicates = "3.1.3"
+//! predicates = "3.1.4"
 //! ```
 //!
 //! A [prelude] is available to bring in all extension traits as well as providing
@@ -198,7 +198,7 @@
 //! [`str_pred.normalize`]: prelude::PredicateStrExt::normalize()
 //! [`str_pred.trim`]: prelude::PredicateStrExt::trim()
 
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs)]
 #![warn(clippy::print_stderr)]
 #![warn(clippy::print_stdout)]
@@ -227,3 +227,7 @@ pub mod str;
 mod color;
 use color::Palette;
 mod utils;
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;

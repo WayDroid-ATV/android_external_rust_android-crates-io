@@ -15,7 +15,7 @@ First, add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-predicates = "3.1.3"
+predicates = "3.1.4"
 ```
 
 Next, add this to your crate:
@@ -31,11 +31,12 @@ For more information on using predicates, look at the
 
 ## License
 
-`predicates-rs` is distributed under the terms of both the MIT license and the
-Apache License (Version 2.0).
+Licensed under either of
 
-* Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
-* MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
+* Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <https://www.apache.org/licenses/LICENSE-2.0>)
+* MIT license ([LICENSE-MIT](LICENSE-MIT) or <https://opensource.org/license/mit>)
+
+at your option.
 
 ## Credits
 
