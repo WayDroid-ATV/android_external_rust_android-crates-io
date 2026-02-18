@@ -12,12 +12,21 @@
 [package]
 edition = "2021"
 name = "p9"
-version = "0.2.3"
+version = "0.3.2"
 authors = ["The ChromiumOS Authors"]
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Server implementation of the 9p file system protocol"
 readme = "README.md"
 license = "BSD-3-Clause"
 repository = "https://github.com/google/rust-p9"
+
+[lib]
+name = "p9"
+path = "src/lib.rs"
 
 [features]
 trace = []
@@ -26,7 +35,7 @@ trace = []
 version = "0.2"
 
 [target."cfg(unix)".dependencies.p9_wire_format_derive]
-version = "0.2.3"
+version = "0.3.0"
 
 [target."cfg(unix)".dependencies.serde]
 version = "1.0"
