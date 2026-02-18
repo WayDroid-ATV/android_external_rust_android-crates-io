@@ -127,6 +127,7 @@ drm-fourcc
 dyn-clone
 either
 elf
+encoding_rs
 enum-as-inner
 enum-primitive-derive
 enumn
@@ -457,6 +458,11 @@ strsim
 strum
 strum_macros
 subtle
+symphonia
+symphonia-bundle-flac
+symphonia-core
+symphonia-metadata
+symphonia-utils-xiph
 syn
 syn-mid
 sync_wrapper
