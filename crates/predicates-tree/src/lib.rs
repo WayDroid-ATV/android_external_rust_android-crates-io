@@ -8,7 +8,7 @@
 
 //! Render `Case` as a tree.
 
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 use std::fmt;
 
@@ -70,8 +70,8 @@ struct Displayable {
 
 impl Displayable {
     fn new(display: &dyn std::fmt::Display) -> Self {
-        let primary = format!("{}", display);
-        let alternate = format!("{:#}", display);
+        let primary = format!("{display}");
+        let alternate = format!("{display:#}");
         Self { primary, alternate }
     }
 }
@@ -85,3 +85,7 @@ impl fmt::Display for Displayable {
         }
     }
 }
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;
