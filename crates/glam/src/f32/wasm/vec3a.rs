@@ -1,12 +1,15 @@
 // Generated from vec.rs.tera template. Edit the template, not the generated file.
 
-use crate::{f32::math, wasm32::*, BVec3, BVec3A, FloatExt, Quat, Vec2, Vec3, Vec4};
+use crate::{f32::math, wasm::*, BVec3, BVec3A, FloatExt, Quat, Vec2, Vec3, Vec4};
 
 use core::fmt;
 use core::iter::{Product, Sum};
 use core::{f32, ops::*};
 
+#[cfg(target_arch = "wasm32")]
 use core::arch::wasm32::*;
+#[cfg(target_arch = "wasm64")]
+use core::arch::wasm64::*;
 
 #[cfg(feature = "zerocopy")]
 use zerocopy_derive::*;
@@ -91,6 +94,8 @@ impl Vec3A {
     /// Vec3A uses Intel SSE2
     pub const USES_SSE2: bool = false;
     /// Vec3A uses WebAssembly 128-bit SIMD
+    pub const USES_WASM_SIMD: bool = true;
+    #[deprecated(since = "0.31.0", note = "Renamed to USES_WASM_SIMD")]
     pub const USES_WASM32_SIMD: bool = true;
 
     /// Creates a new vector.
@@ -1314,6 +1319,13 @@ impl Vec3A {
     #[must_use]
     pub fn as_u64vec3(self) -> crate::U64Vec3 {
         crate::U64Vec3::new(self.x as u64, self.y as u64, self.z as u64)
+    }
+
+    /// Casts all elements of `self` to `isize`.
+    #[inline]
+    #[must_use]
+    pub fn as_isizevec3(self) -> crate::ISizeVec3 {
+        crate::ISizeVec3::new(self.x as isize, self.y as isize, self.z as isize)
     }
 
     /// Casts all elements of `self` to `usize`.

@@ -34,6 +34,8 @@ A simple and fast 3D math library for games and graphics.
   * vectors: `I64Vec2`, `I64Vec3` and `I64Vec4`
 * `u64` types
   * vectors: `U64Vec2`, `U64Vec3` and `U64Vec4`
+* `isize` types
+  * vectors: `ISizeVec2`, `ISizeVec3` and `ISizeVec4`
 * `usize` types
   * vectors: `USizeVec2`, `USizeVec3` and `USizeVec4`
 * `bool` types
@@ -43,7 +45,7 @@ A simple and fast 3D math library for games and graphics.
 
 The `Vec3A`, `Vec4`, `Quat`, `Mat2`, `Mat3A`, `Mat4`, `Affine2` and `Affine3A`
 types use 128-bit wide SIMD vector types for storage on `x86`, `x86_64` and
-`wasm32` architectures.  As a result, these types are all 16 byte aligned and
+`wasm32`/`wasm64` architectures.  As a result, these types are all 16 byte aligned and
 depending on the size of the type or the type's members, they may contain
 internal padding.  This results in some wasted space in the cases of `Vec3A`,
 `Mat3A`, `Affine2` and `Affine3A`.  However, the use of SIMD generally results
@@ -56,7 +58,7 @@ in better performance than scalar math.
 
 ### Enabling SIMD
 
-SIMD is supported on `x86`, `x86_64` and `wasm32` targets.
+SIMD is supported on `x86`, `x86_64`, `wasm32` and `wasm64` targets.
 
 * `SSE2` is enabled by default on `x86_64` targets.
 * To enable `SSE2` on `x86` targets add `-C target-feature=+sse2` to
@@ -64,12 +66,12 @@ SIMD is supported on `x86`, `x86_64` and `wasm32` targets.
 * `NEON` is enabled by default on `aarch64` targets.
 * To enable `NEON` on `aarch64` targets add `-C target-feature=+neon` to
   `RUSTFLAGS`.
-* To enable `simd128` on `wasm32` targets add `-C target-feature=+simd128` to
+* To enable `simd128` on `wasm32` or `wasm64` targets add `-C target-feature=+simd128` to
   `RUSTFLAGS`.
 * Experimental [portable simd] support can be enabled with the `core-simd`
   feature. This requires the nightly compiler as it is still unstable in Rust.
 
-Note that SIMD on `wasm32` passes tests but has not been benchmarked,
+Note that SIMD on `wasm32`/`wasm64` passes tests but has not been benchmarked,
 performance may or may not be better than scalar math.
 
 [portable simd]: https://doc.rust-lang.org/core/simd/index.html
@@ -82,7 +84,7 @@ defined in `std`. For example:
 
 ```toml
 [dependencies]
-glam = { version = "0.31.0", default-features = false, features = ["libm"] }
+glam = { version = "0.32.0", default-features = false, features = ["libm"] }
 ```
 
 To support both `std` and `no_std` builds in project, you can use the following
@@ -96,7 +98,7 @@ std = ["glam/std"]
 libm = ["glam/libm"]
 
 [dependencies]
-glam = { version = "0.31.0", default-features = false }
+glam = { version = "0.32.0", default-features = false }
 ```
 
 Alternatively, you can use the `nostd-libm` feature. This will always include a
@@ -112,7 +114,7 @@ std = ["glam/std"]
 libm = ["glam/libm"]
 
 [dependencies]
-glam = { version = "0.31.0", default-features = false, features = ["nostd-libm"] }
+glam = { version = "0.32.0", default-features = false, features = ["nostd-libm"] }
 ```
 
 ### Optional features

@@ -102,6 +102,8 @@ impl Vec4 {
     /// Vec4 uses Intel SSE2
     pub const USES_SSE2: bool = true;
     /// Vec4 uses WebAssembly 128-bit SIMD
+    pub const USES_WASM_SIMD: bool = false;
+    #[deprecated(since = "0.31.0", note = "Renamed to USES_WASM_SIMD")]
     pub const USES_WASM32_SIMD: bool = false;
 
     /// Creates a new vector.
@@ -1189,6 +1191,18 @@ impl Vec4 {
     #[must_use]
     pub fn as_u64vec4(self) -> crate::U64Vec4 {
         crate::U64Vec4::new(self.x as u64, self.y as u64, self.z as u64, self.w as u64)
+    }
+
+    /// Casts all elements of `self` to `isize`.
+    #[inline]
+    #[must_use]
+    pub fn as_isizevec4(self) -> crate::ISizeVec4 {
+        crate::ISizeVec4::new(
+            self.x as isize,
+            self.y as isize,
+            self.z as isize,
+            self.w as isize,
+        )
     }
 
     /// Casts all elements of `self` to `usize`.

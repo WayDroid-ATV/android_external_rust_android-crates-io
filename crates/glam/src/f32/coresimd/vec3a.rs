@@ -85,6 +85,8 @@ impl Vec3A {
     /// Vec3A uses Intel SSE2
     pub const USES_SSE2: bool = false;
     /// Vec3A uses WebAssembly 128-bit SIMD
+    pub const USES_WASM_SIMD: bool = false;
+    #[deprecated(since = "0.31.0", note = "Renamed to USES_WASM_SIMD")]
     pub const USES_WASM32_SIMD: bool = false;
 
     /// Creates a new vector.
@@ -1294,6 +1296,13 @@ impl Vec3A {
     #[must_use]
     pub fn as_u64vec3(self) -> crate::U64Vec3 {
         crate::U64Vec3::new(self.x as u64, self.y as u64, self.z as u64)
+    }
+
+    /// Casts all elements of `self` to `isize`.
+    #[inline]
+    #[must_use]
+    pub fn as_isizevec3(self) -> crate::ISizeVec3 {
+        crate::ISizeVec3::new(self.x as isize, self.y as isize, self.z as isize)
     }
 
     /// Casts all elements of `self` to `usize`.
