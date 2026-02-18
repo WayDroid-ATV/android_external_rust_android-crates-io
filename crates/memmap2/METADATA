@@ -1,17 +1,17 @@
 name: "memmap2"
 description: "Cross-platform Rust API for memory-mapped file IO"
 third_party {
-  version: "0.9.9"
+  version: "0.9.10"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 10
-    day: 22
+    year: 2026
+    month: 2
+    day: 18
   }
   homepage: "https://crates.io/crates/memmap2"
   identifier {
     type: "crates.io"
     value: "memmap2"
-    version: "0.9.9"
+    version: "0.9.10"
   }
 }
