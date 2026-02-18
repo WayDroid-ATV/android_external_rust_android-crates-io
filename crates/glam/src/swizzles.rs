@@ -30,6 +30,10 @@ mod u64vec2_impl;
 mod u64vec3_impl;
 mod u64vec4_impl;
 
+mod isizevec2_impl;
+mod isizevec3_impl;
+mod isizevec4_impl;
+
 mod usizevec2_impl;
 mod usizevec3_impl;
 mod usizevec4_impl;
@@ -68,7 +72,7 @@ mod sse2;
     target_feature = "simd128",
     not(any(feature = "core-simd", feature = "scalar-math"))
 ))]
-mod wasm32;
+mod wasm;
 
 #[cfg(all(feature = "core-simd", not(feature = "scalar-math")))]
 mod coresimd;

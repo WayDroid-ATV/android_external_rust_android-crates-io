@@ -31,6 +31,8 @@
   * vectors: [`I64Vec2`], [`I64Vec3`] and [`I64Vec4`]
 * [`u64`](mod@u64) types
   * vectors: [`U64Vec2`], [`U64Vec3`] and [`U64Vec4`]
+* [`isize`](mod@isize) types
+  * vectors: [`ISizeVec2`], [`ISizeVec3`] and [`ISizeVec4`]
 * [`usize`](mod@usize) types
   * vectors: [`USizeVec2`], [`USizeVec3`] and [`USizeVec4`]
 * [`bool`](mod@bool) types
@@ -269,9 +271,10 @@ and benchmarks.
 The minimum supported Rust version is `1.68.2`.
 
 */
-#![doc(html_root_url = "https://docs.rs/glam/0.31.0")]
+#![doc(html_root_url = "https://docs.rs/glam/0.32.0")]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(target_arch = "spirv", feature(repr_simd))]
+#![cfg_attr(target_arch = "wasm64", feature(simd_wasm64))]
 #![deny(
     rust_2018_compatibility,
     rust_2018_idioms,
@@ -321,7 +324,7 @@ mod sse2;
     target_feature = "simd128",
     not(any(feature = "core-simd", feature = "scalar-math"))
 ))]
-mod wasm32;
+mod wasm;
 
 #[cfg(all(feature = "core-simd", not(feature = "scalar-math")))]
 mod coresimd;
@@ -379,6 +382,10 @@ pub use self::u64::*;
 /** `usize` vector types. */
 pub mod usize;
 pub use self::usize::*;
+
+/** `isize` vector types. */
+pub mod isize;
+pub use self::isize::*;
 
 /** Traits adding swizzle methods to all vector types. */
 pub mod swizzles;

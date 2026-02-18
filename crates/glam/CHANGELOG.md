@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to
 [Semantic Versioning].
 
+## [0.32.0] - 2026-02-11
+
+### Breaking changes
+
+* Updated the optional `rand` dependency to `0.10`.
+
+## [0.31.1] - 2026-02-10
+
+### Added
+
+* Added `isize` vector types `ISizeVec2`, `ISizeVec3` and `ISizeVec4`.
+
+* Added `wasm64-unknown-unknown` support. The `wasm64-unknown-unknown` target
+ uses the same `simd128` instructions as `wasm32`. Note that
+ `wasm64-unknown-unknown` requires a `nightly` toolchain.
+
+### Changed
+
+* The `USES_WASM32_SIMD` constant on vector types has been renamed to
+ `USES_WASM_SIMD`, `USES_WASM32_SIMD` has been deprecated.
+
 ## [0.31.0] - 2026-01-21
 
 ### Breaking changes
@@ -1363,7 +1384,9 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 [Keep a Changelog]: https://keepachangelog.com/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
-[Unreleased]: https://github.com/bitshifter/glam-rs/compare/0.31.0...HEAD
+[Unreleased]: https://github.com/bitshifter/glam-rs/compare/0.32.0...HEAD
+[0.32.0]: https://github.com/bitshifter/glam-rs/compare/0.31.1...0.32.0
+[0.31.1]: https://github.com/bitshifter/glam-rs/compare/0.31.0...0.31.1
 [0.31.0]: https://github.com/bitshifter/glam-rs/compare/0.30.10...0.31.0
 [0.30.10]: https://github.com/bitshifter/glam-rs/compare/0.30.9...0.30.10
 [0.30.9]: https://github.com/bitshifter/glam-rs/compare/0.30.8...0.30.9
