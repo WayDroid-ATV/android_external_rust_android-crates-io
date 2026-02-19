@@ -1,0 +1,79 @@
+--- a/src/bin/dcf_info.rs
++++ b/src/bin/dcf_info.rs
+@@ -21,14 +21,11 @@
+ // or
+ // `cargo run --bin dcf_info --features="dcf_info" -- tests/layout-unit-tests.dcf -n HorizontalFill`
+
+-use clap::Parser;
+-use dc_figma_import::tools::dcf_info::dcf_info;
+-use dc_figma_import::tools::dcf_info::Args;
++use dc_figma_import::tools::dcf_info;
+ use std::process;
+
+ fn main() {
+-    let args = Args::parse();
+-    if let Err(e) = dcf_info(args) {
++    if let Err(e) = dcf_info::main() {
+         eprintln!("dcf_info failed: {:?}", e);
+         std::process::exit(1);
+     }
+--- a/src/tools/mod.rs
++++ b/src/tools/mod.rs
+@@ -14,6 +14,7 @@
+
+ #[cfg(feature = "dcf_info")]
+ pub mod dcf_info;
++pub mod libdcf_info;
+
+ #[cfg(feature = "fetch_layout")]
+ pub mod fetch_layout;
+--- a/src/tools/dcf_info.rs
++++ b/src/tools/dcf_info.rs
+@@ -30,9 +30,10 @@
+ //! or
+ //! dcf_info -- tests/layout-unit-tests.dcf -n HorizontalFill`
+
++use crate::tools::libdcf_info::DcfError;
++use crate::tools::libdcf_info::parse_dcf_info;
+ use clap::Parser;
+ use dc_bundle::definition_file::load_design_def;
+-use dcf_info::parse_dcf_info;
+ use serde::Serialize;
+ use std::fs::File;
+ use std::io::{self, Read, Write};
+@@ -40,7 +41,7 @@
+
+ #[derive(Debug)]
+ #[allow(dead_code)]
+-struct ParseError(String);
++pub struct ParseError(pub String);
+
+ impl From<std::io::Error> for ParseError {
+     fn from(e: std::io::Error) -> Self {
+@@ -54,12 +55,12 @@
+         ParseError(format!("Error during deserialization: {:?}", e))
+     }
+ }
+-impl From<dcf_info::DcfError> for ParseError {
+-    fn from(e: dcf_info::DcfError) -> Self {
++impl From<DcfError> for ParseError {
++    fn from(e: DcfError) -> Self {
+         match e {
+-            dcf_info::DcfError::Io(e) => e.into(),
+-            dcf_info::DcfError::DcBundle(e) => e.into(),
+-            dcf_info::DcfError::Parse(s) => ParseError(s),
++            DcfError::Io(e) => e.into(),
++            DcfError::DcBundle(e) => e.into(),
++            DcfError::Parse(s) => ParseError(s),
+         }
+     }
+ }
+@@ -81,7 +82,7 @@
+     output: Option<std::path::PathBuf>,
+ }
+
+-fn main() -> Result<(), ParseError> {
++pub fn main() -> Result<(), ParseError> {
+     let args = match Args::try_parse() {
+         Ok(args) => args,
+         Err(e) => {
