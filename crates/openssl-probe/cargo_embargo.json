@@ -2,8 +2,9 @@
   "run_cargo": false,
   "min_sdk_version": "29",
   "package": {
-    "rustls-native-certs": {
-      "patch": "patches/Android.bp.patch"
+    "openssl-probe": {
+      "device_supported": false
     }
   }
 }
+

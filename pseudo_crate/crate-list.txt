@@ -329,6 +329,7 @@ oorandom
 open-enum
 open-enum-derive
 openssl-macros
+openssl-probe
 os_pipe
 os_str_bytes
 p9
@@ -458,6 +459,7 @@ strsim
 strum
 strum_macros
 subtle
+svgtypes
 symphonia
 symphonia-bundle-flac
 symphonia-core

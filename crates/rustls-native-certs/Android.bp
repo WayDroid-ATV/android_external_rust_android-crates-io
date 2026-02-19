@@ -15,6 +15,7 @@ license {
 
 rust_library {
     name: "librustls_native_certs",
+    host_supported: true,
     crate_name: "rustls_native_certs",
     cargo_env_compat: true,
     cargo_pkg_version: "0.8.2",
@@ -29,4 +30,24 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    target: {
+        linux_glibc: {
+            rustlibs: [
+                "libopenssl_probe",
+                "librustls_pki_types",
+            ],
+        },
+        linux_musl: {
+            rustlibs: [
+                "libopenssl_probe",
+                "librustls_pki_types",
+            ],
+        },
+        darwin: {
+            enabled: false,
+        },
+        windows: {
+            enabled: false,
+        },
+    },
 }
