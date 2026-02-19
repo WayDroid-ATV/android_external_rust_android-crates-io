@@ -1,0 +1,27 @@
+--- a/Android.bp
++++ b/Android.bp
+@@ -30,4 +30,24 @@
+     product_available: true,
+     vendor_available: true,
+     min_sdk_version: "29",
++    target: {
++        linux_glibc: {
++            rustlibs: [
++                "libopenssl_probe",
++                "librustls_pki_types",
++            ],
++        },
++        linux_musl: {
++            rustlibs: [
++                "libopenssl_probe",
++                "librustls_pki_types",
++            ],
++        },
++        darwin: {
++            enabled: false,
++        },
++        windows: {
++            enabled: false,
++        },
++    },
+ }
