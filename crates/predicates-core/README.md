@@ -12,11 +12,12 @@
 
 ## License
 
-`predicates-core` is distributed under the terms of both the MIT license and the
-Apache License (Version 2.0).
+Licensed under either of
 
-See LICENSE-APACHE, and LICENSE-MIT for details.
+* Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <https://www.apache.org/licenses/LICENSE-2.0>)
+* MIT license ([LICENSE-MIT](LICENSE-MIT) or <https://opensource.org/license/mit>)
 
+at your option.
 
 ## Credits
 
