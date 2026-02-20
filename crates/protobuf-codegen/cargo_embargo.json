@@ -1,6 +1,6 @@
 {
     "module_name_overrides": {
-        "protoc_gen_rs": "protoc-gen-rust"
+        "protoc_gen_rs": "protoc-gen-rs"
     },
     "package": {
         "protobuf-codegen": {
