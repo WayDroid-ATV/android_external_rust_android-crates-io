@@ -35,6 +35,9 @@ rust_library {
         "//apex_available:anyapex",
     ],
     min_sdk_version: "29",
-    visibility: ["//system/bpf/loader"],
+    visibility: [
+        "//frameworks/native/libs/cpucycleperuid",
+        "//system/bpf/loader",
+    ],
     shared_libs: ["libbpf"],
 }

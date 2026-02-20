@@ -1,10 +1,10 @@
 diff --git a/Android.bp b/Android.bp
-index c9519440..64ac9cb2 100644
+index d13c430..b1657f9 100644
 --- a/Android.bp
 +++ b/Android.bp
-@@ -35,4 +35,5 @@ rust_library {
-         "//apex_available:anyapex",
+@@ -39,4 +39,5 @@ rust_library {
+         "//frameworks/native/libs/cpucycleperuid",
+         "//system/bpf/loader",
      ],
-     visibility: ["//system/bpf/loader"],
 +    shared_libs: ["libbpf"],
  }

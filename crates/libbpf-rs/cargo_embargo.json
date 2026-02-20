@@ -8,6 +8,7 @@
   },
   "module_visibility": {
     "liblibbpf_rs": [
+      "//frameworks/native/libs/cpucycleperuid",
       "//system/bpf/loader"
     ]
   },
