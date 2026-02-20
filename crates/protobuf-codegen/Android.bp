@@ -55,7 +55,7 @@ rust_test_host {
 }
 
 rust_binary_host {
-    name: "protoc-gen-rust",
+    name: "protoc-gen-rs",
     crate_name: "protoc_gen_rs",
     cargo_env_compat: true,
     cargo_pkg_version: "3.7.2",
