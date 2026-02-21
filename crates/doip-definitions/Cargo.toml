@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "doip-definitions"
-version = "3.0.13"
+version = "3.0.14"
 authors = ["Samuel Preston <samp.reston@outlook.com>"]
 build = false
 autolib = false

@@ -2365,21 +2365,22 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
-version = "2.0.1"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "093242cf7570c207c83073cf82f79706fe7b8317e98620a47d5be7c3d8497678"
+checksum = "d751e9e49156b02b44f9c1815bcb94b984cdcc4396ecc32521c739452808b134"
 dependencies = [
  "derive_more-impl",
 ]
 
 [[package]]
 name = "derive_more-impl"
-version = "2.0.1"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bda628edc44c4bb645fbe0f758797143e4e07926f7ebf4e9bdfbd3d2ce621df3"
+checksum = "799a97264921d8623a957f6c3b9011f3b5492f557bbb7a5a19b7fa6d06ba8dcb"
 dependencies = [
  "proc-macro2 1.0.106",
  "quote 1.0.44",
+ "rustc_version",
  "syn 2.0.116",
 ]
 
@@ -2511,9 +2512,9 @@ dependencies = [
 
 [[package]]
 name = "doip-definitions"
-version = "3.0.13"
+version = "3.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac4d5b8c3c480cf3a89f982d4bd1f8ab7b7c7e7553b72f49a552f66a58553ed4"
+checksum = "25eb973fbb7b3b5d4411ac4f64c1d4b1a2cab349762039f09244328bae099740"
 dependencies = [
  "derive_more",
 ]
