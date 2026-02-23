@@ -1,17 +1,17 @@
 name: "tonic"
 description: "A gRPC over HTTP/2 implementation focused on high performance, interoperability, and flexibility."
 third_party {
-  version: "0.14.4"
+  version: "0.14.5"
   license_type: NOTICE
   last_upgrade_date {
     year: 2026
     month: 2
-    day: 17
+    day: 21
   }
   homepage: "https://crates.io/crates/tonic"
   identifier {
     type: "crates.io"
     value: "tonic"
-    version: "0.14.4"
+    version: "0.14.5"
   }
 }
