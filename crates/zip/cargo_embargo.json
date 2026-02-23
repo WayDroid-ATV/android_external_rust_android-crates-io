@@ -8,7 +8,7 @@
   ],
   "package": {
     "zip": {
-      "patch": "patches/Android.bp.diff"
+        "add_module_block": "cargo2android_target.bp.fragment"
     }
   },
   "run_cargo": false,
