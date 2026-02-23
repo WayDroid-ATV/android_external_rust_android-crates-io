@@ -163,6 +163,17 @@ impl TryFrom<i32> for Method {
     }
 }
 
+/// Configuration for compression.
+///
+/// Used with [`compress_slice`].
+///
+/// In most cases only the compression level is relevant. We provide three profiles:
+///
+/// - [`DeflateConfig::best_speed`] provides the fastest compression (at the cost of compression
+///   quality)
+/// - [`DeflateConfig::default`] tries to find a happy middle
+/// - [`DeflateConfig::best_compression`] provides the best compression (at the cost of longer
+///   runtime)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "__internal-fuzz", derive(arbitrary::Arbitrary))]
 pub struct DeflateConfig {
@@ -208,6 +219,16 @@ impl DeflateConfig {
             level,
             ..Self::default()
         }
+    }
+
+    /// Configure for the best compression (takes longer).
+    pub fn best_compression() -> Self {
+        Self::new(crate::c_api::Z_BEST_COMPRESSION)
+    }
+
+    /// Configure for the fastest compression (compresses less well).
+    pub fn best_speed() -> Self {
+        Self::new(crate::c_api::Z_BEST_SPEED)
     }
 }
 
@@ -1432,20 +1453,33 @@ impl<'a> State<'a> {
         l_desc: &mut TreeDesc<HEAP_SIZE>,
         unmatched: u8,
     ) -> bool {
+        const _VERIFY: () = {
+            // Verify during compilation that even the largest possible value
+            // of unmatched will fit within the expected range.
+            assert!(
+                u8::MAX as usize <= STD_MAX_MATCH - STD_MIN_MATCH,
+                "tally_lit: bad literal"
+            );
+        };
+
         sym_buf.push_lit(unmatched);
 
         *l_desc.dyn_tree[unmatched as usize].freq_mut() += 1;
-
-        assert!(
-            unmatched as usize <= STD_MAX_MATCH - STD_MIN_MATCH,
-            "zng_tr_tally: bad literal"
-        );
 
         // signal that the current block should be flushed
         sym_buf.should_flush_block()
     }
 
     const fn d_code(dist: usize) -> u8 {
+        const _VERIFY: () = {
+            // Verify during compilation that every DIST_CODE value is < D_CODES.
+            let mut i = 0;
+            while i < trees_tbl::DIST_CODE.len() {
+                assert!(trees_tbl::DIST_CODE[i] < D_CODES as u8);
+                i += 1;
+            }
+        };
+
         let index = if dist < 256 { dist } else { 256 + (dist >> 7) };
         self::trees_tbl::DIST_CODE[index]
     }
@@ -1457,10 +1491,7 @@ impl<'a> State<'a> {
         self.matches = self.matches.saturating_add(1);
         dist -= 1;
 
-        assert!(
-            dist < self.max_dist() && Self::d_code(dist) < D_CODES as u8,
-            "tally_dist: bad match"
-        );
+        assert!(dist < self.max_dist(), "tally_dist: bad match");
 
         let index = self::trees_tbl::LENGTH_CODE[len] as usize + LITERALS + 1;
         *self.l_desc.dyn_tree[index].freq_mut() += 1;
@@ -2773,6 +2804,23 @@ pub(crate) fn flush_pending(stream: &mut DeflateStream) {
     state.bit_writer.pending.advance(len);
 }
 
+/// Compresses `input` into the provided `output` buffer.
+///
+/// Returns a subslice of `output` containing the compressed bytes and a
+/// [`ReturnCode`] indicating the result of the operation. Returns [`ReturnCode::BufError`] if
+/// there is insufficient output space.
+///
+/// Use [`compress_bound`] for an upper bound on how large the output buffer needs to be.
+///
+/// # Example
+///
+/// ```
+/// # use zlib_rs::*;
+/// # fn foo(input: &[u8]) {
+/// let mut buf = vec![0u8; compress_bound(input.len())];
+/// let (compressed, rc) = compress_slice(&mut buf, input, DeflateConfig::default());
+/// # }
+/// ```
 pub fn compress_slice<'a>(
     output: &'a mut [u8],
     input: &[u8],
@@ -2841,7 +2889,7 @@ pub fn compress_with_flush<'a>(
     let mut left = output.len();
     let mut source_len = input.len();
 
-    loop {
+    let return_code = loop {
         if stream.avail_out == 0 {
             stream.avail_out = Ord::min(left, max) as _;
             left -= stream.avail_out as usize;
@@ -2864,10 +2912,12 @@ pub fn compress_with_flush<'a>(
             ReturnCode::StreamError
         };
 
-        if err != ReturnCode::Ok {
-            break;
+        match err {
+            ReturnCode::Ok => continue,
+            ReturnCode::StreamEnd => break ReturnCode::Ok,
+            _ => break err,
         }
-    }
+    };
 
     // SAFETY: we have now initialized these bytes
     let output_slice = unsafe {
@@ -2875,18 +2925,32 @@ pub fn compress_with_flush<'a>(
     };
 
     // may DataError if insufficient output space
-    let return_code = if let Some(stream) = unsafe { DeflateStream::from_stream_mut(&mut stream) } {
-        match end(stream) {
-            Ok(_) => ReturnCode::Ok,
-            Err(_) => ReturnCode::DataError,
-        }
-    } else {
-        ReturnCode::Ok
-    };
+    if let Some(stream) = unsafe { DeflateStream::from_stream_mut(&mut stream) } {
+        let _ = end(stream);
+    }
 
     (output_slice, return_code)
 }
 
+/// Returns the upper bound on the compressed size for an input of `source_len` bytes.
+///
+/// When compression has this much space available, it will never fail because of insufficient
+/// output space.
+///
+/// # Example
+///
+/// ```
+/// # use zlib_rs::*;
+///
+/// assert_eq!(compress_bound(1024), 1161);
+/// assert_eq!(compress_bound(4096), 4617);
+/// assert_eq!(compress_bound(65536), 73737);
+///
+/// # fn foo(input: &[u8]) {
+/// let mut buf = vec![0u8; compress_bound(input.len())];
+/// let (compressed, rc) = compress_slice(&mut buf, input, DeflateConfig::default());
+/// # }
+/// ```
 pub const fn compress_bound(source_len: usize) -> usize {
     compress_bound_help(source_len, ZLIB_WRAPLEN)
 }
@@ -3062,10 +3126,10 @@ pub unsafe fn set_header<'a>(
     head: Option<&'a mut gz_header>,
 ) -> ReturnCode {
     if stream.state.wrap != 2 {
-        ReturnCode::StreamError as _
+        ReturnCode::StreamError
     } else {
         stream.state.gzhead = head;
-        ReturnCode::Ok as _
+        ReturnCode::Ok
     }
 }
 
@@ -3235,41 +3299,45 @@ impl DeflateAllocOffsets {
     fn new(window_bits: usize, lit_bufsize: usize) -> Self {
         use core::mem::size_of;
 
-        const WINDOW_PAD_SIZE: usize = 64;
+        // 64B alignment of individual items in the alloc.
+        // Note that changing this also requires changes in 'init' and 'copy'.
+        const ALIGN_SIZE: usize = 64;
         const LIT_BUFS: usize = 4;
 
         let mut curr_size = 0usize;
 
         /* Define sizes */
+        let state_size = size_of::<State>();
+        // Allocate a second window worth of space to avoid the need to shift the data constantly.
         let window_size = (1 << window_bits) * 2;
         let prev_size = (1 << window_bits) * size_of::<Pos>();
         let head_size = HASH_SIZE * size_of::<Pos>();
         let pending_size = lit_bufsize * LIT_BUFS;
         let sym_buf_size = lit_bufsize * (LIT_BUFS - 1);
-        let state_size = size_of::<State>();
         // let alloc_size = size_of::<DeflateAlloc>();
 
         /* Calculate relative buffer positions and paddings */
-        let window_pos = curr_size.next_multiple_of(WINDOW_PAD_SIZE);
-        curr_size = window_pos + window_size;
-
-        let prev_pos = curr_size.next_multiple_of(64);
-        curr_size = prev_pos + prev_size;
-
-        let head_pos = curr_size.next_multiple_of(64);
-        curr_size = head_pos + head_size;
-
-        let pending_pos = curr_size.next_multiple_of(64);
-        curr_size = pending_pos + pending_size;
-
-        let sym_buf_pos = curr_size.next_multiple_of(64);
-        curr_size = sym_buf_pos + sym_buf_size;
-
-        let state_pos = curr_size.next_multiple_of(64);
+        let state_pos = curr_size.next_multiple_of(ALIGN_SIZE);
         curr_size = state_pos + state_size;
 
-        /* Add 64-1 or 4096-1 to allow window alignment, and round size of buffer up to multiple of 64 */
-        let total_size = (curr_size + (WINDOW_PAD_SIZE - 1)).next_multiple_of(64);
+        let window_pos = curr_size.next_multiple_of(ALIGN_SIZE);
+        curr_size = window_pos + window_size;
+
+        let prev_pos = curr_size.next_multiple_of(ALIGN_SIZE);
+        curr_size = prev_pos + prev_size;
+
+        let head_pos = curr_size.next_multiple_of(ALIGN_SIZE);
+        curr_size = head_pos + head_size;
+
+        let pending_pos = curr_size.next_multiple_of(ALIGN_SIZE);
+        curr_size = pending_pos + pending_size;
+
+        let sym_buf_pos = curr_size.next_multiple_of(ALIGN_SIZE);
+        curr_size = sym_buf_pos + sym_buf_size;
+
+        /* Add ALIGN_SIZE-1 to allow alignment (done in the 'init' and 'copy' functions), and round
+         * size of buffer up to next multiple of ALIGN_SIZE */
+        let total_size = (curr_size + (ALIGN_SIZE - 1)).next_multiple_of(ALIGN_SIZE);
 
         Self {
             total_size,
@@ -3286,7 +3354,7 @@ impl DeflateAllocOffsets {
 #[cfg(test)]
 mod test {
     use crate::{
-        inflate::{uncompress_slice, InflateConfig, InflateStream},
+        inflate::{decompress_slice, InflateConfig, InflateStream},
         InflateFlush,
     };
 
@@ -3943,7 +4011,7 @@ mod test {
     fn insufficient_compress_space() {
         const DATA: &[u8] = include_bytes!("deflate/test-data/inflate_buf_error.dat");
 
-        fn helper(deflate_buf: &mut [u8]) -> ReturnCode {
+        fn helper(deflate_buf: &mut [u8], deflate_err: ReturnCode) -> ReturnCode {
             let config = DeflateConfig {
                 level: 0,
                 method: Method::Deflated,
@@ -3953,14 +4021,14 @@ mod test {
             };
 
             let (output, err) = compress_slice(deflate_buf, DATA, config);
-            assert_eq!(err, ReturnCode::Ok);
+            assert_eq!(err, deflate_err);
 
             let config = InflateConfig {
                 window_bits: config.window_bits,
             };
 
             let mut uncompr = [0; 1 << 17];
-            let (uncompr, err) = uncompress_slice(&mut uncompr, output, config);
+            let (uncompr, err) = decompress_slice(&mut uncompr, output, config);
 
             if err == ReturnCode::Ok {
                 assert_eq!(DATA, uncompr);
@@ -3972,10 +4040,13 @@ mod test {
         let mut output = [0; 1 << 17];
 
         // this is too little space
-        assert_eq!(helper(&mut output[..1 << 16]), ReturnCode::DataError);
+        assert_eq!(
+            helper(&mut output[..1 << 16], ReturnCode::BufError),
+            ReturnCode::DataError
+        );
 
         // this is sufficient space
-        assert_eq!(helper(&mut output), ReturnCode::Ok);
+        assert_eq!(helper(&mut output, ReturnCode::Ok), ReturnCode::Ok);
     }
 
     fn test_flush(flush: DeflateFlush, expected: &[u8]) {
@@ -3992,8 +4063,9 @@ mod test {
         let mut output_rs = vec![0; 128];
 
         // with the flush modes that we test here, the deflate process still has `Status::Busy`,
-        // and the `deflateEnd` function will return `DataError`.
-        let expected_err = ReturnCode::DataError;
+        // and the `deflate` function will return `BufError` because more input is needed before
+        // the flush can occur.
+        let expected_err = ReturnCode::BufError;
 
         let (rs, err) = compress_slice_with_flush(&mut output_rs, input, config, flush);
         assert_eq!(expected_err, err);
@@ -4077,7 +4149,7 @@ mod test {
             config,
             DeflateFlush::SyncFlush,
         );
-        assert_eq!(err, ReturnCode::DataError);
+        assert_eq!(err, ReturnCode::BufError);
 
         let (output2, err) = compress_slice_with_flush(
             &mut output2,
@@ -4109,11 +4181,11 @@ mod test {
         let len2 = u32::from_le_bytes(len2.try_into().unwrap());
         assert_eq!(len2 as usize, input2.len());
 
-        let crc1 = crate::crc32(0, input1.as_bytes());
-        let crc = crate::crc32_combine(crc1, crc2, len2 as u64);
+        let crc1 = crate::crc32::crc32(0, input1.as_bytes());
+        let crc = crate::crc32::crc32_combine(crc1, crc2, len2 as u64);
 
         // combined crc of the parts should be the crc of the whole
-        let crc_cheating = crate::crc32(0, input.as_bytes());
+        let crc_cheating = crate::crc32::crc32(0, input.as_bytes());
         assert_eq!(crc, crc_cheating);
 
         // write the trailer
@@ -4121,7 +4193,7 @@ mod test {
         result.extend((len1 + len2).to_le_bytes());
 
         let mut output = vec![0; 128];
-        let (output, err) = crate::inflate::uncompress_slice(&mut output, &result, inflate_config);
+        let (output, err) = crate::inflate::decompress_slice(&mut output, &result, inflate_config);
         assert_eq!(err, ReturnCode::Ok);
 
         assert_eq!(output, input.as_bytes());
@@ -4170,7 +4242,7 @@ mod test {
 
         let mut dest_vec_rs = vec![0u8; uncompressed.len()];
         let (output_rs, error) =
-            crate::inflate::uncompress_slice(&mut dest_vec_rs, compressed, config);
+            crate::inflate::decompress_slice(&mut dest_vec_rs, compressed, config);
 
         assert_eq!(ReturnCode::Ok, error);
         assert_eq!(output_rs, uncompressed);
