@@ -279,6 +279,7 @@ lz4_flex
 macaddr
 managed
 maplit
+matchers
 matches
 matchit
 maybe-async
