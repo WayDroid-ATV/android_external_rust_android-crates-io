@@ -1,4 +1,8 @@
 {
+  "features": [
+    "default",
+    "__internal-api"
+  ],
   "tests": true,
   "run_cargo": false,
   "sdk_version": "26",
