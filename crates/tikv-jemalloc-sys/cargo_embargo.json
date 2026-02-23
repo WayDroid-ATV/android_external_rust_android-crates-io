@@ -1,7 +1,7 @@
 {
   "package": {
     "tikv-jemalloc-sys": {
-      "patch": "patches/Android.bp.patch",
+      "add_module_block": "cargo2android_target.bp.fragment",
       "device_supported": false
     }
   },
