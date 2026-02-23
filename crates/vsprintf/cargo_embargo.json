@@ -3,7 +3,7 @@
   "package": {
     "vsprintf": {
       "add_toplevel_block": "wrapper.bp.fragment",
-      "patch": "patches/Android.bp.patch"
+      "add_module_block": "cargo2android_target.bp.fragment"
     }
   },
   "module_visibility": {
