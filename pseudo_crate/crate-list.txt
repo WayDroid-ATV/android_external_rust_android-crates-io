@@ -336,6 +336,7 @@ os_pipe
 os_str_bytes
 p9
 p9_wire_format_derive
+page_size
 parking_lot
 parking_lot_core
 paste
