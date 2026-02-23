@@ -509,6 +509,7 @@ tower-service
 tracing
 tracing-attributes
 tracing-core
+tracing-log
 tracing-subscriber
 try-lock
 tryhard
