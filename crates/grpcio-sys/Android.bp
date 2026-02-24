@@ -20,7 +20,6 @@ rust_library {
     cargo_env_compat: true,
     cargo_pkg_version: "0.13.0+1.56.2-patched",
     crate_root: "src/lib.rs",
-    srcs: [":libgrpc_bindgen"],
     edition: "2018",
     features: [
         "_gen-bindings",
@@ -46,6 +45,7 @@ rust_library {
         "libgrpc++",
         "libgrpc_wrap",
     ],
+    srcs: [":libgrpc_bindgen"],
 
 }
 
