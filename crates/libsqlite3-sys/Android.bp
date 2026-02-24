@@ -20,7 +20,6 @@ rust_library {
     cargo_env_compat: true,
     cargo_pkg_version: "0.30.1",
     crate_root: "src/lib.rs",
-    srcs: [":libsqlite3_bindgen"],
     edition: "2021",
     features: [
         "default",
@@ -28,7 +27,6 @@ rust_library {
         "pkg-config",
         "vcpkg",
     ],
-    shared_libs: ["libsqlite"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -36,6 +34,9 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    srcs: [":libsqlite3_bindgen"],
+    shared_libs: ["libsqlite"],
+
 }
 
 rust_test {
@@ -45,7 +46,6 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.30.1",
     crate_root: "src/lib.rs",
-    srcs: [":libsqlite3_bindgen"],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -58,7 +58,9 @@ rust_test {
         "pkg-config",
         "vcpkg",
     ],
+    srcs: [":libsqlite3_bindgen"],
     shared_libs: ["libsqlite"],
+
 }
 
 rust_bindgen {
