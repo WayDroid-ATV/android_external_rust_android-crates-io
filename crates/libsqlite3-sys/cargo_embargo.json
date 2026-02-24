@@ -3,7 +3,7 @@
   "package": {
     "libsqlite3-sys": {
       "add_toplevel_block": "bindgen_modules.bp.fragment",
-      "patch": "patches/Android.bp.patch"
+      "add_module_block": "cargo2android_target.bp.fragment"
     }
   },
   "product_available": true,
