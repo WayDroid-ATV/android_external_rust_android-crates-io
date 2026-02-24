@@ -2133,7 +2133,6 @@ cc_library_static {
     vendor_available: true,
     product_available: true,
     min_sdk_version: "29",
-
     // b/336916369: This library gets linked into a rust rlib.  Disable LTO
     // until cross-language lto is supported.
     lto: {
@@ -2156,7 +2155,6 @@ cc_library_static {
     vendor_available: true,
     product_available: true,
     min_sdk_version: "29",
-
     // b/336916369: This library gets linked into a rust rlib.  Disable LTO
     // until cross-language lto is supported.
     lto: {

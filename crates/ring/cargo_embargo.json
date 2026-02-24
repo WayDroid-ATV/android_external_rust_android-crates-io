@@ -16,7 +16,6 @@
         "libring-core",
         "libring-test"
       ],
-      "patch": "patches/Android.bp.patch",
       "srcs": [
         "src/**/*.rs",
         "src/data/alg-rsa-encryption.der",
