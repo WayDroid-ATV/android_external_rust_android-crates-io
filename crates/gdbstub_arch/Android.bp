@@ -20,6 +20,10 @@ rust_test {
     cargo_env_compat: true,
     cargo_pkg_version: "0.3.2",
     crate_root: "src/lib.rs",
+    srcs: [
+        "src/**/*.rs",
+        "src/**/*.xml",
+    ],
     test_suites: ["general-tests"],
     auto_gen_config: true,
     test_options: {
@@ -30,6 +34,7 @@ rust_test {
         "libgdbstub",
         "libnum_traits",
     ],
+    use_expansive_default_srcs: false,
 }
 
 rust_library {
@@ -39,6 +44,10 @@ rust_library {
     cargo_env_compat: true,
     cargo_pkg_version: "0.3.2",
     crate_root: "src/lib.rs",
+    srcs: [
+        "src/**/*.rs",
+        "src/**/*.xml",
+    ],
     edition: "2018",
     rustlibs: [
         "libgdbstub",
@@ -51,4 +60,5 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
+    use_expansive_default_srcs: false,
 }

@@ -1,4 +1,12 @@
 {
   "run_cargo": false,
-  "min_sdk_version": "29"
+  "min_sdk_version": "29",
+  "package": {
+    "protobuf-parse": {
+      "srcs": [
+        "src/**/*.rs",
+        "src/proto/**/*.proto"
+      ]
+    }
+  }
 }
