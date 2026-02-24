@@ -5,6 +5,10 @@
     "gdbstub_arch": {
       "license_text": [
         "LICENSE-APACHE"
+      ],
+      "srcs": [
+        "src/**/*.rs",
+        "src/**/*.xml"
       ]
     }
   },

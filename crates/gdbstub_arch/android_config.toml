@@ -1,1 +1,5 @@
-deletions = ["LICENSE"]
+deletions = [
+    ".cargo_vcs_info.json",
+    "Cargo.toml.orig",
+    "LICENSE",
+]
