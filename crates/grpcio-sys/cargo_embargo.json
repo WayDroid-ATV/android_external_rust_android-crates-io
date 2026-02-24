@@ -66,8 +66,7 @@
         "libstdc++",
         "libupb",
         "libz"
-      ],
-      "patch": "patches/Android.bp.patch"
+      ]
     }
   },
   "run_cargo": false
