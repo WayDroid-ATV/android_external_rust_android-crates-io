@@ -3,7 +3,7 @@
   "tests": true,
   "package": {
     "jni": {
-      "patch": "patches/Android.bp.diff"
+      "dep_blocklist" : ["libassert_matches", "librusty_fork"]      
     }
   }
 }
