@@ -17,12 +17,22 @@ impl LinkHandle {
         LinkHandle(handle)
     }
 
+    /// Using `RTM_SETLINK`. Currently this is only used for bridge commands
+    /// like `bridge vlan` and `bridge vlan`.
+    /// For changing existing network interface, please use
+    /// [LinkHandle::add()]
     pub fn set(&self, message: LinkMessage) -> LinkSetRequest {
         LinkSetRequest::new(self.0.clone(), message)
     }
 
     pub fn add(&self, message: LinkMessage) -> LinkAddRequest {
         LinkAddRequest::new(self.0.clone(), message)
+    }
+
+    /// Equal to `ip link set` command.
+    pub fn change(&self, message: LinkMessage) -> LinkAddRequest {
+        LinkAddRequest::new(self.0.clone(), message)
+            .set_flags(NLM_F_REQUEST | NLM_F_ACK)
     }
 
     pub fn property_add(&self, index: u32) -> LinkNewPropRequest {
@@ -33,12 +43,19 @@ impl LinkHandle {
         LinkDelPropRequest::new(self.0.clone(), index)
     }
 
-    pub fn del(&mut self, index: u32) -> LinkDelRequest {
+    pub fn del(&self, index: u32) -> LinkDelRequest {
         LinkDelRequest::new(self.0.clone(), index)
     }
 
+    /// Delete specified information from interface.
+    /// For example: To delete bridge VLANs, it is required to include
+    /// LinkMessage of VLAN information to delete.
+    pub fn del_with_message(&self, message: LinkMessage) -> LinkDelRequest {
+        LinkDelRequest::new_with_message(self.0.clone(), message)
+    }
+
     /// Retrieve the list of links (equivalent to `ip link show`)
-    pub fn get(&mut self) -> LinkGetRequest {
+    pub fn get(&self) -> LinkGetRequest {
         LinkGetRequest::new(self.0.clone())
     }
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-use futures::stream::StreamExt;
+use futures_util::stream::StreamExt;
 use netlink_packet_core::{NetlinkMessage, NLM_F_ACK, NLM_F_REQUEST};
 use netlink_packet_route::{link::LinkMessage, RouteNetlinkMessage};
 
@@ -15,6 +15,10 @@ impl LinkDelRequest {
     pub(crate) fn new(handle: Handle, index: u32) -> Self {
         let mut message = LinkMessage::default();
         message.header.index = index;
+        LinkDelRequest { handle, message }
+    }
+
+    pub fn new_with_message(handle: Handle, message: LinkMessage) -> Self {
         LinkDelRequest { handle, message }
     }
 

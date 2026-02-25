@@ -3,6 +3,7 @@
 mod bond;
 mod bond_port;
 mod bridge;
+mod bridge_boolopt;
 mod bridge_port;
 mod geneve;
 mod gre;
@@ -29,12 +30,17 @@ mod xstats;
 pub(crate) use self::infos::VecLinkInfo;
 pub use self::{
     bond::{
-        BondAdInfo, BondArpAllTargets, BondArpValidate, BondFailOverMac,
-        BondMode, BondPrimaryReselect, BondXmitHashPolicy, InfoBond,
+        BondAdInfo, BondAllPortActive, BondArpAllTargets, BondArpValidate,
+        BondFailOverMac, BondLacpRate, BondMode, BondPrimaryReselect,
+        BondXmitHashPolicy, InfoBond,
     },
     bond_port::{BondPortState, InfoBondPort, MiiStatus},
-    bridge::{BridgeId, BridgeIdBuffer, BridgeQuerierState, InfoBridge},
-    bridge_port::{BridgePortMulticastRouter, BridgePortState, InfoBridgePort},
+    bridge::{
+        BridgeId, BridgeIdBuffer, BridgeMulticastRouterType,
+        BridgeQuerierState, BridgeStpState, InfoBridge,
+    },
+    bridge_boolopt::{BridgeBooleanOptionFlags, BridgeBooleanOptions},
+    bridge_port::{BridgePortState, InfoBridgePort},
     geneve::{GeneveDf, InfoGeneve},
     gre::{GreEncapFlags, GreEncapType, GreIOFlags, InfoGre, InfoGre6},
     gtp::InfoGtp,
@@ -42,7 +48,7 @@ pub use self::{
     info_data::InfoData,
     info_port::{InfoPortData, InfoPortKind, InfoVrfPort},
     infos::{InfoKind, LinkInfo},
-    ipoib::InfoIpoib,
+    ipoib::{InfoIpoib, IpoibMode},
     iptunnel::{
         InfoIpTunnel, Ip6TunnelFlags, TunnelEncapFlags, TunnelEncapType,
     },
@@ -50,7 +56,10 @@ pub use self::{
         InfoIpVlan, InfoIpVtap, IpVlanFlags, IpVlanMode, IpVtapFlags,
         IpVtapMode,
     },
-    mac_vlan::{InfoMacVlan, InfoMacVtap, MacVlanMode, MacVtapMode},
+    mac_vlan::{
+        InfoMacVlan, InfoMacVtap, MacVlanFlags, MacVlanMacAddressMode,
+        MacVlanMode, MacVtapFlags, MacVtapMacAddressMode, MacVtapMode,
+    },
     macsec::{InfoMacSec, MacSecCipherId, MacSecOffload, MacSecValidate},
     netkit::{InfoNetkit, NetkitMode, NetkitPolicy, NetkitScrub},
     tun::InfoTun,
