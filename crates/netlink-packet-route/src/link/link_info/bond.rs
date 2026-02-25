@@ -542,6 +542,70 @@ impl Nla for BondIpAddrNla {
     }
 }
 
+const BOND_ALL_PORT_ACTIVE_DROPPED: u8 = 0;
+const BOND_ALL_PORT_ACTIVE_DELIEVERD: u8 = 1;
+
+/// Specifies that duplicate frames (received on inactive ports) should be
+/// dropped (0) or delivered (1).
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum BondAllPortActive {
+    Dropped,
+    Delivered,
+    Other(u8),
+}
+
+impl From<u8> for BondAllPortActive {
+    fn from(d: u8) -> Self {
+        match d {
+            BOND_ALL_PORT_ACTIVE_DROPPED => Self::Dropped,
+            BOND_ALL_PORT_ACTIVE_DELIEVERD => Self::Delivered,
+            _ => Self::Other(d),
+        }
+    }
+}
+
+impl From<BondAllPortActive> for u8 {
+    fn from(v: BondAllPortActive) -> u8 {
+        match v {
+            BondAllPortActive::Dropped => BOND_ALL_PORT_ACTIVE_DROPPED,
+            BondAllPortActive::Delivered => BOND_ALL_PORT_ACTIVE_DELIEVERD,
+            BondAllPortActive::Other(d) => d,
+        }
+    }
+}
+
+const AD_LACP_SLOW: u8 = 0;
+const AD_LACP_FAST: u8 = 1;
+
+/// Specifies that duplicate frames (received on inactive ports) should be
+/// dropped (0) or delivered (1).
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum BondLacpRate {
+    Slow,
+    Fast,
+    Other(u8),
+}
+
+impl From<u8> for BondLacpRate {
+    fn from(d: u8) -> Self {
+        match d {
+            AD_LACP_SLOW => Self::Slow,
+            AD_LACP_FAST => Self::Fast,
+            _ => Self::Other(d),
+        }
+    }
+}
+
+impl From<BondLacpRate> for u8 {
+    fn from(v: BondLacpRate) -> u8 {
+        match v {
+            BondLacpRate::Slow => AD_LACP_SLOW,
+            BondLacpRate::Fast => AD_LACP_FAST,
+            BondLacpRate::Other(d) => d,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[non_exhaustive]
 pub enum InfoBond {
@@ -550,7 +614,9 @@ pub enum InfoBond {
     MiiMon(u32),
     UpDelay(u32),
     DownDelay(u32),
-    UseCarrier(u8),
+    /// Specifies whether or not miimon should use MII or ETHTOOL ioctls vs.
+    /// `netif_carrier_ok()` to determine the link status.
+    UseCarrier(bool),
     ArpInterval(u32),
     ArpIpTarget(Vec<Ipv4Addr>),
     ArpValidate(BondArpValidate),
@@ -561,19 +627,26 @@ pub enum InfoBond {
     XmitHashPolicy(BondXmitHashPolicy),
     ResendIgmp(u32),
     NumPeerNotif(u8),
-    AllPortsActive(u8),
+    /// Specifies that duplicate frames (received on inactive ports) should be
+    /// dropped or delivered.
+    AllPortsActive(BondAllPortActive),
     MinLinks(u32),
     LpInterval(u32),
     PacketsPerPort(u32),
-    AdLacpRate(u8),
+    /// The rate in which we'll ask our link partner to transmit LACPDU packets
+    /// in 802.3ad mode.
+    AdLacpRate(BondLacpRate),
     AdSelect(u8),
     AdInfo(Vec<BondAdInfo>),
     AdActorSysPrio(u16),
     AdUserPortKey(u16),
     AdActorSystem([u8; 6]),
-    TlbDynamicLb(u8),
+    /// Specifies if dynamic shuffling of flows is enabled in
+    /// [BondMode::BalanceTlb] mode.
+    TlbDynamicLb(bool),
     PeerNotifDelay(u32),
-    AdLacpActive(u8),
+    /// Whether to send LACPDU frames periodically
+    AdLacpActive(bool),
     MissedMax(u8),
     NsIp6Target(Vec<Ipv6Addr>),
     Other(DefaultNla),
@@ -625,14 +698,14 @@ impl Nla for InfoBond {
             Self::Mode(value) => buffer[0] = (*value).into(),
             Self::XmitHashPolicy(value) => buffer[0] = (*value).into(),
             Self::PrimaryReselect(value) => buffer[0] = (*value).into(),
-            Self::UseCarrier(value)
-            | Self::NumPeerNotif(value)
-            | Self::AllPortsActive(value)
-            | Self::AdLacpActive(value)
-            | Self::AdLacpRate(value)
+            Self::NumPeerNotif(value)
             | Self::AdSelect(value)
-            | Self::TlbDynamicLb(value)
             | Self::MissedMax(value) => buffer[0] = *value,
+            Self::UseCarrier(value)
+            | Self::AdLacpActive(value)
+            | Self::TlbDynamicLb(value) => buffer[0] = (*value).into(),
+            Self::AdLacpRate(value) => buffer[0] = (*value).into(),
+            Self::AllPortsActive(value) => buffer[0] = (*value).into(),
             Self::FailOverMac(value) => buffer[0] = (*value).into(),
             Self::AdActorSysPrio(value) | Self::AdUserPortKey(value) => {
                 emit_u16(buffer, *value).unwrap()
@@ -730,7 +803,8 @@ impl<'a, T: AsRef<[u8]> + ?Sized> Parseable<NlaBuffer<&'a T>> for InfoBond {
             ),
             IFLA_BOND_USE_CARRIER => Self::UseCarrier(
                 parse_u8(payload)
-                    .context("invalid IFLA_BOND_USE_CARRIER value")?,
+                    .context("invalid IFLA_BOND_USE_CARRIER value")?
+                    > 0,
             ),
             IFLA_BOND_ARP_INTERVAL => Self::ArpInterval(
                 parse_u32(payload)
@@ -786,7 +860,8 @@ impl<'a, T: AsRef<[u8]> + ?Sized> Parseable<NlaBuffer<&'a T>> for InfoBond {
             ),
             IFLA_BOND_ALL_PORTS_ACTIVE => Self::AllPortsActive(
                 parse_u8(payload)
-                    .context("invalid IFLA_BOND_ALL_PORTS_ACTIVE value")?,
+                    .context("invalid IFLA_BOND_ALL_PORTS_ACTIVE value")?
+                    .into(),
             ),
             IFLA_BOND_MIN_LINKS => Self::MinLinks(
                 parse_u32(payload)
@@ -802,7 +877,8 @@ impl<'a, T: AsRef<[u8]> + ?Sized> Parseable<NlaBuffer<&'a T>> for InfoBond {
             ),
             IFLA_BOND_AD_LACP_RATE => Self::AdLacpRate(
                 parse_u8(payload)
-                    .context("invalid IFLA_BOND_AD_LACP_RATE value")?,
+                    .context("invalid IFLA_BOND_AD_LACP_RATE value")?
+                    .into(),
             ),
             IFLA_BOND_AD_SELECT => Self::AdSelect(
                 parse_u8(payload)
@@ -832,7 +908,8 @@ impl<'a, T: AsRef<[u8]> + ?Sized> Parseable<NlaBuffer<&'a T>> for InfoBond {
             ),
             IFLA_BOND_TLB_DYNAMIC_LB => Self::TlbDynamicLb(
                 parse_u8(payload)
-                    .context("invalid IFLA_BOND_TLB_DYNAMIC_LB value")?,
+                    .context("invalid IFLA_BOND_TLB_DYNAMIC_LB value")?
+                    > 0,
             ),
             IFLA_BOND_PEER_NOTIF_DELAY => Self::PeerNotifDelay(
                 parse_u32(payload)
@@ -840,7 +917,8 @@ impl<'a, T: AsRef<[u8]> + ?Sized> Parseable<NlaBuffer<&'a T>> for InfoBond {
             ),
             IFLA_BOND_AD_LACP_ACTIVE => Self::AdLacpActive(
                 parse_u8(payload)
-                    .context("invalid IFLA_BOND_AD_LACP_ACTIVE value")?,
+                    .context("invalid IFLA_BOND_AD_LACP_ACTIVE value")?
+                    > 0,
             ),
             IFLA_BOND_MISSED_MAX => Self::MissedMax(
                 parse_u8(payload)
