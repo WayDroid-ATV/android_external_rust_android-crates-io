@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.3
+
+### Improvements
+
+- Added `suspend_core` function to wrap PSCI CPU_SUSPEND call, with `warm_boot_entry` as the entry
+  point and `SuspendContext` to pass to it.
+
+### Fixes
+
+- Marked .bss section as NOLOAD.
+
 ## 0.4.2
 
 ### Fixes

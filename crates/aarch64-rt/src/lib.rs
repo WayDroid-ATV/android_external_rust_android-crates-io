@@ -32,7 +32,7 @@ use core::arch::asm;
 #[cfg(not(feature = "initial-pagetable"))]
 use core::arch::naked_asm;
 use core::mem::ManuallyDrop;
-pub use entry::secondary_entry;
+pub use entry::{SuspendContext, secondary_entry, warm_boot_entry};
 #[cfg(feature = "exceptions")]
 pub use exceptions::{ExceptionHandlers, RegisterState, RegisterStateRef};
 #[cfg(all(feature = "initial-pagetable", feature = "el1"))]
@@ -332,4 +332,37 @@ fn dsb_st() {
     unsafe {
         asm!("dsb st", options(nostack));
     }
+}
+
+#[cfg(feature = "psci")]
+/// Issues a PSCI CPU_SUSPEND call to suspend the current CPU core.
+///
+/// If the PSCI CPU_SUSPEND call doesn't return, then on resume `warm_boot_entry` will be called to
+/// re-enable the MMU, set the given stack pointer, set the exception vector, and then call the
+/// given `entry` function with `arg` as its parameter.
+///
+/// # Safety
+///
+/// `stack_ptr` must be a valid stack pointer to use for the resuming core. Depending on how you
+/// want to handle resuming this could either be the bottom of the stack (if you want to treat
+/// resuming like `CPU_ON`) or the top (if `entry` will restore register state and return from the
+/// point where the suspend happened).
+pub unsafe fn suspend_core<C: smccc::Call>(
+    power_state: u32,
+    stack_ptr: *mut u64,
+    entry: extern "C" fn(u64) -> !,
+    arg: u64,
+) -> Result<(), smccc::psci::Error> {
+    let suspend_context = SuspendContext {
+        stack_ptr,
+        entry,
+        arg,
+    };
+    // Passing a pointer to `suspend_context` is safe here, because it will remain valid until
+    // either `cpu_suspend` returns or the stack pointer is reset by `warm_boot_entry`.
+    smccc::psci::cpu_suspend::<C>(
+        power_state,
+        warm_boot_entry as u64,
+        (&raw const suspend_context) as u64,
+    )
 }

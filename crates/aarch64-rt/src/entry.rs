@@ -88,3 +88,72 @@ pub unsafe extern "C" fn secondary_entry(stack_end: *mut u64) -> ! {
         set_exception_vector = sym crate::set_exception_vector,
     )
 }
+
+/// An assembly entry point for warm boot (e.g. resume from suspend).
+///
+/// It will enable the MMU, disable trapping of floating point instructions, set up the exception
+/// vector, set the stack pointer to `context.stack_ptr`, and then jump to
+/// `context.entry(context.arg)`.
+///
+/// The function expects to be passed a pointer to a `SuspendContext` instance that will be valid
+/// after resuming from suspend. It should therefore be a static, allocated on the heap, or on the
+/// stack of the resuming core, to avoid being deallocated before resuming.
+///
+/// This is a low-level function that should be used as the entry point when manually calling the
+/// `CPU_SUSPEND` PSCI call. It deliberately doesn't store any data itself so that the caller has
+/// maximum flexibility over things such as where the `SuspendContext` is stored. If you need to
+/// restore any state (such as the registers), or you want to emulate returning from a function
+/// after suspending the core, you need to implement this functionality yourself in the `entry`
+/// function of the `SuspendContext`.
+///
+/// # Safety
+///
+/// The caller must ensure that the `SuspendContext` instance passed to the function will be valid
+/// and safe to read when the core resumes, at least until the first call to any Rust function. The
+/// best way to do this is to put it on the stack of the core which is resuming, as the stack won't
+/// otherwise be used until after the `SuspendContext` has been read.
+///
+/// `context.stack_ptr` must be a valid stack pointer to use for the resuming core. Depending on how
+/// you want to handle resuming this could either be the bottom of the stack (if you want to treat
+/// resuming like `CPU_ON`) or the top (if `context.entry` will restore register state and return
+/// from the point where the suspend happened).
+#[unsafe(naked)]
+pub unsafe extern "C" fn warm_boot_entry(context: *const SuspendContext) -> ! {
+    naked_asm!(
+        "bl enable_mmu",
+        // Disable trapping floating point access in EL1.
+        "mrs x30, cpacr_el1",
+        "orr x30, x30, #(0x3 << 20)",
+        "msr cpacr_el1, x30",
+        "isb",
+        // Load stack pointer, entry point and arg from SuspendContext. This may be on the stack,
+        // so needs to happen before we set the stack pointer and call functions which may use the
+        // stack.
+        "ldr x19, [x0, #{stack_ptr_offset}]",
+        "ldr x20, [x0, #{entry_offset}]",
+        "ldr x21, [x0, #{arg_offset}]",
+        // Set the stack pointer which was passed.
+        "mov sp, x19",
+        // Set the exception vector. This may use the stack and caller-saved registers.
+        "bl {set_exception_vector}",
+        // Jump to entry point (x20) with arg (x0).
+        "mov x0, x21",
+        "br x20",
+        set_exception_vector = sym crate::set_exception_vector,
+        stack_ptr_offset = const offset_of!(SuspendContext, stack_ptr),
+        entry_offset = const offset_of!(SuspendContext, entry),
+        arg_offset = const offset_of!(SuspendContext, arg),
+    )
+}
+
+/// Data used by [`warm_boot_entry`] to restore the CPU state after resuming.
+#[derive(Debug, Copy, Clone)]
+#[repr(C)]
+pub struct SuspendContext {
+    /// Value to which to set the stack pointer before calling `entry`.
+    pub stack_ptr: *mut u64,
+    /// Entry point to call after resuming.
+    pub entry: extern "C" fn(u64) -> !,
+    /// Parameter to pass to `entry`.
+    pub arg: u64,
+}
