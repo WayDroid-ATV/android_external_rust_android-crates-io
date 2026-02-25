@@ -4,6 +4,7 @@ acpi
 adler2
 ahash
 aho-corasick
+alloca
 android_bp
 android_log-sys
 android_logger
