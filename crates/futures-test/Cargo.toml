@@ -11,10 +11,11 @@
 
 [package]
 edition = "2018"
-rust-version = "1.56"
+rust-version = "1.71"
 name = "futures-test"
-version = "0.3.31"
+version = "0.3.32"
 build = false
+autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -30,43 +31,6 @@ repository = "https://github.com/rust-lang/futures-rs"
 [package.metadata.docs.rs]
 all-features = true
 
-[lib]
-name = "futures_test"
-path = "src/lib.rs"
-
-[dependencies.futures-core]
-version = "0.3.31"
-default-features = false
-
-[dependencies.futures-executor]
-version = "0.3.31"
-default-features = false
-
-[dependencies.futures-io]
-version = "0.3.31"
-default-features = false
-
-[dependencies.futures-macro]
-version = "=0.3.31"
-default-features = false
-
-[dependencies.futures-sink]
-version = "0.3.31"
-default-features = false
-
-[dependencies.futures-task]
-version = "0.3.31"
-default-features = false
-
-[dependencies.futures-util]
-version = "0.3.31"
-default-features = false
-
-[dependencies.pin-project]
-version = "1.0.11"
-
-[dev-dependencies]
-
 [features]
 default = ["std"]
 std = [
@@ -77,6 +41,43 @@ std = [
     "futures-util/io",
     "futures-executor/std",
 ]
+
+[lib]
+name = "futures_test"
+path = "src/lib.rs"
+
+[dependencies.futures-core]
+version = "0.3.32"
+default-features = false
+
+[dependencies.futures-executor]
+version = "0.3.32"
+default-features = false
+
+[dependencies.futures-io]
+version = "0.3.32"
+default-features = false
+
+[dependencies.futures-macro]
+version = "=0.3.32"
+default-features = false
+
+[dependencies.futures-sink]
+version = "0.3.32"
+default-features = false
+
+[dependencies.futures-task]
+version = "0.3.32"
+default-features = false
+
+[dependencies.futures-util]
+version = "0.3.32"
+default-features = false
+
+[dependencies.pin-project]
+version = "1.0.11"
+
+[dev-dependencies]
 
 [lints.rust]
 missing_debug_implementations = "warn"

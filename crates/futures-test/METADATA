@@ -1,17 +1,17 @@
 name: "futures-test"
 description: "Common utilities for testing components built off futures-rs."
 third_party {
-  version: "0.3.31"
+  version: "0.3.32"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 10
-    day: 10
+    year: 2026
+    month: 2
+    day: 25
   }
   homepage: "https://crates.io/crates/futures-test"
   identifier {
     type: "crates.io"
     value: "futures-test"
-    version: "0.3.31"
+    version: "0.3.32"
   }
 }
