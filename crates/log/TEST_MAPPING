@@ -259,12 +259,6 @@
       "path": "packages/modules/Virtualization/libs/avflog"
     },
     {
-      "path": "packages/modules/Virtualization/libs/bssl"
-    },
-    {
-      "path": "packages/modules/Virtualization/libs/bssl/error"
-    },
-    {
       "path": "packages/modules/Virtualization/libs/cborutil"
     },
     {
