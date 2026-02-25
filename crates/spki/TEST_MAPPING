@@ -13,9 +13,6 @@
       "path": "packages/modules/Virtualization/guest/service_vm/requests"
     },
     {
-      "path": "packages/modules/Virtualization/libs/bssl"
-    },
-    {
       "path": "system/keymint/common"
     },
     {
