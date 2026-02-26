@@ -373,6 +373,7 @@ predicates
 predicates-core
 predicates-tree
 prettyplease
+primal-check
 proc-macro2
 protobuf
 protobuf-codegen
@@ -459,6 +460,7 @@ spki
 stable_deref_trait
 static_assertions
 strck
+strength_reduce
 strsim
 strum
 strum_macros
