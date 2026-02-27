@@ -3,7 +3,7 @@
   "package": {
     "libbpf-rs": {
       "host_supported": false,
-      "patch": "patches/Android.bp.patch"
+      "add_module_block": "cargo2android_target.bp.fragment"
     }
   },
   "module_visibility": {
