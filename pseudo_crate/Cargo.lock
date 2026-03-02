@@ -6292,9 +6292,9 @@ checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
 
 [[package]]
 name = "percore"
-version = "0.2.1"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19df9b1714d26c29db48735fa41501c7072e59ae38c8c9651fd53a933a43a883"
+checksum = "963066917f7750e6622db5404a85d3e991c7ae53822b1fff567d6667aaa5d87b"
 dependencies = [
  "zerocopy",
 ]

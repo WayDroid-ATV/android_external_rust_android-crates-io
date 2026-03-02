@@ -12,7 +12,7 @@
 [package]
 edition = "2024"
 name = "percore"
-version = "0.2.1"
+version = "0.2.3"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 build = false
 autolib = false
@@ -35,7 +35,12 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/google/percore"
 
 [package.metadata.docs.rs]
+all-features = true
 default-target = "aarch64-unknown-none"
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
+]
 
 [features]
 alloc = []
@@ -49,7 +54,7 @@ name = "percore"
 path = "src/lib.rs"
 
 [dependencies.zerocopy]
-version = "0.8.26"
+version = "0.8.39"
 features = ["derive"]
 optional = true
 

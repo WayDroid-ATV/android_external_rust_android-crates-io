@@ -55,6 +55,7 @@
 //! ```
 
 #![no_std]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -64,7 +65,7 @@ mod boxed;
 mod exceptions;
 mod lock;
 
-#[cfg(target_arch = "aarch64")]
+#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
 pub use self::exceptions::exception_free;
 pub use self::{exceptions::ExceptionFree, lock::ExceptionLock};
 
@@ -117,6 +118,11 @@ impl<T, C: Cores, const CORE_COUNT: usize> PerCore<[T; CORE_COUNT], C> {
     /// Gets a shared reference to the value for the current CPU core.
     pub fn get(&self) -> &T {
         &self.values[C::core_index()]
+    }
+
+    /// Gets a unique reference to the value for the current CPU core.
+    pub fn get_mut(&mut self) -> &mut T {
+        &mut self.values[C::core_index()]
     }
 }
 
