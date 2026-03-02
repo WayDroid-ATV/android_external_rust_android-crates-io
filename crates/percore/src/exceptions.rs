@@ -5,7 +5,12 @@
 #[cfg(target_arch = "aarch64")]
 mod aarch64;
 #[cfg(target_arch = "aarch64")]
-use aarch64::{mask, restore};
+use aarch64::ExceptionMask;
+
+#[cfg(target_arch = "arm")]
+mod aarch32;
+#[cfg(target_arch = "arm")]
+use aarch32::ExceptionMask;
 
 use core::marker::PhantomData;
 
@@ -16,13 +21,13 @@ use core::marker::PhantomData;
 ///
 /// We don't expose this in the crate API because if scope guards are dropped in the wrong order
 /// then the mask state won't be properly restored.
-#[cfg(target_arch = "aarch64")]
+#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
 struct ExceptionGuard {
     /// Previous exception mask state.
-    prev: u64,
+    prev: ExceptionMask,
 }
 
-#[cfg(target_arch = "aarch64")]
+#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
 impl ExceptionGuard {
     /// Masks exceptions and return a scope guard which will unmask them when it is dropped.
     ///
@@ -32,7 +37,9 @@ impl ExceptionGuard {
     /// multiple `ExceptionGuard`s are created then they must be dropped in the reverse order that
     /// they are created.
     unsafe fn mask<'cs>() -> (Self, ExceptionFree<'cs>) {
-        let guard = Self { prev: mask() };
+        let guard = Self {
+            prev: ExceptionMask::mask(),
+        };
         // SAFETY: We just masked exceptions, and our caller promises not to drop the guard before
         // the token.
         let token = unsafe { ExceptionFree::new() };
@@ -40,14 +47,14 @@ impl ExceptionGuard {
     }
 }
 
-#[cfg(target_arch = "aarch64")]
+#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
 impl Drop for ExceptionGuard {
     fn drop(&mut self) {
         // SAFETY: When the `ExceptionGuard` was created the caller promised not to drop it before
         // the corresponding token.
         unsafe {
             // Restore previous exception mask state.
-            restore(self.prev);
+            self.prev.restore();
         }
     }
 }
@@ -56,7 +63,7 @@ impl Drop for ExceptionGuard {
 ///
 /// Only IRQs, FIQs and SErrors can be masked. Synchronous exceptions cannot be masked and so may
 /// still occur.
-#[cfg(target_arch = "aarch64")]
+#[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
 pub fn exception_free<T>(f: impl FnOnce(ExceptionFree<'_>) -> T) -> T {
     // Mask all exceptions and save previous mask state.
     // SAFETY: We drop the scope guard after the lifetime of the token ends. Any other
