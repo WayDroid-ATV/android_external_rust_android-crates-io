@@ -447,7 +447,7 @@ dependencies = [
  "num_cpus",
  "num_enum",
  "num_enum_derive",
- "octets 0.3.4",
+ "octets 0.3.5",
  "once_cell",
  "oorandom",
  "open-enum",
@@ -5931,9 +5931,9 @@ checksum = "3a74f2cda724d43a0a63140af89836d4e7db6138ef67c9f96d3a0f0150d05000"
 
 [[package]]
 name = "octets"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ba5d98c13e549f6f26f7d70808688ab85c6b42eb350ba2524d96c24ebde27e9"
+checksum = "8311fa8ab7a57759b4ff1f851a3048d9ef0effaa0130726426b742d26d8a88e7"
 
 [[package]]
 name = "once_cell"
