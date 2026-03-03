@@ -76,8 +76,8 @@ impl Info {
     }
 
     /// Returns the ValueType of this property.
-    pub fn value_type(&self) -> ValueType {
-        self.val_type.clone()
+    pub fn value_type(&self) -> &ValueType {
+        &self.val_type
     }
 
     /// Returns whether this property is mutable.
@@ -128,7 +128,7 @@ pub enum ValueType {
 
 impl ValueType {
     /// Given a [`RawValue`], convert it into a specific [`Value`]
-    pub fn convert_value(&self, value: RawValue) -> Value {
+    pub fn convert_value(&self, value: RawValue) -> Value<'_> {
         match self {
             ValueType::Unknown => Value::Unknown(value),
             ValueType::Boolean => Value::Boolean(value != 0),
