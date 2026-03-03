@@ -85,6 +85,10 @@ pub trait VsockManager {
     /// Polls the vsock device to receive data or other updates.
     fn poll(&mut self) -> Result<Option<VsockEvent>>;
 
+    /// Returns the local CID, i.e. the CID of the guest on the driver side and the CID of the host
+    /// on the device side.
+    fn local_cid(&self) -> u64;
+
     /// Requests to shut down the connection cleanly, telling the peer that we won't send or receive
     /// any more data.
     ///
@@ -160,7 +164,7 @@ impl<H: Hal, T: Transport, const RX_BUFFER_SIZE: usize>
 
     /// Returns the CID which has been assigned to this guest.
     pub fn guest_cid(&self) -> u64 {
-        self.0.driver.guest_cid()
+        self.0.local_cid()
     }
 
     /// Sends a request to connect to the given destination.
@@ -342,6 +346,9 @@ impl<H: Hal, T: Transport, const RX_BUFFER_SIZE: usize> VsockManager
     fn poll(&mut self) -> Result<Option<VsockEvent>> {
         Self::poll(self)
     }
+    fn local_cid(&self) -> u64 {
+        self.0.local_cid()
+    }
     fn shutdown(&mut self, dest: VsockAddr, src_port: u32) -> Result {
         Self::shutdown(self, dest, src_port)
     }
@@ -375,6 +382,9 @@ impl<H: DeviceHal, T: DeviceTransport> VsockManager for VsockDeviceConnectionMan
     }
     fn poll(&mut self) -> Result<Option<VsockEvent>> {
         Self::poll(self)
+    }
+    fn local_cid(&self) -> u64 {
+        self.0.local_cid()
     }
     fn shutdown(&mut self, dest: VsockAddr, src_port: u32) -> Result {
         Self::shutdown(self, dest, src_port)
@@ -496,6 +506,11 @@ impl<M: VirtIOSocketManager> VsockConnectionManagerCommon<M> {
         }
 
         Ok(Some(event))
+    }
+
+    /// Returns the local CID of the vsock device.
+    pub fn local_cid(&self) -> u64 {
+        self.driver.local_cid()
     }
 
     /// Reads data received from the given connection.
