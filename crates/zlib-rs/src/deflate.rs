@@ -1778,7 +1778,7 @@ pub(crate) fn fill_window(stream: &mut DeflateStream) {
             }
 
             state.strstart -= wsize; /* we now have strstart >= MAX_DIST */
-            state.block_start -= wsize as isize;
+            state.block_start = state.block_start.wrapping_sub_unsigned(wsize);
             state.insert = Ord::min(state.insert, state.strstart);
 
             self::slide_hash::slide_hash(state);
@@ -2361,7 +2361,7 @@ fn zng_tr_flush_block(
             static_lenb,
             state.static_len,
             stored_len,
-            state.sym_buf.len() / 3
+            state.sym_buf.iter().count()
         );
 
         if static_lenb <= opt_lenb || state.strategy == Strategy::Fixed {
@@ -4304,7 +4304,9 @@ mod test {
         const _: () = assert!(offset_of!(State, status) == 0);
         const _: () = assert!(offset_of!(State, _cache_line_0) == 64);
         const _: () = assert!(offset_of!(State, _cache_line_1) == 128);
+        #[cfg(not(feature = "ZLIB_DEBUG"))] // ZLIB_DEBUG adds 16 bytes
         const _: () = assert!(offset_of!(State, _cache_line_2) == 192);
+        #[cfg(not(feature = "ZLIB_DEBUG"))] // ZLIB_DEBUG adds 16 bytes
         const _: () = assert!(offset_of!(State, _cache_line_3) == 256);
     }
 }
