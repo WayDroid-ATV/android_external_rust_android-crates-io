@@ -249,7 +249,7 @@ dependencies = [
  "doip-definitions",
  "downcast",
  "downcast-rs 2.0.2",
- "drm 0.14.1",
+ "drm 0.14.2",
  "drm-ffi 0.9.0",
  "drm-fourcc",
  "dyn-clone",
@@ -2561,16 +2561,17 @@ dependencies = [
 
 [[package]]
 name = "drm"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80bc8c5c6c2941f70a55c15f8d9f00f9710ebda3ffda98075f996a0e6c92756f"
+checksum = "c5b71449a23fe79542d6527ca572844b2016abf9573c49e43144d546b1735aec"
 dependencies = [
  "bitflags 2.11.0",
  "bytemuck",
+ "bytemuck_derive",
  "drm-ffi 0.9.0",
  "drm-fourcc",
  "libc 0.2.180",
- "rustix 0.38.31",
+ "rustix 1.0.7",
 ]
 
 [[package]]
