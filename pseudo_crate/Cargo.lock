@@ -6207,9 +6207,9 @@ dependencies = [
 
 [[package]]
 name = "pdl-runtime"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afc6caba5208d721a607e4831836b4d075c5d063dfd431931e68e432fb3f47ae"
+checksum = "8e8ebf48533ae3e698d07a4154e81807d6a206c1d46eab28679dea6bf5894bf8"
 dependencies = [
  "bytes",
  "thiserror 1.0.49",
