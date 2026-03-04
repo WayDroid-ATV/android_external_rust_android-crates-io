@@ -3,25 +3,19 @@
 <div align="center">Statistics-driven Microbenchmarking in Rust</div>
 
 <div align="center">
- <a href="https://bheisler.github.io/criterion.rs/book/getting_started.html">Getting Started</a>
+ <a href="https://criterion-rs.github.io/book/getting_started.html">Getting Started</a>
     |
-    <a href="https://bheisler.github.io/criterion.rs/book/index.html">User Guide</a>
+    <a href="https://criterion-rs.github.io/book/index.html">User Guide</a>
     |
-    <a href="https://bheisler.github.io/criterion.rs/criterion/">Master API Docs</a>
+    <a href="https://docs.rs/criterion">Released API Docs</a>
     |
-    <a href="https://docs.rs/crate/criterion/">Released API Docs</a>
-    |
-    <a href="https://github.com/bheisler/criterion.rs/blob/master/CHANGELOG.md">Changelog</a>
+    <a href="https://github.com/criterion-rs/criterion.rs/blob/master/CHANGELOG.md">Changelog</a>
 </div>
 
 <div align="center">
- <a href="https://github.com/bheisler/criterion.rs/actions/workflows/ci.yaml">
-        <img src="https://img.shields.io/github/checks-status/rgeometry/rgeometry/main?label=tests&logo=github" alt="GitHub branch checks state">
-    </a>
+    <a href="https://github.com/criterion-rs/criterion.rs/actions/workflows/ci.yaml"><img src="https://img.shields.io/github/check-runs/criterion-rs/criterion.rs/master?label=tests&logo=github" alt="GitHub branch checks state"></a>
     |
-    <a href="https://crates.io/crates/criterion">
-        <img src="https://img.shields.io/crates/v/criterion.svg" alt="Crates.io">
-    </a>
+    <a href="https://crates.io/crates/criterion"><img src="https://img.shields.io/crates/v/criterion.svg" alt="Crates.io"></a>
 </div>
 
 Criterion.<span></span>rs helps you write fast code by detecting and measuring performance improvements or regressions, even small ones, quickly and accurately. You can optimize with confidence, knowing how each change affects the performance of your code.
@@ -53,7 +47,7 @@ To start with Criterion.<span></span>rs, add the following to your `Cargo.toml` 
 
 ```toml
 [dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 
 [[bench]]
 name = "my_benchmark"
@@ -92,7 +86,7 @@ Found 11 outliers among 99 measurements (11.11%)
   5 (5.05%) high severe
 ```
 
-See the [Getting Started](https://bheisler.github.io/criterion.rs/book/getting_started.html) guide for more details.
+See the [Getting Started](https://criterion-rs.github.io/book/getting_started.html) guide for more details.
 
 ### Goals
 
@@ -106,25 +100,25 @@ One great way to contribute to Criterion.<span></span>rs is to use it for your o
 
 Code or documentation improvements in the form of pull requests are also welcome. If you're not
 sure what to work on, try checking the
-[Beginner label](https://github.com/bheisler/criterion.rs/issues?q=is%3Aissue+is%3Aopen+label%3ABeginner).
+[Beginner label](https://github.com/criterion-rs/criterion.rs/issues?q=is%3Aissue+is%3Aopen+label%3ABeginner).
 
-If your issues or pull requests have no response after a few days, feel free to ping me (@bheisler).
+If your issues or pull requests have no response after a few days, feel free to ping criterion-rs maintainers (@berkus and/or @lemmih).
 
-For more details, see the [CONTRIBUTING.md file](https://github.com/bheisler/criterion.rs/blob/master/CONTRIBUTING.md).
+For more details, see the [CONTRIBUTING.md file](https://github.com/criterion-rs/criterion.rs/blob/master/CONTRIBUTING.md).
 
 ### Compatibility Policy
 
 Criterion.<span></span>rs supports the last three stable minor releases of Rust. At time of
-writing, this means Rust 1.59 or later. Older versions may work, but are not guaranteed.
+writing, this means Rust 1.88 or later. Older versions may work, but are not guaranteed.
 
-Currently, the oldest version of Rust believed to work is 1.57. Future versions of Criterion.<span></span>rs may
+Currently, the oldest version of Rust believed to work is 1.86. Future versions of Criterion.<span></span>rs may
 break support for such old versions, and this will not be considered a breaking change. If you
 require Criterion.<span></span>rs to work on old versions of Rust, you will need to stick to a
 specific patch version of Criterion.<span></span>rs.
 
 ### Maintenance
 
-Criterion.<span></span>rs was originally created by Jorge Aparicio [(@japaric)](https://github.com/japaric) and is currently being maintained by Brook Heisler [(@bheisler)](https://github.com/bheisler).
+Criterion.<span></span>rs was originally created by Jorge Aparicio (@japaric) and is currently being maintained by David Himmelstrup (@lemmih) and Berkus Karchebnyi (@berkus).
 
 ### License
 

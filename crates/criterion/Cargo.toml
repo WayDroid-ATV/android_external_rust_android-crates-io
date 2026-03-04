@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.80"
+rust-version = "1.86"
 name = "criterion"
-version = "0.7.0"
+version = "0.8.2"
 authors = [
     "Jorge Aparicio <japaricious@gmail.com>",
     "Brook Heisler <brookheisler@gmail.com>",
@@ -26,7 +26,7 @@ autoexamples = false
 autotests = false
 autobenches = false
 description = "Statistics-driven micro-benchmarking library"
-homepage = "https://bheisler.github.io/criterion.rs/book/index.html"
+homepage = "https://criterion-rs.github.io/book/index.html"
 readme = "README.md"
 keywords = [
     "criterion",
@@ -34,18 +34,14 @@ keywords = [
 ]
 categories = ["development-tools::profiling"]
 license = "Apache-2.0 OR MIT"
-repository = "https://github.com/bheisler/criterion.rs"
+repository = "https://github.com/criterion-rs/criterion.rs"
 
 [package.metadata.docs.rs]
 features = [
     "async_futures",
     "async_smol",
-    "async_std",
     "async_tokio",
 ]
-
-[badges.maintenance]
-status = "passively-maintained"
 
 [features]
 async = []
@@ -55,10 +51,6 @@ async_futures = [
 ]
 async_smol = [
     "dep:smol",
-    "async",
-]
-async_std = [
-    "dep:async-std",
     "async",
 ]
 async_tokio = [
@@ -82,7 +74,6 @@ stable = [
     "async_futures",
     "async_smol",
     "async_tokio",
-    "async_std",
 ]
 
 [lib]
@@ -102,10 +93,6 @@ harness = false
 [dependencies.anes]
 version = "0.1.4"
 
-[dependencies.async-std]
-version = "1.13"
-optional = true
-
 [dependencies.cast]
 version = "0.3"
 
@@ -121,7 +108,7 @@ features = [
 default-features = false
 
 [dependencies.criterion-plot]
-version = "0.6.0"
+version = "0.8.2"
 
 [dependencies.csv]
 version = "1.1"
@@ -143,6 +130,9 @@ default-features = false
 
 [dependencies.oorandom]
 version = "11.1"
+
+[dependencies.page_size]
+version = "0.6"
 
 [dependencies.plotters]
 version = "^0.3.2"
@@ -202,3 +192,6 @@ version = "0.8"
 
 [dev-dependencies.tempfile]
 version = "3.5.0"
+
+[target."cfg(any(windows, unix))".dependencies.alloca]
+version = "0.4"

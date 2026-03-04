@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "criterion",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.7.0",
+    cargo_pkg_version: "0.8.2",
     crate_root: "src/lib.rs",
     srcs: [
         "src/**/*.rs",
@@ -35,6 +35,7 @@ rust_library {
         "rayon",
     ],
     rustlibs: [
+        "liballoca",
         "libanes",
         "libcast",
         "libciborium",
@@ -43,6 +44,7 @@ rust_library {
         "libitertools",
         "libnum_traits",
         "liboorandom",
+        "libpage_size",
         "libplotters",
         "librayon",
         "libregex",

@@ -30,7 +30,7 @@ rust_binary {
     vendor_available: true,
     min_sdk_version: "29",
     visibility: ["//visibility:private"],
-    static_libs: ["liballoca_alloca"],
+    whole_static_libs: ["liballoca_alloca"],
 }
 
 rust_library {
@@ -48,8 +48,8 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-    visibility: ["//visibility:private"],
-    static_libs: ["liballoca_alloca"],
+    visibility: ["//external/rust/android-crates-io/crates/criterion"],
+    whole_static_libs: ["liballoca_alloca"],
 }
 
 cc_library_static {

@@ -1,11 +1,13 @@
-use crate::benchmark::BenchmarkConfig;
-use crate::connection::OutgoingMessage;
-use crate::measurement::Measurement;
-use crate::report::{BenchmarkId, Report, ReportContext};
-use crate::{ActualSamplingMode, Bencher, Criterion};
-use std::hint::black_box;
-use std::marker::PhantomData;
-use std::time::Duration;
+use {
+    crate::{
+        benchmark::BenchmarkConfig,
+        connection::OutgoingMessage,
+        measurement::Measurement,
+        report::{BenchmarkId, Report, ReportContext},
+        ActualSamplingMode, Bencher, Criterion,
+    },
+    std::{hint::black_box, marker::PhantomData, time::Duration},
+};
 
 /// PRIVATE
 pub(crate) trait Routine<M: Measurement, T: ?Sized> {
@@ -104,8 +106,9 @@ pub(crate) trait Routine<M: Measurement, T: ?Sized> {
             // Early exit for extremely long running benchmarks:
             if time_start.elapsed() > maximum_bench_duration {
                 let iters = vec![n as f64, n as f64].into_boxed_slice();
-                // prevent gnuplot bug when all values are equal
-                let elapsed = vec![t_prev, t_prev + 0.000001].into_boxed_slice();
+                // prevent plotting bug where KDE estimation results in NaN when all values are equal because
+                // the stddev is 0.
+                let elapsed = vec![t_prev, t_prev.next_up()].into_boxed_slice();
                 return (ActualSamplingMode::Flat, iters, elapsed);
             }
 
@@ -244,15 +247,33 @@ where
             elapsed_time: Duration::from_millis(0),
         };
 
-        iters
-            .iter()
-            .map(|iters| {
+        let mut results = Vec::with_capacity(iters.len());
+        results.resize(iters.len(), 0.0);
+        for (i, iters) in iters.iter().enumerate() {
+            #[cfg(any(target_family = "unix", target_family = "windows"))]
+            {
+                // Intentionally vary the stack allocation size to reduce measurement bias from
+                // memory alignment and cache effects.
+                // The shift can go up to a full page size suitable for the system.
+                alloca::with_alloca(
+                    i % page_size::get(), /* how many bytes we want to allocate */
+                    |_shifting_stack_space: &mut [core::mem::MaybeUninit<u8>] /* stack allocated slice itself */| {
+                        b.iters = *iters;
+                        (*f)(&mut b, black_box(parameter));
+                        b.assert_iterated();
+                        results[i] = m.to_f64(&b.value);
+                    },
+                );
+            }
+            #[cfg(not(any(target_family = "unix", target_family = "windows")))]
+            {
                 b.iters = *iters;
                 (*f)(&mut b, black_box(parameter));
                 b.assert_iterated();
-                m.to_f64(&b.value)
-            })
-            .collect()
+                results[i] = m.to_f64(&b.value);
+            }
+        }
+        results
     }
 
     fn warm_up(&mut self, m: &M, how_long: Duration, parameter: &T) -> (u64, u64) {
