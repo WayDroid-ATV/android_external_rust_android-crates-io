@@ -1,17 +1,17 @@
 name: "anyhow"
 description: "Flexible concrete Error type built on std::error::Error"
 third_party {
-  version: "1.0.99"
+  version: "1.0.102"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 8
-    day: 17
+    year: 2026
+    month: 3
+    day: 4
   }
   homepage: "https://crates.io/crates/anyhow"
   identifier {
     type: "crates.io"
     value: "anyhow"
-    version: "1.0.99"
+    version: "1.0.102"
   }
 }

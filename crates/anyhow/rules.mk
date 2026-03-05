@@ -8,12 +8,11 @@ MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := anyhow
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
-MODULE_RUST_EDITION := 2018
+MODULE_RUST_EDITION := 2021
 MODULE_RUSTFLAGS += \
 	--cfg 'feature="default"' \
 	--cfg 'feature="std"' \
-	--cfg 'error_generic_member_access' \
-	--cfg 'std_backtrace'
+	--cfg 'error_generic_member_access'
 
 MODULE_LIBRARY_DEPS := \
 	
