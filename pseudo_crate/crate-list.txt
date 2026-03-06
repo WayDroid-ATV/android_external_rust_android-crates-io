@@ -468,6 +468,7 @@ subtle
 svgtypes
 symphonia
 symphonia-bundle-flac
+symphonia-bundle-mp3
 symphonia-core
 symphonia-metadata
 symphonia-utils-xiph
