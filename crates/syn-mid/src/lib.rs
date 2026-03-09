@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 /*!
-<!-- tidy:crate-doc:start -->
+<!-- Note: Document from sync-markdown-to-rustdoc:start through sync-markdown-to-rustdoc:end
+     is synchronized from README.md. Any changes to that range are not preserved. -->
+<!-- tidy:sync-markdown-to-rustdoc:start -->
+
 Providing the features between "full" and "derive" of syn.
 
 This crate provides the following two unique data structures.
@@ -30,10 +33,8 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-syn-mid = "0.5"
+syn-mid = "0.6"
 ```
-
-*Compiler support: requires rustc 1.56+*
 
 [**Examples**](https://github.com/taiki-e/syn-mid/tree/HEAD/examples)
 
@@ -43,22 +44,21 @@ syn-mid = "0.5"
 
 [syn]: https://github.com/dtolnay/syn
 
-<!-- tidy:crate-doc:end -->
+<!-- tidy:sync-markdown-to-rustdoc:end -->
 */
 
+#![no_std]
 #![doc(test(
     no_crate_inject,
-    attr(
-        deny(warnings, rust_2018_idioms, single_use_lifetimes),
-        allow(dead_code, unused_variables)
-    )
+    attr(allow(
+        dead_code,
+        unused_variables,
+        clippy::undocumented_unsafe_blocks,
+        clippy::unused_trait_names,
+    ))
 ))]
 #![forbid(unsafe_code)]
 #![warn(
-    rust_2018_idioms,
-    single_use_lifetimes,
-    unreachable_pub,
-    clippy::pedantic,
     // Lints that may help when writing public library.
     // missing_debug_implementations,
     // missing_docs,
@@ -66,16 +66,17 @@ syn-mid = "0.5"
     // clippy::exhaustive_enums, // TODO
     // clippy::exhaustive_structs, // TODO
     clippy::impl_trait_in_params,
-    // clippy::missing_inline_in_public_items,
-    // clippy::std_instead_of_alloc,
+    clippy::std_instead_of_alloc,
     clippy::std_instead_of_core,
+    // clippy::missing_inline_in_public_items,
 )]
-#![allow(clippy::missing_errors_doc, clippy::module_name_repetitions)]
 
 // Many of the code contained in this crate are copies from https://github.com/dtolnay/syn.
 
+extern crate alloc;
 #[cfg(doc)]
 extern crate self as syn_mid;
+extern crate std;
 
 #[macro_use]
 mod macros;
@@ -87,7 +88,7 @@ mod path;
 #[doc(no_inline)]
 pub use syn::ExprPath as PatPath;
 
-pub use crate::{
+pub use self::{
     func::{Block, FnArg, ItemFn, Receiver, Signature, Variadic},
     pat::{
         FieldPat, Pat, PatIdent, PatReference, PatRest, PatStruct, PatTuple, PatTupleStruct,

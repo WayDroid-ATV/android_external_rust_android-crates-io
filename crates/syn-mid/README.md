@@ -3,10 +3,11 @@
 [![crates.io](https://img.shields.io/crates/v/syn-mid?style=flat-square&logo=rust)](https://crates.io/crates/syn-mid)
 [![docs.rs](https://img.shields.io/badge/docs.rs-syn--mid-blue?style=flat-square&logo=docs.rs)](https://docs.rs/syn-mid)
 [![license](https://img.shields.io/badge/license-Apache--2.0_OR_MIT-blue?style=flat-square)](#license)
-[![rustc](https://img.shields.io/badge/rustc-1.56+-blue?style=flat-square&logo=rust)](https://www.rust-lang.org)
-[![build status](https://img.shields.io/github/actions/workflow/status/taiki-e/syn-mid/ci.yml?branch=main&style=flat-square&logo=github)](https://github.com/taiki-e/syn-mid/actions)
+[![msrv](https://img.shields.io/badge/msrv-1.71-blue?style=flat-square&logo=rust)](https://www.rust-lang.org)
+[![github actions](https://img.shields.io/github/actions/workflow/status/taiki-e/syn-mid/ci.yml?branch=main&style=flat-square&logo=github)](https://github.com/taiki-e/syn-mid/actions)
 
-<!-- tidy:crate-doc:start -->
+<!-- tidy:sync-markdown-to-rustdoc:start:src/lib.rs -->
+
 Providing the features between "full" and "derive" of syn.
 
 This crate provides the following two unique data structures.
@@ -35,10 +36,8 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-syn-mid = "0.5"
+syn-mid = "0.6"
 ```
-
-*Compiler support: requires rustc 1.56+*
 
 [**Examples**](https://github.com/taiki-e/syn-mid/tree/HEAD/examples)
 
@@ -48,7 +47,7 @@ syn-mid = "0.5"
 
 [syn]: https://github.com/dtolnay/syn
 
-<!-- tidy:crate-doc:end -->
+<!-- tidy:sync-markdown-to-rustdoc:end -->
 
 [`syn_mid::Block`]: https://docs.rs/syn-mid/latest/syn_mid/struct.Block.html
 [`syn_mid::ItemFn`]: https://docs.rs/syn-mid/latest/syn_mid/struct.ItemFn.html
