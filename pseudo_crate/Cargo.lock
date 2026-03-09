@@ -8384,9 +8384,9 @@ dependencies = [
 
 [[package]]
 name = "syn-mid"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5dc35bb08dd1ca3dfb09dce91fd2d13294d6711c88897d9a9d60acf39bce049"
+checksum = "7d5e166bbae6b7432f98746c4ae88499edc64b08f407eb0c3ba7ceff690aaf5f"
 dependencies = [
  "proc-macro2 1.0.106",
  "quote 1.0.44",

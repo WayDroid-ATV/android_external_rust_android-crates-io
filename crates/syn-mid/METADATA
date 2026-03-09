@@ -1,17 +1,17 @@
 name: "syn-mid"
 description: "Providing the features between \"full\" and \"derive\" of syn."
 third_party {
-  version: "0.6.0"
+  version: "0.6.1"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2023
-    month: 11
-    day: 15
+    year: 2026
+    month: 2
+    day: 27
   }
   homepage: "https://crates.io/crates/syn-mid"
   identifier {
     type: "crates.io"
     value: "syn-mid"
-    version: "0.6.0"
+    version: "0.6.1"
   }
 }

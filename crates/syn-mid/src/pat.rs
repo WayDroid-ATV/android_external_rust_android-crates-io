@@ -2,7 +2,9 @@
 
 // Based on https://github.com/dtolnay/syn/blob/2.0.37/src/item.rs.
 
-use syn::{punctuated::Punctuated, token, Attribute, Ident, Member, Path, Token, Type};
+use alloc::{boxed::Box, vec::Vec};
+
+use syn::{Attribute, Ident, Member, Path, Token, Type, punctuated::Punctuated, token};
 
 use super::PatPath;
 
@@ -127,13 +129,15 @@ ast_struct! {
 }
 
 mod parsing {
+    use alloc::{boxed::Box, vec};
+
     use syn::{
-        braced,
-        ext::IdentExt,
+        Attribute, ExprPath, Ident, Member, Path, Token, braced,
+        ext::IdentExt as _,
         parenthesized,
         parse::{ParseStream, Result},
         punctuated::Punctuated,
-        token, Attribute, ExprPath, Ident, Member, Path, Token,
+        token,
     };
 
     use super::{
@@ -186,17 +190,17 @@ mod parsing {
         } else if input.peek(token::Paren) {
             pat_tuple_struct(input, path).map(Pat::TupleStruct)
         } else {
-            Ok(Pat::Path(ExprPath { attrs: Vec::new(), qself: None, path }))
+            Ok(Pat::Path(ExprPath { attrs: vec![], qself: None, path }))
         }
     }
 
     fn pat_wild(input: ParseStream<'_>) -> Result<PatWild> {
-        Ok(PatWild { attrs: Vec::new(), underscore_token: input.parse()? })
+        Ok(PatWild { attrs: vec![], underscore_token: input.parse()? })
     }
 
     fn pat_ident(input: ParseStream<'_>) -> Result<PatIdent> {
         Ok(PatIdent {
-            attrs: Vec::new(),
+            attrs: vec![],
             by_ref: input.parse()?,
             mutability: input.parse()?,
             ident: input.call(Ident::parse_any)?,
@@ -218,7 +222,7 @@ mod parsing {
             elems.push_punct(punct);
         }
 
-        Ok(PatTupleStruct { attrs: Vec::new(), path, paren_token, elems })
+        Ok(PatTupleStruct { attrs: vec![], path, paren_token, elems })
     }
 
     fn pat_struct(input: ParseStream<'_>, path: Path) -> Result<PatStruct> {
@@ -243,7 +247,7 @@ mod parsing {
             fields.push_punct(punct);
         }
 
-        Ok(PatStruct { attrs: Vec::new(), path, brace_token, fields, rest })
+        Ok(PatStruct { attrs: vec![], path, brace_token, fields, rest })
     }
 
     fn field_pat(input: ParseStream<'_>) -> Result<FieldPat> {
@@ -261,7 +265,7 @@ mod parsing {
             || is_unnamed(&member)
         {
             return Ok(FieldPat {
-                attrs: Vec::new(),
+                attrs: vec![],
                 member,
                 colon_token: Some(input.parse()?),
                 pat: Box::new(Pat::parse_single(input)?),
@@ -273,11 +277,10 @@ mod parsing {
             Member::Unnamed(_) => unreachable!(),
         };
 
-        let pat =
-            Pat::Ident(PatIdent { attrs: Vec::new(), by_ref, mutability, ident: ident.clone() });
+        let pat = Pat::Ident(PatIdent { attrs: vec![], by_ref, mutability, ident: ident.clone() });
 
         Ok(FieldPat {
-            attrs: Vec::new(),
+            attrs: vec![],
             member: Member::Named(ident),
             colon_token: None,
             pat: Box::new(pat),
@@ -300,12 +303,12 @@ mod parsing {
             elems.push_punct(punct);
         }
 
-        Ok(Pat::Tuple(PatTuple { attrs: Vec::new(), paren_token, elems }))
+        Ok(Pat::Tuple(PatTuple { attrs: vec![], paren_token, elems }))
     }
 
     fn pat_reference(input: ParseStream<'_>) -> Result<PatReference> {
         Ok(PatReference {
-            attrs: Vec::new(),
+            attrs: vec![],
             and_token: input.parse()?,
             mutability: input.parse()?,
             pat: Box::new(Pat::parse_single(input)?),
@@ -322,7 +325,7 @@ mod parsing {
 
 mod printing {
     use proc_macro2::TokenStream;
-    use quote::{ToTokens, TokenStreamExt};
+    use quote::{ToTokens, TokenStreamExt as _};
     use syn::Token;
 
     use super::{
