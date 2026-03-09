@@ -64,19 +64,21 @@ macro_rules! doc {
         ///     // more here
         /// }
         ///
-        /// #[tokio::main]
-        /// async fn main() {
-        ///     let (first, second) = tokio::join!(
-        ///         do_stuff_async(),
-        ///         more_async_work());
+        /// # #[tokio::main(flavor = "current_thread")]
+        /// # async fn main() {
+        /// let (first, second) = tokio::join!(
+        ///     do_stuff_async(),
+        ///     more_async_work());
         ///
-        ///     // do something with the values
-        /// }
+        /// // do something with the values
+        /// # }
         /// ```
         ///
         /// Using the `biased;` mode to control polling order.
         ///
         /// ```
+        /// # #[cfg(not(target_family = "wasm"))]
+        /// # {
         /// async fn do_stuff_async() {
         ///     // async work
         /// }
@@ -85,16 +87,17 @@ macro_rules! doc {
         ///     // more here
         /// }
         ///
-        /// #[tokio::main]
-        /// async fn main() {
-        ///     let (first, second) = tokio::join!(
-        ///         biased;
-        ///         do_stuff_async(),
-        ///         more_async_work()
-        ///     );
+        /// # #[tokio::main(flavor = "current_thread")]
+        /// # async fn main() {
+        /// let (first, second) = tokio::join!(
+        ///     biased;
+        ///     do_stuff_async(),
+        ///     more_async_work()
+        /// );
         ///
-        ///     // do something with the values
-        /// }
+        /// // do something with the values
+        /// # }
+        /// # }
         /// ```
 
         #[macro_export]
@@ -126,16 +129,13 @@ doc! {macro_rules! join {
         $( ( $($skip:tt)* ) $e:expr, )*
 
     }) => {{
-        use $crate::macros::support::{maybe_done, poll_fn, Future, Pin, RotatorSelect};
-        use $crate::macros::support::Poll::{Ready, Pending};
-
         // Safety: nothing must be moved out of `futures`. This is to satisfy
         // the requirement of `Pin::new_unchecked` called below.
         //
         // We can't use the `pin!` macro for this because `futures` is a tuple
         // and the standard library provides no way to pin-project to the fields
         // of a tuple.
-        let mut futures = ( $( maybe_done($e), )* );
+        let mut futures = ( $( $crate::macros::support::maybe_done($e), )* );
 
         // This assignment makes sure that the `poll_fn` closure only has a
         // reference to the futures, instead of taking ownership of them. This
@@ -146,9 +146,9 @@ doc! {macro_rules! join {
         // Each time the future created by poll_fn is polled, if not using biased mode,
         // a different future is polled first to ensure every future passed to join!
         // can make progress even if one of the futures consumes the whole budget.
-        let mut rotator = <$rotator_select as RotatorSelect>::Rotator::<{$($total)*}>::default();
+        let mut rotator = <$rotator_select as $crate::macros::support::RotatorSelect>::Rotator::<{$($total)*}>::default();
 
-        poll_fn(move |cx| {
+        $crate::macros::support::poll_fn(move |cx| {
             const COUNT: u32 = $($total)*;
 
             let mut is_pending = false;
@@ -173,10 +173,10 @@ doc! {macro_rules! join {
 
                     // Safety: future is stored on the stack above
                     // and never moved.
-                    let mut fut = unsafe { Pin::new_unchecked(fut) };
+                    let mut fut = unsafe { $crate::macros::support::Pin::new_unchecked(fut) };
 
                     // Try polling
-                    if fut.poll(cx).is_pending() {
+                    if $crate::macros::support::Future::poll(fut.as_mut(), cx).is_pending() {
                         is_pending = true;
                     }
                 } else {
@@ -187,15 +187,15 @@ doc! {macro_rules! join {
             }
 
             if is_pending {
-                Pending
+                $crate::macros::support::Poll::Pending
             } else {
-                Ready(($({
+                $crate::macros::support::Poll::Ready(($({
                     // Extract the future for this branch from the tuple.
                     let ( $($skip,)* fut, .. ) = &mut futures;
 
                     // Safety: future is stored on the stack above
                     // and never moved.
-                    let mut fut = unsafe { Pin::new_unchecked(fut) };
+                    let mut fut = unsafe { $crate::macros::support::Pin::new_unchecked(fut) };
 
                     fut.take_output().expect("expected completed future")
                 },)*))
