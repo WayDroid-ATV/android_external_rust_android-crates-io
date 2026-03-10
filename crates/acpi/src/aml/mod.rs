@@ -1105,7 +1105,7 @@ where
                              * predicate.
                              */
                             context.current_block.pc = start_pc;
-                            context.start_in_flight_op(OpInFlight::new(Opcode::While, 1));
+                            context.start(OpInFlight::new(Opcode::While, &[ResolveBehaviour::TermArg]));
                             continue;
                         }
                     }
@@ -1114,7 +1114,16 @@ where
             };
             match opcode {
                 Opcode::Zero => {
-                    context.last_op()?.arguments.push(Argument::Object(Object::Integer(0).wrap()));
+                    /*
+                     * This represents a `Zero` operand that should create an `Integer` object in
+                     * most places, but could also encode a `NullName` if we are expecting a
+                     * `Target`.
+                     */
+                    if context.last_op()?.resolve_behaviour() == ResolveBehaviour::Target {
+                        context.last_op()?.arguments.push(Argument::Null);
+                    } else {
+                        context.last_op()?.arguments.push(Argument::Object(Object::Integer(0).wrap()));
+                    }
                 }
                 Opcode::One => {
                     context.last_op()?.arguments.push(Argument::Object(Object::Integer(1).wrap()));
@@ -1130,10 +1139,10 @@ where
                 }
                 Opcode::Name => {
                     let name = context.namestring()?;
-                    context.start_in_flight_op(OpInFlight::new_with(
+                    context.start(OpInFlight::new_with(
                         Opcode::Name,
                         vec![Argument::Namestring(name)],
-                        1,
+                        &[ResolveBehaviour::Placeholder, ResolveBehaviour::TermArg],
                     ));
                 }
                 Opcode::BytePrefix => {
@@ -1178,10 +1187,10 @@ where
                 Opcode::Buffer => {
                     let start_pc = context.current_block.pc;
                     let pkg_length = context.pkglength()?;
-                    context.start_in_flight_op(OpInFlight::new_with(
+                    context.start(OpInFlight::new_with(
                         Opcode::Buffer,
                         vec![Argument::TrackedPc(start_pc), Argument::PkgLength(pkg_length)],
-                        1,
+                        &[ResolveBehaviour::Placeholder, ResolveBehaviour::Placeholder, ResolveBehaviour::TermArg],
                     ));
                 }
                 Opcode::Package => {
@@ -1198,7 +1207,11 @@ where
                      * combination of a block to manage the pkglength, plus an in-flight op to
                      * store interpreted arguments.
                      */
-                    context.start_in_flight_op(OpInFlight::new(Opcode::Package, num_elements as usize));
+                    context.start(OpInFlight::new_dynamic(
+                        Opcode::Package,
+                        num_elements as usize,
+                        &[ResolveBehaviour::AsPackageElements],
+                    ));
                     context.start_new_block(BlockKind::Package, remaining_length);
                 }
                 Opcode::VarPackage => {
@@ -1212,7 +1225,11 @@ where
                      * elements as remain in the block, and we'll sort out how many are supposed to
                      * be in the package later.
                      */
-                    context.start_in_flight_op(OpInFlight::new(Opcode::VarPackage, usize::MAX));
+                    context.start(OpInFlight::new_dynamic(
+                        Opcode::VarPackage,
+                        usize::MAX,
+                        &[ResolveBehaviour::TermArg, ResolveBehaviour::AsPackageElements],
+                    ));
                     context.start_new_block(BlockKind::VarPackage, remaining_length);
                 }
                 Opcode::Method => {
@@ -1251,15 +1268,19 @@ where
                 }
                 Opcode::LoadTable => todo!(),
                 Opcode::Load => todo!(),
-                Opcode::Stall => context.start_in_flight_op(OpInFlight::new(Opcode::Stall, 1)),
-                Opcode::Sleep => context.start_in_flight_op(OpInFlight::new(Opcode::Sleep, 1)),
-                Opcode::Acquire => context.start_in_flight_op(OpInFlight::new(opcode, 1)),
-                Opcode::Release => context.start_in_flight_op(OpInFlight::new(opcode, 1)),
-                Opcode::Signal => context.start_in_flight_op(OpInFlight::new(opcode, 1)),
-                Opcode::Wait => context.start_in_flight_op(OpInFlight::new(opcode, 2)),
-                Opcode::Reset => context.start_in_flight_op(OpInFlight::new(opcode, 1)),
-                Opcode::Notify => todo!(),
-                Opcode::FromBCD | Opcode::ToBCD => context.start_in_flight_op(OpInFlight::new(opcode, 2)),
+                Opcode::Stall => context.start(OpInFlight::new(Opcode::Stall, &[ResolveBehaviour::TermArg])),
+                Opcode::Sleep => context.start(OpInFlight::new(Opcode::Sleep, &[ResolveBehaviour::TermArg])),
+                Opcode::Acquire => context.start(OpInFlight::new(opcode, &[ResolveBehaviour::SuperName])),
+                Opcode::Release => context.start(OpInFlight::new(opcode, &[ResolveBehaviour::SuperName])),
+                Opcode::Signal => context.start(OpInFlight::new(opcode, &[ResolveBehaviour::SuperName])),
+                Opcode::Wait => context
+                    .start(OpInFlight::new(opcode, &[ResolveBehaviour::SuperName, ResolveBehaviour::TermArg])),
+                Opcode::Reset => context.start(OpInFlight::new(opcode, &[ResolveBehaviour::SuperName])),
+                Opcode::Notify => context
+                    .start(OpInFlight::new(opcode, &[ResolveBehaviour::SuperName, ResolveBehaviour::TermArg])),
+                Opcode::FromBCD | Opcode::ToBCD => {
+                    context.start(OpInFlight::new(opcode, &[ResolveBehaviour::TermArg, ResolveBehaviour::Target]))
+                }
                 Opcode::Revision => {
                     context.contribute_arg(Argument::Object(Object::Integer(INTERPRETER_REVISION).wrap()));
                 }
@@ -1269,10 +1290,10 @@ where
                 Opcode::Fatal => {
                     let typ = context.next()?;
                     let code = context.next_u32()?;
-                    context.start_in_flight_op(OpInFlight::new_with(
+                    context.start(OpInFlight::new_with(
                         Opcode::Fatal,
                         vec![Argument::ByteData(typ), Argument::DWordData(code)],
-                        1,
+                        &[ResolveBehaviour::Placeholder, ResolveBehaviour::Placeholder, ResolveBehaviour::TermArg],
                     ));
                 }
                 Opcode::Timer => {
@@ -1283,18 +1304,28 @@ where
                 Opcode::OpRegion => {
                     let name = context.namestring()?;
                     let region_space = context.next()?;
-                    context.start_in_flight_op(OpInFlight::new_with(
+                    context.start(OpInFlight::new_with(
                         Opcode::OpRegion,
                         vec![Argument::Namestring(name), Argument::ByteData(region_space)],
-                        2,
+                        &[
+                            ResolveBehaviour::Placeholder,
+                            ResolveBehaviour::Placeholder,
+                            ResolveBehaviour::TermArg,
+                            ResolveBehaviour::TermArg,
+                        ],
                     ));
                 }
                 Opcode::DataRegion => {
                     let name = context.namestring()?;
-                    context.start_in_flight_op(OpInFlight::new_with(
+                    context.start(OpInFlight::new_with(
                         Opcode::DataRegion,
                         vec![Argument::Namestring(name)],
-                        3,
+                        &[
+                            ResolveBehaviour::Placeholder,
+                            ResolveBehaviour::TermArg,
+                            ResolveBehaviour::TermArg,
+                            ResolveBehaviour::TermArg,
+                        ],
                     ));
                 }
                 Opcode::Field => {
@@ -1313,7 +1344,7 @@ where
                     let region_name = context.namestring()?;
                     let bank_name = context.namestring()?;
 
-                    context.start_in_flight_op(OpInFlight::new_with(
+                    context.start(OpInFlight::new_with(
                         Opcode::BankField,
                         vec![
                             Argument::TrackedPc(start_pc),
@@ -1321,7 +1352,13 @@ where
                             Argument::Namestring(region_name),
                             Argument::Namestring(bank_name),
                         ],
-                        1,
+                        &[
+                            ResolveBehaviour::Placeholder,
+                            ResolveBehaviour::Placeholder,
+                            ResolveBehaviour::Placeholder,
+                            ResolveBehaviour::Placeholder,
+                            ResolveBehaviour::TermArg,
+                        ],
                     ));
                 }
                 Opcode::IndexField => {
@@ -1409,9 +1446,15 @@ where
                         Object::Reference { kind: ReferenceKind::LocalOrArg, inner: arg }.wrap(),
                     ));
                 }
-                Opcode::Store => context.start_in_flight_op(OpInFlight::new(Opcode::Store, 2)),
-                Opcode::RefOf => context.start_in_flight_op(OpInFlight::new(Opcode::RefOf, 1)),
-                Opcode::CondRefOf => context.start_in_flight_op(OpInFlight::new(opcode, 2)),
+                Opcode::Store => context.start(OpInFlight::new(
+                    Opcode::Store,
+                    &[ResolveBehaviour::TermArg, ResolveBehaviour::SuperName],
+                )),
+                Opcode::RefOf => context.start(OpInFlight::new(Opcode::RefOf, &[ResolveBehaviour::SuperName])),
+                Opcode::CondRefOf => context.start(OpInFlight::new(
+                    opcode,
+                    &[ResolveBehaviour::SuperNameIfExists, ResolveBehaviour::Target],
+                )),
 
                 Opcode::DualNamePrefix
                 | Opcode::MultiNamePrefix
@@ -1422,52 +1465,61 @@ where
                     context.current_block.pc -= 1;
                     let name = context.namestring()?;
 
-                    /*
-                     * The desired behaviour when we encounter a name at the top-level differs
-                     * depending on the context we're in.
-                     *    - Generally, we want to attempt to evaluate names to objects that should have
-                     *      already been defined. There are generally no forward definitions in AML.
-                     *    - In `CondRefOf`, we need to handle a name not referring to any object. For
-                     *      this, we emit an `Unresolved` reference.
-                     *    - In package definitions, all objects referred to by name should be referred
-                     *      to by a string. This is not well defined by the specification, but matches
-                     *      expected behaviour of other interpreters, and is most useful for downstream
-                     *      users.
-                     *    - In variable-length package definitions, the first 'element' is the
-                     *      length of the package, and should be resolved to an object. The
-                     *      remaining elements should be treated the same as in a package definition.
-                     */
-                    enum ResolveBehaviour {
-                        ResolveToObject,
-                        ResolveIfExists,
-                        PackageElement,
-                    }
-                    let behaviour = if context.current_block.kind == BlockKind::Package {
-                        ResolveBehaviour::PackageElement
-                    } else if context.current_block.kind == BlockKind::VarPackage {
-                        if context.last_op()?.arguments.is_empty() {
-                            ResolveBehaviour::ResolveToObject
-                        } else {
-                            ResolveBehaviour::PackageElement
-                        }
-                    } else if context.in_flight.last().map(|op| op.op == Opcode::CondRefOf).unwrap_or(false) {
-                        ResolveBehaviour::ResolveIfExists
-                    } else {
-                        ResolveBehaviour::ResolveToObject
-                    };
-
+                    let behaviour = context
+                        .in_flight
+                        .last()
+                        .map(|op| op.resolve_behaviour())
+                        .unwrap_or(ResolveBehaviour::TermArg);
                     match behaviour {
-                        ResolveBehaviour::ResolveToObject => {
+                        // XXX: `NullName` is handled separately given its ambiguity with `Zero`
+                        ResolveBehaviour::SuperName | ResolveBehaviour::Target => {
+                            let object = self.namespace.lock().search(&name, &context.current_scope);
+                            match object {
+                                Ok((_resolved_name, object)) => {
+                                    context.last_op()?.arguments.push(Argument::Object(object));
+                                }
+                                Err(err) => Err(err)?,
+                            }
+                        }
+                        ResolveBehaviour::SuperNameIfExists => {
+                            let object = self.namespace.lock().search(&name, &context.current_scope);
+                            match object {
+                                Ok((_resolved_name, object)) => {
+                                    context.last_op()?.arguments.push(Argument::Object(object));
+                                }
+                                Err(AmlError::ObjectDoesNotExist(_)) => {
+                                    let reference = Object::Reference {
+                                        kind: ReferenceKind::Unresolved,
+                                        inner: Object::String(name.to_string()).wrap(),
+                                    };
+                                    context.last_op()?.arguments.push(Argument::Object(reference.wrap()));
+                                }
+                                Err(err) => Err(err)?,
+                            }
+                        }
+                        ResolveBehaviour::TermArg => {
                             let object = self.namespace.lock().search(&name, &context.current_scope);
                             match object {
                                 Ok((resolved_name, object)) => {
                                     if let Object::Method { flags, .. } | Object::NativeMethod { flags, .. } =
                                         *object
                                     {
-                                        context.start_in_flight_op(OpInFlight::new_with(
+                                        context.start(OpInFlight::new_with_dynamic(
                                             Opcode::InternalMethodCall,
                                             vec![Argument::Object(object), Argument::Namestring(resolved_name)],
                                             flags.arg_count(),
+                                            &[
+                                                ResolveBehaviour::Placeholder,
+                                                ResolveBehaviour::Placeholder,
+                                                ResolveBehaviour::TermArg,
+                                                ResolveBehaviour::TermArg,
+                                                ResolveBehaviour::TermArg,
+                                                ResolveBehaviour::TermArg,
+                                                ResolveBehaviour::TermArg,
+                                                ResolveBehaviour::TermArg,
+                                                ResolveBehaviour::TermArg,
+                                                ResolveBehaviour::TermArg,
+                                            ],
                                         ))
                                     } else if let Object::FieldUnit(ref field) = *object {
                                         let value = self.do_field_read(field)?;
@@ -1479,29 +1531,14 @@ where
                                 Err(err) => Err(err)?,
                             }
                         }
-                        ResolveBehaviour::ResolveIfExists => {
-                            let object = self.namespace.lock().search(&name, &context.current_scope);
-                            match object {
-                                Ok((_, object)) => {
-                                    let reference =
-                                        Object::Reference { kind: ReferenceKind::RefOf, inner: object.clone() };
-                                    context.last_op()?.arguments.push(Argument::Object(reference.wrap()));
-                                }
-                                Err(AmlError::ObjectDoesNotExist(_)) => {
-                                    let reference = Object::Reference {
-                                        kind: ReferenceKind::Unresolved,
-                                        inner: Object::String(name.to_string()).wrap(),
-                                    };
-                                    context.last_op()?.arguments.push(Argument::Object(reference.wrap()));
-                                }
-                                Err(other) => Err(other)?,
-                            }
-                        }
-                        ResolveBehaviour::PackageElement => {
+                        ResolveBehaviour::AsPackageElements => {
                             context
                                 .last_op()?
                                 .arguments
                                 .push(Argument::Object(Object::String(name.to_string()).wrap()));
+                        }
+                        ResolveBehaviour::Placeholder => {
+                            panic!("Invalid resolve behaviour for name to be resolved!")
                         }
                     }
                 }
@@ -1518,19 +1555,39 @@ where
                 | Opcode::Nor
                 | Opcode::Xor
                 | Opcode::Concat => {
-                    context.start_in_flight_op(OpInFlight::new(opcode, 3));
+                    context.start(OpInFlight::new(
+                        opcode,
+                        &[ResolveBehaviour::TermArg, ResolveBehaviour::TermArg, ResolveBehaviour::Target],
+                    ));
                 }
 
-                Opcode::Divide => context.start_in_flight_op(OpInFlight::new(Opcode::Divide, 4)),
-                Opcode::Increment | Opcode::Decrement => context.start_in_flight_op(OpInFlight::new(opcode, 1)),
-                Opcode::Not => context.start_in_flight_op(OpInFlight::new(Opcode::Not, 2)),
-                Opcode::FindSetLeftBit | Opcode::FindSetRightBit => {
-                    context.start_in_flight_op(OpInFlight::new(opcode, 2))
+                Opcode::Divide => context.start(OpInFlight::new(
+                    Opcode::Divide,
+                    &[
+                        ResolveBehaviour::TermArg,
+                        ResolveBehaviour::TermArg,
+                        ResolveBehaviour::Target,
+                        ResolveBehaviour::Target,
+                    ],
+                )),
+                Opcode::Increment | Opcode::Decrement => {
+                    context.start(OpInFlight::new(opcode, &[ResolveBehaviour::SuperName]))
                 }
-                Opcode::DerefOf => context.start_in_flight_op(OpInFlight::new(opcode, 1)),
-                Opcode::ConcatRes => context.start_in_flight_op(OpInFlight::new(opcode, 3)),
-                Opcode::SizeOf => context.start_in_flight_op(OpInFlight::new(opcode, 1)),
-                Opcode::Index => context.start_in_flight_op(OpInFlight::new(opcode, 3)),
+                Opcode::Not => context
+                    .start(OpInFlight::new(Opcode::Not, &[ResolveBehaviour::TermArg, ResolveBehaviour::Target])),
+                Opcode::FindSetLeftBit | Opcode::FindSetRightBit => {
+                    context.start(OpInFlight::new(opcode, &[ResolveBehaviour::TermArg, ResolveBehaviour::Target]))
+                }
+                Opcode::DerefOf => context.start(OpInFlight::new(opcode, &[ResolveBehaviour::TermArg])),
+                Opcode::ConcatRes => context.start(OpInFlight::new(
+                    opcode,
+                    &[ResolveBehaviour::TermArg, ResolveBehaviour::TermArg, ResolveBehaviour::Target],
+                )),
+                Opcode::SizeOf => context.start(OpInFlight::new(opcode, &[ResolveBehaviour::SuperName])),
+                Opcode::Index => context.start(OpInFlight::new(
+                    opcode,
+                    &[ResolveBehaviour::TermArg, ResolveBehaviour::TermArg, ResolveBehaviour::Target],
+                )),
                 /*
                  * TODO
                  * Match is a difficult opcode to parse, as it interleaves dynamic arguments and
@@ -1544,8 +1601,12 @@ where
                 | Opcode::CreateByteField
                 | Opcode::CreateWordField
                 | Opcode::CreateDWordField
-                | Opcode::CreateQWordField => context.start_in_flight_op(OpInFlight::new(opcode, 2)),
-                Opcode::CreateField => context.start_in_flight_op(OpInFlight::new(Opcode::CreateField, 3)),
+                | Opcode::CreateQWordField => {
+                    context.start(OpInFlight::new(opcode, &[ResolveBehaviour::TermArg; 2]))
+                }
+                Opcode::CreateField => {
+                    context.start(OpInFlight::new(Opcode::CreateField, &[ResolveBehaviour::TermArg; 3]))
+                }
 
                 Opcode::LAnd
                 | Opcode::LOr
@@ -1556,24 +1617,35 @@ where
                 | Opcode::LEqual
                 | Opcode::LGreater
                 | Opcode::LLess => {
-                    context.start_in_flight_op(OpInFlight::new(opcode, 2));
+                    context.start(OpInFlight::new(opcode, &[ResolveBehaviour::TermArg; 2]));
                 }
 
                 Opcode::ToBuffer | Opcode::ToDecimalString | Opcode::ToHexString | Opcode::ToInteger => {
-                    context.start_in_flight_op(OpInFlight::new(opcode, 2))
+                    context.start(OpInFlight::new(opcode, &[ResolveBehaviour::TermArg, ResolveBehaviour::Target]))
                 }
-                Opcode::ToString => context.start_in_flight_op(OpInFlight::new(opcode, 3)),
+                Opcode::ToString => context.start(OpInFlight::new(
+                    opcode,
+                    &[ResolveBehaviour::TermArg, ResolveBehaviour::TermArg, ResolveBehaviour::Target],
+                )),
 
-                Opcode::ObjectType => context.start_in_flight_op(OpInFlight::new(opcode, 1)),
+                Opcode::ObjectType => context.start(OpInFlight::new(opcode, &[ResolveBehaviour::SuperName])),
                 Opcode::CopyObject => todo!(),
-                Opcode::Mid => context.start_in_flight_op(OpInFlight::new(Opcode::Mid, 4)),
+                Opcode::Mid => context.start(OpInFlight::new(
+                    Opcode::Mid,
+                    &[
+                        ResolveBehaviour::TermArg,
+                        ResolveBehaviour::TermArg,
+                        ResolveBehaviour::TermArg,
+                        ResolveBehaviour::Target,
+                    ],
+                )),
                 Opcode::If => {
                     let start_pc = context.current_block.pc;
                     let then_length = context.pkglength()?;
-                    context.start_in_flight_op(OpInFlight::new_with(
+                    context.start(OpInFlight::new_with(
                         Opcode::If,
                         vec![Argument::TrackedPc(start_pc), Argument::PkgLength(then_length)],
-                        1,
+                        &[ResolveBehaviour::Placeholder, ResolveBehaviour::Placeholder, ResolveBehaviour::TermArg],
                     ));
                 }
                 Opcode::Else => return Err(AmlError::ElseFoundWithoutCorrespondingIf),
@@ -1585,7 +1657,7 @@ where
                         BlockKind::While { start_pc: context.current_block.pc },
                         remaining_length,
                     );
-                    context.start_in_flight_op(OpInFlight::new(Opcode::While, 1));
+                    context.start(OpInFlight::new(Opcode::While, &[ResolveBehaviour::TermArg]));
                 }
                 Opcode::Continue => {
                     if let BlockKind::While { start_pc } = &context.current_block.kind {
@@ -1601,7 +1673,7 @@ where
                             }
                         }
                     }
-                    context.start_in_flight_op(OpInFlight::new(Opcode::While, 1));
+                    context.start(OpInFlight::new(Opcode::While, &[ResolveBehaviour::TermArg]));
                 }
                 Opcode::Break => {
                     if let BlockKind::While { .. } = &context.current_block.kind {
@@ -1618,7 +1690,7 @@ where
                         }
                     }
                 }
-                Opcode::Return => context.start_in_flight_op(OpInFlight::new(Opcode::Return, 1)),
+                Opcode::Return => context.start(OpInFlight::new(Opcode::Return, &[ResolveBehaviour::TermArg])),
                 Opcode::Noop => {}
                 Opcode::Breakpoint => {
                     self.handler.breakpoint();
@@ -2199,7 +2271,8 @@ where
 
         /*
          * TODO: stores should do more implicit conversion to the type of the destination in some
-         * cases, in line with section 19.3.5 of the spec
+         * cases, in line with section 19.3.5 of the spec. It's not clear what existing
+         * interpreters do - NT may just be memcpying objects over each other...
          *
          * TODO: stores to fields with `BufferAcc` can actually return a value of the store that
          * differs from what was written into the field. This is used for complex field types with
@@ -2209,6 +2282,7 @@ where
         let to_return = object.clone();
 
         match target {
+            Argument::Null => {}
             Argument::Object(target) => match unsafe { target.gain_mut(&token) } {
                 Object::Integer(target) => match unsafe { object.gain_mut(&token) } {
                     Object::Integer(value) => {
@@ -2351,7 +2425,7 @@ where
     }
 
     fn do_field_write(&self, field: &FieldUnit, value: WrappedObject) -> Result<(), AmlError> {
-        trace!("AML field write. Field = {:?}. Value = {:?}", field, value);
+        trace!("AML field write. Field = {:?}. Value = {}", field, value);
 
         let value_bytes = match &*value {
             Object::Integer(value) => &value.to_le_bytes() as &[u8],
@@ -2592,23 +2666,6 @@ struct MethodContext {
     _method: Option<WrappedObject>,
 }
 
-#[derive(Debug)]
-struct OpInFlight {
-    op: Opcode,
-    expected_arguments: usize,
-    arguments: Vec<Argument>,
-}
-
-#[derive(Debug)]
-enum Argument {
-    Object(WrappedObject),
-    Namestring(AmlName),
-    ByteData(u8),
-    DWordData(u32),
-    TrackedPc(usize),
-    PkgLength(usize),
-}
-
 struct Block {
     stream: *const [u8],
     pc: usize,
@@ -2640,13 +2697,102 @@ pub enum BlockKind {
     },
 }
 
+/// A `ResolveBehaviour` describes how a name at the top-level should be resolved as part of an
+/// operation.
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum ResolveBehaviour {
+    /// Attempt to resolve the name to an object that has already been defined. There are generally
+    /// no forward definitions in AML, so this is the usual resolution behaviour for most operands.
+    TermArg,
+    /// Resolve a name to reference an object. This is used when an operation needs to operate on
+    /// the object itself, rather than evaluate it to a value. For example, accessing a `FieldUnit` would
+    /// read a value from the field with `TermArg`, but resolves to the `FieldUnit` with
+    /// this behaviour.
+    SuperName,
+    /// Behaves the same as `SuperName` if the object exists, but resolves successfully to an
+    /// unresolved reference if the object does not exist. Used by `DefCondRefOf`.
+    SuperNameIfExists,
+    /// `SuperName`, but can also be `NullName`
+    Target,
+    /// Surrogate argument, used by `DefPackage` and `DefVarPackage`. Only one of these is emitted,
+    /// but represents parsing of potentially many package elements. Names in packages should be
+    /// resolved into `String` objects - this is not well defined by the specification, but matches
+    /// expected behaviour of other interpreters.
+    AsPackageElements,
+    /// Used with [`OpInFlight::new_with`] to represent arguments that have already been resolved
+    /// when an operation enters flight.
+    Placeholder,
+}
+
+#[derive(Debug)]
+struct OpInFlight {
+    op: Opcode,
+    expected_arguments: usize,
+    arguments: Vec<Argument>,
+    resolve_behaviour: &'static [ResolveBehaviour],
+}
+
+#[derive(Debug)]
+enum Argument {
+    Null,
+    Object(WrappedObject),
+    Namestring(AmlName),
+    ByteData(u8),
+    DWordData(u32),
+    TrackedPc(usize),
+    PkgLength(usize),
+}
+
 impl OpInFlight {
-    pub fn new(op: Opcode, expected_arguments: usize) -> OpInFlight {
-        OpInFlight { op, expected_arguments, arguments: Vec::new() }
+    /// Creates a new `OpInFlight`. The number of expected arguments is inferred from the number of
+    /// `ResolveBehaviour`s passed.
+    pub fn new(op: Opcode, resolve_behaviour: &'static [ResolveBehaviour]) -> OpInFlight {
+        OpInFlight { op, expected_arguments: resolve_behaviour.len(), arguments: Vec::new(), resolve_behaviour }
     }
 
-    pub fn new_with(op: Opcode, arguments: Vec<Argument>, more: usize) -> OpInFlight {
-        OpInFlight { op, expected_arguments: arguments.len() + more, arguments }
+    /// Creates a new `OpInFlight` with the given number of expected arguments. This should be used
+    /// when the correct number of expected arguments differs from the number of
+    /// `ResolveBehaviour`s passed.
+    pub fn new_dynamic(
+        op: Opcode,
+        expected_arguments: usize,
+        resolve_behaviour: &'static [ResolveBehaviour],
+    ) -> OpInFlight {
+        OpInFlight { op, expected_arguments, arguments: Vec::new(), resolve_behaviour }
+    }
+
+    /// Creates a new `OpInFlight` with a number of arguments that have already been interpreted,
+    /// and is expecting some `more` arguments.
+    pub fn new_with_dynamic(
+        op: Opcode,
+        arguments: Vec<Argument>,
+        more: usize,
+        resolve_behaviour: &'static [ResolveBehaviour],
+    ) -> OpInFlight {
+        OpInFlight { op, expected_arguments: arguments.len() + more, arguments, resolve_behaviour }
+    }
+
+    /// Creates a new `OpInFlight` with a number of arguments that have already been interpreted,
+    /// and is expecting more - the number of remaining arguments is inferred from the number of
+    /// `ResolveBehaviour`s passed (with existing arguments marked as
+    /// `ResolveBehaviour::Placeholder`).
+    pub fn new_with(
+        op: Opcode,
+        arguments: Vec<Argument>,
+        resolve_behaviour: &'static [ResolveBehaviour],
+    ) -> OpInFlight {
+        OpInFlight { op, expected_arguments: resolve_behaviour.len(), arguments, resolve_behaviour }
+    }
+
+    /// Get the desired `ResolveBehaviour` for the argument currently being interpreted
+    fn resolve_behaviour(&self) -> ResolveBehaviour {
+        if let Some(behaviour) = self.resolve_behaviour.get(self.arguments.len()) {
+            *behaviour
+        } else if self.op == Opcode::Package || (self.op == Opcode::VarPackage && self.arguments.len() > 0) {
+            ResolveBehaviour::AsPackageElements
+        } else {
+            panic!("Tried to get resolving behaviour for unexpected argument for operation of type {:?}", self.op);
+        }
     }
 }
 
@@ -2711,12 +2857,14 @@ impl MethodContext {
         }
     }
 
-    fn start_in_flight_op(&mut self, op: OpInFlight) {
+    /// Start a new `InFlightOp`.
+    fn start(&mut self, op: OpInFlight) {
         trace!(
-            "START OP: {:?}, args: {:?}, with {} more needed",
+            "START OP: {:?}, args: {:?}, with {} more needed ({:?})",
             op.op,
             op.arguments,
-            op.expected_arguments - op.arguments.len()
+            op.expected_arguments - op.arguments.len(),
+            op.resolve_behaviour
         );
         self.in_flight.push(op);
     }
