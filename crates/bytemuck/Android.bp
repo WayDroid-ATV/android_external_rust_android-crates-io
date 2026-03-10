@@ -244,7 +244,7 @@ rust_library {
     product_available: true,
     recovery_available: true,
     vendor_available: true,
-    min_sdk_version: "34",
+    min_sdk_version: "31",
 }
 
 rust_library_rlib {
