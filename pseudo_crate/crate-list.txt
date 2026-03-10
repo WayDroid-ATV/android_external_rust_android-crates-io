@@ -409,6 +409,7 @@ rustc-demangle
 rustc-demangle-capi
 rustc-hash
 rustc-stable-hash
+rustfft
 rustix
 rustls
 rustls-native-certs
