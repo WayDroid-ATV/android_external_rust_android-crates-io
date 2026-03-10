@@ -19,7 +19,6 @@ rust_library {
     cargo_env_compat: true,
     cargo_pkg_version: "1.6.2+v1.6.2",
     crate_root: "src/lib.rs",
-    srcs: [":liblibbpf_bindgen"],
     edition: "2021",
     features: ["bindgen"],
     apex_available: [
@@ -27,6 +26,7 @@ rust_library {
         "//apex_available:anyapex",
     ],
     min_sdk_version: "29",
+    srcs: [":liblibbpf_bindgen"],
 }
 
 rust_binary_host {
