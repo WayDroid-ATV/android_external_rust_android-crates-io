@@ -1,13 +1,12 @@
-use {
-    super::*,
-    crate::AxisScale,
-    itertools::Itertools,
-    plotters::coord::{
-        ranged1d::{AsRangedCoord, ValueFormatter as PlottersValueFormatter},
-        Shift,
-    },
-    std::{cmp::Ordering, path::Path},
+use super::*;
+use crate::AxisScale;
+use itertools::Itertools;
+use plotters::coord::{
+    ranged1d::{AsRangedCoord, ValueFormatter as PlottersValueFormatter},
+    Shift,
 };
+use std::cmp::Ordering;
+use std::path::Path;
 
 const NUM_COLORS: usize = 8;
 static COMPARISON_COLORS: [RGBColor; NUM_COLORS] = [
@@ -21,8 +20,7 @@ static COMPARISON_COLORS: [RGBColor; NUM_COLORS] = [
     RGBColor(0, 255, 127),
 ];
 
-pub(crate) fn line_comparison(
-    line_cfg: LinePlotConfig,
+pub fn line_comparison(
     formatter: &dyn ValueFormatter,
     title: &str,
     all_curves: &[&(&BenchmarkId, Vec<f64>)],
@@ -30,7 +28,7 @@ pub(crate) fn line_comparison(
     value_type: ValueType,
     axis_scale: AxisScale,
 ) {
-    let (unit, series_data) = line_comparison_series_data(line_cfg, formatter, all_curves);
+    let (unit, series_data) = line_comparison_series_data(formatter, all_curves);
 
     let x_range =
         plotters::data::fitting_range(series_data.iter().flat_map(|(_, xs, _)| xs.iter()));
@@ -42,17 +40,10 @@ pub(crate) fn line_comparison(
         .unwrap();
 
     match axis_scale {
-        AxisScale::Linear => draw_line_comparison_figure(
-            line_cfg,
-            root_area,
-            unit,
-            x_range,
-            y_range,
-            value_type,
-            series_data,
-        ),
-        AxisScale::Logarithmic => draw_line_comparison_figure(
-            line_cfg,
+        AxisScale::Linear => {
+            draw_line_comarision_figure(root_area, unit, x_range, y_range, value_type, series_data);
+        }
+        AxisScale::Logarithmic => draw_line_comarision_figure(
             root_area,
             unit,
             x_range.log_scale(),
@@ -63,8 +54,7 @@ pub(crate) fn line_comparison(
     }
 }
 
-fn draw_line_comparison_figure<XR: AsRangedCoord<Value = f64>, YR: AsRangedCoord<Value = f64>>(
-    line_cfg: LinePlotConfig,
+fn draw_line_comarision_figure<XR: AsRangedCoord<Value = f64>, YR: AsRangedCoord<Value = f64>>(
     root_area: DrawingArea<SVGBackend, Shift>,
     y_unit: &str,
     x_range: XR,
@@ -93,7 +83,7 @@ fn draw_line_comparison_figure<XR: AsRangedCoord<Value = f64>, YR: AsRangedCoord
         .configure_mesh()
         .disable_mesh()
         .x_desc(format!("Input{}", input_suffix))
-        .y_desc(format!("Average {} ({})", line_cfg.label, y_unit))
+        .y_desc(format!("Average time ({})", y_unit))
         .draw()
         .unwrap();
 
@@ -126,21 +116,16 @@ fn draw_line_comparison_figure<XR: AsRangedCoord<Value = f64>, YR: AsRangedCoord
 
 #[allow(clippy::type_complexity)]
 fn line_comparison_series_data<'a>(
-    line_cfg: LinePlotConfig,
     formatter: &dyn ValueFormatter,
     all_curves: &[&(&'a BenchmarkId, Vec<f64>)],
 ) -> (&'static str, Vec<(Option<&'a String>, Vec<f64>, Vec<f64>)>) {
-    let (max_id, max) = all_curves
+    let max = all_curves
         .iter()
-        .map(|&(id, data)| (*id, Sample::new(data).mean()))
-        .fold(None, |prev: Option<(&BenchmarkId, f64)>, next| match prev {
-            Some(prev) if prev.1 >= next.1 => Some(prev),
-            _ => Some(next),
-        })
-        .unwrap();
+        .map(|&(_, data)| Sample::new(data).mean())
+        .fold(f64::NAN, f64::max);
 
-    let mut max_formatted = [max];
-    let unit = (line_cfg.scale)(formatter, max_id, max, max_id, &mut max_formatted);
+    let mut dummy = [1.0];
+    let unit = formatter.scale_values(max, &mut dummy);
 
     let mut series_data = vec![];
 
@@ -153,16 +138,15 @@ fn line_comparison_series_data<'a>(
                 // Unwrap is fine here because it will only fail if the assumptions above are not true
                 // ie. programmer error.
                 let x = id.as_number().unwrap();
-                let mut y = [Sample::new(sample).mean()];
+                let y = Sample::new(sample).mean();
 
-                (line_cfg.scale)(formatter, max_id, max, id, &mut y);
-
-                (x, y[0])
+                (x, y)
             })
             .collect();
-        tuples.sort_by(|&(ax, _), &(bx, _)| ax.partial_cmp(&bx).unwrap_or(Ordering::Less));
+        tuples.sort_by(|&(ax, _), &(bx, _)| (ax.partial_cmp(&bx).unwrap_or(Ordering::Less)));
         let function_name = key.as_ref();
-        let (xs, ys): (Vec<_>, Vec<_>) = tuples.into_iter().unzip();
+        let (xs, mut ys): (Vec<_>, Vec<_>) = tuples.into_iter().unzip();
+        formatter.scale_values(max, &mut ys);
         series_data.push((function_name, xs, ys));
     }
     (unit, series_data)

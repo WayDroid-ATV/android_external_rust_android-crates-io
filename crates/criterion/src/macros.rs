@@ -61,7 +61,6 @@
 #[macro_export]
 macro_rules! criterion_group {
     (name = $name:ident; config = $config:expr; targets = $( $target:path ),+ $(,)*) => {
-        #[doc="The function which runs the benchmarks."]
         pub fn $name() {
             let mut criterion: $crate::Criterion<_> = $config
                 .configure_from_args();

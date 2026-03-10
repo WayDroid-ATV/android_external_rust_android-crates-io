@@ -1,14 +1,11 @@
-use {
-    crate::{
-        error::Result,
-        measurement::ValueFormatter,
-        report::{BenchmarkId, MeasurementData, Report, ReportContext},
-        Throughput,
-    },
-    csv::Writer,
-    serde::Serialize,
-    std::{io::Write, path::Path},
-};
+use crate::error::Result;
+use crate::measurement::ValueFormatter;
+use crate::report::{BenchmarkId, MeasurementData, Report, ReportContext};
+use crate::Throughput;
+use csv::Writer;
+use serde::Serialize;
+use std::io::Write;
+use std::path::Path;
 
 #[derive(Serialize)]
 struct CsvRow<'a> {
@@ -41,10 +38,6 @@ impl<W: Write> CsvReportWriter<W> {
             Some(Throughput::Bytes(bytes)) => (Some(format!("{}", bytes)), Some("bytes")),
             Some(Throughput::BytesDecimal(bytes)) => (Some(format!("{}", bytes)), Some("bytes")),
             Some(Throughput::Elements(elems)) => (Some(format!("{}", elems)), Some("elements")),
-            Some(Throughput::ElementsAndBytes { elements, bytes }) => (
-                Some(format!("{}/{}", elements, bytes)),
-                Some("elements/bytes"),
-            ),
             Some(Throughput::Bits(bits)) => (Some(format!("{}", bits)), Some("bits")),
             None => (None, None),
         };

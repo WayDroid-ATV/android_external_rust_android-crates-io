@@ -3,6 +3,7 @@
 //!
 //! Implementations are provided for:
 //! * Tokio (implemented directly for `tokio::Runtime`)
+//! * Async-std
 //! * Smol
 //! * The Futures crate
 //!
@@ -14,7 +15,7 @@ use std::future::Future;
 
 /// Plugin trait used to allow benchmarking on multiple different async runtimes.
 ///
-/// Smol and Tokio are supported out of the box, as is the current-thread runner from the
+/// Smol, Tokio and Async-std are supported out of the box, as is the current-thread runner from the
 /// Futures crate; it is recommended to use whichever runtime you use in production.
 pub trait AsyncExecutor {
     /// Spawn the given future onto this runtime and block until it's complete, returning the result.
@@ -63,5 +64,15 @@ impl AsyncExecutor for tokio::runtime::Handle {
 impl AsyncExecutor for &tokio::runtime::Handle {
     fn block_on<T>(&self, future: impl Future<Output = T>) -> T {
         (*self).block_on(future)
+    }
+}
+
+/// Runs futures on the 'async-std' crate's global executor
+#[cfg(feature = "async_std")]
+pub struct AsyncStdExecutor;
+#[cfg(feature = "async_std")]
+impl AsyncExecutor for AsyncStdExecutor {
+    fn block_on<T>(&self, future: impl Future<Output = T>) -> T {
+        async_std::task::block_on(future)
     }
 }

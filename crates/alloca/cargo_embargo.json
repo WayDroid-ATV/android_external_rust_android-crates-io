@@ -14,10 +14,10 @@
       "//visibility:private"
     ],
     "liballoca": [
-      "//external/rust/android-crates-io/crates/criterion"
+      "//visibility:private"
     ],
     "liballoca_alloca": [
-      "//external/rust/android-crates-io/crates/criterion"
+      "//visibility:private"
     ]
   },
   "run_cargo": false,

@@ -1,14 +1,10 @@
-use {
-    criterion::{
-        criterion_group,
-        measurement::{Measurement, ValueFormatter},
-        Criterion, Throughput,
-    },
-    std::{
-        hint::black_box,
-        time::{Duration, Instant},
-    },
+use criterion::{
+    criterion_group,
+    measurement::{Measurement, ValueFormatter},
+    Criterion, Throughput,
 };
+use std::hint::black_box;
+use std::time::{Duration, Instant};
 
 struct HalfSecFormatter;
 impl ValueFormatter for HalfSecFormatter {
@@ -31,11 +27,6 @@ impl ValueFormatter for HalfSecFormatter {
             Throughput::Elements(elems) => format!(
                 "{} elem/s/2",
                 (elems as f64) / (value * 2f64 * 10f64.powi(-9))
-            ),
-            Throughput::ElementsAndBytes { elements, bytes } => format!(
-                "{} elem/s/2, {} b/s/2",
-                (elements as f64) / (value * 2f64 * 10f64.powi(-9)),
-                (bytes as f64) / (value * 2f64 * 10f64.powi(-9))
             ),
         }
     }
@@ -75,9 +66,6 @@ impl ValueFormatter for HalfSecFormatter {
                 }
 
                 "elem/s/2"
-            }
-            Throughput::ElementsAndBytes { elements, bytes: _ } => {
-                self.scale_throughputs(_typical, &Throughput::Elements(elements), values)
             }
         }
     }
