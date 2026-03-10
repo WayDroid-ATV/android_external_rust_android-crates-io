@@ -363,7 +363,7 @@ dependencies = [
 
 [[package]]
 name = "glam"
-version = "0.32.0"
+version = "0.32.1"
 dependencies = [
  "approx",
  "arbitrary",
