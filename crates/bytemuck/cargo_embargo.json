@@ -18,7 +18,7 @@
         "min_const_generics"
       ],
       "tests": true,
-      "min_sdk_version": "34"
+      "min_sdk_version": "31"
     },
     {
       "module_name_overrides": {
