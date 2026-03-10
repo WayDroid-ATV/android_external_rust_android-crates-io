@@ -12,7 +12,7 @@
 [package]
 edition = "2024"
 name = "acpi"
-version = "6.1.0"
+version = "6.1.1"
 authors = ["Isaac Woods"]
 build = false
 autolib = false

@@ -18,7 +18,7 @@ rust_library {
     defaults: ["rust_baremetal_defaults"],
     crate_name: "acpi",
     cargo_env_compat: true,
-    cargo_pkg_version: "6.1.0",
+    cargo_pkg_version: "6.1.1",
     crate_root: "src/lib.rs",
     edition: "2024",
     features: [
