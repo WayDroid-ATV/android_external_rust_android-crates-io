@@ -1,5 +1,5 @@
 {
   "run_cargo": false,
-  "features": [],
+  "features": ["opt-simd"],
   "min_sdk_version": "29"
 }

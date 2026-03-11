@@ -21,13 +21,20 @@ rust_library {
     cargo_pkg_version: "0.5.5",
     crate_root: "src/lib.rs",
     edition: "2018",
-    features: ["default"],
+    features: [
+        "opt-simd",
+        "opt-simd-avx",
+        "opt-simd-neon",
+        "opt-simd-sse",
+        "rustfft",
+    ],
     rustlibs: [
         "libarrayvec",
         "libbitflags-1.3.2",
         "libbytemuck",
         "liblazy_static",
         "liblog_rust",
+        "librustfft",
     ],
     apex_available: [
         "//apex_available:platform",
