@@ -21,6 +21,12 @@ rust_library {
     cargo_pkg_version: "0.5.5",
     crate_root: "src/lib.rs",
     edition: "2018",
+    features: [
+        "opt-simd",
+        "opt-simd-avx",
+        "opt-simd-neon",
+        "opt-simd-sse",
+    ],
     rustlibs: [
         "liblazy_static",
         "libsymphonia_core",
