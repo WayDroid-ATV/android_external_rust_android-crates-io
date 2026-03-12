@@ -132,7 +132,6 @@ The following matchers are provided in GoogleTest Rust:
 | [`displays_as`]      | A [`Display`] value whose formatted string is matched by the argument.   |
 | [`each`]             | A container all of whose elements the given argument matches.            |
 | [`elements_are!`]    | A container whose elements the arguments match, in order.                |
-| [`empty`]            | An empty collection.                                                     |
 | [`ends_with`]        | A string ending with the given suffix.                                   |
 | [`eq`]               | A value equal to the argument, in the sense of the [`PartialEq`] trait.  |
 | [`err`]              | A [`Result`][std::result::Result] containing an `Err` variant the argument matches. |
@@ -141,6 +140,9 @@ The following matchers are provided in GoogleTest Rust:
 | [`gt`]               | A [`PartialOrd`] value strictly greater than the given value.            |
 | [`has_entry`]        | A [`HashMap`] containing a given key whose value the argument matches.   |
 | [`is_contained_in!`] | A container each of whose elements is matched by some given matcher.     |
+| [`is_empty`]         | An empty collection.                                                     |
+| [`is_finite`]        | A floating point number which is neither infinite nor NaN.               |
+| [`is_infinite`]      | A floating point number which is positive or negative infinity.          |
 | [`is_nan`]           | A floating point number which is NaN.                                    |
 | [`le`]               | A [`PartialOrd`] value less than or equal to the given value.            |
 | [`len`]              | A container whose number of elements the argument matches.               |
@@ -175,7 +177,6 @@ The following matchers are provided in GoogleTest Rust:
 [`derefs_to`]: matchers::derefs_to
 [`each`]: matchers::each
 [`elements_are!`]: matchers::elements_are
-[`empty`]: matchers::empty
 [`ends_with`]: matchers::ends_with
 [`eq`]: matchers::eq
 [`err`]: matchers::err
@@ -184,6 +185,9 @@ The following matchers are provided in GoogleTest Rust:
 [`gt`]: matchers::gt
 [`has_entry`]: matchers::has_entry
 [`is_contained_in!`]: matchers::is_contained_in
+[`is_empty`]: matchers::is_empty
+[`is_finite`]: matchers::is_finite
+[`is_infinite`]: matchers::is_infinite
 [`is_nan`]: matchers::is_nan
 [`le`]: matchers::le
 [`len`]: matchers::len
@@ -475,8 +479,8 @@ fn test_png_image_dimensions() -> googletest::Result<()> {
 ```
 
 If your setup function returns `Option<T>` or `std::result::Result<T, E>` where
-`E: !std::error::Error`, then you can convert these types with `into_test_result()`
-from the `IntoTestResult` extension trait.
+`E: !std::error::Error`, then you can convert these types with `or_fail()`
+from the `OrFail` extension trait.
 
 ```
 # use googletest::prelude::*;
@@ -494,7 +498,7 @@ impl PngImage {
 # */
 fn test_png_image_binary() -> googletest::Result<()> {
   // Arrange
-  let png_image = PngImage::new_from_binary(&PNG_BINARY).into_test_result()?;
+  let png_image = PngImage::new_from_binary(&PNG_BINARY).or_fail()?;
   /* ... */
   # Ok(())
 }
@@ -511,7 +515,7 @@ impl PngImage {
 # */
 fn test_png_from_cache() -> googletest::Result<()> {
   // Arrange
-  let png_image = PngImage::new_from_cache(123).into_test_result()?;
+  let png_image = PngImage::new_from_cache(123).or_fail()?;
   /* ... */
   # Ok(())
 }
@@ -528,6 +532,6 @@ GoogleTest assertion failures into Proptest
 through the `?` operator.
 
 [`and_log_failure()`]: GoogleTestSupport::and_log_failure
-[`into_test_result()`]: IntoTestResult::into_test_result
+[`or_fail()`]: OrFail::or_fail
 [`Matcher`]: matcher::Matcher
 [`MatcherBase`]: matcher::MatcherBase

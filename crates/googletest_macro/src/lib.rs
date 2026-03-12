@@ -14,8 +14,9 @@
 
 use quote::quote;
 use syn::{
-    parse_macro_input, punctuated::Punctuated, spanned::Spanned, Attribute, DeriveInput, FnArg,
-    ItemFn, PatType, ReturnType, Signature, Type,
+    parse_macro_input, parse_quote, punctuated::Punctuated, spanned::Spanned, Attribute,
+    DeriveInput, Expr, ExprLit, FnArg, ItemFn, Lit, MetaNameValue, PatType, ReturnType, Signature,
+    Type,
 };
 
 /// Marks a test to be run by the Google Rust test runner.
@@ -75,18 +76,41 @@ pub fn gtest(
     _args: proc_macro::TokenStream,
     input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    let ItemFn { attrs, sig, block, .. } = parse_macro_input!(input as ItemFn);
-    let (outer_return_type, trailer) = if attrs
-        .iter()
-        .any(|attr| attr.path().is_ident("should_panic"))
-    {
-        (quote! { () }, quote! { .unwrap(); })
-    } else {
-        (
-            quote! { ::std::result::Result<(), googletest::internal::test_outcome::TestFailure> },
-            quote! {},
-        )
+    let ItemFn { mut attrs, sig, block, .. } = parse_macro_input!(input as ItemFn);
+
+    let sig_ident = &sig.ident;
+    let test_case_hash: u64 = {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        let mut h = DefaultHasher::new();
+
+        // Only consider attrs and name for stability. Changing the function body should
+        // not affect the test case distribution.
+        attrs.hash(&mut h);
+        sig_ident.hash(&mut h);
+        h.finish()
     };
+
+    let (skipped_test_result, outer_return_type, trailer) = attrs
+        .iter()
+        .find(|attr| attr.path().is_ident("should_panic"))
+        .map(|attr| {
+            let error_message = extract_should_panic_expected(attr).unwrap_or("".to_string());
+            (
+                quote! {
+                    {
+                        panic!("{}", #error_message);
+                    }
+                },
+                quote! { () },
+                quote! { .unwrap(); }
+            )})
+        .unwrap_or_else(||
+        (
+            quote! {Ok(())},
+            quote! { ::core::result::Result<(), googletest::internal::test_outcome::TestFailure> },
+            quote! {},
+        ));
 
     let is_rstest_enabled = is_rstest_enabled(&attrs);
     let outer_sig = {
@@ -164,27 +188,46 @@ pub fn gtest(
                 )
             }
         };
+    if !attrs.iter().any(is_test_attribute) && !is_rstest_enabled {
+        let test_attr: Attribute = parse_quote! {
+            #[::core::prelude::v1::test]
+        };
+        attrs.push(test_attr);
+    };
     let function = quote! {
         #(#attrs)*
         #outer_sig -> #outer_return_type {
             #maybe_closure
-            use googletest::internal::test_outcome::TestOutcome;
-            TestOutcome::init_current_test_outcome();
-            let result: #invocation_result_type = #invocation;
-            TestOutcome::close_current_test_outcome(#result)
+            if !googletest::internal::test_filter::test_should_run(concat!(module_path!(), "::", stringify!(#sig_ident))) {
+                #skipped_test_result
+            } else if googletest::internal::test_sharding::test_should_run(#test_case_hash) {
+                use googletest::internal::test_outcome::TestOutcome;
+                TestOutcome::init_current_test_outcome();
+                let result: #invocation_result_type = #invocation;
+                TestOutcome::close_current_test_outcome(#result)
+            } else {
+                #skipped_test_result
+            }
             #trailer
         }
     };
+    function.into()
+}
 
-    let output = if attrs.iter().any(is_test_attribute) || is_rstest_enabled {
-        function
-    } else {
-        quote! {
-            #[::core::prelude::v1::test]
-            #function
-        }
+/// Extract the optional "expected" string literal from a `should_panic`
+/// attribute.
+fn extract_should_panic_expected(attr: &Attribute) -> Option<String> {
+    let Ok(name_value) = attr.parse_args::<MetaNameValue>() else {
+        return None;
     };
-    output.into()
+    match name_value.value {
+        Expr::Lit(ExprLit { lit: Lit::Str(expected), .. })
+            if name_value.path.is_ident("expected") =>
+        {
+            Some(expected.value())
+        }
+        _ => None,
+    }
 }
 
 /// Alias for [`googletest::gtest`].
@@ -197,7 +240,7 @@ pub fn gtest(
 ///
 /// ```ignore
 /// #[rstest]
-/// #[gtest]
+/// #[googletest::test]
 /// fn rstest_with_googletest() -> Result<()> {
 ///   verify_that!(1, eq(1))
 /// }
@@ -332,9 +375,22 @@ pub fn derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     .into()
 }
 
+mod matches_pattern;
+
+/// This is an implementation detail of `googletest::matches_pattern!`.
+///
+/// It's not intended to be used directly.
+#[doc(hidden)]
+#[proc_macro]
+pub fn __googletest_macro_matches_pattern(
+    input: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    matches_pattern::matches_pattern_impl(input)
+}
+
 mod verify_pred;
 
-/// This is an implementation detail of `verify_pred!`.
+/// This is an implementation detail of `googletest::verify_pred!`.
 ///
 /// It's not intended to be used directly.
 #[doc(hidden)]

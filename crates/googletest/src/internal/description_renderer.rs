@@ -130,7 +130,7 @@ impl List {
         match self.1 {
             Decoration::None => "".into(),
             Decoration::Bullet => "* ".into(),
-            Decoration::Enumerate => format!("{:>enumeration_padding$}. ", index).into(),
+            Decoration::Enumerate => format!("{index:>enumeration_padding$}. ").into(),
         }
     }
 
@@ -278,6 +278,7 @@ enum Decoration {
 mod tests {
     use super::{Block, Fragment, List};
     use crate::prelude::*;
+    use crate::Result;
     use indoc::indoc;
 
     #[test]

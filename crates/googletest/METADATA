@@ -1,17 +1,17 @@
 name: "googletest"
 description: "A rich assertion and matcher library inspired by GoogleTest for C++"
 third_party {
-  version: "0.13.0"
+  version: "0.14.2"
   license_type: NOTICE
   last_upgrade_date {
     year: 2025
-    month: 1
-    day: 3
+    month: 12
+    day: 11
   }
   homepage: "https://crates.io/crates/googletest"
   identifier {
     type: "crates.io"
     value: "googletest"
-    version: "0.13.0"
+    version: "0.14.2"
   }
 }

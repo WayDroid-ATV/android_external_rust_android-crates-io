@@ -67,6 +67,7 @@ impl<T: Debug + Display + Copy, InnerMatcher: for<'a> Matcher<&'a str>> Matcher<
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
+    use crate::Result;
     use indoc::indoc;
     use std::fmt::{Debug, Display, Error, Formatter};
 
@@ -94,7 +95,7 @@ mod tests {
         }
         impl Display for Struct {
             fn fmt(&self, f: &mut Formatter<'_>) -> std::result::Result<(), Error> {
-                write!(f, "{:?}", self)
+                write!(f, "{self:?}")
             }
         }
         verify_that!(Struct { a: 123, b: 321 }, displays_as(eq("Struct { a: 123, b: 321 }")))?;
