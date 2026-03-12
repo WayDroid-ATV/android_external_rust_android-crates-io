@@ -36,6 +36,8 @@ mod ge_matcher;
 mod gt_matcher;
 mod has_entry_matcher;
 mod is_encoded_string_matcher;
+mod is_finite_matcher;
+mod is_infinite_matcher;
 mod is_matcher;
 mod is_nan_matcher;
 mod le_matcher;
@@ -68,13 +70,15 @@ pub use contains_regex_matcher::contains_regex;
 pub use derefs_to_matcher::derefs_to;
 pub use display_matcher::displays_as;
 pub use each_matcher::each;
-pub use empty_matcher::empty;
+pub use empty_matcher::{empty, is_empty};
 pub use eq_matcher::{eq, EqMatcher};
 pub use err_matcher::err;
 pub use ge_matcher::ge;
 pub use gt_matcher::gt;
 pub use has_entry_matcher::has_entry;
 pub use is_encoded_string_matcher::is_utf8_string;
+pub use is_finite_matcher::is_finite;
+pub use is_infinite_matcher::is_infinite;
 pub use is_nan_matcher::is_nan;
 pub use le_matcher::le;
 pub use len_matcher::len;
@@ -113,11 +117,12 @@ pub mod __internal_unstable_do_not_depend_on_these {
     pub use super::elements_are_matcher::internal::ElementsAre;
     pub use super::field_matcher::internal::field_matcher;
     pub use super::is_matcher::is;
-    pub use super::matches_pattern::internal::pattern_only;
+    pub use super::matches_pattern::internal::{
+        __googletest_macro_matches_pattern, compile_assert_and_match, pattern_only,
+    };
     pub use super::pointwise_matcher::internal::PointwiseMatcher;
     pub use super::property_matcher::internal::{property_matcher, property_ref_matcher};
     pub use super::result_of_matcher::internal::{result_of, result_of_ref};
-    pub use super::unordered_elements_are_matcher::internal::{
-        Requirements, UnorderedElementsAreMatcher,
-    };
+    pub use super::unordered_elements_are_matcher::internal::UnorderedElementsAreMatcher;
+    pub use crate::matcher_support::match_matrix::internal::Requirements;
 }

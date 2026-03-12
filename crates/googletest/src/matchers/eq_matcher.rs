@@ -97,7 +97,7 @@ impl<T: Debug, A: Debug + Copy + PartialEq<T>> Matcher<A> for EqMatcher<T> {
 
     fn explain_match(&self, actual: A) -> Description {
         let expected_debug = format!("{:#?}", self.expected);
-        let actual_debug = format!("{:#?}", actual);
+        let actual_debug = format!("{actual:#?}");
         let description = Matcher::<A>::describe(self, self.matches(actual));
 
         let diff = if is_multiline_string_debug(&actual_debug)
@@ -138,6 +138,7 @@ fn to_display_output(string: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
+    use crate::Result;
     use indoc::indoc;
 
     #[test]

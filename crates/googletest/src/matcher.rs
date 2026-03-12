@@ -32,7 +32,6 @@ use std::fmt::Debug;
 /// on, up to 12 elements. Tuples longer than that do not automatically inherit
 /// the `Debug` trait from their members, so are generally not well-supported;
 /// see [Rust by Example](https://doc.rust-lang.org/rust-by-example/primitives/tuples.html#tuples).
-
 // `ActualT` requires `Copy` so that `actual` could be passed to `matches` and
 // if it fails passed to `explain_match`. We can relax this constraint later by
 // requiring only `Clone`.
@@ -310,6 +309,7 @@ impl<T: Debug + Copy, M: Matcher<T>> Matcher<T> for &M {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
+    use crate::Result;
 
     #[test]
     fn ref_matchers_can_be_reused() -> Result<()> {

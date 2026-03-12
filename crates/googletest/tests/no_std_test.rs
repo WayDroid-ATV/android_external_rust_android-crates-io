@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod all_matcher_test;
-mod any_matcher_test;
-mod assertions_test;
-mod colorized_diff_test;
-mod composition_test;
-mod elements_are_matcher_test;
-mod field_matcher_test;
-mod matches_pattern_test;
-mod pointwise_matcher_test;
-mod property_matcher_test;
-mod proptest_integration_test;
-mod tuple_matcher_test;
-mod unordered_elements_are_matcher_test;
+#![no_std]
+
+/// A simple, no_std function.
+fn no_std_identity(value: u32) -> u32 {
+    value
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use googletest::prelude::*;
+
+    #[gtest]
+    fn no_std_verify() -> Result<()> {
+        verify_eq!(no_std_identity(42), 42)?;
+        Ok(())
+    }
+
+    #[gtest]
+    fn no_std_expect() {
+        expect_eq!(no_std_identity(214), 214)
+    }
+}

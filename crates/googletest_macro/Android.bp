@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libgoogletest_macro",
     crate_name: "googletest_macro",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.13.0",
+    cargo_pkg_version: "0.14.2",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [

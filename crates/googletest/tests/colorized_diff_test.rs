@@ -22,13 +22,13 @@ fn build_text<T: Display>(mut collection: impl Iterator<Item = T>) -> String {
     write!(&mut text, "{}", collection.next().expect("Provided collection without elements"))
         .unwrap();
     for item in collection {
-        write!(&mut text, "\n{}", item).unwrap();
+        write!(&mut text, "\n{item}").unwrap();
     }
     text
 }
 
 #[test]
-fn colors_appear_when_no_color_is_no_set_and_force_color_is_set() -> Result<()> {
+fn colors_appear_when_no_color_is_no_set_and_force_color_is_set() -> googletest::Result<()> {
     std::env::remove_var("NO_COLOR");
     std::env::set_var("FORCE_COLOR", "1");
 

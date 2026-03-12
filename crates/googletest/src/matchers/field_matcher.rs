@@ -196,11 +196,51 @@ macro_rules! __field {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! field_internal {
-    (&$($t:ident)::+.$field:tt, ref $m:expr) => {{
+    // `ref` variant.
+    (
+        // The 3 cases of `$(& $($_amp:literal)?)?` -> `$(& $($_amp)*)*`
+        // 1. outer group captures nothing => expansion produces nothing
+        // 2. outer group captures just `&` => expansion produces `&`
+        // 3. outer group captures `& <literal>` => disallowed by `@assert_empty` subrule invocation
+        //
+        // `$_amp:literal` works only because the following `$t:ident` or `::` can't be captured by
+        // it.
+        $(& $($_amp:literal)?)? // Optional `&`'s presence is implicitly captured by `_amp`.
+        $(:: $($_cs:literal)?)? // Optional `::`'s presence is implicitly captured by `_cs`.
+        $($t:ident)::+ $(::<$($t_ty_args:ty),* $(,)?>)?  .$field:tt,
+        ref $m:expr) => {{
+        $crate::field_internal!(@assert_empty $($($_amp)*)* $($($_cs)*)*);
+        $crate::field_internal!(@internal
+            struct_type:  [&_]
+            field_prefix: [$(& $($_amp)*)*  $(:: $($_cs)*)*  $($t)::* $(::<$($t_ty_args),*>)*]
+            [$field] [ref] [$m])
+    }};
+
+    // Non-`ref` variant.
+    (
+        // See comment on previous variant above.
+        $(& $($_amp:literal)?)? // Optional `&`'s presence is implicitly captured by `_amp`.
+        $(:: $($_cs:literal)?)? // Optional `::`'s presence is implicitly captured by `_cs`.
+        $($t:ident)::+ $(::<$($t_ty_args:ty),* $(,)?>)? .$field:tt, $m:expr) => {{
+        $crate::field_internal!(@assert_empty $($($_amp)*)* $($($_cs)*)*);
+        $crate::field_internal!(@internal
+            struct_type:  [$(& $($_amp)*)*  &_]
+            field_prefix: [$(& $($_amp)*)*  $(:: $($_cs)*)*  $($t)::* $(::<$($t_ty_args),*>)*]
+            [$field] [] [$m])
+    }};
+
+    (@assert_empty) => {};
+    (@assert_empty $($l:literal)+) => {
+        compile_error!("property! argument must start with an optional `&` followed by a path")
+    };
+
+    (@internal struct_type: [$struct_ty:ty]
+               field_prefix: [$($field_prefix:tt)*]
+               [$field:tt] [$($ref:tt)?] [$m:expr]) => {{
         $crate::matchers::__internal_unstable_do_not_depend_on_these::field_matcher(
-            |o: &_| {
+            |o: $struct_ty| {
                 match o {
-                    &$($t)::* {$field: ref value, .. } => Some(value),
+                    $($field_prefix)* {$field: $($ref)* value, .. } => Some(value),
                     // The pattern below is unreachable if the type is a struct (as opposed to an
                     // enum). Since the macro can't know which it is, we always include it and just
                     // tell the compiler not to complain.
@@ -210,37 +250,7 @@ macro_rules! field_internal {
             },
             &stringify!($field),
             $crate::matcher_support::__internal_unstable_do_not_depend_on_these::auto_eq!($m))
-    }};
-    (&$($t:ident)::+.$field:tt, $m:expr) => {{
-        $crate::matchers::__internal_unstable_do_not_depend_on_these::field_matcher(
-            |o: &&_| {
-                match o {
-                    &$($t)::* {$field: value, .. } => Some(value),
-                    // The pattern below is unreachable if the type is a struct (as opposed to an
-                    // enum). Since the macro can't know which it is, we always include it and just
-                    // tell the compiler not to complain.
-                    #[allow(unreachable_patterns)]
-                    _ => None,
-                }
-            },
-            &stringify!($field),
-            $crate::matcher_support::__internal_unstable_do_not_depend_on_these::auto_eq!($m))
-    }};
-    ($($t:ident)::+.$field:tt, $m:expr) => {{
-        $crate::matchers::__internal_unstable_do_not_depend_on_these::field_matcher(
-            |o: &_| {
-                match o {
-                    $($t)::* {$field: value, .. } => Some(value),
-                    // The pattern below is unreachable if the type is a struct (as opposed to an
-                    // enum). Since the macro can't know which it is, we always include it and just
-                    // tell the compiler not to complain.
-                    #[allow(unreachable_patterns)]
-                    _ => None,
-                }
-            },
-            &stringify!($field),
-            $crate::matcher_support::__internal_unstable_do_not_depend_on_these::auto_eq!($m))
-    }};
+    }}
 }
 
 /// Functions for use only by the declarative macros in this module.
