@@ -13,7 +13,7 @@ dependencies = [
 
 [[package]]
 name = "miniz_oxide"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "adler2",
  "rustc-std-workspace-alloc",

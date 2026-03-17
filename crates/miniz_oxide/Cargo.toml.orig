@@ -1,7 +1,7 @@
 [package]
 name = "miniz_oxide"
 authors = ["Frommi <daniil.liferenko@gmail.com>", "oyvindln <oyvindln@users.noreply.github.com>", "Rich Geldreich richgel99@gmail.com"]
-version = "0.9.0"
+version = "0.9.1"
 license = "MIT OR Zlib OR Apache-2.0"
 readme = "Readme.md"
 keywords = ["zlib", "miniz", "deflate", "encoding"]
@@ -18,7 +18,7 @@ name = "miniz_oxide"
 
 [dependencies]
 adler2 = { version = "2.0", default-features = false }
-simd-adler32 = { version = "0.3.3", default-features = false, optional = true }
+simd-adler32 = { version = "0.3.8", default-features = false, optional = true }
 serde = { version = "1.0", features = ["derive", "alloc"], default-features = false, optional = true }
 
 # Internal feature, only used when building as part of libstd, not part of the
