@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.81"
 name = "lz4_flex"
-version = "0.12.0"
+version = "0.13.0"
 authors = [
     "Pascal Seitz <pascal.seitz@gmail.com>",
     "Arthur Silva <arthurprs@gmail.com>",

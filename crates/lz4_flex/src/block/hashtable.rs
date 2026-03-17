@@ -36,7 +36,6 @@ fn hash5(sequence: usize) -> u32 {
 pub trait HashTable {
     fn get_at(&self, pos: usize) -> usize;
     fn put_at(&mut self, pos: usize, val: usize);
-    #[allow(dead_code)]
     fn clear(&mut self);
     #[inline]
     #[cfg(target_pointer_width = "64")]
@@ -53,12 +52,14 @@ pub trait HashTable {
 const HASHTABLE_SIZE_4K: usize = 4 * 1024;
 const HASHTABLE_BIT_SHIFT_4K: usize = 4;
 
+/// A 4K entry hash table using 16-bit values.
 #[derive(Debug)]
 #[repr(align(64))]
 pub struct HashTable4KU16 {
     dict: Box<[u16; HASHTABLE_SIZE_4K]>,
 }
 impl HashTable4KU16 {
+    /// Creates a new zeroed hash table.
     #[inline]
     pub fn new() -> Self {
         // This generates more efficient assembly in contrast to Box::new(slice), because of an
@@ -90,11 +91,13 @@ impl HashTable for HashTable4KU16 {
     }
 }
 
+/// A 4K entry hash table using 32-bit values.
 #[derive(Debug)]
 pub struct HashTable4K {
     dict: Box<[u32; HASHTABLE_SIZE_4K]>,
 }
 impl HashTable4K {
+    /// Creates a new zeroed hash table.
     #[inline]
     pub fn new() -> Self {
         let dict = alloc::vec![0; HASHTABLE_SIZE_4K]
@@ -104,6 +107,7 @@ impl HashTable4K {
         Self { dict }
     }
 
+    /// Shifts all entries down by `offset`, clamping at zero.
     #[cold]
     #[allow(dead_code)]
     pub fn reposition(&mut self, offset: u32) {
