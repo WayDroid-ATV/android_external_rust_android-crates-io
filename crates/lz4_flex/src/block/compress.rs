@@ -20,8 +20,8 @@ use alloc::vec;
 #[allow(unused_imports)]
 use alloc::vec::Vec;
 
-use super::hashtable::HashTable4K;
-use super::hashtable::HashTable4KU16;
+pub(crate) use super::hashtable::HashTable4K;
+pub(crate) use super::hashtable::HashTable4KU16;
 use super::{CompressError, WINDOW_SIZE};
 
 /// Increase step size after 1<<INCREASE_STEPSIZE_BITSHIFT non matches
@@ -586,7 +586,7 @@ fn init_dict<T: HashTable>(dict: &mut T, dict_data: &mut &[u8]) {
 /// Can be used to preallocate capacity on the output vector
 #[inline]
 pub const fn get_maximum_output_size(input_len: usize) -> usize {
-    16 + 4 + (input_len * 110 / 100)
+    16 + 4 + (input_len as u64 * 110 / 100) as usize
 }
 
 /// Compress all bytes of `input` into `output`.
@@ -691,6 +691,78 @@ pub fn compress_with_dict(input: &[u8], ext_dict: &[u8]) -> Vec<u8> {
 #[inline]
 pub fn compress_prepend_size_with_dict(input: &[u8], ext_dict: &[u8]) -> Vec<u8> {
     compress_into_vec_with_dict::<true>(input, true, ext_dict)
+}
+
+/// A reusable compression table that avoids re-allocating the internal hash table on every call.
+///
+/// This is useful when compressing many small inputs in a loop. Create one table and pass it
+/// to [`compress_into_with_table`] repeatedly.
+///
+/// # Example
+/// ```
+/// use lz4_flex::block::{compress_into_with_table, get_maximum_output_size, CompressTable};
+///
+/// let mut table = CompressTable::default();
+/// let input = b"hello world, hello world, hello!";
+/// let mut output = vec![0u8; get_maximum_output_size(input.len())];
+/// let compressed_len = compress_into_with_table(input, &mut output, &mut table).unwrap();
+/// ```
+pub enum CompressTable {
+    /// Table using 16-bit entries, suitable for inputs where `input.len() < u16::MAX`.
+    Small(HashTable4KU16),
+    /// Table using 32-bit entries, suitable for any input size.
+    Large(HashTable4K),
+}
+
+impl Default for CompressTable {
+    fn default() -> Self {
+        CompressTable::Small(HashTable4KU16::new())
+    }
+}
+
+impl CompressTable {
+    /// Create a small table (16-bit entries). More memory efficient, but only usable when the
+    /// total input size is less than 65535 bytes.
+    pub fn small() -> Self {
+        CompressTable::Small(HashTable4KU16::new())
+    }
+
+    /// Create a large table (32-bit entries). Works for any input size.
+    pub fn large() -> Self {
+        CompressTable::Large(HashTable4K::new())
+    }
+}
+
+/// Compress all bytes of `input` into `output`, reusing a [`CompressTable`] to avoid
+/// re-allocating the internal hash table.
+///
+/// `output` should be preallocated with a size of [`get_maximum_output_size`].
+///
+/// Returns the number of bytes written (compressed) into `output`.
+///
+/// **Note:** If the table variant doesn't match the input size (e.g. a `Small` table is used
+/// with input >= 64KB), the table will be transparently upgraded. However, it won't be
+/// downgraded automatically.
+#[inline]
+pub fn compress_into_with_table(
+    input: &[u8],
+    output: &mut [u8],
+    table: &mut CompressTable,
+) -> Result<usize, CompressError> {
+    if input.len() >= u16::MAX as usize && matches!(table, CompressTable::Small(_)) {
+        *table = CompressTable::Large(HashTable4K::new());
+    }
+
+    match table {
+        CompressTable::Small(dict) => {
+            dict.clear();
+            compress_internal::<_, false, _>(input, 0, &mut SliceSink::new(output, 0), dict, b"", 0)
+        }
+        CompressTable::Large(dict) => {
+            dict.clear();
+            compress_internal::<_, false, _>(input, 0, &mut SliceSink::new(output, 0), dict, b"", 0)
+        }
+    }
 }
 
 #[inline]
