@@ -108,12 +108,8 @@ class PacketParserTest(unittest.TestCase):
                 # method for this test.
                 cls = getattr(le_backend, packet)
                 for test in tests:
-                    if 'expected_error' in test:
-                        with self.assertRaises((Exception, ValueError)):
-                            cls.parse_all(bytes.fromhex(test['packed']))
-                    else:
-                        result = cls.parse_all(bytes.fromhex(test['packed']))
-                        match_object(self, result, test['unpacked'])
+                    result = cls.parse_all(bytes.fromhex(test['packed']))
+                    match_object(self, result, test['unpacked'])
 
     def testBigEndian(self):
         with resources.files('tests.canonical').joinpath('be_test_vectors.json').open('r') as f:
@@ -135,12 +131,8 @@ class PacketParserTest(unittest.TestCase):
                 # method for this test.
                 cls = getattr(be_backend, packet)
                 for test in tests:
-                    if 'expected_error' in test:
-                        with self.assertRaises((Exception, ValueError)):
-                            cls.parse_all(bytes.fromhex(test['packed']))
-                    else:
-                        result = cls.parse_all(bytes.fromhex(test['packed']))
-                        match_object(self, result, test['unpacked'])
+                    result = cls.parse_all(bytes.fromhex(test['packed']))
+                    match_object(self, result, test['unpacked'])
 
 
 class PacketSerializerTest(unittest.TestCase):
@@ -166,8 +158,6 @@ class PacketSerializerTest(unittest.TestCase):
                 # module, in order to invoke the proper constructor
                 # method for this test.
                 for test in tests:
-                    if 'expected_error' in test:
-                        continue
                     cls = getattr(le_backend, test.get('packet', packet))
                     obj = create_object(cls, test['unpacked'])
                     result = obj.serialize()
@@ -192,8 +182,6 @@ class PacketSerializerTest(unittest.TestCase):
                 # module, in order to invoke the proper parse
                 # method for this test.
                 for test in tests:
-                    if 'expected_error' in test:
-                        continue
                     cls = getattr(be_backend, test.get('packet', packet))
                     obj = create_object(cls, test['unpacked'])
                     result = obj.serialize()

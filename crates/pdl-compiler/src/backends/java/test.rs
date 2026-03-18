@@ -74,30 +74,13 @@ pub fn generate_tests(
 
 fn get_test_cases(file: &str, exclude_packets: &[String]) -> Result<Vec<Packet>, String> {
     let data = fs::read_to_string(file).map_err(|err| err.to_string())?;
-    let raw_packets: Vec<Packet> = serde_json::from_str(&data).map_err(|err| err.to_string())?;
+    let mut packets: Vec<Packet> = serde_json::from_str(&data).map_err(|err| err.to_string())?;
 
-    eprintln!("Read {} test vectors from {file}", raw_packets.len());
-
-    // Merge entries with the same packet name (the JSON may have separate
-    // entries for valid and invalid test vectors of the same packet).
-    let mut packets: Vec<Packet> = Vec::new();
-    for packet in raw_packets {
-        if let Some(existing) = packets.iter_mut().find(|p| p.name == packet.name) {
-            existing.tests.extend(packet.tests);
-        } else {
-            packets.push(packet);
-        }
-    }
+    eprintln!("Read {} test vectors from {file}", packets.len());
 
     packets.retain(|p| !exclude_packets.contains(&p.name));
     for packet in packets.iter_mut() {
-        packet.tests.retain(|t| {
-            // Skip excluded packets.
-            if t.packet.as_ref().is_some_and(|p| exclude_packets.contains(p)) {
-                return false;
-            }
-            true
-        });
+        packet.tests.retain(|t| !t.packet.as_ref().is_some_and(|p| exclude_packets.contains(p)));
     }
 
     Ok(packets)
@@ -113,17 +96,11 @@ impl JavaFile<HashMap<String, Decl>> for JavaTest {
 
                 public static void main(String[] args) {
                     $(for packet in self.0.iter() {
-                        $(for (i, test) in packet.tests.iter().enumerate() {
-                            $(if test.expected_error.is_some() {
-                                System.out.println("┌─[TEST] " + $(quoted(&packet.name)) + " invalid " + $i);
-                                TEST_$(&packet.name).testDecodeInvalid$i();
-                                System.out.println("└─[PASS]");
-                            } else {
-                                System.out.println("┌─[TEST] " + $(quoted(&packet.name)) + $i);
-                                TEST_$(&packet.name).testEncode$i();
-                                TEST_$(&packet.name).testDecode$i();
-                                System.out.println("└─[PASS]");
-                            })
+                        $(for (i, _) in packet.tests.iter().enumerate() {
+                            System.out.println("┌─[TEST] " + $(quoted(&packet.name)) + $i);
+                            TEST_$(&packet.name).testEncode$i();
+                            TEST_$(&packet.name).testDecode$i();
+                            System.out.println("└─[PASS]");
                         })
                     })
                     System.out.println("All tests passed!");
@@ -138,12 +115,8 @@ impl Packet {
         quote_fn! {
             static final class TEST_$(&self.name) {
                 $(for (i, test_case) in self.tests.iter().enumerate() {
-                    $(if test_case.expected_error.is_some() {
-                        $(test_case.invalid_decoder_test(&self.name, i))
-                    } else {
-                        $(test_case.encoder_test(&self.name, i, decls))
-                        $(test_case.decoder_test(&self.name, i, decls))
-                    })
+                    $(test_case.encoder_test(&self.name, i, decls))
+                    $(test_case.decoder_test(&self.name, i, decls))
                 })
             }
         }
@@ -164,7 +137,7 @@ impl TestVector {
             static void testEncode$test_id() {
                 $(Class::name_from_id(maybe_child)) packet = $(build_packet_from_fields(
                     self.packet.as_ref().unwrap_or(id),
-                    self.unpacked.as_ref().unwrap().as_object().unwrap(),
+                    self.unpacked.as_object().unwrap(),
                     decls
                 ));
                 byte[] encodedPacket = packet.toBytes();
@@ -182,7 +155,7 @@ impl TestVector {
     ) -> impl FormatInto<Java> + 'a {
         let packet_name = format!(
             "{}{}",
-            if self.unpacked.as_ref().unwrap().as_object().unwrap().contains_key("payload") { "Unknown" } else { "" },
+            if self.unpacked.as_object().unwrap().contains_key("payload") { "Unknown" } else { "" },
             self.packet
                 .as_ref()
                 .map(|child_id| Class::name_from_id(child_id))
@@ -190,33 +163,10 @@ impl TestVector {
         );
 
         quote_fn! {
-            $(java::block_comment(iter::once(format!("{}", self.unpacked.as_ref().unwrap()))))$['\n']
+            $(java::block_comment(iter::once(format!("{}", &self.unpacked))))$['\n']
             static void testDecode$test_id() {
                 $(&packet_name) decodedPacket = $(&packet_name).fromBytes($(hex_to_array(&self.packed)));
                 $(self.gen_asserts_for_fields(id, decls))
-            }
-        }
-    }
-
-    fn invalid_decoder_test<'a>(
-        &'a self,
-        id: &'a str,
-        test_id: usize,
-    ) -> impl FormatInto<Java> + 'a {
-        let packet_name = self
-            .packet
-            .as_ref()
-            .map(|child_id| Class::name_from_id(child_id))
-            .unwrap_or(Class::name_from_id(id));
-
-        quote_fn! {
-            static void testDecodeInvalid$test_id() {
-                try {
-                    $(&packet_name).fromBytes($(hex_to_array(&self.packed)));
-                    throw new AssertionError("Expected exception");
-                } catch (Exception e) {
-                    // expected
-                }
             }
         }
     }
@@ -226,7 +176,7 @@ impl TestVector {
         id: &'a String,
         decls: &'a HashMap<String, Decl>,
     ) -> impl FormatInto<Java> + 'a {
-        let fields = self.unpacked.as_ref().unwrap().as_object().unwrap();
+        let fields = self.unpacked.as_object().unwrap();
         let maybe_child = self.packet.as_ref().unwrap_or(id);
 
         quote_fn! {
