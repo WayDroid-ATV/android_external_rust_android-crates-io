@@ -32,8 +32,8 @@
 //! 1. Resolve deprecation messages
 //! 1. Commit
 //! 1. Run `cargo add winnow@0.5`
-//! 1. Ensure everything compiles and tests pass, ignoring deprecation messages (see [migration
-//!     notes](https://github.com/winnow-rs/winnow/blob/main/CHANGELOG.md#050---2023-07-13))
+//! 1. Ensure everything compiles and tests pass, ignoring deprecation messages
+//!    (see [migration notes](https://github.com/winnow-rs/winnow/blob/main/CHANGELOG.md#050---2023-07-13))
 //! 1. Commit
 //! 1. Resolve deprecation messages
 //! 1. Commit
@@ -185,7 +185,7 @@
 //!
 //! To save and restore from intermediate states, [`Stream::checkpoint`] and [`Stream::reset`] can help:
 //! ```rust
-//! use winnow::stream::Stream as _;
+//! use winnow::prelude::*;
 //! # let mut i = "";
 //! # let i = &mut i;
 //!
@@ -197,7 +197,7 @@
 //! When the Output of a parser is a slice, you have to add a lifetime:
 //! ```rust
 //! # use winnow::prelude::*;
-//! fn foo<'i>(i: &mut &'i str) -> PResult<&'i str> {
+//! fn foo<'i>(i: &mut &'i str) -> ModalResult<&'i str> {
 //!     // ...
 //! #   winnow::token::rest.parse_next(i)
 //! }
@@ -207,13 +207,23 @@
 //! ```rust
 //! # use winnow::prelude::*;
 //! # use winnow::combinator::trace;
-//! fn foo(i: &mut &str) -> PResult<usize> {
+//! fn foo(i: &mut &str) -> ModalResult<usize> {
 //!     trace("foo", |i: &mut _| {
 //!         // ...
 //! #       Ok(0)
 //!     }).parse_next(i)
 //! }
 //! ```
+//!
+//! ### Optional [`ErrMode`]
+//!
+//! Called `Err` in `nom`, [`ErrMode`] is responsible for
+//! - Deciding whether to backtrack and try another branch in cases like `alt` or report back to
+//!   the error back to users
+//! - Tracking incomplete input on partial parsing
+//!
+//! As this isn't needed in every parser, it was made optional.  [`ModalResult`] is a convenience
+//! type for using [`ErrMode`].
 
 #![allow(unused_imports)]
 use crate::_topic::partial;
