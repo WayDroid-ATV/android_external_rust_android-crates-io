@@ -3,9 +3,6 @@
     "default",
     "serde"
   ],
-  "module_name_overrides": {
-    "libindexmap": "libindexmap-1.9.3"
-  },
   "package": {
     "toml_edit": {
       "device_supported": false
