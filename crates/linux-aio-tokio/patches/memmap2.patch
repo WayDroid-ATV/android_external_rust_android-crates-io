@@ -1,0 +1,28 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 71d8c345e..e35066c38 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -75,8 +75,8 @@
+ [dependencies.lock_api]
+ version = "0.4"
+ 
+-[dependencies.memmap]
+-version = "0.7.0"
++[dependencies.memmap2]
++version = "0.9"
+ 
+ [dependencies.parking_lot]
+ version = "0.12"
+diff --git a/src/locked_buf.rs b/src/locked_buf.rs
+index c8485168c..06785e5a9 100644
+--- a/src/locked_buf.rs
++++ b/src/locked_buf.rs
+@@ -5,7 +5,7 @@
+ use std::sync::Arc;
+ use std::{fmt, io};
+ 
+-use memmap::MmapMut;
++use memmap2::MmapMut;
+ use thiserror::Error;
+ 
+ /// Error during [`LockedBuf`] creation
