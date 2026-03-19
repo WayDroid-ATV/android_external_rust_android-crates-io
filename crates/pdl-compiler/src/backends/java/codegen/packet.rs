@@ -47,12 +47,7 @@ pub fn gen_packet(name: &String, def: &PacketDef, ctx: &Context) -> Tokens<Java>
             }
 
             public static $name fromBytes(byte[] bytes) {
-                $(&*import::BB) buf = $(&*import::BB).wrap(bytes).order($endianness);
-                $name result = $name.fromBytes(buf);
-                if (buf.hasRemaining()) {
-                    throw new IllegalArgumentException("Trailing bytes after packet");
-                }
-                return result;
+                return $name.fromBytes($(&*import::BB).wrap(bytes).order($endianness));
             }
             $(if let Some(parent) = parent {
                 protected static $name fromBytes($(&*import::BB) buf) {
@@ -69,9 +64,6 @@ pub fn gen_packet(name: &String, def: &PacketDef, ctx: &Context) -> Tokens<Java>
                 protected static $(&parent.name).Builder<?> fromPayload($(&*import::BB) buf) {
                     Builder builder = new Builder();
                     $(decoder(name, def, assignment::build, ctx))
-                    if (buf.hasRemaining()) {
-                        throw new IllegalArgumentException("Trailing bytes after packet");
-                    }
                     return builder;
                 }
             } else {
@@ -184,19 +176,11 @@ pub fn gen_abstract_packet(
                 protected static $(&parent.name).Builder<?> fromPayload($(&*import::BB) buf) {
                     $(decoder(name, def, assignment::declare_locally, ctx))
                     $(build_child_fitting_constraints(name, &def.members, children, fallback_child))
-                    if (buf.hasRemaining()) {
-                        throw new IllegalArgumentException("Trailing bytes after packet");
-                    }
                     return builder;
                 }
             } else {
                 public static $name fromBytes(byte[] bytes) {
-                    $(&*import::BB) buf = $(&*import::BB).wrap(bytes).order($endianness);
-                    $name result = $name.fromBytes(buf);
-                    if (buf.hasRemaining()) {
-                        throw new IllegalArgumentException("Trailing bytes after packet");
-                    }
-                    return result;
+                    return $name.fromBytes($(&*import::BB).wrap(bytes).order($endianness));
                 }
 
                 protected static $name fromBytes($(&*import::BB) buf) {
@@ -208,7 +192,6 @@ pub fn gen_abstract_packet(
 
             $(if parent.is_none() => public abstract byte[] toBytes();)
 
-            $(if parent.is_some() => @Override)
             protected byte[] toBytes($(&*import::BB) payload) {
                 payload.rewind();
                 $(&*import::BB) buf = $(&*import::BB)
@@ -216,7 +199,7 @@ pub fn gen_abstract_packet(
                     .order($endianness);
 
                 $(encoder(&def.alignment, &def.width_fields, endianness))
-                $(if parent.is_some() { return super.toBytes(buf); } else { return buf.array(); })
+                return buf.array();
             }
 
             $(width_def(name, &ctx.heirarchy, false))
@@ -849,16 +832,10 @@ fn declare_array_count(
     } else {
         match width_fields.get(name) {
             Some(WidthField::Size { elem_width: Some(elem_width), .. }) => {
-                let elem_bytes = *elem_width / 8;
                 let t = ExprTree::new();
                 let root =
-                    t.div(t.symbol(quote!($(name)Size), Integral::Int), t.num(elem_bytes));
-                Some(quote!(
-                    if ($(name)Size % $elem_bytes != 0) {
-                        throw new IllegalArgumentException("Array size is not aligned to element size");
-                    }
-                    int $(name)Count = $(t.gen_expr(root));
-                ))
+                    t.div(t.symbol(quote!($(name)Size), Integral::Int), t.num(*elem_width / 8));
+                Some(quote!(int $(name)Count = $(t.gen_expr(root));))
             }
             Some(WidthField::Size { elem_width: None, .. }) => {
                 // We have dynamic array of dynamically sized elements.
@@ -873,18 +850,12 @@ fn declare_array_count(
                 if let Some(elem_width) =
                     val.width().or_else(|| val.class().and_then(|class| heirarchy.width(class)))
                 {
-                    let elem_bytes = elem_width / 8;
                     let t = ExprTree::new();
                     let root = t.div(
                         t.symbol(quote!(buf.remaining()), Integral::Int),
-                        t.num(elem_bytes),
+                        t.num(elem_width / 8),
                     );
-                    Some(quote!(
-                        if (buf.remaining() % $elem_bytes != 0) {
-                            throw new IllegalArgumentException("Array size is not aligned to element size");
-                        }
-                        int $(name)Count = $(t.gen_expr(root));
-                    ))
+                    Some(quote!(int $(name)Count = $(t.gen_expr(root));))
                 } else {
                     None
                 }
