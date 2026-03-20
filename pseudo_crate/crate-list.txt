@@ -24,6 +24,9 @@ arm-pl011-uart
 arm-psci
 arrayvec
 ash
+askama
+askama_derive
+askama_parser
 async-stream
 async-stream-impl
 async-task
@@ -37,6 +40,7 @@ aws-lc-rs
 axum
 axum-core
 base64
+basic-toml
 bencher
 bincode
 bindgen
