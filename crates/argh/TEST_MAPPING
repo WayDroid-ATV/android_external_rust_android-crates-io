@@ -35,6 +35,12 @@
   "postsubmit": [
     {
       "name": "argh_test_tests_args_info_tests"
+    },
+    {
+      "name": "argh_test_tests_short_alias"
+    },
+    {
+      "name": "argh_test_tests_subcommand_short_help"
     }
   ]
 }

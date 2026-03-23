@@ -45,7 +45,7 @@
 //!   -j, --jump        whether or not to jump
 //!   --height          how high to go
 //!   --pilot-nickname  an optional nickname for the pilot
-//!   --help            display usage information
+//!   --help, help      display usage information
 //! ```
 //!
 //! The resulting program can then be used in any of these ways:
@@ -70,6 +70,7 @@
 //!
 //! #[derive(FromArgs)]
 //! /// Reach new heights.
+//! #[argh(help_triggers("-h", "--help", "help"))]
 //! struct GoUp {
 //!     /// an optional nickname for the pilot
 //!     #[argh(option)]
@@ -108,6 +109,30 @@
 //! fn always_five(_value: &str) -> Result<usize, String> {
 //!     Ok(5)
 //! }
+//! ```
+//!
+//! `FromArgValue` can be automatically derived for `enum`s, with automatic
+//! error messages:
+//!
+//! ```
+//! use argh::{FromArgs, FromArgValue};
+//!
+//! #[derive(FromArgValue)]
+//! enum Mode {
+//!     SoftCore,
+//!     HardCore,
+//! }
+//!
+//! #[derive(FromArgs)]
+//! /// Do the thing.
+//! struct DoIt {
+//!     #[argh(option)]
+//!     /// how to do it
+//!     how: Mode,
+//! }
+//!
+//! // ./some_bin --how whatever
+//! // > Error parsing option '--how' with value 'whatever': expected "soft_core" or "hard_core"
 //! ```
 //!
 //! Positional arguments can be declared using `#[argh(positional)]`.
@@ -205,7 +230,7 @@
 //! # use argh::DynamicSubCommand;
 //! # use argh::EarlyExit;
 //! # use argh::FromArgs;
-//! # use once_cell::sync::OnceCell;
+//! # use std::sync::LazyLock;
 //!
 //! #[derive(FromArgs, PartialEq, Debug)]
 //! /// Top-level command.
@@ -239,8 +264,7 @@
 //!
 //! impl DynamicSubCommand for Dynamic {
 //!     fn commands() -> &'static [&'static CommandInfo] {
-//!         static RET: OnceCell<Vec<&'static CommandInfo>> = OnceCell::new();
-//!         RET.get_or_init(|| {
+//!         static RET: LazyLock<Vec<&'static CommandInfo>> = LazyLock::new(|| {
 //!             let mut commands = Vec::new();
 //!
 //!             // argh needs the `CommandInfo` structs we generate to be valid
@@ -252,11 +276,13 @@
 //!             // don't know about until runtime!
 //!             commands.push(&*Box::leak(Box::new(CommandInfo {
 //!                 name: "dynamic_command",
+//!                 short: &'d',
 //!                 description: "A dynamic command",
 //!             })));
 //!
 //!             commands
-//!         })
+//!         });
+//!         &RET
 //!     }
 //!
 //!     fn try_redact_arg_values(
@@ -318,7 +344,7 @@
 
 use std::str::FromStr;
 
-pub use argh_derive::{ArgsInfo, FromArgs};
+pub use argh_derive::{ArgsInfo, FromArgValue, FromArgs};
 
 /// Information about a particular command used for output.
 pub type CommandInfo = argh_shared::CommandInfo<'static>;
@@ -330,6 +356,9 @@ pub type CommandInfoWithArgs = argh_shared::CommandInfoWithArgs<'static>;
 pub type SubCommandInfo = argh_shared::SubCommandInfo<'static>;
 
 pub use argh_shared::{ErrorCodeInfo, FlagInfo, FlagInfoKind, Optionality, PositionalInfo};
+
+#[cfg(feature = "fuzzy_search")]
+use rust_fuzzy_search::fuzzy_search_best_n;
 
 /// Structured information about the command line arguments.
 pub trait ArgsInfo {
@@ -421,7 +450,7 @@ pub trait FromArgs: Sized {
     /// Command to manage a classroom.
     ///
     /// Options:
-    ///   --help            display usage information
+    ///   --help, help      display usage information
     ///
     /// Commands:
     ///   list              list all the classes.
@@ -445,7 +474,7 @@ pub trait FromArgs: Sized {
     ///
     /// Options:
     ///   --teacher-name    list classes for only this teacher.
-    ///   --help            display usage information
+    ///   --help, help      display usage information
     /// "#.to_string(),
     ///        status: Ok(()),
     ///     },
@@ -587,7 +616,7 @@ pub trait FromArgs: Sized {
     /// Command to manage a classroom.
     ///
     /// Options:
-    ///   --help            display usage information
+    ///   --help, help      display usage information
     ///
     /// Commands:
     ///   list              list all the classes.
@@ -720,7 +749,7 @@ pub fn from_env<T: TopLevelCommand>() -> T {
 /// Create a `FromArgs` type from the current process's `env::args`.
 ///
 /// This special cases usages where argh is being used in an environment where cargo is
-/// driving the build. We skip the second env variable.
+/// driving the build. We skip the second env argument.
 ///
 /// This function will exit early from the current process if argument parsing
 /// was unsuccessful or if information like `--help` was requested. Error messages will be printed
@@ -748,7 +777,7 @@ pub fn cargo_from_env<T: TopLevelCommand>() -> T {
 /// Any field type declared in a struct that derives `FromArgs` must implement
 /// this trait. A blanket implementation exists for types implementing
 /// `FromStr<Error: Display>`. Custom types can implement this trait
-/// directly.
+/// directly. It can also be derived on plain `enum`s without associated data.
 pub trait FromArgValue: Sized {
     /// Construct the type from a commandline value, returning an error string
     /// on failure.
@@ -833,6 +862,14 @@ impl<T> ParseValueSlot for ParseValueSlotTy<Vec<T>, T> {
     }
 }
 
+// `ParseValueSlotTy<Option<Vec<T>>, T>` is used as the slot for optional repeating arguments.
+impl<T> ParseValueSlot for ParseValueSlotTy<Option<Vec<T>>, T> {
+    fn fill_slot(&mut self, arg: &str, value: &str) -> Result<(), String> {
+        self.slot.get_or_insert_with(Vec::new).push((self.parse_func)(arg, value)?);
+        Ok(())
+    }
+}
+
 /// A type which can be the receiver of a `Flag`.
 pub trait Flag {
     /// Creates a default instance of the flag value;
@@ -904,7 +941,7 @@ pub fn parse_struct_args(
 
     'parse_args: while let Some(&next_arg) = remaining_args.first() {
         remaining_args = &remaining_args[1..];
-        if (next_arg == "--help" || next_arg == "help") && !options_ended {
+        if (parse_options.help_triggers.contains(&next_arg)) && !options_ended {
             help = true;
             continue;
         }
@@ -951,9 +988,12 @@ pub struct ParseStructOptions<'a> {
 
     /// The storage for argument output data.
     pub slots: &'a mut [ParseStructOption<'a>],
+
+    /// help triggers is a list of strings that trigger printing of help
+    pub help_triggers: &'a [&'a str],
 }
 
-impl<'a> ParseStructOptions<'a> {
+impl ParseStructOptions<'_> {
     /// Parse a commandline option.
     ///
     /// `arg`: the current option argument being parsed (e.g. `--foo`).
@@ -964,7 +1004,7 @@ impl<'a> ParseStructOptions<'a> {
             .arg_to_slot
             .iter()
             .find_map(|&(name, pos)| if name == arg { Some(pos) } else { None })
-            .ok_or_else(|| unrecognized_argument(arg))?;
+            .ok_or_else(|| unrecognized_argument(arg, self.arg_to_slot, self.help_triggers))?;
 
         match self.slots[pos] {
             ParseStructOption::Flag(ref mut b) => b.set_flag(arg),
@@ -984,8 +1024,33 @@ impl<'a> ParseStructOptions<'a> {
     }
 }
 
-fn unrecognized_argument(x: &str) -> String {
-    ["Unrecognized argument: ", x, "\n"].concat()
+fn unrecognized_argument(
+    given: &str,
+    arg_to_slot: &[(&str, usize)],
+    extra_suggestions: &[&str],
+) -> String {
+    // get the list of available arguments
+    let available = arg_to_slot
+        .iter()
+        .map(|(name, _pos)| *name)
+        .chain(extra_suggestions.iter().copied())
+        .collect::<Vec<&str>>();
+
+    if available.is_empty() {
+        return format!("Unrecognized argument: \"{}\"\n", given);
+    }
+
+    #[cfg(feature = "fuzzy_search")]
+    {
+        let suggestions = fuzzy_search_best_n(given, &available, 1);
+        return format!(
+            "Unrecognized argument: \"{}\". Did you mean \"{}\"?\n",
+            given, suggestions[0].0
+        );
+    }
+
+    #[cfg(not(feature = "fuzzy_search"))]
+    ["Unrecognized argument: ", given, "\n"].concat()
 }
 
 // `--` or `-` options, including a mutable reference to their value.
@@ -1005,7 +1070,7 @@ pub struct ParseStructPositionals<'a> {
     pub last_is_greedy: bool,
 }
 
-impl<'a> ParseStructPositionals<'a> {
+impl ParseStructPositionals<'_> {
     /// Parse the next positional argument.
     ///
     /// `arg`: the argument supplied by the user.
@@ -1042,7 +1107,7 @@ pub struct ParseStructPositional<'a> {
     pub slot: &'a mut dyn ParseValueSlot,
 }
 
-impl<'a> ParseStructPositional<'a> {
+impl ParseStructPositional<'_> {
     /// Parse a positional argument.
     ///
     /// `arg`: the argument supplied by the user.
@@ -1079,7 +1144,7 @@ pub struct ParseStructSubCommand<'a> {
     pub parse_func: &'a mut dyn FnMut(&[&str], &[&str]) -> Result<(), EarlyExit>,
 }
 
-impl<'a> ParseStructSubCommand<'a> {
+impl ParseStructSubCommand<'_> {
     fn parse(
         &mut self,
         help: bool,
@@ -1088,7 +1153,9 @@ impl<'a> ParseStructSubCommand<'a> {
         remaining_args: &[&str],
     ) -> Result<bool, EarlyExit> {
         for subcommand in self.subcommands.iter().chain(self.dynamic_subcommands.iter()) {
-            if subcommand.name == arg {
+            if subcommand.name == arg
+                || arg.chars().count() == 1 && arg.chars().next().unwrap() == *subcommand.short
+            {
                 let mut command = cmd_name.to_owned();
                 command.push(subcommand.name);
                 let prepended_help;
