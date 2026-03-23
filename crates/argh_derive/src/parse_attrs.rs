@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+use syn::{parse::Parser, punctuated::Punctuated};
+
 use {
     crate::errors::Errors,
     proc_macro2::Span,
@@ -20,6 +22,7 @@ pub struct FieldAttrs {
     pub arg_name: Option<syn::LitStr>,
     pub greedy: Option<syn::Path>,
     pub hidden_help: bool,
+    pub usage: bool,
 }
 
 /// The purpose of a particular field on a `#![derive(FromArgs)]` struct.
@@ -124,13 +127,15 @@ impl FieldAttrs {
                     this.greedy = Some(name.clone());
                 } else if name.is_ident("hidden_help") {
                     this.hidden_help = true;
+                } else if name.is_ident("usage") {
+                    this.usage = true;
                 } else {
                     errors.err(
                         &meta,
                         concat!(
                             "Invalid field-level `argh` attribute\n",
                             "Expected one of: `arg_name`, `default`, `description`, `from_str_fn`, `greedy`, ",
-                            "`long`, `option`, `short`, `subcommand`, `switch`, `hidden_help`",
+                            "`long`, `option`, `short`, `subcommand`, `switch`, `hidden_help`, `usage`",
                         ),
                     );
                 }
@@ -201,7 +206,7 @@ pub(crate) fn check_long_name(errors: &Errors, spanned: &impl syn::spanned::Span
         errors.err(spanned, "Long names must be ASCII");
     }
     if !value.chars().all(|c| c.is_lowercase() || c == '-' || c.is_ascii_digit()) {
-        errors.err(spanned, "Long names must be lowercase");
+        errors.err(spanned, "Long names may only contain lowercase letters, digits, and dashes");
     }
 }
 
@@ -262,15 +267,24 @@ fn argh_attr_to_meta_list(
     ))
 }
 
+/// Returns `true` if there are any `#[argh(...)]` attributes in the list.
+pub fn has_argh_attrs(attrs: &[syn::Attribute]) -> bool {
+    attrs.iter().any(is_argh_attr)
+}
+
 /// Represents a `#[derive(FromArgs)]` type's top-level attributes.
 #[derive(Default)]
 pub struct TypeAttrs {
     pub is_subcommand: Option<syn::Ident>,
     pub name: Option<syn::LitStr>,
+    pub short: Option<syn::LitChar>,
     pub description: Option<Description>,
     pub examples: Vec<syn::LitStr>,
     pub notes: Vec<syn::LitStr>,
     pub error_codes: Vec<(syn::LitInt, syn::LitStr)>,
+    /// Arguments that trigger printing of the help message
+    pub help_triggers: Option<Vec<syn::LitStr>>,
+    pub usage: Option<syn::LitStr>,
 }
 
 impl TypeAttrs {
@@ -308,6 +322,10 @@ impl TypeAttrs {
                     if let Some(m) = errors.expect_meta_name_value(&meta) {
                         this.parse_attr_name(errors, m);
                     }
+                } else if name.is_ident("short") {
+                    if let Some(m) = errors.expect_meta_name_value(&meta) {
+                        this.parse_attr_short(errors, m);
+                    }
                 } else if name.is_ident("note") {
                     if let Some(m) = errors.expect_meta_name_value(&meta) {
                         this.parse_attr_note(errors, m);
@@ -317,13 +335,21 @@ impl TypeAttrs {
                     {
                         this.parse_attr_subcommand(errors, ident);
                     }
+                } else if name.is_ident("help_triggers") {
+                    if let Some(m) = errors.expect_meta_list(&meta) {
+                        Self::parse_help_triggers(m, errors, &mut this);
+                    }
+                } else if name.is_ident("usage") {
+                    if let Some(m) = errors.expect_meta_name_value(&meta) {
+                        this.parse_attr_usage(errors, m);
+                    }
                 } else {
                     errors.err(
                         &meta,
                         concat!(
                             "Invalid type-level `argh` attribute\n",
                             "Expected one of: `description`, `error_code`, `example`, `name`, ",
-                            "`note`, `subcommand`",
+                            "`note`, `short`, `subcommand`, `usage`",
                         ),
                     );
                 }
@@ -347,7 +373,7 @@ impl TypeAttrs {
                     continue;
                 }
             };
-            if value > (std::i32::MAX as u64) {
+            if value > (i32::MAX as u64) {
                 errors.err(lit_int, "Error code out of range for `i32`");
             }
             match map.entry(value) {
@@ -394,6 +420,17 @@ impl TypeAttrs {
         }
     }
 
+    fn parse_attr_short(&mut self, errors: &Errors, m: &syn::MetaNameValue) {
+        if let Some(first) = &self.short {
+            errors.duplicate_attrs("short", first, m);
+        } else if let Some(lit_char) = errors.expect_lit_char(&m.value) {
+            self.short = Some(lit_char.clone());
+            if !lit_char.value().is_ascii() {
+                errors.err(lit_char, "Short names must be ASCII");
+            }
+        }
+    }
+
     fn parse_attr_note(&mut self, errors: &Errors, m: &syn::MetaNameValue) {
         parse_attr_multi_string(errors, m, &mut self.notes)
     }
@@ -405,9 +442,31 @@ impl TypeAttrs {
             self.is_subcommand = Some(ident.clone());
         }
     }
+
+    // get the list of arguments that trigger printing of the help message as a vector of strings (help_arguments("-h", "--help", "help"))
+    fn parse_help_triggers(m: &syn::MetaList, errors: &Errors, this: &mut TypeAttrs) {
+        let parser = Punctuated::<syn::Expr, syn::Token![,]>::parse_terminated;
+        match parser.parse(m.tokens.clone().into()) {
+            Ok(args) => {
+                let mut triggers = Vec::new();
+                for arg in args {
+                    if let syn::Expr::Lit(syn::ExprLit { lit: syn::Lit::Str(lit_str), .. }) = arg {
+                        triggers.push(lit_str);
+                    }
+                }
+
+                this.help_triggers = Some(triggers);
+            }
+            Err(err) => errors.push(err),
+        }
+    }
+
+    fn parse_attr_usage(&mut self, errors: &Errors, m: &syn::MetaNameValue) {
+        parse_attr_single_string(errors, m, "usage", &mut self.usage)
+    }
 }
 
-/// Represents an enum variant's attributes.
+/// Represents a `FromArgs` enum variant's attributes.
 #[derive(Default)]
 pub struct VariantAttrs {
     pub is_dynamic: Option<syn::Path>,
@@ -451,7 +510,45 @@ impl VariantAttrs {
                     errors.err(
                         &meta,
                         "Invalid variant-level `argh` attribute\n\
-                         Variants can only have the #[argh(dynamic)] attribute.",
+                         Subcommand variants can only have the #[argh(dynamic)] attribute.",
+                    );
+                }
+            }
+        }
+
+        this
+    }
+}
+
+/// Represents the attributes of a variant in a choice enum (an enum with `#[derive(FromArgValue)]`).
+#[derive(Default)]
+pub struct ChoiceVariantAttrs {
+    pub name_override: Option<syn::LitStr>,
+}
+
+impl ChoiceVariantAttrs {
+    /// Parse choice enum variant `#[argh(...)]` attributes
+    pub fn parse(errors: &Errors, variant: &syn::Variant) -> Self {
+        let mut this = ChoiceVariantAttrs::default();
+
+        for attr in &variant.attrs {
+            let ml = if let Some(ml) = argh_attr_to_meta_list(errors, attr) {
+                ml
+            } else {
+                continue;
+            };
+
+            for meta in ml {
+                let name = meta.path();
+                if name.is_ident("name") {
+                    if let Some(m) = errors.expect_meta_name_value(&meta) {
+                        parse_attr_single_string(errors, m, "name", &mut this.name_override);
+                    }
+                } else {
+                    errors.err(
+                        &meta,
+                        "Invalid variant-level `argh` attribute\n\
+                         Choice variants can only have the `name` attribute.",
                     );
                 }
             }
@@ -467,11 +564,52 @@ fn check_option_description(errors: &Errors, desc: &str, span: Span) {
         (Some(x), _) if x.is_lowercase() => {}
         // If both the first and second letter are not lowercase,
         // this is likely an initialism which should be allowed.
-        (Some(x), Some(y)) if !x.is_lowercase() && !y.is_lowercase() => {}
+        (Some(x), Some(y)) if !x.is_lowercase() && (y.is_alphanumeric() && !y.is_lowercase()) => {}
         _ => {
             errors.err_span(span, "Descriptions must begin with a lowercase letter");
         }
     }
+}
+
+#[test]
+fn test_initialisms() {
+    use proc_macro2::TokenStream;
+    use quote::ToTokens;
+    use std::panic::Location;
+
+    #[track_caller]
+    fn check(s: &str, should_succeed: bool) {
+        let errors = Errors::default();
+        check_option_description(&errors, s, Span::call_site());
+
+        let description_accepted = {
+            let mut stream = TokenStream::new();
+            errors.to_tokens(&mut stream);
+            stream.is_empty()
+        };
+
+        assert!(
+            description_accepted == should_succeed,
+            "Assertion at {} failed",
+            Location::caller(),
+        );
+    }
+
+    check("Descriptions can't begin with an uppercase letter", false);
+    check("descriptions must begin with a lowercase letter unless it's an initialism", true);
+    check("HTTP is OK", true);
+    check("I2C is OK", true);
+    check("A sentence starting with a single-letter uppercase letter is bad even though it looks like an initialism", false);
+    check("a sentence starting with a lowercase letter is good", true);
+    check("非ラテン文字は常に受け入れられるべきです", true);
+
+    // NOTE: Not so clear what should be done with this one, but I don't think anyone will ever
+    // want to use I as the first word of a description anyway
+    check(
+        "I don't think 'I' should be accepted even though it's always grammatically expected to be
+uppercase, like an initialism",
+        false,
+    );
 }
 
 fn parse_attr_single_string(
@@ -500,7 +638,7 @@ fn parse_attr_doc(errors: &Errors, attr: &syn::Attribute, slot: &mut Option<Desc
         return;
     };
 
-    // Don't replace an existing description.
+    // Don't replace an existing explicit description.
     if slot.as_ref().map(|d| d.explicit).unwrap_or(false) {
         return;
     }
@@ -509,17 +647,49 @@ fn parse_attr_doc(errors: &Errors, attr: &syn::Attribute, slot: &mut Option<Desc
         let lit_str = if let Some(previous) = slot {
             let previous = &previous.content;
             let previous_span = previous.span();
-            syn::LitStr::new(&(previous.value() + &*lit_str.value()), previous_span)
+            syn::LitStr::new(&(previous.value() + &unescape_doc(lit_str.value())), previous_span)
         } else {
-            lit_str.clone()
+            syn::LitStr::new(&unescape_doc(lit_str.value()), lit_str.span())
         };
         *slot = Some(Description { explicit: false, content: lit_str });
     }
 }
 
+/// Replaces escape sequences in doc-comments with the characters they represent.
+///
+/// Rustdoc understands CommonMark escape sequences consisting of a backslash followed by an ASCII
+/// punctuation character. Any other backslash is treated as a literal backslash.
+fn unescape_doc(s: String) -> String {
+    let mut result = String::with_capacity(s.len());
+
+    let mut characters = s.chars().peekable();
+    while let Some(mut character) = characters.next() {
+        if character == '\\' {
+            if let Some(next_character) = characters.peek() {
+                if next_character.is_ascii_punctuation() {
+                    character = *next_character;
+                    characters.next();
+                }
+            }
+        }
+
+        // Braces must be escaped as this string will be used as a format string
+        if character == '{' || character == '}' {
+            result.push(character);
+        }
+
+        result.push(character);
+    }
+
+    result
+}
+
 fn parse_attr_description(errors: &Errors, m: &syn::MetaNameValue, slot: &mut Option<Description>) {
-    let lit_str =
-        if let Some(lit_str) = errors.expect_lit_str(&m.value) { lit_str } else { return };
+    let lit_str = if let Some(lit_str) = errors.expect_lit_str(&m.value) {
+        lit_str
+    } else {
+        return;
+    };
 
     // Don't allow multiple explicit (non doc-comment) descriptions
     if let Some(description) = slot {
@@ -534,7 +704,17 @@ fn parse_attr_description(errors: &Errors, m: &syn::MetaNameValue, slot: &mut Op
 /// Checks that a `#![derive(FromArgs)]` enum has an `#[argh(subcommand)]`
 /// attribute and that it does not have any other type-level `#[argh(...)]` attributes.
 pub fn check_enum_type_attrs(errors: &Errors, type_attrs: &TypeAttrs, type_span: &Span) {
-    let TypeAttrs { is_subcommand, name, description, examples, notes, error_codes } = type_attrs;
+    let TypeAttrs {
+        is_subcommand,
+        name,
+        short,
+        description,
+        examples,
+        notes,
+        error_codes,
+        help_triggers,
+        usage,
+    } = type_attrs;
 
     // Ensure that `#[argh(subcommand)]` is present.
     if is_subcommand.is_none() {
@@ -542,7 +722,8 @@ pub fn check_enum_type_attrs(errors: &Errors, type_attrs: &TypeAttrs, type_span:
             *type_span,
             concat!(
                 "`#![derive(FromArgs)]` on `enum`s can only be used to enumerate subcommands.\n",
-                "Consider adding `#[argh(subcommand)]` to the `enum` declaration.",
+                "To enumerate subcommands, add `#[argh(subcommand)]` to the `enum` declaration.\n",
+                "To declare a choice `enum` instead, use `#![derive(FromArgValue)]`."
             ),
         );
     }
@@ -550,6 +731,9 @@ pub fn check_enum_type_attrs(errors: &Errors, type_attrs: &TypeAttrs, type_span:
     // Error on all other type-level attributes.
     if let Some(name) = name {
         err_unused_enum_attr(errors, name);
+    }
+    if let Some(short) = short {
+        err_unused_enum_attr(errors, short);
     }
     if let Some(description) = description {
         if description.explicit {
@@ -564,6 +748,14 @@ pub fn check_enum_type_attrs(errors: &Errors, type_attrs: &TypeAttrs, type_span:
     }
     if let Some(err_code) = error_codes.first() {
         err_unused_enum_attr(errors, &err_code.0);
+    }
+    if let Some(triggers) = help_triggers {
+        if let Some(trigger) = triggers.first() {
+            err_unused_enum_attr(errors, trigger);
+        }
+    }
+    if let Some(usage) = usage {
+        err_unused_enum_attr(errors, usage);
     }
 }
 

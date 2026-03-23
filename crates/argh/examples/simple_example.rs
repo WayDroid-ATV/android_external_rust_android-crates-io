@@ -20,7 +20,7 @@ enum MySubCommandEnum {
 
 #[derive(FromArgs, PartialEq, Debug)]
 /// First subcommand.
-#[argh(subcommand, name = "one")]
+#[argh(subcommand, name = "one", short = 'o')]
 struct SubCommandOne {
     #[argh(option)]
     /// how many x
@@ -34,6 +34,16 @@ struct SubCommandTwo {
     #[argh(switch)]
     /// whether to fooey
     fooey: bool,
+
+    #[argh(option)]
+    /// how to woot
+    woot: Woot,
+}
+
+#[derive(argh::FromArgValue, PartialEq, Debug)]
+enum Woot {
+    Quiet,
+    Loud,
 }
 
 fn main() {

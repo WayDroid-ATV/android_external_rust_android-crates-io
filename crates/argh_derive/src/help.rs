@@ -26,43 +26,60 @@ pub(crate) fn help(
     ty_attrs: &TypeAttrs,
     fields: &[StructField<'_>],
     subcommand: Option<&StructField<'_>>,
+    help_triggers: &[String],
 ) -> TokenStream {
     let mut format_lit = "Usage: {command_name}".to_string();
 
     let positional = fields.iter().filter(|f| {
         f.kind == FieldKind::Positional && f.attrs.greedy.is_none() && !f.attrs.hidden_help
     });
-    let mut has_positional = false;
-    for arg in positional.clone() {
-        has_positional = true;
-        format_lit.push(' ');
-        positional_usage(&mut format_lit, arg);
-    }
-
+    let has_positional = positional.clone().next().is_some();
     let options = fields.iter().filter(|f| f.long_name.is_some() && !f.attrs.hidden_help);
-    for option in options.clone() {
-        format_lit.push(' ');
-        option_usage(&mut format_lit, option);
-    }
 
-    let remain = fields.iter().filter(|f| {
-        f.kind == FieldKind::Positional && f.attrs.greedy.is_some() && !f.attrs.hidden_help
-    });
-    for arg in remain {
+    if let Some(usage) = &ty_attrs.usage {
         format_lit.push(' ');
-        positional_usage(&mut format_lit, arg);
-    }
+        format_lit.push_str(&usage.value());
+    } else {
+        let has_explicit_usage = std::iter::empty()
+            .chain(positional.clone())
+            .chain(options.clone())
+            .any(|p| p.attrs.usage);
+        let positional = positional.clone().filter(|p| !has_explicit_usage || p.attrs.usage);
+        let options = options.clone().filter(|p| !has_explicit_usage || p.attrs.usage);
 
-    if let Some(subcommand) = subcommand {
-        format_lit.push(' ');
-        if !subcommand.optionality.is_required() {
-            format_lit.push('[');
+        for option in options.clone() {
+            format_lit.push(' ');
+            option_usage(&mut format_lit, option);
         }
-        format_lit.push_str("<command>");
-        if !subcommand.optionality.is_required() {
-            format_lit.push(']');
+
+        if has_positional && subcommand.is_none() {
+            format_lit.push_str(" [--]");
         }
-        format_lit.push_str(" [<args>]");
+
+        for arg in positional.clone() {
+            format_lit.push(' ');
+            positional_usage(&mut format_lit, arg);
+        }
+
+        let remain = fields.iter().filter(|f| {
+            f.kind == FieldKind::Positional && f.attrs.greedy.is_some() && !f.attrs.hidden_help
+        });
+        for arg in remain {
+            format_lit.push(' ');
+            positional_usage(&mut format_lit, arg);
+        }
+
+        if let Some(subcommand) = subcommand {
+            format_lit.push(' ');
+            if !subcommand.optionality.is_required() {
+                format_lit.push('[');
+            }
+            format_lit.push_str("<command>");
+            if !subcommand.optionality.is_required() {
+                format_lit.push(']');
+            }
+            format_lit.push_str(" [<args>]");
+        }
     }
 
     format_lit.push_str(SECTION_SEPARATOR);
@@ -83,8 +100,12 @@ pub(crate) fn help(
     for option in options {
         option_description(errors, &mut format_lit, option);
     }
-    // Also include "help"
-    option_description_format(&mut format_lit, None, "--help", "display usage information");
+    option_description_format(
+        &mut format_lit,
+        None,
+        &help_triggers.join(", "),
+        "display usage information",
+    );
 
     let subcommand_calculation;
     let subcommand_format_arg;
@@ -157,7 +178,7 @@ fn positional_usage(out: &mut String, field: &StructField<'_>) {
     }
     let name = field.positional_arg_name();
     out.push_str(&name);
-    if field.optionality == Optionality::Repeating {
+    if matches!(field.optionality, Optionality::Repeating | Optionality::DefaultedRepeating(_)) {
         out.push_str("...");
     }
     if field.attrs.greedy.is_none() {
@@ -194,7 +215,10 @@ fn option_usage(out: &mut String, field: &StructField<'_>) {
             } else {
                 out.push_str(long_name.trim_start_matches("--"));
             }
-            if field.optionality == Optionality::Repeating {
+            if matches!(
+                field.optionality,
+                Optionality::Repeating | Optionality::DefaultedRepeating(_)
+            ) {
                 out.push_str("...");
             }
             out.push('>');
@@ -240,7 +264,7 @@ fn positional_description(out: &mut String, field: &StructField<'_>) {
 }
 
 fn positional_description_format(out: &mut String, name: &str, description: &str) {
-    let info = argh_shared::CommandInfo { name, description };
+    let info = argh_shared::CommandInfo { name, description, short: &'\0' };
     argh_shared::write_description(out, &info);
 }
 
@@ -270,6 +294,6 @@ fn option_description_format(
     }
     name.push_str(long_with_leading_dashes);
 
-    let info = argh_shared::CommandInfo { name: &name, description };
+    let info = argh_shared::CommandInfo { name: &name, description, short: &'\0' };
     argh_shared::write_description(out, &info);
 }

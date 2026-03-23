@@ -18,7 +18,7 @@ rust_test {
     host_supported: true,
     crate_name: "argh",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.12",
+    cargo_pkg_version: "0.1.14",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -26,10 +26,12 @@ rust_test {
         unit_test: true,
     },
     edition: "2018",
-    rustlibs: [
-        "libargh_shared",
-        "libonce_cell",
+    features: [
+        "default",
+        "help",
+        "serde",
     ],
+    rustlibs: ["libargh_shared"],
     proc_macros: ["libargh_derive"],
 }
 
@@ -38,7 +40,7 @@ rust_test {
     host_supported: true,
     crate_name: "args_info_tests",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.12",
+    cargo_pkg_version: "0.1.14",
     crate_root: "tests/args_info_tests.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -46,10 +48,14 @@ rust_test {
         unit_test: true,
     },
     edition: "2018",
+    features: [
+        "default",
+        "help",
+        "serde",
+    ],
     rustlibs: [
         "libargh",
         "libargh_shared",
-        "libonce_cell",
     ],
     proc_macros: ["libargh_derive"],
 }
@@ -59,7 +65,7 @@ rust_test {
     host_supported: true,
     crate_name: "lib",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.12",
+    cargo_pkg_version: "0.1.14",
     crate_root: "tests/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -67,10 +73,64 @@ rust_test {
         unit_test: true,
     },
     edition: "2018",
+    features: [
+        "default",
+        "help",
+        "serde",
+    ],
     rustlibs: [
         "libargh",
         "libargh_shared",
-        "libonce_cell",
+    ],
+    proc_macros: ["libargh_derive"],
+}
+
+rust_test {
+    name: "argh_test_tests_short_alias",
+    host_supported: true,
+    crate_name: "short_alias",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.1.14",
+    crate_root: "tests/short_alias.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "default",
+        "help",
+        "serde",
+    ],
+    rustlibs: [
+        "libargh",
+        "libargh_shared",
+    ],
+    proc_macros: ["libargh_derive"],
+}
+
+rust_test {
+    name: "argh_test_tests_subcommand_short_help",
+    host_supported: true,
+    crate_name: "subcommand_short_help",
+    cargo_env_compat: true,
+    cargo_pkg_version: "0.1.14",
+    crate_root: "tests/subcommand_short_help.rs",
+    test_suites: ["general-tests"],
+    auto_gen_config: true,
+    test_options: {
+        unit_test: true,
+    },
+    edition: "2018",
+    features: [
+        "default",
+        "help",
+        "serde",
+    ],
+    rustlibs: [
+        "libargh",
+        "libargh_shared",
     ],
     proc_macros: ["libargh_derive"],
 }
@@ -80,9 +140,14 @@ rust_library {
     host_supported: true,
     crate_name: "argh",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.12",
+    cargo_pkg_version: "0.1.14",
     crate_root: "src/lib.rs",
     edition: "2018",
+    features: [
+        "default",
+        "help",
+        "serde",
+    ],
     rustlibs: ["libargh_shared"],
     proc_macros: ["libargh_derive"],
     apex_available: [
