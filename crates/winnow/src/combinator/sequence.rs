@@ -1,10 +1,12 @@
 use crate::combinator::trace;
 use crate::error::ParserError;
 use crate::stream::Stream;
-use crate::*;
+use crate::Parser;
 
 #[doc(inline)]
 pub use crate::seq;
+#[doc(inline)]
+pub use crate::unordered_seq;
 
 /// Sequence two parsers, only returning the output from the second.
 ///
