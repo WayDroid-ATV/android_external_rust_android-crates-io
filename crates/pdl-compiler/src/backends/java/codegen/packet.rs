@@ -192,7 +192,6 @@ pub fn gen_abstract_packet(
 
             $(if parent.is_none() => public abstract byte[] toBytes();)
 
-            $(if parent.is_some() => @Override)
             protected byte[] toBytes($(&*import::BB) payload) {
                 payload.rewind();
                 $(&*import::BB) buf = $(&*import::BB)
@@ -200,7 +199,7 @@ pub fn gen_abstract_packet(
                     .order($endianness);
 
                 $(encoder(&def.alignment, &def.width_fields, endianness))
-                $(if parent.is_some() { return super.toBytes(buf); } else { return buf.array(); })
+                return buf.array();
             }
 
             $(width_def(name, &ctx.heirarchy, false))
