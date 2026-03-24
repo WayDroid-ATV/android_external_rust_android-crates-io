@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.84"
+rust-version = "1.74"
 name = "automotive_diag"
-version = "0.1.27"
+version = "0.1.26"
 authors = [
     "Yuri Astrakhan <YuriAstrakhan@gmail.com>",
     "Ashcon Mohseninia <ashconm@outlook.com>",
@@ -46,7 +46,6 @@ repository = "https://github.com/oxibus/automotive_diag"
 all-features = true
 
 [features]
-bin-proto = ["dep:bin-proto"]
 default = [
     "std",
     "iter",
@@ -71,7 +70,6 @@ std = [
     "displaydoc?/default",
     "serde?/default",
     "strum/default",
-    "bin-proto?/default",
 ]
 uds = []
 with-kwp2000 = ["kwp2000"]
@@ -81,12 +79,6 @@ with-uds = ["uds"]
 [lib]
 name = "automotive_diag"
 path = "src/lib.rs"
-
-[dependencies.bin-proto]
-version = "0.12.6"
-features = ["derive"]
-optional = true
-default-features = false
 
 [dependencies.defmt]
 version = "1.0.1"
