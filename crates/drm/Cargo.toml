@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.70"
 name = "drm"
-version = "0.14.2"
+version = "0.15.0"
 authors = [
     "Tyler Slabinski <slabity@slabity.dev>",
     "Victoria Brekenfeld <crates-io@drakulix.de>",
