@@ -12,7 +12,7 @@
 [package]
 edition = "2018"
 name = "argh_derive"
-version = "0.1.14"
+version = "0.1.19"
 authors = [
     "Taylor Cramer <cramertj@google.com>",
     "Benjamin Brittain <bwb@google.com>",
@@ -38,7 +38,7 @@ path = "src/lib.rs"
 proc-macro = true
 
 [dependencies.argh_shared]
-version = "0.1.14"
+version = "0.1.19"
 
 [dependencies.proc-macro2]
 version = "1.0"

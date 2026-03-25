@@ -881,9 +881,9 @@ dependencies = [
 
 [[package]]
 name = "argh_derive"
-version = "0.1.14"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "938e5f66269c1f168035e29ed3fb437b084e476465e9314a0328f4005d7be599"
+checksum = "c442a9d18cef5dde467405d27d461d080d68972d6d0dfd0408265b6749ec427d"
 dependencies = [
  "argh_shared",
  "proc-macro2 1.0.106",
