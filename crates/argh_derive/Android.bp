@@ -17,7 +17,7 @@ rust_proc_macro {
     name: "libargh_derive",
     crate_name: "argh_derive",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.1.14",
+    cargo_pkg_version: "0.1.19",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: ["help"],
