@@ -5,6 +5,27 @@
 ## Changed
 
 
+# uefi-raw - v0.14.0 (2026-03-22)
+
+## Added
+- Added `Tcpv4Protocol`.
+- Added `StorageSecurityCommandProtocol`.
+- Added `FirmwareManagementProtocol`.
+- Added `HiiFontProtocol`, `HiiFontExProtocol`.
+- Added `HiiImageProtocol`, `HiiImageExProtocol`.
+- Added `HiiStringProtocol`.
+- Added `HiiPopupProtocol`.
+- Added `FormBrowser2Protocol`.
+- Added new type `SerialIoProtocolRevision`
+- Added new type `SerialIoProtocol_1_1` as companion for `SerialIoProtocol`
+  that includes the  `device_type_guid` parameter
+
+## Changed
+- Switched `*const Self` to `*mut Self` in `SerialIoProtocol::set_attributes()`
+- Switched field `revision` in `SerialIoProtocol` from `u32` to new type
+  `SerialIoProtocolRevision`
+
+
 # uefi-raw - v0.13.0 (2025-11-05)
 
 ## Changed
