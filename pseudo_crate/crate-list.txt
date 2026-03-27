@@ -438,6 +438,7 @@ serde_core
 serde_derive
 serde_json
 serde_nanos
+serde_path_to_error
 serde_repr
 serde_spanned
 serde_test
