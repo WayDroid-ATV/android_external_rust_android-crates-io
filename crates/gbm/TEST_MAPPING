@@ -1,7 +1,7 @@
 {
   "imports": [
     {
-      "path": "system/cros-codecs"
+      "path": "system/desktop/cros-codecs"
     }
   ]
 }

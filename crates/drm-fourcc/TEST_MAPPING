@@ -7,7 +7,7 @@
       "path": "external/rust/android-crates-io/crates/gbm"
     },
     {
-      "path": "system/cros-codecs"
+      "path": "system/desktop/cros-codecs"
     }
   ],
   "postsubmit": [

@@ -37,7 +37,7 @@
       "path": "packages/modules/Virtualization/tests/vm_accessor/accessor"
     },
     {
-      "path": "system/cros-codecs"
+      "path": "system/desktop/cros-codecs"
     },
     {
       "path": "system/desktop/security/gscutil"

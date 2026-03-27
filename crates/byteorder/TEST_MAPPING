@@ -34,7 +34,7 @@
       "path": "packages/modules/Virtualization/libs/dice/driver"
     },
     {
-      "path": "system/cros-codecs"
+      "path": "system/desktop/cros-codecs"
     }
   ]
 }
