@@ -417,6 +417,7 @@ dependencies = [
  "mockall_derive",
  "mockall_double",
  "named-lock",
+ "neli",
  "netlink-packet-core",
  "netlink-packet-route",
  "netlink-packet-utils",
@@ -5685,6 +5686,16 @@ name = "nb"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d5439c4ad607c3c23abf66de8c8bf57ba8adcd1f129e699851a6e43935d339d"
+
+[[package]]
+name = "neli"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9053554eb5dcb7e10d9cdab1206965bde870eed5d0d341532ca035e3ba221508"
+dependencies = [
+ "byteorder",
+ "libc 0.2.183",
+]
 
 [[package]]
 name = "netlink-packet-core"
