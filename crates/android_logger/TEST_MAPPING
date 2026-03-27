@@ -100,7 +100,7 @@
       "path": "system/core/trusty/secretkeeper"
     },
     {
-      "path": "system/cros-codecs"
+      "path": "system/desktop/cros-codecs"
     },
     {
       "path": "system/desktop/security/gscd"

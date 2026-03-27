@@ -13,7 +13,7 @@
       "path": "packages/modules/Virtualization/libs/libvmbase"
     },
     {
-      "path": "system/cros-codecs"
+      "path": "system/desktop/cros-codecs"
     },
     {
       "path": "system/extras/libatrace_rust"

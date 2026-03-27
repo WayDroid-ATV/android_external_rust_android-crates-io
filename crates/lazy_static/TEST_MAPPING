@@ -25,7 +25,7 @@
       "path": "external/rust/beto-rust/nearby"
     },
     {
-      "path": "system/cros-codecs"
+      "path": "system/desktop/cros-codecs"
     }
   ],
   "postsubmit": [

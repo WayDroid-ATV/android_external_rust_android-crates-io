@@ -34,7 +34,7 @@
       "path": "system/core/init/libprefetch/prefetch"
     },
     {
-      "path": "system/cros-codecs"
+      "path": "system/desktop/cros-codecs"
     },
     {
       "path": "system/desktop/fingerprint/hal"
