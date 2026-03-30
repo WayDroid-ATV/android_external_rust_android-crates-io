@@ -144,6 +144,7 @@ equivalent
 errno
 etcetera
 etherparse
+euclid
 evdev
 faccess
 fallible-iterator
