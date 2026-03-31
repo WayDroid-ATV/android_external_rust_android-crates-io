@@ -393,6 +393,7 @@ dependencies = [
  "lsp-types",
  "lyon_geom",
  "lyon_path",
+ "lyon_tessellation",
  "lz4_flex",
  "macaddr",
  "managed",
@@ -5283,6 +5284,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c463f9c428b7fc5ec885dcd39ce4aa61e29111d0e33483f6f98c74e89d8621e"
 dependencies = [
  "lyon_geom",
+ "num-traits",
+]
+
+[[package]]
+name = "lyon_tessellation"
+version = "1.0.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e43b7e44161571868f5c931d12583592c223c5583eef86b08aa02b7048a3552"
+dependencies = [
+ "float_next_after",
+ "lyon_path",
  "num-traits",
 ]
 
