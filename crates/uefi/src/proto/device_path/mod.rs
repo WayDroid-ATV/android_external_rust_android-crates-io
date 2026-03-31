@@ -111,6 +111,7 @@ use crate::proto::{ProtocolPointer, unsafe_protocol};
 use core::ffi::c_void;
 use core::fmt::{self, Debug, Display, Formatter};
 use core::ops::Deref;
+use core::ptr;
 use ptr_meta::Pointee;
 use uefi_raw::protocol::device_path::DevicePathProtocol;
 #[cfg(feature = "alloc")]
@@ -301,10 +302,10 @@ impl DevicePathNode {
         DevicePathNodeEnum::try_from(self)
     }
 
-    /// Transforms the device path node to its string representation using the
-    /// [`DevicePathToText`] protocol.
+    /// Transforms the device path node to an owned UEFI string ([`CString16`])
+    /// using the [`DevicePathToText`] protocol.
     #[cfg(feature = "alloc")]
-    pub fn to_string(
+    pub fn to_string16(
         &self,
         display_only: DisplayOnly,
         allow_shortcuts: AllowShortcuts,
@@ -320,6 +321,20 @@ impl DevicePathNode {
                 CString16::from(cstr16)
             })
             .map_err(|_| DevicePathToTextError::OutOfMemory)
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl Display for DevicePathNode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        if boot::are_boot_services_active() {
+            let cstring16 = self
+                .to_string16(DisplayOnly(true), AllowShortcuts(true))
+                .unwrap();
+            write!(f, "{}", cstring16)
+        } else {
+            write!(f, "<device path node: {} bytes>", self.data.len())
+        }
     }
 }
 
@@ -459,8 +474,7 @@ impl ToOwned for DevicePathInstance {
 ///     let device_path: ScopedProtocol<DevicePath>
 ///         = open_protocol_exclusive::<DevicePath>(device_handle).unwrap();
 ///     log::debug!(
-///         "Device path: {}",
-///         device_path.to_string(DisplayOnly(true), AllowShortcuts(true)).unwrap()
+///         "Device path: {device_path}",
 ///     );
 /// }
 /// ```
@@ -551,8 +565,7 @@ impl DevicePath {
     /// Cast to a [`FfiDevicePath`] pointer.
     #[must_use]
     pub const fn as_ffi_ptr(&self) -> *const FfiDevicePath {
-        let p = self as *const Self;
-        p.cast()
+        ptr::from_ref(self).cast()
     }
 
     /// Get an iterator over the [`DevicePathInstance`]s in this path.
@@ -590,10 +603,19 @@ impl DevicePath {
         unsafe { mem::transmute(data) }
     }
 
-    /// Transforms the device path to its string representation using the
-    /// [`DevicePathToText`] protocol.
+    /// Returns an owned pool copy of this path.
     #[cfg(feature = "alloc")]
-    pub fn to_string(
+    pub fn to_pool(&self) -> Result<PoolDevicePath, DevicePathUtilitiesError> {
+        open_utility_protocol()?
+            .duplicate_path(self)
+            .map_err(|_| DevicePathUtilitiesError::OutOfMemory)
+    }
+
+    /// Transforms the device path to an owned UEFI string ([`CString16`])
+    /// using the [`DevicePathToText`] protocol.
+    #[cfg(feature = "alloc")]
+    // to_string() comes from Display and produces a Rust string.
+    pub fn to_string16(
         &self,
         display_only: DisplayOnly,
         allow_shortcuts: AllowShortcuts,
@@ -628,6 +650,20 @@ impl DevicePath {
         open_utility_protocol()?
             .append_node(self, right)
             .map_err(|_| DevicePathUtilitiesError::OutOfMemory)
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl Display for DevicePath {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        if boot::are_boot_services_active() {
+            let cstring16 = self
+                .to_string16(DisplayOnly(true), AllowShortcuts(true))
+                .unwrap();
+            write!(f, "{}", cstring16)
+        } else {
+            write!(f, "<device path: {} bytes>", self.data.len())
+        }
     }
 }
 
@@ -823,9 +859,9 @@ impl Deref for LoadedImageDevicePath {
 }
 
 /// Errors that may happen when a device path is transformed to a string
-/// representation using:
-/// - [`DevicePath::to_string`]
-/// - [`DevicePathNode::to_string`]
+/// using:
+/// - [`DevicePath::to_string16`]
+/// - [`DevicePathNode::to_string16`]
 #[derive(Debug)]
 pub enum DevicePathToTextError {
     /// Can't locate a handle buffer with handles associated with the

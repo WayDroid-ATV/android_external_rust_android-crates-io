@@ -1,10 +1,58 @@
 # uefi - [Unreleased]
 
 ## Added
-- Added `proto::ata::AtaRequestBuilder::read_pio()`.
 
 ## Changed
 
+
+# uefi - v0.37.0 (2026-03-22)
+
+## Added
+- Added `proto::ata::AtaRequestBuilder::read_pio()`.
+- Added `proto::shell::Shell::{var(), set_var(), vars()}`
+- Added `proto::pci::root_bridge::PciRootBridgeIo::configuration()`.
+- Added `proto::pci::root_bridge::PciRootBridgeIo::enumerate()`.
+- Added `proto::nvme::pass_thru::NvmePassThru::broadcast()`.
+- Added `proto::media::block::BlockIO2`.
+- Added `proto::device_path::DevicePath::to_pool()`.
+- Added `proto::device_path::DevicePathUtilities::duplicate_path()`.
+- Added `proto::pci::enumeration::PciTree::device_path()`.
+- Added `revision()` and `device_type_guid()` to `Serial` protocol
+- Implemented `Display` for `DevicePath`, `DevicePathNode` and `ScopedProtocol`,
+  enabling an easy and convenient way to visualize a device path. For example,
+  this may print `PciRoot(0x0)/Pci(0x6,0x0)/MAC(525400000001,0x1)`.
+  `ScopedProtocol` only implements `Display` if the underlying protocol also
+  implements `Display`.
+- Added `Handle::component_name()` and `Handle::device_path()` to simplify the
+  common use-case of querying more information about a handle.
+- Added `fs::path::Path::join()`.
+- Added `Serial::read_exact()` and `Serial::write_exact()`
+- `CStr16::from_bytes_with_nul()`: This is especially useful to transform the
+  retrieved value from a UEFI variable into a UCS2 (CStr16) string.
+
+## Changed
+- export all `text::{input, output}::*` types
+- Changed ordering of `proto::pci::PciIoAddress` to (bus -> dev -> fun -> reg -> ext_reg).
+- Return request with status as error data object for `proto::ata::pass_thru::AtaDevice`.
+- **Breaking:** `SimpleNetwork::wait_for_packet`
+  - has been renamed to `wait_for_packet_event`
+  - now returns `Result<Event>` instead of `&Event`
+- **Breaking:** `Http::get_mode_data` doesn't consume a parameter anymore and instead return
+  an owned value of type `HttpConfigData`
+- `Input::wait_for_key_event()` now returns `Result<Event>` rather than an
+  Option.
+- `Pointer::wait_for_input_event()` now returns `Result<Event>` rather than an
+  Option.
+- **Breaking:** `boot::check_event` now consumes `&Event` rather than `Event`, removing the
+  need for unnecessary `Event::unsafe_clone()`s.
+- MSRV increased to 1.88.
+- **Breaking:** Renamed `DevicePath::to_string()` to `DevicePath::to_string16()`
+  to better differentiate with the new `to_string()` coming from the new
+  `Display`.
+- **Breaking:** Renamed `DevicePathNode::to_string()` to `DevicePathNode::to_string16()`
+  to better differentiate with the new `to_string()` coming from the new
+  `Display`.
+- Fixed potential partial writes in `fmt::Write` impl for `Serial` protocol
 
 # uefi - v0.36.1 (2025-11-05)
 
