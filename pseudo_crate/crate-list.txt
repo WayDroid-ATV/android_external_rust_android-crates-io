@@ -285,6 +285,7 @@ lsp-server
 lsp-types
 lyon_geom
 lyon_path
+lyon_tessellation
 lz4_flex
 macaddr
 managed
