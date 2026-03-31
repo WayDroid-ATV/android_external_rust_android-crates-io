@@ -1,17 +1,17 @@
 name: "iri-string"
 description: "IRI as string types"
 third_party {
-  version: "0.7.11"
+  version: "0.7.12"
   license_type: NOTICE
   last_upgrade_date {
     year: 2026
     month: 3
-    day: 24
+    day: 31
   }
   homepage: "https://crates.io/crates/iri-string"
   identifier {
     type: "crates.io"
     value: "iri-string"
-    version: "0.7.11"
+    version: "0.7.12"
   }
 }
