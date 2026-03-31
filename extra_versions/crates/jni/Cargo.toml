@@ -12,7 +12,7 @@
 [package]
 edition = "2018"
 name = "jni"
-version = "0.20.0"
+version = "0.21.1"
 authors = ["Josh Chase <josh@prevoty.com>"]
 description = "Rust bindings to the JNI"
 documentation = "https://docs.rs/jni"
@@ -32,11 +32,22 @@ features = ["invocation"]
 [dependencies.cesu8]
 version = "1.1.0"
 
+[dependencies.cfg-if]
+version = "1.0.0"
+
 [dependencies.combine]
 version = "4.1.0"
 
+[dependencies.java-locator]
+version = "0.1"
+optional = true
+
 [dependencies.jni-sys]
 version = "0.3.0"
+
+[dependencies.libloading]
+version = "0.7"
+optional = true
 
 [dependencies.log]
 version = "0.4.4"
@@ -44,12 +55,28 @@ version = "0.4.4"
 [dependencies.thiserror]
 version = "1.0.20"
 
+[dev-dependencies.assert_matches]
+version = "1.5.0"
+
 [dev-dependencies.lazy_static]
 version = "1"
+
+[dev-dependencies.rusty-fork]
+version = "0.3.0"
 
 [build-dependencies.walkdir]
 version = "2"
 
 [features]
 default = []
-invocation = []
+invocation = [
+    "java-locator",
+    "libloading",
+]
+
+[target."cfg(windows)".dependencies.windows-sys]
+version = "0.45.0"
+features = ["Win32_Globalization"]
+
+[target."cfg(windows)".dev-dependencies.bytemuck]
+version = "1.13.0"

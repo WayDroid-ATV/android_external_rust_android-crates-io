@@ -85,7 +85,7 @@
 //! `mylib` that has everything needed to build an basic crate with `cargo`. We
 //! need to make a couple of changes to `Cargo.toml` before we do anything else.
 //!
-//! * Under `[dependencies]`, add `jni = "0.20.0"`
+//! * Under `[dependencies]`, add `jni = "0.21.1"`
 //! * Add a new `[lib]` section and under it, `crate_type = ["cdylib"]`.
 //!
 //! Now, if you run `cargo build` from inside the crate directory, you should
@@ -95,7 +95,7 @@
 //! The last thing we need to do is to define our exported method. Add this to
 //! your crate's `src/lib.rs`:
 //!
-//! ```rust,ignore
+//! ```rust,no_run
 //! // This is the interface to the JVM that we'll call the majority of our
 //! // methods on.
 //! use jni::JNIEnv;
@@ -113,17 +113,17 @@
 //! // This keeps Rust from "mangling" the name and making it unique for this
 //! // crate.
 //! #[no_mangle]
-//! pub extern "system" fn Java_HelloWorld_hello(env: JNIEnv,
+//! pub extern "system" fn Java_HelloWorld_hello<'local>(mut env: JNIEnv<'local>,
 //! // This is the class that owns our static method. It's not going to be used,
 //! // but still must be present to match the expected signature of a static
 //! // native method.
-//!                                              class: JClass,
-//!                                              input: JString)
-//!                                              -> jstring {
+//!                                                      class: JClass<'local>,
+//!                                                      input: JString<'local>)
+//!                                                      -> jstring {
 //!     // First, we have to get the string out of Java. Check out the `strings`
 //!     // module for more info on how this works.
 //!     let input: String =
-//!         env.get_string(input).expect("Couldn't get java string!").into();
+//!         env.get_string(&input).expect("Couldn't get java string!").into();
 //!
 //!     // Then we have to create a new Java string to return. Again, more info
 //!     // in the `strings` module.
@@ -131,7 +131,7 @@
 //!         .expect("Couldn't create java string!");
 //!
 //!     // Finally, extract the raw pointer to return.
-//!     output.into_inner()
+//!     output.into_raw()
 //! }
 //! ```
 //!

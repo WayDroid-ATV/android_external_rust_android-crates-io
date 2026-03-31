@@ -18,12 +18,13 @@ rust_library {
     host_supported: true,
     crate_name: "jni",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.20.0",
+    cargo_pkg_version: "0.21.1",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: ["default"],
     rustlibs: [
         "libcesu8",
+        "libcfg_if",
         "libcombine",
         "libjni_sys",
         "liblog_rust",
@@ -31,7 +32,7 @@ rust_library {
     ],
     apex_available: [
         "//apex_available:platform",
-        "com.android.uwb",
+        "//apex_available:anyapex",
     ],
     product_available: true,
     vendor_available: true,
