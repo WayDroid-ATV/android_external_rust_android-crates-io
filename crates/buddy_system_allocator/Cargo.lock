@@ -40,7 +40,7 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
 name = "buddy_system_allocator"
-version = "0.12.0"
+version = "0.13.0"
 dependencies = [
  "criterion",
  "ctor",

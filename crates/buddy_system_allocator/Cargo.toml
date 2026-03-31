@@ -10,9 +10,9 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
+edition = "2024"
 name = "buddy_system_allocator"
-version = "0.12.0"
+version = "0.13.0"
 authors = [
     "Jiajie Chen <c@jia.je>",
     "Vinay Chandra Dommeti <github@vinay.vc>",

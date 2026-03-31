@@ -79,7 +79,14 @@ impl<const ORDER: usize> Heap<ORDER> {
         Self::new()
     }
 
-    /// Add a range of memory [start, end) to the heap
+    /// Add a range of memory `[start, end)` to the heap.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure the memory range is valid, writable, and not currently managed by
+    /// any other allocator or by this `Heap`. In particular, the provided `[start, end)` range
+    /// must not overlap with any memory region that has already been added to this `Heap`. The
+    /// range must remain available for the lifetime of this heap.
     pub unsafe fn add_to_heap(&mut self, mut start: usize, mut end: usize) {
         // avoid unaligned access on some platforms
         start = (start + size_of::<usize>() - 1) & (!size_of::<usize>() + 1);
@@ -102,16 +109,28 @@ impl<const ORDER: usize> Heap<ORDER> {
             }
             total += size;
 
-            self.free_list[order].push(current_start as *mut usize);
+            unsafe {
+                self.free_list[order].push(current_start as *mut usize);
+            }
             current_start += size;
         }
 
         self.total += total;
     }
 
-    /// Add a range of memory [start, start+size) to the heap
+    /// Add a range of memory `[start, start + size)` to the heap.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure the memory range is valid, writable, and not currently managed by
+    /// any other allocator. Additionally, the range `[start, start + size)` must be disjoint from
+    /// every memory region previously added to this heap instance, whether via
+    /// [`Heap::add_to_heap`] or [`Heap::init`]. The range must remain available for the lifetime
+    /// of this heap.
     pub unsafe fn init(&mut self, start: usize, size: usize) {
-        self.add_to_heap(start, start + size);
+        unsafe {
+            self.add_to_heap(start, start + size);
+        }
     }
 
     /// Alloc a range of memory from the heap satifying `layout` requirements
@@ -155,7 +174,12 @@ impl<const ORDER: usize> Heap<ORDER> {
         Err(())
     }
 
-    /// Dealloc a range of memory from the heap
+    /// Dealloc a range of memory from the heap.
+    ///
+    /// # Safety
+    ///
+    /// `ptr` and `layout` must exactly match a previous successful allocation from this specific
+    /// `Heap` instance, and that allocation must not already have been deallocated.
     pub unsafe fn dealloc(&mut self, ptr: NonNull<u8>, layout: Layout) {
         let size = max(
             layout.size().next_power_of_two(),
@@ -164,7 +188,9 @@ impl<const ORDER: usize> Heap<ORDER> {
         let class = size.trailing_zeros() as usize;
 
         // Put back into free list
-        self.free_list[class].push(ptr.as_ptr() as *mut usize);
+        unsafe {
+            self.free_list[class].push(ptr.as_ptr() as *mut usize);
+        }
 
         // Merge free buddy lists
         let mut current_ptr = ptr.as_ptr() as usize;
@@ -186,7 +212,9 @@ impl<const ORDER: usize> Heap<ORDER> {
                 self.free_list[current_class].pop();
                 current_ptr = min(current_ptr, buddy);
                 current_class += 1;
-                self.free_list[current_class].push(current_ptr as *mut usize);
+                unsafe {
+                    self.free_list[current_class].push(current_ptr as *mut usize);
+                }
             } else {
                 break;
             }
@@ -287,7 +315,7 @@ unsafe impl<const ORDER: usize> GlobalAlloc for LockedHeap<ORDER> {
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-        self.0.lock().dealloc(NonNull::new_unchecked(ptr), layout)
+        unsafe { self.0.lock().dealloc(NonNull::new_unchecked(ptr), layout) }
     }
 }
 
@@ -345,9 +373,11 @@ unsafe impl<const ORDER: usize> GlobalAlloc for LockedHeapWithRescue<ORDER> {
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-        self.inner
-            .lock()
-            .dealloc(NonNull::new_unchecked(ptr), layout)
+        unsafe {
+            self.inner
+                .lock()
+                .dealloc(NonNull::new_unchecked(ptr), layout)
+        }
     }
 }
 

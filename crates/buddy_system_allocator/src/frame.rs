@@ -55,16 +55,17 @@ impl<const ORDER: usize> FrameAllocator<ORDER> {
 
         let mut total = 0;
         let mut current_start = start;
+        let max_block_size = 1 << (ORDER - 1);
 
         while current_start < end {
             let lowbit = if current_start > 0 {
                 current_start & (!current_start + 1)
             } else {
-                32
+                max_block_size
             };
             let size = min(
                 min(lowbit, prev_power_of_two(end - current_start)),
-                1 << (ORDER - 1),
+                max_block_size,
             );
             total += size;
 
@@ -94,6 +95,18 @@ impl<const ORDER: usize> FrameAllocator<ORDER> {
     pub fn alloc_aligned(&mut self, layout: Layout) -> Option<usize> {
         let size = max(layout.size().next_power_of_two(), layout.align());
         self.alloc_power_of_two(size)
+    }
+
+    /// Try to allocate a specific range of frames `[start, start + count)` from the allocator.
+    ///
+    /// The `count` will be rounded up to the next power of two, same as [`alloc`]. The `start`
+    /// address must be aligned to this rounded-up size (buddy system invariant).
+    ///
+    /// Returns `Some(start)` if the range was successfully allocated, or `None` if the range is
+    /// unavailable (not managed, already allocated, or misaligned).
+    pub fn alloc_at(&mut self, start: usize, count: usize) -> Option<usize> {
+        let size = count.next_power_of_two();
+        self.alloc_at_power_of_two(start, size)
     }
 
     /// Allocate a range of frames of the given size from the allocator. The size must be a power of
@@ -129,6 +142,36 @@ impl<const ORDER: usize> FrameAllocator<ORDER> {
         None
     }
 
+    /// Allocate a specific range of frames at the given start address with the given power-of-two
+    /// size. The start address must be aligned to the size.
+    fn alloc_at_power_of_two(&mut self, start: usize, size: usize) -> Option<usize> {
+        let class = size.trailing_zeros() as usize;
+
+        if start & (size - 1) != 0 {
+            return None;
+        }
+
+        for i in class..self.free_list.len() {
+            let block_start = start & !((1 << i) - 1);
+            if self.free_list[i].remove(&block_start) {
+                let mut current_start = block_start;
+                for j in (class..i).rev() {
+                    let mid = current_start + (1 << j);
+                    if start >= mid {
+                        self.free_list[j].insert(current_start);
+                        current_start = mid;
+                    } else {
+                        self.free_list[j].insert(mid);
+                    }
+                }
+                self.allocated += size;
+                return Some(start);
+            }
+        }
+
+        None
+    }
+
     /// Deallocate a range of frames [frame, frame+count) from the frame allocator.
     ///
     /// The range should be exactly the same when it was allocated, as in heap allocator
@@ -153,18 +196,18 @@ impl<const ORDER: usize> FrameAllocator<ORDER> {
         // Merge free buddy lists
         let mut current_ptr = start_frame;
         let mut current_class = class;
-        while current_class < self.free_list.len() {
+        while current_class < self.free_list.len() - 1 {
             let buddy = current_ptr ^ (1 << current_class);
             if self.free_list[current_class].remove(&buddy) {
                 // Free buddy found
                 current_ptr = min(current_ptr, buddy);
                 current_class += 1;
             } else {
-                self.free_list[current_class].insert(current_ptr);
                 break;
             }
         }
 
+        self.free_list[current_class].insert(current_ptr);
         self.allocated -= size;
     }
 }
@@ -198,7 +241,7 @@ pub struct LockedFrameAllocator<const ORDER: usize = 33>(Mutex<FrameAllocator<OR
 
 #[cfg(feature = "use_spin")]
 impl<const ORDER: usize> LockedFrameAllocator<ORDER> {
-    /// Creates an empty heap
+    /// Creates an empty frame allocator.
     pub const fn new() -> Self {
         Self(Mutex::new(FrameAllocator::new()))
     }
