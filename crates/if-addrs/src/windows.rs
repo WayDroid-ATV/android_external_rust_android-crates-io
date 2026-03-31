@@ -64,14 +64,14 @@ impl IpAdapterAddresses {
         }
     }
 
-    pub fn prefixes(&self) -> PrefixesIterator {
+    pub fn prefixes(&self) -> PrefixesIterator<'_> {
         PrefixesIterator {
             _head: unsafe { &*self.0 },
             next: unsafe { (*self.0).FirstPrefix },
         }
     }
 
-    pub fn unicast_addresses(&self) -> UnicastAddressesIterator {
+    pub fn unicast_addresses(&self) -> UnicastAddressesIterator<'_> {
         UnicastAddressesIterator {
             _head: unsafe { &*self.0 },
             next: unsafe { (*self.0).FirstUnicastAddress },
@@ -80,6 +80,14 @@ impl IpAdapterAddresses {
 
     pub fn oper_status(&self) -> IfOperStatus {
         unsafe { (*self.0).OperStatus.into() }
+    }
+
+    /// Returns true if the interface is a point-to-point interface.
+    pub fn is_p2p(&self) -> bool {
+        let if_type = unsafe { (*self.0).IfType };
+
+        if_type == 23 /* IF_TYPE_PPP */
+            || if_type == 131 /* IF_TYPE_TUNNEL */
     }
 }
 
@@ -132,7 +140,7 @@ impl IfAddrs {
         })
     }
 
-    pub fn iter(&self) -> IfAddrsIterator {
+    pub fn iter(&self) -> IfAddrsIterator<'_> {
         IfAddrsIterator {
             _head: self,
             next: self.inner.0,

@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "if-addrs"
-version = "0.14.0"
+version = "0.15.0"
 authors = [
     "MaidSafe Developers <dev@maidsafe.net>",
     "Messense Lv <messense@icloud.com>",
@@ -30,10 +30,6 @@ repository = "https://github.com/messense/if-addrs"
 
 [package.metadata.docs.rs]
 all-features = true
-cargo-args = [
-    "-Z",
-    "build-std",
-]
 rustdoc-args = [
     "--cfg",
     "docsrs",
@@ -46,6 +42,10 @@ targets = [
     "aarch64-apple-watchos",
     "aarch64-apple-tvos",
     "aarch64-apple-visionos",
+]
+cargo-args = [
+    "-Z",
+    "build-std",
 ]
 
 [features]
@@ -67,7 +67,7 @@ path = "examples/list_interfaces.rs"
 version = "0.2"
 
 [target.'cfg(target_os = "windows")'.dependencies.windows-sys]
-version = "0.59.0"
+version = "0.61.2"
 features = [
     "Win32_Foundation",
     "Win32_System_IO",
