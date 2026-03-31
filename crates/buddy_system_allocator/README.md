@@ -16,7 +16,7 @@ use buddy_system_allocator::LockedHeap;
 static HEAP_ALLOCATOR: LockedHeap<32> = LockedHeap::empty();
 ```
 
-To init the allocator:
+To initialize the allocator:
 
 ```rust
 unsafe {
@@ -41,7 +41,7 @@ You can also use `FrameAllocator` and `LockedHeapWithRescue`, see their document
 
 Some code comes from phil-opp's linked-list-allocator.
 
-Licensed under MIT License. Thanks phill-opp's linked-list-allocator for inspirations and interface.
+Licensed under the MIT License. Thanks to phil-opp's linked-list-allocator for the inspiration and interface.
 
 [crate-img]: https://img.shields.io/crates/v/buddy_system_allocator.svg
 [crate]: https://crates.io/crates/buddy_system_allocator
