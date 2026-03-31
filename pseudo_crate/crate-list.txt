@@ -155,6 +155,7 @@ filetime
 fixedbitset
 flagset
 flate2
+float_next_after
 fnv
 foldhash
 font-types
@@ -283,6 +284,7 @@ lscolors
 lsp-server
 lsp-types
 lyon_geom
+lyon_path
 lz4_flex
 macaddr
 managed
