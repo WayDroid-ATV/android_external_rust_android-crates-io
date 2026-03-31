@@ -282,6 +282,7 @@ lru-cache
 lscolors
 lsp-server
 lsp-types
+lyon_geom
 lz4_flex
 macaddr
 managed
