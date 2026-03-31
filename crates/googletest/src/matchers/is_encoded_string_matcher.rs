@@ -100,7 +100,6 @@ where
 mod tests {
     use crate::matcher::MatcherResult;
     use crate::prelude::*;
-    use crate::Result;
 
     #[test]
     fn matches_string_as_byte_slice() -> Result<()> {

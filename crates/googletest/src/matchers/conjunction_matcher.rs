@@ -104,7 +104,6 @@ impl<T: Debug + Copy, M1: Matcher<T>, M2: Matcher<T>> Matcher<T> for Conjunction
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::Result;
     use indoc::indoc;
 
     #[test]

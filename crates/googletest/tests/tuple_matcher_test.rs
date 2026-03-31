@@ -14,7 +14,6 @@
 
 use googletest::matcher::MatcherResult;
 use googletest::prelude::*;
-use googletest::Result;
 use indoc::indoc;
 
 #[test]

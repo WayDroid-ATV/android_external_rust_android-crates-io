@@ -28,7 +28,7 @@ pub mod internal {
     /// Used for autoref specialization to conditionally
     /// render only values that implement `Debug`. See also
     /// [`FormatNonDebugFallback`].
-    impl<T: Debug + ?Sized> FormatWrapper<'_, T> {
+    impl<'a, T: Debug + ?Sized> FormatWrapper<'a, T> {
         #[track_caller]
         pub fn __googletest_write_expr_value(&self, output: &mut dyn Write, expr_label: &str) {
             write!(output, "\n  {} = {:?},", expr_label, self.0)
@@ -45,10 +45,10 @@ pub mod internal {
         fn __googletest_write_expr_value(&self, output: &mut dyn Write, expr_label: &str);
     }
 
-    impl<T: ?Sized> FormatNonDebugFallback for FormatWrapper<'_, T> {
+    impl<'a, T: ?Sized> FormatNonDebugFallback for FormatWrapper<'a, T> {
         #[track_caller]
         fn __googletest_write_expr_value(&self, output: &mut dyn Write, expr_label: &str) {
-            write!(output, "\n  {expr_label} does not implement Debug,")
+            write!(output, "\n  {} does not implement Debug,", expr_label)
                 .expect("Formatting to String should never fail");
         }
     }

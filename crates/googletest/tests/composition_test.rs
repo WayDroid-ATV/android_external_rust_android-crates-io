@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use googletest::prelude::*;
-use googletest::Result;
 
 #[test]
 fn all_matcher_works_as_inner_matcher() -> Result<()> {

@@ -125,7 +125,7 @@ pub mod internal {
         }
     }
 
-    impl<T: Debug + Copy, ContainerT: Debug + Copy> Matcher<ContainerT> for ElementsAre<'_, T>
+    impl<'a, T: Debug + Copy, ContainerT: Debug + Copy> Matcher<ContainerT> for ElementsAre<'a, T>
     where
         ContainerT: IntoIterator<Item = T>,
     {

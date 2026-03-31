@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.70.0"
 name = "googletest"
-version = "0.14.2"
+version = "0.13.0"
 authors = [
     "Bradford Hovinen <hovinen@google.com>",
     "Bastien Jacot-Guillarmod <bjacotg@google.com>",
@@ -21,7 +21,6 @@ authors = [
     "Martin Geisler <mgeisler@google.com>",
 ]
 build = false
-autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -78,28 +77,16 @@ name = "fmt_test"
 path = "tests/fmt_test.rs"
 
 [[test]]
-name = "matches_pattern_enum_test"
-path = "tests/matches_pattern_enum_test.rs"
+name = "lib"
+path = "tests/lib.rs"
 
 [[test]]
-name = "matches_pattern_struct_and_enum_test"
-path = "tests/matches_pattern_struct_and_enum_test.rs"
-
-[[test]]
-name = "matches_pattern_struct_test"
-path = "tests/matches_pattern_struct_test.rs"
-
-[[test]]
-name = "matches_pattern_tuple_struct_test"
-path = "tests/matches_pattern_tuple_struct_test.rs"
+name = "matches_pattern_test"
+path = "tests/matches_pattern_test.rs"
 
 [[test]]
 name = "no_color_test"
 path = "tests/no_color_test.rs"
-
-[[test]]
-name = "no_std_test"
-path = "tests/no_std_test.rs"
 
 [[test]]
 name = "pointwise_matcher_test"
@@ -126,20 +113,20 @@ version = "1"
 optional = true
 
 [dependencies.googletest_macro]
-version = "0.14.2"
+version = "0.13.0"
 
 [dependencies.num-traits]
 version = "0.2.17"
 
 [dependencies.proptest]
-version = "1.7.0"
+version = "1.2.0"
 optional = true
 
 [dependencies.regex]
-version = "1.11.1"
+version = "1.7.3"
 
 [dependencies.rustversion]
-version = "1.0.21"
+version = "1.0.14"
 
 [dev-dependencies.indoc]
 version = "2"

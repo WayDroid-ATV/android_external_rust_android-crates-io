@@ -234,7 +234,7 @@ impl<'a> FromIterator<edit_distance::Edit<&'a str>> for BufferedSummary<'a> {
     }
 }
 
-impl Display for BufferedSummary<'_> {
+impl<'a> Display for BufferedSummary<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if !matches!(self.buffer, Buffer::Empty) {
             panic!("Buffer is not empty. This is a bug in gtest_rust.")
@@ -307,7 +307,7 @@ impl<'a> Buffer<'a> {
     }
 }
 
-impl Default for Buffer<'_> {
+impl<'a> Default for Buffer<'a> {
     fn default() -> Self {
         Self::Empty
     }
@@ -433,7 +433,7 @@ impl SummaryBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{matcher_support::edit_distance::Mode, prelude::*, Result};
+    use crate::{matcher_support::edit_distance::Mode, prelude::*};
     use indoc::indoc;
     use std::fmt::Write;
 
@@ -444,7 +444,7 @@ mod tests {
         write!(&mut text, "{}", collection.next().expect("Provided collection without elements"))
             .unwrap();
         for item in collection {
-            write!(&mut text, "\n{item}").unwrap();
+            write!(&mut text, "\n{}", item).unwrap();
         }
         text
     }

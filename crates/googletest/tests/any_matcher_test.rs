@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use googletest::prelude::*;
-use googletest::Result;
 use indoc::indoc;
 
 #[test]

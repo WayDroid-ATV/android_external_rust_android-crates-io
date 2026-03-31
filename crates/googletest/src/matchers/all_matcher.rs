@@ -86,7 +86,6 @@ macro_rules! __all {
 mod tests {
     use crate::matcher::MatcherResult;
     use crate::prelude::*;
-    use crate::Result;
     use indoc::indoc;
 
     #[test]

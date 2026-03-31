@@ -149,7 +149,6 @@ where
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::Result;
 
     // Simple matcher with a description
     fn is_odd() -> impl Matcher<i32> {

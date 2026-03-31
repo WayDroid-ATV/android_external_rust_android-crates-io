@@ -55,7 +55,6 @@ impl<T: Debug + Copy> Matcher<T> for Anything {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::Result;
 
     #[test]
     fn anything_matches_i32() -> Result<()> {

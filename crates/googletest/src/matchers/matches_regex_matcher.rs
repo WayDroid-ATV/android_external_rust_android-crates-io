@@ -103,7 +103,6 @@ where
 mod tests {
     use crate::matcher::MatcherResult;
     use crate::prelude::*;
-    use crate::Result;
 
     #[test]
     fn matches_regex_matches_string_reference_with_pattern() -> Result<()> {

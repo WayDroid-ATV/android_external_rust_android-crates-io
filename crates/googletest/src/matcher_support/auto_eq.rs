@@ -50,7 +50,7 @@ pub mod internal {
 
     pub struct Wrapper<T>(pub T);
 
-    impl<T: MatcherBase> Wrapper<&'_ T> {
+    impl<'a, T: MatcherBase> Wrapper<&'a T> {
         #[inline]
         pub fn kind(&self) -> MatcherTag {
             MatcherTag
@@ -87,7 +87,6 @@ pub mod internal {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use crate::Result;
 
     #[test]
     fn auto_ref_matcher() -> Result<()> {
