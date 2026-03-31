@@ -4,13 +4,14 @@
 //!
 //! These functions will panic if called after exiting boot services.
 //!
-//! # Accessing protocols
+//! # Accessing Protocols
 //!
-//! Protocols can be opened using several functions in this module. Most
-//! commonly, [`open_protocol_exclusive`] should be used. This ensures that
-//! nothing else can use the protocol until it is closed, and returns a
-//! [`ScopedProtocol`] that takes care of closing the protocol when it is
-//! dropped.
+//! Protocols in this module can be opened through multiple functions. In most
+//! cases, [`open_protocol_exclusive`] is the recommended choice. It opens the
+//! protocol with exclusive access, preventing concurrent use until it is
+//! closed, and returns a [`ScopedProtocol`] that automatically releases the
+//! protocol when dropped. Note that this approach has certain caveats; refer to
+//! the documentation of the respective function for details.
 //!
 //! Other methods for opening protocols:
 //!
@@ -18,6 +19,11 @@
 //! * [`get_image_file_system`]
 //!
 //! For protocol definitions, see the [`proto`] module.
+//!
+//! # Accessing Handles
+//!
+//! To access handles supporting a certain protocol, we recommend using
+//! [`find_handles`], [`locate_handle`], and [`locate_handle_buffer`].
 //!
 //! [`proto`]: crate::proto
 
@@ -39,6 +45,7 @@ use crate::table::Revision;
 use crate::util::opt_nonnull_to_ptr;
 use crate::{Char16, Error, Event, Guid, Handle, Result, Status, StatusExt, table};
 use core::ffi::c_void;
+use core::fmt::{Display, Formatter};
 use core::mem::MaybeUninit;
 use core::ops::{Deref, DerefMut};
 use core::ptr::{self, NonNull};
@@ -519,7 +526,7 @@ pub unsafe fn create_event_ex(
 /// * [`Status::INVALID_PARAMETER`]: `event` is of type [`NOTIFY_SIGNAL`].
 ///
 /// [`NOTIFY_SIGNAL`]: EventType::NOTIFY_SIGNAL
-pub fn check_event(event: Event) -> Result<bool> {
+pub fn check_event(event: &Event) -> Result<bool> {
     let bt = boot_services_raw_panicking();
     let bt = unsafe { bt.as_ref() };
 
@@ -893,7 +900,12 @@ pub fn locate_device_path<P: ProtocolPointer + ?Sized>(
     }
 }
 
-/// Enumerates all handles installed on the system which match a certain query.
+/// Enumerates all [`Handle`]s installed on the system which match a certain
+/// query.
+///
+/// If you use the `alloc` feature, it might be more convenient to use
+/// [`find_handles`] instead. Another alternative might be
+/// [`locate_handle_buffer`].
 ///
 /// # Errors
 ///
@@ -938,6 +950,10 @@ pub fn locate_handle<'buf>(
 /// pool-allocated buffer.
 ///
 /// See [`SearchType`] for details of the available search operations.
+///
+/// Unlike [`find_handles`], this doesn't need the `alloc` feature and operates
+/// on the UEFI heap directly. Further, it allows a more fine-grained search
+/// via the provided [`SearchType`].
 ///
 /// # Errors
 ///
@@ -1076,6 +1092,7 @@ pub fn get_handle_for_protocol<P: ProtocolPointer + ?Sized>() -> Result<Handle> 
 /// * [`Status::UNSUPPORTED`]: the handle does not support the protocol.
 /// * [`Status::ACCESS_DENIED`] or [`Status::ALREADY_STARTED`]: the protocol is
 ///   already open in a way that is incompatible with the new request.
+#[doc(alias = "handle_protocol")]
 pub unsafe fn open_protocol<P: ProtocolPointer + ?Sized>(
     params: OpenProtocolParams,
     attributes: OpenProtocolAttributes,
@@ -1112,11 +1129,17 @@ pub unsafe fn open_protocol<P: ProtocolPointer + ?Sized>(
 /// If successful, a [`ScopedProtocol`] is returned that will automatically
 /// close the protocol interface when dropped.
 ///
+/// Note that if any other drivers currently have the protocol interface opened
+/// with the [`OpenProtocolAttributes::ByDriver`] attribute, they will be
+/// disconnected via [`disconnect_controller`]. For example, opening the
+/// SERIAL_IO_PROTOCOL exclusively will disconnect the console driver from it.
+///
 /// # Errors
 ///
 /// * [`Status::UNSUPPORTED`]: the handle does not support the protocol.
 /// * [`Status::ACCESS_DENIED`]: the protocol is already open in a way that is
 ///   incompatible with the new request.
+#[doc(alias = "handle_protocol")]
 pub fn open_protocol_exclusive<P: ProtocolPointer + ?Sized>(
     handle: Handle,
 ) -> Result<ScopedProtocol<P>> {
@@ -1548,8 +1571,8 @@ impl Deref for ProtocolsPerHandle {
     }
 }
 
-/// A buffer returned by [`locate_handle_buffer`] that contains an array of
-/// [`Handle`]s that support the requested [`Protocol`].
+/// A buffer on the UEFI heap returned by [`locate_handle_buffer`] that contains
+/// an array of [`Handle`]s that support the requested [`Protocol`].
 #[derive(Debug, Eq, PartialEq)]
 pub struct HandleBuffer {
     count: usize,
@@ -1596,6 +1619,20 @@ impl<P: Protocol + ?Sized> ScopedProtocol<P> {
     #[must_use]
     pub const fn open_params(&self) -> OpenProtocolParams {
         self.open_params
+    }
+}
+
+// Forward Display impl to inner protocol:
+impl<P: Protocol + ?Sized + Display> Display for ScopedProtocol<P> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        match self.get() {
+            Some(proto) => {
+                write!(f, "{proto}")
+            }
+            None => {
+                write!(f, "<none>")
+            }
+        }
     }
 }
 
@@ -1699,9 +1736,17 @@ impl Drop for TplGuard {
 #[repr(u32)]
 #[derive(Debug)]
 pub enum OpenProtocolAttributes {
-    /// Used by drivers to get a protocol interface for a handle. The
-    /// driver will not be informed if the interface is uninstalled or
-    /// reinstalled.
+    /// Used by applications and drivers to open a protocol interface for a
+    /// handle.
+    ///
+    /// # Safety
+    ///
+    /// The interface is opened non-exclusively. The caller must ensure that
+    /// either the interface is immutable, or that no conflicting concurrent
+    /// access occurs.
+    ///
+    /// The caller must ensure that the interface is not uninstalled or
+    /// reinstalled while still in use.
     GetProtocol = 0x02,
 
     /// Used by bus drivers to show that a protocol is being used by one
@@ -1716,17 +1761,42 @@ pub enum OpenProtocolAttributes {
     /// the `ByDriver` attribute.
     ByDriver = 0x10,
 
-    /// Used by a driver to gain exclusive access to a protocol
-    /// interface. If any other drivers have the protocol interface
-    /// opened with an attribute of `ByDriver`, then an attempt will be
-    /// made to remove them with `DisconnectController`.
-    ByDriverExclusive = 0x30,
-
     /// Used by applications to gain exclusive access to a protocol
     /// interface. If any drivers have the protocol opened with an
     /// attribute of `ByDriver`, then an attempt will be made to remove
     /// them by calling the driver's `Stop` function.
+    ///
+    /// # Warning
+    ///
+    /// Opening an interface in exclusive mode can have surprising side
+    /// effects. For example:
+    ///
+    /// * Opening a serial protocol in exclusive mode may disconnect it from
+    ///   other output protocols, and that connection will not be automatically
+    ///   restored when the exclusive access is ended. ([`connect_controller`]
+    ///   can sometimes be used to manually restore such connections.)
+    ///
+    /// * Stopping drivers that have the protocol open may be very slow. On some
+    ///   firmware, opening any of the disk protocols in exclusive mode can take
+    ///   nearly one second to complete.
+    ///
+    /// In many cases it is better to use [`GetProtocol`], even though it
+    /// requires the use of `unsafe`.
+    ///
+    /// [`GetProtocol`]: Self::GetProtocol
     Exclusive = 0x20,
+
+    /// Used by a driver to gain exclusive access to a protocol
+    /// interface. If any other drivers have the protocol interface
+    /// opened with an attribute of `ByDriver`, then an attempt will be
+    /// made to remove them with `DisconnectController`.
+    ///
+    /// # Warning
+    ///
+    /// See warning section of [`Exclusive`].
+    ///
+    /// [`Exclusive`]: Self::Exclusive
+    ByDriverExclusive = 0x30,
 }
 
 /// Parameters passed to [`open_protocol`].
