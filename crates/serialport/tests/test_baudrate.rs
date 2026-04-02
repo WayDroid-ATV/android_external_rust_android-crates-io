@@ -74,7 +74,10 @@ mod builder {
     #[cfg_attr(
         any(
             not(feature = "hardware-tests"),
-            not(all(target_os = "linux", target_env = "musl")),
+            not(all(
+                target_os = "linux",
+                any(target_arch = "powerpc", target_arch = "powerpc64")
+            )),
         ),
         ignore
     )]
@@ -92,7 +95,10 @@ mod builder {
     #[cfg_attr(
         any(
             not(feature = "hardware-tests"),
-            all(target_os = "linux", target_env = "musl"),
+            all(
+                target_os = "linux",
+                any(target_arch = "powerpc", target_arch = "powerpc64")
+            ),
         ),
         ignore
     )]
@@ -107,10 +113,39 @@ mod builder {
         check_baud_rate(port.as_ref(), baud);
     }
 
-    /// Transmits data back and forth as done by the hardware_check example.
+    /// Transmits data back and forth at standard baud rates as done by the hardware_check example.
     #[apply(standard_baud_rates)]
     #[cfg_attr(not(feature = "hardware-tests"), ignore)]
     fn test_transmit_at_standard_baud_rate(hw_config: HardwareConfig, #[case] baud: u32) {
+        let mut port1 = serialport::new(hw_config.port_1, RESET_BAUD_RATE)
+            .baud_rate(baud)
+            .timeout(TEST_MESSAGE_TIMEOUT)
+            .open()
+            .unwrap();
+        let mut port2 = serialport::new(hw_config.port_2, RESET_BAUD_RATE)
+            .baud_rate(baud)
+            .timeout(TEST_MESSAGE_TIMEOUT)
+            .open()
+            .unwrap();
+
+        check_test_message(&mut *port1, &mut *port2);
+        check_test_message(&mut *port2, &mut *port1);
+    }
+
+    /// Transmits data back and forth at non-standard baud rates as done by the hardware_check
+    /// example.
+    #[apply(standard_baud_rates)]
+    #[cfg_attr(
+        any(
+            not(feature = "hardware-tests"),
+            all(
+                target_os = "linux",
+                any(target_arch = "powerpc", target_arch = "powerpc64")
+            ),
+        ),
+        ignore
+    )]
+    fn test_transmit_at_non_standard_baud_rate(hw_config: HardwareConfig, #[case] baud: u32) {
         let mut port1 = serialport::new(hw_config.port_1, RESET_BAUD_RATE)
             .baud_rate(baud)
             .timeout(TEST_MESSAGE_TIMEOUT)
@@ -142,7 +177,10 @@ mod new {
     #[cfg_attr(
         any(
             not(feature = "hardware-tests"),
-            not(all(target_os = "linux", target_env = "musl")),
+            not(all(
+                target_os = "linux",
+                any(target_arch = "powerpc", target_arch = "powerpc64")
+            )),
         ),
         ignore
     )]
@@ -157,7 +195,10 @@ mod new {
     #[cfg_attr(
         any(
             not(feature = "hardware-tests"),
-            all(target_os = "linux", target_env = "musl"),
+            all(
+                target_os = "linux",
+                any(target_arch = "powerpc", target_arch = "powerpc64")
+            ),
         ),
         ignore
     )]
@@ -169,10 +210,37 @@ mod new {
         check_baud_rate(port.as_ref(), baud);
     }
 
-    /// Transmits data back and forth as done by the hardware_check example.
+    /// Transmits data back and forth at standard baud rates as done by the hardware_check example.
     #[apply(standard_baud_rates)]
     #[cfg_attr(not(feature = "hardware-tests"), ignore)]
     fn test_transmit_at_standard_baud_rate(hw_config: HardwareConfig, #[case] baud: u32) {
+        let mut port1 = serialport::new(hw_config.port_1, baud)
+            .timeout(TEST_MESSAGE_TIMEOUT)
+            .open()
+            .unwrap();
+        let mut port2 = serialport::new(hw_config.port_2, baud)
+            .timeout(TEST_MESSAGE_TIMEOUT)
+            .open()
+            .unwrap();
+
+        check_test_message(&mut *port1, &mut *port2);
+        check_test_message(&mut *port2, &mut *port1);
+    }
+
+    /// Transmits data back and forth at non-standard baud rates as done by the hardware_check
+    /// example.
+    #[apply(non_standard_baud_rates)]
+    #[cfg_attr(
+        any(
+            not(feature = "hardware-tests"),
+            all(
+                target_os = "linux",
+                any(target_arch = "powerpc", target_arch = "powerpc64")
+            ),
+        ),
+        ignore
+    )]
+    fn test_transmit_at_non_standard_baud_rate(hw_config: HardwareConfig, #[case] baud: u32) {
         let mut port1 = serialport::new(hw_config.port_1, baud)
             .timeout(TEST_MESSAGE_TIMEOUT)
             .open()
@@ -207,7 +275,10 @@ mod set_baud {
     #[cfg_attr(
         any(
             not(feature = "hardware-tests"),
-            not(all(target_os = "linux", target_env = "musl")),
+            not(all(
+                target_os = "linux",
+                any(target_arch = "powerpc", target_arch = "powerpc64")
+            )),
         ),
         ignore
     )]
@@ -228,7 +299,10 @@ mod set_baud {
     #[cfg_attr(
         any(
             not(feature = "hardware-tests"),
-            all(target_os = "linux", target_env = "musl"),
+            all(
+                target_os = "linux",
+                any(target_arch = "powerpc", target_arch = "powerpc64")
+            ),
         ),
         ignore
     )]
@@ -245,10 +319,40 @@ mod set_baud {
         check_baud_rate(port.as_ref(), baud);
     }
 
-    /// Transmits data back and forth as done by the hardware_check example.
+    /// Transmits data back and forth at standard baud rates as done by the hardware_check example.
     #[apply(standard_baud_rates)]
     #[cfg_attr(not(feature = "hardware-tests"), ignore)]
     fn test_transmit_at_standard_baud_rate(hw_config: HardwareConfig, #[case] baud: u32) {
+        let mut port1 = serialport::new(hw_config.port_1, RESET_BAUD_RATE)
+            .timeout(TEST_MESSAGE_TIMEOUT)
+            .open()
+            .unwrap();
+        let mut port2 = serialport::new(hw_config.port_2, RESET_BAUD_RATE)
+            .timeout(TEST_MESSAGE_TIMEOUT)
+            .open()
+            .unwrap();
+
+        port1.set_baud_rate(baud).unwrap();
+        port2.set_baud_rate(baud).unwrap();
+
+        check_test_message(&mut *port1, &mut *port2);
+        check_test_message(&mut *port2, &mut *port1);
+    }
+
+    /// Transmits data back and forth at non-standard baud rates as done by the hardware_check
+    /// example.
+    #[apply(non_standard_baud_rates)]
+    #[cfg_attr(
+        any(
+            not(feature = "hardware-tests"),
+            all(
+                target_os = "linux",
+                any(target_arch = "powerpc", target_arch = "powerpc64")
+            ),
+        ),
+        ignore
+    )]
+    fn test_transmit_at_non_standard_baud_rate(hw_config: HardwareConfig, #[case] baud: u32) {
         let mut port1 = serialport::new(hw_config.port_1, RESET_BAUD_RATE)
             .timeout(TEST_MESSAGE_TIMEOUT)
             .open()
