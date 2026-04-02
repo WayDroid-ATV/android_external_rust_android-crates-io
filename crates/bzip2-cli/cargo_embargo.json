@@ -1,0 +1,11 @@
+{
+  "module_name_overrides": {
+    "bzip2": "bzip2_rs"
+  },
+  "run_cargo": true,
+  "variants": [
+    {
+    }
+  ],
+  "min_sdk_version": "29"
+}

@@ -167,6 +167,7 @@ dependencies = [
  "byteorder",
  "byteorder-lite",
  "bytes",
+ "bzip2-cli",
  "camino",
  "caps",
  "cargo-platform",
@@ -1542,6 +1543,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bdb116a6ef3f6c3698828873ad02c3014b3c85cadb88496095628e3ef1e347f8"
 dependencies = [
  "bzip2-sys",
+ "libc 0.2.183",
+]
+
+[[package]]
+name = "bzip2-cli"
+version = "0.2.2"
+dependencies = [
+ "libbz2-rs-sys",
  "libc 0.2.183",
 ]
 
