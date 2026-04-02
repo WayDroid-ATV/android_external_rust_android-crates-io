@@ -64,7 +64,7 @@ pub struct VirtIOSound<H: Hal, T: Transport> {
 impl<H: Hal, T: Transport> VirtIOSound<H, T> {
     /// Create a new VirtIO-Sound driver.
     pub fn new(mut transport: T) -> Result<Self> {
-        let negotiated_features = transport.begin_init(SUPPORTED_FEATURES);
+        let negotiated_features = transport.begin_init(SUPPORTED_FEATURES)?;
         info!(
             "[sound device] negotiated_features: {:?}",
             negotiated_features
@@ -745,7 +745,9 @@ const EVENT_QUEUE_IDX: u16 = 1;
 const TX_QUEUE_IDX: u16 = 2;
 const RX_QUEUE_IDX: u16 = 3;
 
-const SUPPORTED_FEATURES: Feature = Feature::RING_INDIRECT_DESC.union(Feature::RING_EVENT_IDX);
+const SUPPORTED_FEATURES: Feature = Feature::RING_INDIRECT_DESC
+    .union(Feature::RING_EVENT_IDX)
+    .union(Feature::VERSION_1);
 
 bitflags! {
     #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]

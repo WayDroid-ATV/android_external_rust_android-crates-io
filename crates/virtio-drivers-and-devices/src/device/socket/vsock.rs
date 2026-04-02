@@ -21,7 +21,9 @@ pub(crate) const TX_QUEUE_IDX: u16 = 1;
 const EVENT_QUEUE_IDX: u16 = 2;
 
 pub(crate) const QUEUE_SIZE: usize = 8;
-const SUPPORTED_FEATURES: Feature = Feature::RING_EVENT_IDX.union(Feature::RING_INDIRECT_DESC);
+const SUPPORTED_FEATURES: Feature = Feature::RING_EVENT_IDX
+    .union(Feature::RING_INDIRECT_DESC)
+    .union(Feature::VERSION_1);
 
 /// Information about a particular vsock connection.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -247,7 +249,7 @@ impl<H: Hal, T: Transport, const RX_BUFFER_SIZE: usize> VirtIOSocket<H, T, RX_BU
     pub fn new(mut transport: T) -> Result<Self> {
         assert!(RX_BUFFER_SIZE > size_of::<VirtioVsockHdr>());
 
-        let negotiated_features = transport.begin_init(SUPPORTED_FEATURES);
+        let negotiated_features = transport.begin_init(SUPPORTED_FEATURES)?;
 
         let guest_cid = transport.read_consistent(|| {
             Ok(
