@@ -8,9 +8,73 @@ project adheres to [Semantic Versioning](https://semver.org/).
 ## [Unreleased]
 
 ### Added
+
+* Add `exclusive` configuration option to `SerialPortBuilder` to control
+  whether ports are opened with exclusive access locks.
+  [#319](https://github.com/serialport/serialport-rs/pull/319)
+
 ### Changed
 ### Fixed
 ### Removed
+
+
+## [4.9.0] -- 2026-03-12
+
+### Changed
+
+* Enumerate serial-base subsystem on Linux without libudev support too. Some of
+  these newly enumerated ports may show up with a different type than with
+  libudev, but they will be finally enumerated at all.
+  [#311](https://github.com/serialport/serialport-rs/pull/311)
+* Enable arbitrary baud rates for Linux musl targets by directly using
+  `termios2` and the corresponding `ioctl`s `TCGETS2` and `TCSETS2` from nix
+  and the libc crate. There is no support form musl for `termios2` and we are
+  directly talking to the kernel and bypassing it here.
+  [#316](https://github.com/serialport/serialport-rs/pull/316)
+
+### Fixed
+
+* Always propagate errors out of termios getter/setter implementations.
+* Wrap slave port file descriptors in `TTYPort::pair` in a `Drop`-safe `OwnedFd` to avoid file descriptor leaks on early returns.
+* Enable arbitrary baud rates for Linux musl targets by using the `termios2`
+  (`TCGETS2`/`TCSETS2` + `BOTHER`) path now that required `libc` symbols are
+  available.
+  [#316](https://github.com/serialport/serialport-rs/pull/316)
+* Unpin dependencies with MSRV incompatible Rust version bump. This caused
+  issues with dependency resolution for many users building with newer Rust
+  versions. See [Dependencies](README.md#dependencies) on how to pin them in
+  your project when building with older Rust versions.
+  [#324](https://github.com/serialport/serialport-rs/issues/324)
+  [#307](https://github.com/serialport/serialport-rs/issues/307)
+  [#304](https://github.com/serialport/serialport-rs/issues/304)
+  [#300](https://github.com/serialport/serialport-rs/issues/300)
+  [#231](https://github.com/serialport/serialport-rs/issues/231)
+
+
+## [4.8.1] - 2025-10-07
+
+### Fixed
+
+* Generating documentation on docs.rs.
+  [#299](https://github.com/serialport/serialport-rs/pull/299)
+
+
+## [4.8.0] - 2025-10-06
+
+### Added
+
+* Additionally acquire an advisory lock with `flock` when opening a serial port.
+  [#266](https://github.com/serialport/serialport-rs/pull/266)
+
+### Changed
+
+* Switch from no longer actively maintained Windows FFI abstractions winapi
+  to active windows-sys crate.
+  [#280](https://github.com/serialport/serialport-rs/pull/280)
+* Output USB VID and PID in hexadecimal digits in `UsbPortInfo`'s `Debug`
+  representation.
+  [#290](https://github.com/serialport/serialport-rs/pull/290)
+
 
 ## [4.7.3] - 2025-08-24
 
@@ -539,7 +603,10 @@ Unreleased, happened due to a user error using `cargo-release`.
 * Initial release.
 
 
-[Unreleased]: https://github.com/serialport/serialport-rs/compare/v4.7.3...HEAD
+[Unreleased]: https://github.com/serialport/serialport-rs/compare/v4.9.0...HEAD
+[4.9.0]: https://github.com/serialport/serialport-rs/compare/v4.8.1...v4.9.0
+[4.8.1]: https://github.com/serialport/serialport-rs/compare/v4.8.0...v4.8.1
+[4.8.0]: https://github.com/serialport/serialport-rs/compare/v4.7.3...v4.8.0
 [4.7.3]: https://github.com/serialport/serialport-rs/compare/v4.7.2...v4.7.3
 [4.7.2]: https://github.com/serialport/serialport-rs/compare/v4.7.1...v4.7.2
 [4.7.1]: https://github.com/serialport/serialport-rs/compare/v4.7.0...v4.7.1

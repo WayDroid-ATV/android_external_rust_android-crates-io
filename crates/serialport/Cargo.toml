@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.59.0"
 name = "serialport"
-version = "4.7.3"
+version = "4.9.0"
 authors = [
     "Bryant Mairs <bryant@mai.rs>",
     "Jesse Braham <jesse@beta7.io>",
@@ -91,6 +91,10 @@ name = "test_baudrate"
 path = "tests/test_baudrate.rs"
 
 [[test]]
+name = "test_file_locking"
+path = "tests/test_file_locking.rs"
+
+[[test]]
 name = "test_serialport"
 path = "tests/test_serialport.rs"
 
@@ -128,10 +132,7 @@ features = ["derive"]
 version = "0.10.0"
 
 [dev-dependencies.libc]
-version = ">=0.2.0, <=0.2.163"
-
-[dev-dependencies.os_str_bytes]
-version = ">=6.0, <6.6.0"
+version = "0.2.163"
 
 [dev-dependencies.quickcheck]
 version = "1.0.3"
@@ -182,20 +183,17 @@ features = [
 ]
 default-features = false
 
-[target."cfg(windows)".dependencies.winapi]
-version = "0.3.9"
+[target."cfg(windows)".dependencies.windows-sys]
+version = "0.52.0"
 features = [
-    "cguid",
-    "commapi",
-    "errhandlingapi",
-    "fileapi",
-    "guiddef",
-    "handleapi",
-    "minwinbase",
-    "minwindef",
-    "ntdef",
-    "setupapi",
-    "winbase",
-    "winerror",
-    "winnt",
+    "Win32_Devices_Communication",
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+    "Win32_System_IO",
+    "Win32_System_Registry",
+    "Win32_System_Diagnostics_Debug",
+    "Win32_Devices_DeviceAndDriverInstallation",
+    "Win32_System_Threading",
+    "Win32_Security",
+    "Win32_System_SystemServices",
 ]

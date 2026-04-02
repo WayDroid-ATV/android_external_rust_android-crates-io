@@ -16,6 +16,7 @@
 //! Using the platform-specific `SerialPort::new().open*()` functions will return the
 //! platform-specific port object which allows access to platform-specific functionality.
 
+#![allow(clippy::uninlined_format_args)]
 #![deny(
     clippy::dbg_macro,
     missing_docs,
@@ -26,8 +27,8 @@
 // https://doc.rust-lang.org/rustdoc/unstable-features.html?highlight=doc(cfg#doccfg-recording-what-platforms-or-features-are-required-for-code-to-be-present
 // and
 // https://doc.rust-lang.org/rustdoc/unstable-features.html#doc_auto_cfg-automatically-generate-doccfg
-// for details.
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+// with its latest update https://github.com/rust-lang/rust/pull/138907 for details.
+#![cfg_attr(docsrs, feature(doc_cfg))]
 // Don't worry about needing to `unwrap()` or otherwise handle some results in
 // doc tests.
 #![doc(test(attr(allow(unused_must_use))))]
@@ -333,6 +334,9 @@ pub struct SerialPortBuilder {
     timeout: Duration,
     /// The state to set DTR to when opening the device
     dtr_on_open: Option<bool>,
+    /// Whether to enforce exclusive access to the port
+    #[cfg(unix)]
+    exclusive: bool,
 }
 
 impl SerialPortBuilder {
@@ -412,6 +416,18 @@ impl SerialPortBuilder {
     #[must_use]
     pub fn preserve_dtr_on_open(mut self) -> Self {
         self.dtr_on_open = None;
+        self
+    }
+
+    /// Set whether the port should be opened with exclusive access.
+    ///
+    /// By default, ports are opened with exclusive access. This is what you typically want as
+    /// opening and accessing the very same port multiple times results in garbled data on or from
+    /// the wire.
+    #[cfg(unix)]
+    #[must_use]
+    pub fn exclusive(mut self, exclusive: bool) -> Self {
+        self.exclusive = exclusive;
         self
     }
 
@@ -796,7 +812,7 @@ impl fmt::Debug for dyn SerialPort {
 }
 
 /// Contains all possible USB information about a `SerialPort`
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct UsbPortInfo {
     /// Vendor ID
@@ -814,6 +830,32 @@ pub struct UsbPortInfo {
     /// interface (as is the case on macOS), so you should recognize both interface numbers.
     #[cfg(feature = "usbportinfo-interface")]
     pub interface: Option<u8>,
+}
+
+struct HexU16(u16);
+
+impl std::fmt::Debug for HexU16 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "0x{:04x}", self.0)
+    }
+}
+
+impl std::fmt::Debug for UsbPortInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut d = f.debug_struct("UsbPortInfo");
+        d.field("vid", &HexU16(self.vid))
+            .field("pid", &HexU16(self.pid))
+            .field("serial_number", &self.serial_number)
+            .field("manufacturer", &self.manufacturer)
+            .field("product", &self.product);
+
+        #[cfg(feature = "usbportinfo-interface")]
+        {
+            d.field("interface", &self.interface);
+        }
+
+        d.finish()
+    }
 }
 
 /// The physical type of a `SerialPort`
@@ -867,6 +909,8 @@ pub fn new<'a>(path: impl Into<std::borrow::Cow<'a, str>>, baud_rate: u32) -> Se
         // substantially larger area than the one benefitting from it, I finally decided to revert
         // this. Sorry for this back and forth, Christian.
         dtr_on_open: None,
+        #[cfg(unix)]
+        exclusive: true,
     }
 }
 
@@ -907,5 +951,44 @@ mod test {
         assert_eq!(builder.stop_bits, StopBits::One);
         assert_eq!(builder.timeout, Duration::ZERO);
         assert_eq!(builder.dtr_on_open, None);
+        #[cfg(unix)]
+        assert!(builder.exclusive);
+    }
+
+    // Checks that the builder's exclusive method changes the state accordingly.
+    #[cfg(unix)]
+    #[rstest]
+    fn builder_exclusive() {
+        let builder = new("port_test_dummy", 12345);
+        assert!(builder.exclusive);
+
+        let builder = builder.exclusive(false);
+        assert!(!builder.exclusive);
+
+        let builder = builder.exclusive(true);
+        assert!(builder.exclusive);
+    }
+
+    #[rstest]
+    fn usbportinfo_debug_representation() {
+        let info = UsbPortInfo {
+            manufacturer: Some(String::from("your manufacutrer here")),
+            vid: 0xbade,
+            pid: 0xaffe,
+            product: Some(String::from("your product here")),
+            serial_number: Some(String::from("your serial_number here")),
+            #[cfg(feature = "usbportinfo-interface")]
+            interface: Some(42),
+        };
+        let formatted = format!("{:?}", info);
+
+        // Set the expectiation for the debug representation basend on a "snapshot" of the current
+        // one, manually cross-checked to contain a VID and PID in hexadecimal digits.
+        #[cfg(not(feature = "usbportinfo-interface"))]
+        let expected = "UsbPortInfo { vid: 0xbade, pid: 0xaffe, serial_number: Some(\"your serial_number here\"), manufacturer: Some(\"your manufacutrer here\"), product: Some(\"your product here\") }";
+        #[cfg(feature = "usbportinfo-interface")]
+        let expected = "UsbPortInfo { vid: 0xbade, pid: 0xaffe, serial_number: Some(\"your serial_number here\"), manufacturer: Some(\"your manufacutrer here\"), product: Some(\"your product here\"), interface: Some(42) }";
+
+        assert_eq!(formatted, expected);
     }
 }
