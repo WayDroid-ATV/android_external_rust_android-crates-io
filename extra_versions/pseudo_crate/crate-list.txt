@@ -8,6 +8,7 @@ http-body
 hyper
 indexmap
 jni
+jni-sys
 nix
 protobuf
 protobuf-codegen
