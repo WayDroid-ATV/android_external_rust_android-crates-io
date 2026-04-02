@@ -8,7 +8,7 @@ mod some;
 #[cfg(target_arch = "x86_64")]
 pub mod x86_64;
 
-use crate::{PhysAddr, Result, PAGE_SIZE};
+use crate::{Error, PhysAddr, Result, PAGE_SIZE};
 use bitflags::{bitflags, Flags};
 use core::{fmt::Debug, ops::BitAnd};
 use log::debug;
@@ -57,6 +57,17 @@ pub trait Transport {
 
     /// Sets the device status.
     fn set_status(&mut self, status: DeviceStatus);
+
+    /// Sets the device status and allows optionally returning an error and the real device status.
+    ///
+    /// This is provided to allow transports to report errors encountered while trying to set the
+    /// status. The return value is the actual device status which may oy may not be the same as the
+    /// argument. Transports which do not provide the device status as the result of a set status
+    /// operation (such as PCI and MMIO) will return `None`.
+    fn try_set_status(&mut self, status: DeviceStatus) -> Result<Option<DeviceStatus>> {
+        self.set_status(status);
+        Ok(None)
+    }
 
     /// Sets the guest page size.
     fn set_guest_page_size(&mut self, guest_page_size: u32);
@@ -107,22 +118,42 @@ pub trait Transport {
     fn begin_init<F: Flags<Bits = u64> + BitAnd<Output = F> + Debug>(
         &mut self,
         supported_features: F,
-    ) -> F {
+    ) -> Result<F> {
         self.set_status(DeviceStatus::empty());
         self.set_status(DeviceStatus::ACKNOWLEDGE | DeviceStatus::DRIVER);
 
-        let device_features = F::from_bits_truncate(self.read_device_features());
+        let device_feature_bits = self.read_device_features();
+        let device_features = F::from_bits_truncate(device_feature_bits);
         debug!("Device features: {:?}", device_features);
         let negotiated_features = device_features & supported_features;
+        if cfg!(debug_assertions) {
+            use crate::device::common::Feature;
+
+            if device_feature_bits & Feature::VERSION_1.bits() > 0 {
+                // > 6.1 Driver Requirements: Reserved Feature Bits
+                // > A driver MUST accept VIRTIO_F_VERSION_1 if it is offered.
+                debug_assert!(negotiated_features.bits() & Feature::VERSION_1.bits() > 0, "Driver must accept VIRTIO_F_VERSION_1 in supported features because it is offered by the device.");
+            }
+        }
         self.write_driver_features(negotiated_features.bits());
 
-        self.set_status(
+        let set_status_resp = self.try_set_status(
             DeviceStatus::ACKNOWLEDGE | DeviceStatus::DRIVER | DeviceStatus::FEATURES_OK,
-        );
+        )?;
+
+        // If the device did not return the status as a response to set status, do an explicit get
+        // status call.
+        let device_status = set_status_resp.unwrap_or(self.get_status());
+
+        // If the device ignored the FEATURES_OK bit bail out.
+        if !device_status.contains(DeviceStatus::FEATURES_OK) {
+            debug!("Device did not accept negotiated feature bits {negotiated_features:x?}");
+            return Err(Error::Unsupported);
+        }
 
         self.set_guest_page_size(PAGE_SIZE as u32);
 
-        negotiated_features
+        Ok(negotiated_features)
     }
 
     /// Finishes initializing the device.

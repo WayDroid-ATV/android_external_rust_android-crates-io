@@ -11,7 +11,9 @@ use log::info;
 use zerocopy::{FromBytes, FromZeros, Immutable, IntoBytes, KnownLayout};
 
 const QUEUE_SIZE: u16 = 2;
-const SUPPORTED_FEATURES: Features = Features::RING_EVENT_IDX.union(Features::RING_INDIRECT_DESC);
+const SUPPORTED_FEATURES: Features = Features::RING_EVENT_IDX
+    .union(Features::RING_INDIRECT_DESC)
+    .union(Features::VERSION_1);
 
 /// A virtio based graphics adapter.
 ///
@@ -40,7 +42,7 @@ pub struct VirtIOGpu<H: Hal, T: Transport> {
 impl<H: Hal, T: Transport> VirtIOGpu<H, T> {
     /// Create a new VirtIO-Gpu driver.
     pub fn new(mut transport: T) -> Result<Self> {
-        let negotiated_features = transport.begin_init(SUPPORTED_FEATURES);
+        let negotiated_features = transport.begin_init(SUPPORTED_FEATURES)?;
 
         // read configuration space
         let events_read = read_config!(transport, Config, events_read)?;
