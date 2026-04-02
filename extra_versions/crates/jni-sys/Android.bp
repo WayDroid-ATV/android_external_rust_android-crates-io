@@ -2,34 +2,25 @@
 // Do not modify this file because the changes will be overridden on upgrade.
 
 package {
-    default_applicable_licenses: ["external_rust_crates_jni-0.21.1_license"],
+    default_applicable_licenses: ["external_rust_crates_jni-sys-0.3.0_license"],
     default_team: "trendy_team_android_rust",
 }
 
 license {
-    name: "external_rust_crates_jni-0.21.1_license",
+    name: "external_rust_crates_jni-sys-0.3.0_license",
     visibility: [":__subpackages__"],
     license_kinds: ["SPDX-license-identifier-Apache-2.0"],
     license_text: ["LICENSE"],
 }
 
 rust_library {
-    name: "libjni_legacy",
+    name: "libjni_sys_legacy",
     host_supported: true,
-    crate_name: "jni",
+    crate_name: "jni_sys",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.21.1",
+    cargo_pkg_version: "0.3.0",
     crate_root: "src/lib.rs",
-    edition: "2018",
-    features: ["default"],
-    rustlibs: [
-        "libcesu8",
-        "libcfg_if",
-        "libcombine",
-        "libjni_sys_legacy",
-        "liblog_rust",
-        "libthiserror",
-    ],
+    edition: "2015",
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
