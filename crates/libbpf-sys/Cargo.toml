@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.82"
 name = "libbpf-sys"
-version = "1.6.2+v1.6.2"
+version = "1.7.0+v1.7.0"
 authors = [
     "Alex Forster <alex@alexforster.com>",
     "Dan Siemon <dan@coverfire.com>",
@@ -83,16 +83,16 @@ name = "tests"
 path = "tests/tests.rs"
 
 [build-dependencies.bindgen]
-version = "^0.72"
+version = "^0.72.0"
 optional = true
 
 [build-dependencies.cc]
-version = "^1.1.6"
+version = "^1.2.27"
 
 [build-dependencies.nix]
-version = "^0.30.0"
+version = "^0.31.2"
 features = ["fs"]
 default-features = false
 
 [build-dependencies.pkg-config]
-version = "^0.3.30"
+version = "^0.3.32"

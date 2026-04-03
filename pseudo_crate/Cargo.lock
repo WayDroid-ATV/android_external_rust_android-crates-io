@@ -4975,12 +4975,12 @@ dependencies = [
 
 [[package]]
 name = "libbpf-sys"
-version = "1.6.2+v1.6.2"
+version = "1.7.0+v1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba0346fc595fa2c8e274903e8a0e3ed5e6a29183af167567f6289fd3b116881b"
+checksum = "a109478760b2900aa2a6f2087e9d0de1d9c535b1758602af2845d5d2ccfaed7c"
 dependencies = [
  "cc",
- "nix 0.30.1",
+ "nix 0.31.2",
  "pkg-config",
 ]
 
@@ -6563,9 +6563,9 @@ dependencies = [
 
 [[package]]
 name = "pkg-config"
-version = "0.3.30"
+version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
+checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 
 [[package]]
 name = "plotters"

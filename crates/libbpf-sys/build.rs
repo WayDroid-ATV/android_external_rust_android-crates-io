@@ -57,6 +57,9 @@ fn generate_bindings(src_dir: path::PathBuf) {
     let out_dir =
         &path::PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR should always be set"));
 
+    let out_file = out_dir.join("bindings.rs");
+    println!("cargo:rerun-if-changed={}", out_file.display());
+
     bindgen::Builder::default()
         .rust_target(env!("CARGO_PKG_RUST_VERSION").parse().expect("valid"))
         .disable_header_comment()
@@ -93,7 +96,7 @@ fn generate_bindings(src_dir: path::PathBuf) {
         ))
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file(out_dir.join("bindings.rs"))
+        .write_to_file(out_file)
         .expect("Couldn't write bindings");
 }
 
@@ -155,7 +158,11 @@ fn main() {
 
     let (compiler, mut cflags) = if vendored_libbpf || vendored_libelf || vendored_zlib {
         pkg_check("make");
-        pkg_check("pkg-config");
+        pkg_check(
+            std::env::var("PKG_CONFIG")
+                .as_deref()
+                .unwrap_or("pkg-config"),
+        );
 
         let compiler = cc::Build::new().try_get_compiler().expect(
             "a C compiler is required to compile libbpf-sys using the vendored copy of libbpf",
@@ -203,11 +210,30 @@ fn main() {
     );
     println!("cargo:include={}/include", out_dir.to_string_lossy());
 
-    println!("cargo:rerun-if-env-changed=LIBBPF_SYS_LIBRARY_PATH");
-    if let Ok(lib_path) = env::var("LIBBPF_SYS_LIBRARY_PATH") {
-        for path in lib_path.split(':') {
-            if !path.is_empty() {
-                println!("cargo:rustc-link-search=native={}", path);
+    let global_lib_path = "LIBBPF_SYS_LIBRARY_PATH";
+    let target_lib_path = format!("{}_{}", global_lib_path, env::var("TARGET").unwrap());
+    let target_lib_path_underscored = format!(
+        "{}_{}",
+        global_lib_path,
+        env::var("TARGET").unwrap().replace('-', "_")
+    );
+
+    println!("cargo:rerun-if-env-changed={}", global_lib_path);
+    println!("cargo:rerun-if-env-changed={}", target_lib_path);
+    println!("cargo:rerun-if-env-changed={}", target_lib_path_underscored);
+
+    let lib_paths = vec![
+        env::var(target_lib_path),
+        env::var(target_lib_path_underscored),
+        env::var(global_lib_path),
+    ];
+
+    for lib_path in lib_paths {
+        if let Ok(lib_path) = lib_path {
+            for path in lib_path.split(':') {
+                if !path.is_empty() {
+                    println!("cargo:rustc-link-search=native={}", path);
+                }
             }
         }
     }
@@ -227,7 +253,7 @@ fn open_lockable(path: &Path) -> io::Result<File> {
             // with write permissions. So just open for reading and hope
             // for the best.
             File::open(path)
-        },
+        }
         e @ Err(..) => e,
     }
 }
