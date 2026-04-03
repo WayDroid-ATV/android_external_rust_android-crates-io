@@ -37,6 +37,7 @@ rust_library {
     min_sdk_version: "29",
     visibility: [
         "//frameworks/native/libs/cpucycleperuid",
+        "//packages/modules/UprobeStats:__subpackages__",
         "//system/bpf/loader",
     ],
     shared_libs: ["libbpf"],

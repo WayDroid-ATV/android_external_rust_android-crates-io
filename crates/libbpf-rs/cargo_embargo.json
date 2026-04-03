@@ -9,6 +9,7 @@
   "module_visibility": {
     "liblibbpf_rs": [
       "//frameworks/native/libs/cpucycleperuid",
+      "//packages/modules/UprobeStats:__subpackages__",
       "//system/bpf/loader"
     ]
   },
