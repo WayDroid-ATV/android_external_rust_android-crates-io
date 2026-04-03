@@ -5874,7 +5874,6 @@ dependencies = [
  "cfg-if",
  "cfg_aliases",
  "libc 0.2.183",
- "memoffset",
 ]
 
 [[package]]
@@ -5887,6 +5886,7 @@ dependencies = [
  "cfg-if",
  "cfg_aliases",
  "libc 0.2.183",
+ "memoffset",
 ]
 
 [[package]]
@@ -9949,12 +9949,12 @@ checksum = "442887c63f2c839b346c192d047a7c87e73d0689c9157b00b53dcc27dd5ea793"
 
 [[package]]
 name = "vsock"
-version = "0.5.2"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2da6e4ac76cd19635dce0f98985378bb62f8044ee2ff80abd2a7334b920ed63"
+checksum = "6ba782755fc073877e567c2253c0be48e4aa9a254c232d36d3985dfae0bd5205"
 dependencies = [
  "libc 0.2.183",
- "nix 0.30.1",
+ "nix 0.31.2",
 ]
 
 [[package]]
