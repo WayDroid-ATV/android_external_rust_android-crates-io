@@ -6,20 +6,26 @@
 [![Crates.io](https://img.shields.io/crates/v/float_next_after)](https://crates.io/crates/float_next_after)
 [![Crates.io](https://img.shields.io/crates/d/float_next_after)](https://crates.io/crates/float_next_after)
 
-A native Rust next after float function, which is provided as a trait for f32 and f64 types. It steps to the next representable floating point, even if it is subnormal.  If a subnormal is undesired, users should handle that eventuality themselves. See [`CHANGES.md`](./CHANGES.md) for the versioned changelog.
+A native Rust next after float function, which is provided as a trait for f32 and f64 types. It steps to the next
+representable floating point, even if it is subnormal. If a subnormal is undesired, users should handle that eventuality
+themselves. See [`CHANGES.md`](./CHANGES.md) for the versioned changelog.
 
 In specific edge cases the following decisions have been made:
 
 * self == y -> return y
-* self >= positive infinity -> return positive infinity
-* self <= negative infinity -> return negative infinity
+* self >= positive infinity and y >= positive infinity -> return positive infinity
+* self >= positive infinity and y < positive infinity -> return max
+* self <= negative infinity and y <= negative infinity -> return negative infinity
+* self <= negative infinity and y > negative infinity -> return min
 * self or y == NaN -> return NaN
 * self = -0.0 and y = 0.0 -> return positive 0.0
 * self == -0.0 and y == positive infinity -> 5e-324
 
 Please see the unit tests for the actual behavior in various other exceptional cases.
 
-This code uses the ToBits and FromBits functions from f32 and f64. Those both simply wrap `unsafe { mem::transmute(self) }` / `unsafe { mem::transmute(v) }` to convert a f32/f64 to u32/u64.  The docs for those functions, however, claim that they are safe and that "the safety issues with sNaN were overblown!"
+This code uses the ToBits and FromBits functions from f32 and f64. Those both simply wrap
+`unsafe { mem::transmute(self) }` / `unsafe { mem::transmute(v) }` to convert a f32/f64 to u32/u64. The docs for those
+functions, however, claim that they are safe and that "the safety issues with sNaN were overblown!"
 
 PR's and other helpful input are welcome.
 
@@ -45,6 +51,6 @@ assert_eq!(next, -0.000000000000000000000000000000000000000000001_f32);
 
 // Equal source/dest (even -0 == 0)
 let zero = 0_f64;
-let next = zero.next_after(-0_f64);
+let next = zero.next_after( - 0_f64);
 assert_eq!(next, -0_f64);
 ```
