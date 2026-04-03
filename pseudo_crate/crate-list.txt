@@ -251,7 +251,9 @@ itertools
 itoa
 jiff
 jni
+jni-macros
 jni-sys
+jni-sys-macros
 json-strip-comments
 kernlog
 khronos
@@ -459,6 +461,8 @@ shlex
 signal-hook
 signal-hook-registry
 simd-adler32
+simd_cesu8
+simdutf8
 simple-dns
 siphasher
 skrifa

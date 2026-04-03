@@ -18,9 +18,10 @@ rust_library {
     host_supported: true,
     crate_name: "jni_sys",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.0",
+    cargo_pkg_version: "0.4.1",
     crate_root: "src/lib.rs",
-    edition: "2015",
+    edition: "2021",
+    proc_macros: ["libjni_sys_macros"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
