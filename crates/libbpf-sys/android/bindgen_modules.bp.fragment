@@ -18,4 +18,9 @@ rust_bindgen {
     source_stem: "bindings",
     header_libs: ["libbpf_build_headers"],
     shared_libs: ["libbpf"],
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    min_sdk_version: "35",
 }
