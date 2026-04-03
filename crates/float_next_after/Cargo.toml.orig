@@ -1,6 +1,6 @@
 [package]
 name = "float_next_after"
-version = "1.0.0"
+version = "2.0.0"
 authors = ["Bronson Brown-deVost <bronsonbdevost@gmail.com>"]
 description = "A trait for native rust f64/f32 nextafter"
 edition = "2018"
@@ -18,3 +18,4 @@ harness = false
 [dev-dependencies]
 criterion = { version = "0.4.0", features = ["html_reports"] }
 fastrand = "1.8.0"
+libc = "0.2"

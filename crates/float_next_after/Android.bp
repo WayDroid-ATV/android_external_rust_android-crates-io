@@ -18,7 +18,7 @@ rust_test {
     host_supported: true,
     crate_name: "float_next_after",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.0",
+    cargo_pkg_version: "2.0.0",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -29,6 +29,7 @@ rust_test {
     rustlibs: [
         "libcriterion",
         "libfastrand",
+        "liblibc",
     ],
 }
 
@@ -37,7 +38,7 @@ rust_library {
     host_supported: true,
     crate_name: "float_next_after",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.0.0",
+    cargo_pkg_version: "2.0.0",
     crate_root: "src/lib.rs",
     edition: "2018",
     apex_available: [

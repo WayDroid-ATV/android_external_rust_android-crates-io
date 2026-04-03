@@ -2,22 +2,22 @@
 
 /// Returns the next representable float value in the direction of y
 ///
-/// This function is strict and will step to the very next representable floating point,
-/// even if that value is subnormal.
+/// This function is compatible with the C standard library's `nextafter` function
+/// and follows IEEE 754 floating-point semantics. It will step to the very next
+/// representable floating point, even if that value is subnormal.
 ///
-/// Base assumptions:
+/// ## Behavior
 ///
-/// self == y -> return y
-///
-/// self >= positive infinity -> return positive infinity
-///
-/// self <= negative infinity -> return negative infinity
-///
-/// self == NaN -> return NaN
-///
-/// self == -0.0 and y == 0.0 -> return positive 0.0
-///
-/// self == -0.0 and y == positive infinity -> 5e-324
+/// - `self == y` → returns `y`
+/// - `self` is NaN or `y` is NaN → returns NaN
+/// - `self == +infinity` and `y < self` → returns `MAX` (largest finite f64/f32)
+/// - `self == -infinity` and `y > self` → returns `MIN` (smallest finite f64/f32)
+/// - `self == +infinity` and `y == +infinity` → returns `+infinity`
+/// - `self == -infinity` and `y == -infinity` → returns `-infinity`
+/// - `self == ±0.0` and `y > 0` → returns smallest positive subnormal
+/// - `self == ±0.0` and `y < 0` → returns smallest negative subnormal
+/// - `self == -0.0` and `y == +0.0` → returns `+0.0`
+/// - `self == +0.0` and `y == -0.0` → returns `-0.0`
 ///
 /// # Examples
 ///
@@ -62,6 +62,7 @@ macro_rules! impl_next_after {
         use super::NextAfter;
 
         impl NextAfter for $float_type {
+            #[inline]
             fn next_after(self, y: Self) -> Self {
                 // Check first if the input matches a fixed set of values
                 // that receive a pre-calculated response in line with the
@@ -101,12 +102,14 @@ macro_rules! impl_next_after {
 
             // If x or y is NaN return NaN
             if x.is_nan() || y.is_nan() {
-                return Some(core::$module::NAN);
+                return Some(<$module>::NAN);
             }
 
-            if x.is_infinite() {
-                return Some(x);
-            }
+            // Note: We intentionally do NOT short-circuit infinity here.
+            // Per IEEE 754 and C standard library behavior, stepping away from
+            // infinity should return MAX/MIN. The bit manipulation in next_after
+            // handles this correctly: decrementing +infinity's bits gives MAX,
+            // and incrementing -infinity's bits gives MIN.
 
             // If x is (+/-)0 and y is not 0 (see first condition),
             // return the hard coded value closest to zero and use
@@ -130,7 +133,7 @@ macro_rules! impl_next_after {
 }
 
 macro_rules! tests {
-    ($float_type:ty, $module:ident, $smallest_pos:expr, $largest_neg:expr, $next_before_one:expr, $sequential_large_numbers:expr) => {
+    ($float_type:ty, $module:ident, $smallest_pos:expr, $largest_neg:expr, $next_before_one:expr, $sequential_large_numbers:expr, $largest_subnormal:expr, $second_smallest_pos:expr, $second_largest_neg:expr) => {
         #[cfg(test)]
         mod tests {
             use super::{copy_sign, NextAfter};
@@ -256,10 +259,15 @@ macro_rules! tests {
             }
 
             #[test]
-            fn stays_at_infinity() {
-                // Once infinity is reached, there is not going back to normal numbers
-                assert_eq!(POS_INFINITY.next_after(NEG_INFINITY), POS_INFINITY);
-                assert_eq!(NEG_INFINITY.next_after(POS_INFINITY), NEG_INFINITY);
+            fn step_away_from_infinity() {
+                // Per IEEE 754 / C standard library behavior, stepping away from
+                // infinity returns the largest/smallest finite value
+                assert_eq!(POS_INFINITY.next_after(NEG_INFINITY), LARGEST_POS);
+                assert_eq!(NEG_INFINITY.next_after(POS_INFINITY), SMALLEST_NEG);
+
+                // Stepping toward same infinity stays at infinity (equality case)
+                assert_eq!(POS_INFINITY.next_after(POS_INFINITY), POS_INFINITY);
+                assert_eq!(NEG_INFINITY.next_after(NEG_INFINITY), NEG_INFINITY);
             }
 
             #[test]
@@ -311,6 +319,91 @@ macro_rules! tests {
                     assert_eq!(orig.next_after(lower).next_after(upper), orig);
                 }
             }
+
+            #[test]
+            fn zero_with_finite_target() {
+                // Using finite values instead of infinity should produce the same result
+                // since only the sign of y matters when x is zero
+                assert_eq!(POS_ZERO.next_after(POS_ONE), SMALLEST_POS);
+                assert_eq!(POS_ZERO.next_after(NEG_ONE), LARGEST_NEG);
+                assert_eq!(NEG_ZERO.next_after(POS_ONE), SMALLEST_POS);
+                assert_eq!(NEG_ZERO.next_after(NEG_ONE), LARGEST_NEG);
+            }
+
+            #[test]
+            fn infinity_with_finite_target() {
+                // Per IEEE 754 / C standard library behavior, stepping from infinity
+                // toward any finite value returns MAX/MIN
+                assert_eq!(POS_INFINITY.next_after(POS_ONE), LARGEST_POS);
+                assert_eq!(POS_INFINITY.next_after(NEG_ONE), LARGEST_POS);
+                assert_eq!(POS_INFINITY.next_after(POS_ZERO), LARGEST_POS);
+                assert_eq!(NEG_INFINITY.next_after(POS_ONE), SMALLEST_NEG);
+                assert_eq!(NEG_INFINITY.next_after(NEG_ONE), SMALLEST_NEG);
+                assert_eq!(NEG_INFINITY.next_after(NEG_ZERO), SMALLEST_NEG);
+            }
+
+            #[test]
+            fn normal_subnormal_transition() {
+                const MIN_POSITIVE_NORMAL: $float_type = core::$module::MIN_POSITIVE;
+                const LARGEST_SUBNORMAL: $float_type = $largest_subnormal;
+
+                // Verify our constants are correct
+                assert!(MIN_POSITIVE_NORMAL.is_normal());
+                assert!(!LARGEST_SUBNORMAL.is_normal());
+                assert_eq!(
+                    LARGEST_SUBNORMAL.to_bits() + 1,
+                    MIN_POSITIVE_NORMAL.to_bits(),
+                    "LARGEST_SUBNORMAL should be exactly one bit below MIN_POSITIVE_NORMAL"
+                );
+
+                // Step down from smallest normal gives exactly the largest subnormal
+                assert_eq!(
+                    MIN_POSITIVE_NORMAL.next_after(NEG_INFINITY),
+                    LARGEST_SUBNORMAL
+                );
+
+                // Step back up returns to the normal number
+                assert_eq!(
+                    LARGEST_SUBNORMAL.next_after(POS_INFINITY),
+                    MIN_POSITIVE_NORMAL
+                );
+
+                // Same for negative side
+                assert_eq!(
+                    (-MIN_POSITIVE_NORMAL).next_after(POS_INFINITY),
+                    -LARGEST_SUBNORMAL
+                );
+                assert_eq!(
+                    (-LARGEST_SUBNORMAL).next_after(NEG_INFINITY),
+                    -MIN_POSITIVE_NORMAL
+                );
+            }
+
+            #[test]
+            fn second_smallest_value() {
+                const SECOND_SMALLEST_POS: $float_type = $second_smallest_pos;
+                const SECOND_LARGEST_NEG: $float_type = $second_largest_neg;
+
+                // Verify our constants have the correct bit relationship
+                assert_eq!(
+                    SMALLEST_POS.to_bits() + 1,
+                    SECOND_SMALLEST_POS.to_bits(),
+                    "SECOND_SMALLEST_POS should be exactly one bit above SMALLEST_POS"
+                );
+                assert_eq!(
+                    LARGEST_NEG.to_bits() + 1,
+                    SECOND_LARGEST_NEG.to_bits(),
+                    "SECOND_LARGEST_NEG should be exactly one bit above LARGEST_NEG"
+                );
+
+                // Verify exact values for stepping up from smallest
+                assert_eq!(SMALLEST_POS.next_after(POS_INFINITY), SECOND_SMALLEST_POS);
+                assert_eq!(SECOND_SMALLEST_POS.next_after(NEG_INFINITY), SMALLEST_POS);
+
+                // Verify exact values for stepping down from largest negative
+                assert_eq!(LARGEST_NEG.next_after(NEG_INFINITY), SECOND_LARGEST_NEG);
+                assert_eq!(SECOND_LARGEST_NEG.next_after(POS_INFINITY), LARGEST_NEG);
+            }
         }
     };
 }
@@ -318,25 +411,45 @@ macro_rules! tests {
 mod f64 {
     impl_next_after!(f64, f64, 5e-324);
 
+    // Exact bit patterns for f64:
+    // - Smallest positive subnormal:  0x0000000000000001
+    // - Second smallest positive:     0x0000000000000002
+    // - Largest subnormal:            0x000FFFFFFFFFFFFF
+    // - Smallest positive normal:     0x0010000000000000 (MIN_POSITIVE)
+    // - Largest negative subnormal:   0x8000000000000001
+    // - Second largest negative:      0x8000000000000002
     tests!(
         f64,
         f64,
-        5e-324,
-        -5e-324,
-        0.999_999_999_999_999_9,
-        (16_237_485_966.000_004, 16_237_485_966.000_006)
+        5e-324,                                           // smallest_pos
+        -5e-324,                                          // largest_neg
+        0.999_999_999_999_999_9,                          // next_before_one
+        (16_237_485_966.000_004, 16_237_485_966.000_006), // sequential_large_numbers
+        f64::from_bits(0x000F_FFFF_FFFF_FFFF),            // largest_subnormal
+        f64::from_bits(0x0000_0000_0000_0002),            // second_smallest_pos
+        f64::from_bits(0x8000_0000_0000_0002)             // second_largest_neg
     );
 }
 
 mod f32 {
     impl_next_after!(f32, f32, 1e-45);
 
+    // Exact bit patterns for f32:
+    // - Smallest positive subnormal:  0x00000001
+    // - Second smallest positive:     0x00000002
+    // - Largest subnormal:            0x007FFFFF
+    // - Smallest positive normal:     0x00800000 (MIN_POSITIVE)
+    // - Largest negative subnormal:   0x80000001
+    // - Second largest negative:      0x80000002
     tests!(
         f32,
         f32,
-        1e-45,
-        -1e-45,
-        0.999_999_94,
-        (1.230_000_1e34, 1.230_000_3e34)
+        1e-45,                            // smallest_pos
+        -1e-45,                           // largest_neg
+        0.999_999_94,                     // next_before_one
+        (1.230_000_1e34, 1.230_000_3e34), // sequential_large_numbers
+        f32::from_bits(0x007F_FFFF),      // largest_subnormal
+        f32::from_bits(0x0000_0002),      // second_smallest_pos
+        f32::from_bits(0x8000_0002)       // second_largest_neg
     );
 }
