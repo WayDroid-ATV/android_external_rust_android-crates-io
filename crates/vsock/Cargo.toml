@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "vsock"
-version = "0.5.2"
+version = "0.5.4"
 authors = [
     "fsyncd",
     "rust-vsock",
@@ -39,17 +39,17 @@ name = "vsock"
 path = "tests/vsock.rs"
 
 [dependencies.libc]
-version = "0.2.158"
+version = "0.2.182"
 
 [dependencies.nix]
-version = "0.30.1"
+version = "0.31.2"
 features = [
     "ioctl",
     "socket",
 ]
 
 [dev-dependencies.rand]
-version = "0.9.0"
+version = "0.10.0"
 
 [dev-dependencies.sha2]
 version = "0.10.8"
