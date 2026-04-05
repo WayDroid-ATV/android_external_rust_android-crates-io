@@ -1,17 +1,17 @@
 name: "fastrand"
 description: "A simple and fast random number generator"
 third_party {
-  version: "2.3.0"
+  version: "2.4.0"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2024
-    month: 12
-    day: 19
+    year: 2026
+    month: 4
+    day: 5
   }
   homepage: "https://crates.io/crates/fastrand"
   identifier {
     type: "crates.io"
     value: "fastrand"
-    version: "2.3.0"
+    version: "2.4.0"
   }
 }
