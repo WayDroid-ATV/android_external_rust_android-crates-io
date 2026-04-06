@@ -15,5 +15,10 @@
       "generate_rulesmk": true
     }
   ],
-  "recovery_available": true
+  "recovery_available": true,
+  "package": {
+    "cfg-if": {
+      "target_windows": true
+    }
+  }
 }
