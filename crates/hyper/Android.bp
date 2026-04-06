@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "hyper",
     cargo_env_compat: true,
-    cargo_pkg_version: "1.8.1",
+    cargo_pkg_version: "1.9.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -41,7 +41,6 @@ rust_library {
         "libhttpdate",
         "libitoa",
         "libpin_project_lite",
-        "libpin_utils",
         "libsmallvec",
         "libtokio",
         "libwant",
