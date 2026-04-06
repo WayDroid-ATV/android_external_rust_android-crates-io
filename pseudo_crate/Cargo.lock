@@ -358,7 +358,7 @@ dependencies = [
  "itertools 0.14.0",
  "itoa",
  "jiff",
- "jni",
+ "jni 0.22.4",
  "jni-macros",
  "jni-sys 0.4.1",
  "jni-sys-macros",
@@ -4856,6 +4856,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "jni"
+version = "0.22.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5efd9a482cf3a427f00d6b35f14332adc7902ce91efb778580e180ff90fa3498"
+dependencies = [
+ "cfg-if",
+ "combine",
+ "jni-macros",
+ "jni-sys 0.4.1",
+ "log",
+ "simd_cesu8",
+ "thiserror 2.0.16",
+ "walkdir",
+ "windows-link 0.2.1",
+]
+
+[[package]]
 name = "jni-macros"
 version = "0.22.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7719,7 +7736,7 @@ checksum = "1d99feebc72bae7ab76ba994bb5e121b8d83d910ca40b36e0921f53becc41784"
 dependencies = [
  "core-foundation 0.10.1",
  "core-foundation-sys",
- "jni",
+ "jni 0.21.1",
  "log",
  "once_cell",
  "rustls",
