@@ -10,12 +10,7 @@
       "path": "packages/modules/Virtualization/tests/testapk"
     }
   ],
-  "presubmit": [
-    {
-      "name": "jni_test_src_lib"
-    }
-  ],
-  "presubmit-rust": [
+  "postsubmit": [
     {
       "name": "jni_test_src_lib"
     }
