@@ -1555,7 +1555,7 @@ name = "bzip2-cli"
 version = "0.2.2"
 dependencies = [
  "libbz2-rs-sys",
- "libc 0.2.183",
+ "libc 0.2.184",
 ]
 
 [[package]]
@@ -2520,6 +2520,18 @@ dependencies = [
 
 [[package]]
 name = "diplomat"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9adb46b05e2f53dcf6a7dfc242e4ce9eb60c369b6b6eb10826a01e93167f59c6"
+dependencies = [
+ "diplomat_core 0.14.0",
+ "proc-macro2 1.0.106",
+ "quote 1.0.45",
+ "syn 2.0.117",
+]
+
+[[package]]
+name = "diplomat"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7935649d00000f5c5d735448ad3dc07b9738160727017914cf42138b8e8e6611"
@@ -3052,9 +3064,9 @@ checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 
 [[package]]
 name = "fastrand"
-version = "2.4.0"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a043dc74da1e37d6afe657061213aa6f425f855399a11d3463c6ecccc4dfda1f"
+checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
 
 [[package]]
 name = "fdeflate"
@@ -5426,7 +5438,7 @@ version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62bb907fe88d54d8d9ce32a3cceab4218ed2f6b7d35617cafe9adf84e43919cb"
 dependencies = [
- "libc 0.1.12",
+ "libc 0.2.184",
 ]
 
 [[package]]
@@ -5932,7 +5944,6 @@ dependencies = [
  "cfg-if",
  "cfg_aliases",
  "libc 0.2.184",
- "memoffset",
 ]
 
 [[package]]
