@@ -32,25 +32,20 @@ rust_binary {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-}
+    // Prevents collision with cc bzip2 when the flag is enabled
+    enabled: select(release_flag("RELEASE_USE_RUST_BZIP2_CLI"), {
+        true: true,
+        default: false,
+    }),
+    // enabled: true enables windows, otherwise disabled by default
+    // so explicitly disable it.
+    target: {
+        windows: {
+            enabled: false,
+        },
+    },
+    // Performance improvement on some targets
+    flags: ["-Cllvm-args=-enable-dfa-jump-thread"],
+    stem: "bzip2",
 
-rust_binary {
-    name: "bzip2recover",
-    host_supported: true,
-    crate_name: "bzip2recover",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.2.2",
-    crate_root: "bzip2recover.rs",
-    edition: "2021",
-    rustlibs: [
-        "liblibbz2_rs_sys",
-        "liblibc",
-    ],
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-    product_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
 }
