@@ -2,10 +2,12 @@
   "module_name_overrides": {
     "bzip2": "bzip2_rs"
   },
-  "run_cargo": true,
-  "variants": [
-    {
+  "run_cargo": false,
+  "package": {
+    "bzip2-cli": {
+      "patch": "patches/0001-remove_Android_bp_bzip2recover.patch",
+      "add_module_block": "bzip2_selection.bp.fragment"
     }
-  ],
+  },
   "min_sdk_version": "29"
 }
