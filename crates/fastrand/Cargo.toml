@@ -13,7 +13,7 @@
 edition = "2018"
 rust-version = "1.63"
 name = "fastrand"
-version = "2.4.0"
+version = "2.4.1"
 authors = ["Stjepan Glavina <stjepang@gmail.com>"]
 build = false
 exclude = ["/.*"]
