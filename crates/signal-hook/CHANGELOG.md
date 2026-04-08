@@ -1,7 +1,3 @@
-# 0.4.4
-
-* Documentation about SIGBUS (#204).
-
 # 0.4.3
 
 * Don't exclude .c files from release package.
