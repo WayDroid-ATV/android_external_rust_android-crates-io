@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.68"
+rust-version = "1.80"
 name = "dc_bundle"
-version = "0.38.2"
+version = "0.38.4"
 authors = ["DesignCompose Team <aae-design-compose@google.com>"]
 build = "build.rs"
 autolib = false
