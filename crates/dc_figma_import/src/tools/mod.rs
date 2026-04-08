@@ -14,6 +14,8 @@
 
 #[cfg(feature = "dcf_info")]
 pub mod dcf_info;
+
+#[cfg(feature = "dcf_info")]
 pub mod libdcf_info;
 
 #[cfg(feature = "fetch_layout")]

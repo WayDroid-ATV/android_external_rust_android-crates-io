@@ -34,12 +34,12 @@ image.workspace = true
 
 # layout dependencies
 taffy.workspace = true
-lazy_static.workspace = true
 
 clap = { workspace = true, optional = true }
 
 # logging
 log.workspace = true
+serde_path_to_error = "0.1.20"
 
 [build-dependencies]
 vergen.workspace = true

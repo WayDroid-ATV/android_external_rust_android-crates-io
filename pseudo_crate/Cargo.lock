@@ -2352,21 +2352,21 @@ dependencies = [
 
 [[package]]
 name = "dc_figma_import"
-version = "0.38.2"
+version = "0.38.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a9f8ca9155e5d855ab14f4f9eaf439775144fcb975f27cdcfdeaea7b9e668b5"
+checksum = "b0624569e65986583008b4815cc0c19654eed33c7b79d10fe9b6432dae3c4aaf"
 dependencies = [
  "anyhow",
  "dc_bundle",
  "dc_layout",
  "image 0.25.6",
- "lazy_static",
  "log",
  "protobuf 3.7.2",
  "reqwest 0.12.28",
  "serde",
  "serde_bytes",
  "serde_json",
+ "serde_path_to_error",
  "svgtypes",
  "taffy 0.6.3",
  "thiserror 2.0.16",
