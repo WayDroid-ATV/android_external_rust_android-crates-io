@@ -11,9 +11,9 @@
 
 [package]
 edition = "2021"
-rust-version = "1.68"
+rust-version = "1.80"
 name = "dc_layout"
-version = "0.38.2"
+version = "0.38.4"
 authors = ["DesignCompose Team <aae-design-compose@google.com>"]
 build = false
 autolib = false
@@ -29,17 +29,14 @@ repository = "https://github.com/google/automotive-design-compose"
 
 [lib]
 name = "dc_layout"
-crate-type = [
-    "rlib",
-    "cdylib",
-]
+crate-type = ["lib"]
 path = "src/lib.rs"
 
 [dependencies.android_logger]
 version = "0.13.1"
 
 [dependencies.dc_bundle]
-version = "0.38.2"
+version = "0.38.4"
 
 [dependencies.log]
 version = "0.4"
@@ -66,6 +63,3 @@ default-features = false
 
 [dependencies.thiserror]
 version = "2.0.11"
-
-[dev-dependencies.lazy_static]
-version = "1.4.0"

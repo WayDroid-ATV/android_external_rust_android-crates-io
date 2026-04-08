@@ -18,32 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "dc_layout",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.38.2",
-    crate_root: "src/lib.rs",
-    edition: "2021",
-    rustlibs: [
-        "libdc_bundle",
-        "liblog_rust",
-        "libprotobuf",
-        "libserde",
-        "libtaffy",
-        "libthiserror",
-    ],
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-    product_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
-}
-
-rust_ffi_shared {
-    name: "libdc_layout_shared",
-    host_supported: true,
-    crate_name: "dc_layout",
-    cargo_env_compat: true,
-    cargo_pkg_version: "0.38.2",
+    cargo_pkg_version: "0.38.4",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [
