@@ -2376,9 +2376,9 @@ dependencies = [
 
 [[package]]
 name = "dc_layout"
-version = "0.38.2"
+version = "0.38.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b89da23aae16c7e2477a730aad572dad4fc034a62f604050e1d8c7481d915fb4"
+checksum = "1aa7f36d6480c564fbe2e28888462bf419ad6c4abd95f827ac965a5bf285c81a"
 dependencies = [
  "android_logger 0.13.3",
  "dc_bundle",
