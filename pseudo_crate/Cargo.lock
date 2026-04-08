@@ -2338,9 +2338,9 @@ checksum = "d7a1e2f27636f116493b8b860f5546edb47c8d8f8ea73e1d2a20be88e28d1fea"
 
 [[package]]
 name = "dc_bundle"
-version = "0.38.2"
+version = "0.38.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1934aa17a5018fc6bc650000bb353cf25aab751ba5da292f03a22810f41685a7"
+checksum = "cdfcf7950b862b2b9b659d28cda2656b70bed2b198f40f914d1f8f73b338d352"
 dependencies = [
  "log",
  "protobuf 3.7.2",
