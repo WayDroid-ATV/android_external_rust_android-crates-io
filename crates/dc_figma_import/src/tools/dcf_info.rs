@@ -30,8 +30,7 @@
 //! or
 //! dcf_info -- tests/layout-unit-tests.dcf -n HorizontalFill`
 
-use crate::tools::libdcf_info::DcfError;
-use crate::tools::libdcf_info::parse_dcf_info;
+use crate::tools::libdcf_info::{parse_dcf_info, DcfError};
 use clap::Parser;
 use dc_bundle::definition_file::load_design_def;
 use serde::Serialize;
@@ -66,7 +65,7 @@ impl From<DcfError> for ParseError {
 }
 
 #[derive(Parser, Debug)]
-struct Args {
+pub struct Args {
     // Path to the .dcf file to deserialize
     dcf_file: std::path::PathBuf,
     // Optional string argument to dump file structure from a given node root.
@@ -82,14 +81,7 @@ struct Args {
     output: Option<std::path::PathBuf>,
 }
 
-pub fn main() -> Result<(), ParseError> {
-    let args = match Args::try_parse() {
-        Ok(args) => args,
-        Err(e) => {
-            eprintln!("Error parsing arguments: {}", e);
-            std::process::exit(1);
-        }
-    };
+pub fn dcf_info(args: Args) -> Result<(), ParseError> {
     let file_path = &args.dcf_file;
     let node = args.node;
 
@@ -135,6 +127,10 @@ pub fn main() -> Result<(), ParseError> {
         }
         return Ok(());
     }
+
+    let mut file = File::open(file_path)?;
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer)?;
 
     let load_result = load_design_def(file_path);
     if let Ok((header, doc)) = load_result {

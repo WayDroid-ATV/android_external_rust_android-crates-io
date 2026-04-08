@@ -21,11 +21,14 @@
 // or
 // `cargo run --bin dcf_info --features="dcf_info" -- tests/layout-unit-tests.dcf -n HorizontalFill`
 
-use dc_figma_import::tools::dcf_info;
+use clap::Parser;
+use dc_figma_import::tools::dcf_info::dcf_info;
+use dc_figma_import::tools::dcf_info::Args;
 use std::process;
 
 fn main() {
-    if let Err(e) = dcf_info::main() {
+    let args = Args::parse();
+    if let Err(e) = dcf_info(args) {
         eprintln!("dcf_info failed: {:?}", e);
         std::process::exit(1);
     }

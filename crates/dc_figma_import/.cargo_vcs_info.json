@@ -1,6 +1,6 @@
 {
   "git": {
-    "sha1": "039835574f340a62f1be8cc99c609af12f185f77"
+    "sha1": "3db9a3d0ad15a31071946ff58e631e132aa5d525"
   },
   "path_in_vcs": "crates/dc_figma_import"
 }
