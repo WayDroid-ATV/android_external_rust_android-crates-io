@@ -183,6 +183,7 @@ gdbstub
 gdbstub_arch
 genco
 genco-macros
+getopts
 getrandom
 gherkin
 gl
