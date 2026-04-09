@@ -15,6 +15,7 @@
         "process",
         "rt",
         "rt-multi-thread",
+        "signal",
         "sync",
         "time"
       ]
@@ -28,6 +29,7 @@
         "process",
         "rt",
         "rt-multi-thread",
+        "signal",
         "sync",
         "test-util",
         "time"
