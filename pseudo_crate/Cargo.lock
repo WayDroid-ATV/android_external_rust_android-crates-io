@@ -294,6 +294,7 @@ dependencies = [
  "gdbstub_arch",
  "genco",
  "genco-macros",
+ "getopts",
  "getrandom 0.4.2",
  "gherkin",
  "gl",
@@ -3497,6 +3498,15 @@ checksum = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
 dependencies = [
  "typenum",
  "version_check",
+]
+
+[[package]]
+name = "getopts"
+version = "0.2.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfe4fbac503b8d1f88e6676011885f34b7174f46e59956bba534ba83abded4df"
+dependencies = [
+ "unicode-width 0.2.2",
 ]
 
 [[package]]
