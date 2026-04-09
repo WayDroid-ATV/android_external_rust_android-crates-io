@@ -9,9 +9,7 @@ use crate::{
 // VirtioRNG only uses one queue
 const QUEUE_IDX: u16 = 0;
 const QUEUE_SIZE: usize = 8;
-const SUPPORTED_FEATURES: Feature = Feature::RING_INDIRECT_DESC
-    .union(Feature::RING_EVENT_IDX)
-    .union(Feature::VERSION_1);
+const SUPPORTED_FEATURES: Feature = Feature::RING_INDIRECT_DESC.union(Feature::RING_EVENT_IDX);
 
 /// Driver for a VirtIO random number generator device.
 pub struct VirtIORng<H: Hal, T: Transport> {
@@ -22,7 +20,7 @@ pub struct VirtIORng<H: Hal, T: Transport> {
 impl<H: Hal, T: Transport> VirtIORng<H, T> {
     /// Create a new driver with the given transport.
     pub fn new(mut transport: T) -> Result<Self> {
-        let feat = transport.begin_init(SUPPORTED_FEATURES)?;
+        let feat = transport.begin_init(SUPPORTED_FEATURES);
         let queue = VirtQueue::new(
             &mut transport,
             QUEUE_IDX,
