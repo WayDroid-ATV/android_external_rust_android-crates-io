@@ -79,7 +79,6 @@ pub fn rust_libfuzzer_debug_path() -> &'static Option<String> {
 }
 
 #[doc(hidden)]
-#[export_name = "LLVMFuzzerInitialize"]
 pub fn initialize(_argc: *const isize, _argv: *const *const *const u8) -> isize {
     // Registers a panic hook that aborts the process before unwinding.
     // It is useful to abort before unwinding so that the fuzzer will then be
@@ -89,10 +88,10 @@ pub fn initialize(_argc: *const isize, _argv: *const *const *const u8) -> isize 
     // impossible to build code using compiler plugins with this flag.
     // We will be able to remove this code when
     // https://github.com/rust-lang/cargo/issues/5423 is fixed.
-    let default_hook = ::std::panic::take_hook();
-    ::std::panic::set_hook(Box::new(move |panic_info| {
+    let default_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |panic_info| {
         default_hook(panic_info);
-        ::std::process::abort();
+        std::process::abort();
     }));
     0
 }
@@ -196,11 +195,68 @@ pub fn initialize(_argc: *const isize, _argv: *const *const *const u8) -> isize 
 ///
 /// You can also enable the `arbitrary` crate's custom derive via this crate's
 /// `"arbitrary-derive"` cargo feature.
+///
+/// ## Init Code
+///
+/// Init code to the fuzz target by using the `init` keyword. This is called once before the fuzzer starts.
+/// Supports short |input| or |input: <type>| syntax.
+///
+/// ```no_run
+/// #![no_main]
+///
+/// use libfuzzer_sys::fuzz_target;
+/// use std::collections::HashSet;
+/// use std::sync::OnceLock;
+///
+/// static DICTIONARY: OnceLock<HashSet<String>> = OnceLock::new();
+///
+/// fuzz_target!(
+///     init: {
+///         let read_dictionary = |_| unimplemented!();
+///         let dictionary = read_dictionary("/usr/share/dict/words");
+///         DICTIONARY.set(dictionary).unwrap();
+///     },
+///     |input| {
+///         // Use the initialized `DICTIONARY` here...
+///     }
+/// );
+/// ```
+///
 #[macro_export]
 macro_rules! fuzz_target {
     (|$bytes:ident| $body:expr) => {
+        $crate::fuzz_target!(init: (), |$bytes: &[u8]| -> () { $body });
+    };
+
+    (|$bytes:ident: &[u8]| $body:expr) => {
+        $crate::fuzz_target!(init: (), |$bytes: &[u8]| -> () { $body });
+    };
+
+    (|$bytes:ident: &[u8]| -> $rty:ty $body:block) => {
+        $crate::fuzz_target!(init: (), |$bytes: &[u8]| -> $rty { $body });
+    };
+
+    (init: $init:expr, |$bytes:ident| $body:expr) => {
+        $crate::fuzz_target!(init: $init, |$bytes: &[u8]| -> () { $body });
+    };
+
+    (init: $init:expr, |$bytes:ident: &[u8]| $body:expr) => {
+        $crate::fuzz_target!(init: $init, |$bytes: &[u8]| -> () { $body });
+    };
+
+    (init: $init:expr, |$bytes:ident: &[u8]| -> $rty:ty $body:block) => {
         const _: () = {
-            /// Auto-generated function
+            /// Auto-generated functions
+            /// LLVMFuzzerInitialize is called once before the fuzzer starts.
+            #[no_mangle]
+            pub extern "C" fn LLVMFuzzerInitialize(_argc: *const isize, _argv: *const *const *const u8) -> isize {
+                $crate::initialize(_argc, _argv);
+
+                // Supplied init code
+                $init;
+                0
+            }
+
             #[no_mangle]
             pub extern "C" fn rust_fuzzer_test_input(bytes: &[u8]) -> i32 {
                 // When `RUST_LIBFUZZER_DEBUG_PATH` is set, write the debug
@@ -217,8 +273,8 @@ macro_rules! fuzz_target {
                     return 0;
                 }
 
-                __libfuzzer_sys_run(bytes);
-                0
+                let result = ::libfuzzer_sys::Corpus::from(__libfuzzer_sys_run(bytes));
+                result.to_libfuzzer_code()
             }
 
             // Split out the actual fuzzer into a separate function which is
@@ -234,23 +290,37 @@ macro_rules! fuzz_target {
             // ideally help prevent oss-fuzz from deduplicate fuzz bugs across
             // distinct targets accidentally.
             #[inline(never)]
-            fn __libfuzzer_sys_run($bytes: &[u8]) {
+            fn __libfuzzer_sys_run($bytes: &[u8]) -> $rty {
                 $body
             }
         };
     };
 
-    (|$data:ident: &[u8]| $body:expr) => {
-        $crate::fuzz_target!(|$data| $body);
-    };
-
     (|$data:ident: $dty:ty| $body:expr) => {
-        $crate::fuzz_target!(|$data: $dty| -> () { $body });
+        $crate::fuzz_target!(init: (), |$data: $dty| -> () { $body });
     };
 
     (|$data:ident: $dty:ty| -> $rty:ty $body:block) => {
+        $crate::fuzz_target!(init: (), |$data: $dty| -> $rty { $body });
+    };
+
+    (init: $init:expr, |$data:ident: $dty:ty| $body:expr) => {
+        $crate::fuzz_target!(init: $init, |$data: $dty| -> () { $body });
+    };
+
+    (init: $init:expr, |$data:ident: $dty:ty| -> $rty:ty $body:block) => {
         const _: () = {
-            /// Auto-generated function
+            /// Auto-generated functions
+            /// LLVMFuzzerInitialize is called once before the fuzzer starts.
+            #[no_mangle]
+            pub extern "C" fn LLVMFuzzerInitialize(_argc: *const isize, _argv: *const *const *const u8) -> isize {
+                $crate::initialize(_argc, _argv);
+
+                // Supplied init code
+                $init;
+                0
+            }
+
             #[no_mangle]
             pub extern "C" fn rust_fuzzer_test_input(bytes: &[u8]) -> i32 {
                 use $crate::arbitrary::{Arbitrary, Unstructured};
@@ -293,7 +363,6 @@ macro_rules! fuzz_target {
                 let result = ::libfuzzer_sys::Corpus::from(__libfuzzer_sys_run(data));
                 result.to_libfuzzer_code()
             }
-
             // See above for why this is split to a separate function.
             #[inline(never)]
             fn __libfuzzer_sys_run($data: $dty) -> $rty {
@@ -340,17 +409,17 @@ macro_rules! fuzz_target {
 /// ```no_run
 /// #![no_main]
 ///
-/// use rand::{rngs::StdRng, Rng, SeedableRng};
+/// use rand::{rngs::SmallRng, RngExt, SeedableRng};
 ///
 /// libfuzzer_sys::fuzz_mutator!(|data: &mut [u8], size: usize, max_size: usize, seed: u32| {
-///     let mut rng = StdRng::seed_from_u64(seed as u64);
+///     let mut rng = SmallRng::seed_from_u64(seed as u64);
 ///
 /// #   let first_mutation = |_, _, _, _| todo!();
 /// #   let second_mutation = |_, _, _, _| todo!();
 /// #   let third_mutation = |_, _, _, _| todo!();
 /// #   let fourth_mutation = |_, _, _, _| todo!();
 ///     // Choose which of our four supported kinds of mutations we want to make.
-///     match rng.gen_range(0..4) {
+///     match rng.random_range(0..4) {
 ///         0 => first_mutation(rng, data, size, max_size),
 ///         1 => second_mutation(rng, data, size, max_size),
 ///         2 => third_mutation(rng, data, size, max_size),
@@ -563,7 +632,7 @@ pub fn fuzzer_mutate(data: &mut [u8], size: usize, max_size: usize) -> usize {
 /// #![no_main]
 ///
 /// use libfuzzer_sys::{fuzz_crossover, fuzz_mutator, fuzz_target, fuzzer_mutate};
-/// use rand::{rngs::StdRng, Rng, SeedableRng};
+/// use rand::{rngs::SmallRng, RngExt, SeedableRng};
 /// use std::mem::size_of;
 ///
 /// fuzz_target!(|data: &[u8]| {
@@ -582,11 +651,11 @@ pub fn fuzzer_mutate(data: &mut [u8], size: usize, max_size: usize) -> usize {
 /// // Inject some ...potentially problematic values to make the example close
 /// // more quickly.
 /// fuzz_mutator!(|data: &mut [u8], size: usize, max_size: usize, seed: u32| {
-///     let mut gen = StdRng::seed_from_u64(seed.into());
+///     let mut rng = SmallRng::seed_from_u64(seed.into());
 ///
 ///     let (_, floats, _) = unsafe { data[..size].align_to_mut::<f64>() };
 ///
-///     let x = gen.gen_range(0..=1000);
+///     let x = rng.random_range(0..=1000);
 ///     if x == 0 && !floats.is_empty() {
 ///         floats[0] = f64::INFINITY;
 ///     } else if x == 1000 && floats.len() > 1 {
