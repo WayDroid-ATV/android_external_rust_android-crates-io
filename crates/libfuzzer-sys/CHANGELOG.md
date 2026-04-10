@@ -28,6 +28,58 @@ Released YYYY-MM-DD.
 
 --------------------------------------------------------------------------------
 
+## 0.4.12
+
+Released 2026-02-10.
+
+### Changed
+
+* Recommend `SmallRng` over `StdRng` in the examples for faster, more lightweight
+  seeding and sampling
+* Updated `rand` dependency from 0.8.5 to 0.10
+* Updated `flate2` dependency from 1.0.24 to 1.1
+* Rename `gen` variable to `rng` for better 2024 Edition compatibility
+
+--------------------------------------------------------------------------------
+
+## 0.4.11
+
+Released 2026-02-10.
+
+### Changed
+
+* Updated to `libFuzzer` commit `a47b42eb9f9b` (`release/22.x`).
+
+--------------------------------------------------------------------------------
+
+## 0.4.10
+
+Released 2025-07-03.
+
+### Changed
+
+* Updated to `libFuzzer` commit `6146a88f6049` (`release/20.x`).
+* Fuzz targets taking raw byte slice inputs can now return `Corpus` results.
+
+--------------------------------------------------------------------------------
+
+## 0.4.9
+
+Released 2025-01-28.
+
+### Added
+
+* The `example_init` demonstrates how to pass an initialization code block to
+  the `fuzz_target!` macro.
+
+### Changed
+
+* The `fuzz_target!` macro now supports the generation of `LLVMFuzzerInitialize`
+  to execute initialization code once before running the fuzzer. This change is
+  not breaking and is completely backward compatible.
+
+--------------------------------------------------------------------------------
+
 ## 0.4.8
 
 Released 2024-11-07.
