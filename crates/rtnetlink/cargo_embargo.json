@@ -1,7 +1,4 @@
 {
   "run_cargo": false,
-  "min_sdk_version": "29",
-  "module_name_overrides": {
-    "libnix": "libnix_0_30_1"
-  }
+  "min_sdk_version": "29"
 }

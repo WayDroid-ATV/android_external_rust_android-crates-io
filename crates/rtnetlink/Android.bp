@@ -34,7 +34,7 @@ rust_library {
         "libnetlink_packet_route",
         "libnetlink_proto",
         "libnetlink_sys",
-        "libnix_0_30_1",
+        "libnix",
         "libthiserror",
         "libtokio",
     ],
