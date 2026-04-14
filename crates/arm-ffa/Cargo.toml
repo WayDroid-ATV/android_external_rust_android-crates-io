@@ -10,10 +10,10 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2024"
-rust-version = "1.90"
+edition = "2021"
+rust-version = "1.82"
 name = "arm-ffa"
-version = "0.5.0"
+version = "0.4.1"
 authors = [
     "Balint Dobszay <balint.dobszay@arm.com>",
     "Imre Kis <imre.kis@arm.com>",
@@ -47,17 +47,17 @@ name = "arm_ffa"
 path = "src/lib.rs"
 
 [dependencies.num_enum]
-version = "0.7.6"
+version = "0.7.4"
 default-features = false
 
 [dependencies.thiserror]
-version = "2.0.18"
+version = "2.0.16"
 default-features = false
 
 [dependencies.uuid]
-version = "1.23.0"
+version = "1.18.1"
 default-features = false
 
 [dependencies.zerocopy]
-version = "0.8.48"
+version = "0.8.27"
 features = ["derive"]

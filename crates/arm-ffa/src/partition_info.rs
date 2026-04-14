@@ -5,13 +5,13 @@
 
 use thiserror::Error;
 use uuid::Uuid;
-use zerocopy::{FromBytes, IntoBytes, transmute};
+use zerocopy::{transmute, FromBytes, IntoBytes};
 
 // This module uses FF-A v1.1 types by default.
 // FF-A v1.2 specified some previously reserved bits in the partition info properties field, but
 // this doesn't change the descriptor format.
 use crate::{
-    UuidHelper, Version, ffa_v1_1::partition_info_descriptor, interface_args::SuccessArgs,
+    ffa_v1_1::partition_info_descriptor, PartitionInfoGetFlags, SuccessArgs, UuidHelper, Version,
 };
 
 // Sanity check to catch if the descriptor format is changed.
@@ -28,10 +28,6 @@ pub enum Error {
     InvalidBufferSize,
     #[error("Malformed descriptor")]
     MalformedDescriptor,
-    #[error("Invalid FF-A Partition Info Get Flag {0}")]
-    InvalidPartitionInfoGetFlag(u32),
-    #[error("Invalid Partition Info Get Regs response")]
-    InvalidPartitionInfoGetRegsResponse,
 }
 
 impl From<Error> for crate::FfaError {
@@ -269,41 +265,6 @@ impl PartitionInfo {
     }
 }
 
-/// Flags of the `FFA_PARTITION_INFO_GET` interface.
-#[derive(Debug, Eq, PartialEq, Clone, Copy)]
-pub struct PartitionInfoGetFlags {
-    pub count_only: bool,
-}
-
-impl PartitionInfoGetFlags {
-    const RETURN_INFORMATION_TYPE_FLAG: u32 = 1 << 0;
-    const MBZ_BITS: u32 = 0xffff_fffe;
-}
-
-impl TryFrom<u32> for PartitionInfoGetFlags {
-    type Error = Error;
-
-    fn try_from(val: u32) -> Result<Self, Self::Error> {
-        if (val & Self::MBZ_BITS) != 0 {
-            Err(Error::InvalidPartitionInfoGetFlag(val))
-        } else {
-            Ok(Self {
-                count_only: val & Self::RETURN_INFORMATION_TYPE_FLAG != 0,
-            })
-        }
-    }
-}
-
-impl From<PartitionInfoGetFlags> for u32 {
-    fn from(flags: PartitionInfoGetFlags) -> Self {
-        let mut bits: u32 = 0;
-        if flags.count_only {
-            bits |= PartitionInfoGetFlags::RETURN_INFORMATION_TYPE_FLAG;
-        }
-        bits
-    }
-}
-
 /// `FFA_PARTITION_INFO_GET` specific success args structure.
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub struct SuccessArgsPartitionInfoGet {
@@ -368,7 +329,7 @@ impl From<SuccessArgsPartitionInfoGetRegs> for SuccessArgs {
             transmute!(value.descriptor_data);
         args[1..].copy_from_slice(&descriptor_regs);
 
-        Self::Args64(args)
+        Self::Args64_2(args)
     }
 }
 
@@ -376,19 +337,19 @@ impl TryFrom<SuccessArgs> for SuccessArgsPartitionInfoGetRegs {
     type Error = crate::Error;
 
     fn try_from(value: SuccessArgs) -> Result<Self, Self::Error> {
-        let args = value.try_get_args64()?;
+        let args = value.try_get_args64_2()?;
 
         // Validate size
         let size = (args[0] >> Self::SIZE_SHIFT) as u16;
         if size as usize != PartitionInfo::DESC_SIZE {
-            return Err(Error::InvalidPartitionInfoGetRegsResponse.into());
+            return Err(Self::Error::InvalidPartitionInfoGetRegsResponse);
         }
 
         // Validate inidices
         let last_index = (args[0] >> Self::LAST_INDEX_SHIFT) as u16;
         let current_index = (args[0] >> Self::CURRENT_INDEX_SHIFT) as u16;
         if last_index < current_index {
-            return Err(Error::InvalidPartitionInfoGetRegsResponse.into());
+            return Err(Self::Error::InvalidPartitionInfoGetRegsResponse);
         }
 
         let info_tag = (args[0] >> Self::INFO_TAG_SHIFT) as u16;
