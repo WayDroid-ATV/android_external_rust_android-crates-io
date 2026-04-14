@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4
+
+- Added `into_inner` methods for `ExceptionLock` and `PerCore`.
+
 ## 0.2.3
 
 ### Bugfixes

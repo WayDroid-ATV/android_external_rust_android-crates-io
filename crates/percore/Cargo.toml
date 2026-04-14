@@ -12,7 +12,7 @@
 [package]
 edition = "2024"
 name = "percore"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["Andrew Walbran <qwandor@google.com>"]
 build = false
 autolib = false
@@ -54,7 +54,7 @@ name = "percore"
 path = "src/lib.rs"
 
 [dependencies.zerocopy]
-version = "0.8.39"
+version = "0.8.48"
 features = ["derive"]
 optional = true
 
