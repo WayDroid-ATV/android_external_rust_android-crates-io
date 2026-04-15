@@ -1,17 +1,17 @@
 name: "which"
 description: "A Rust equivalent of Unix command \"which\". Locate installed executable in cross platforms."
 third_party {
-  version: "4.4.0"
+  version: "4.4.2"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2023
-    month: 2
-    day: 17
+    year: 2026
+    month: 4
+    day: 15
   }
   homepage: "https://crates.io/crates/which"
   identifier {
     type: "crates.io"
     value: "which"
-    version: "4.4.0"
+    version: "4.4.2"
   }
 }
