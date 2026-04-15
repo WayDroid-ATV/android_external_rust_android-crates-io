@@ -541,7 +541,7 @@ dependencies = [
  "rustls-webpki",
  "rustversion",
  "ryu",
- "safe-mmio",
+ "safe-mmio 0.3.0",
  "same-file",
  "scopeguard",
  "sec1",
@@ -946,7 +946,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc8a5b06c02f993e98b0b3eb95c3acefb6889cc33a630621fb3e6c564502c2b0"
 dependencies = [
  "bitflags 2.11.0",
- "safe-mmio",
+ "safe-mmio 0.2.7",
  "thiserror 2.0.16",
  "zerocopy",
 ]
@@ -960,7 +960,7 @@ dependencies = [
  "bitflags 2.11.0",
  "embedded-hal-nb",
  "embedded-io",
- "safe-mmio",
+ "safe-mmio 0.2.7",
  "thiserror 2.0.16",
  "zerocopy",
 ]
@@ -7868,6 +7868,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "safe-mmio"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4813ee49326057f105d6d8ca3d8f9265095f26aa7b42094e487028403a594f4c"
+dependencies = [
+ "zerocopy",
+]
+
+[[package]]
 name = "safer-ffi"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9994,7 +10003,7 @@ dependencies = [
  "embedded-io",
  "enumn",
  "log",
- "safe-mmio",
+ "safe-mmio 0.2.7",
  "thiserror 2.0.16",
  "zerocopy",
 ]
