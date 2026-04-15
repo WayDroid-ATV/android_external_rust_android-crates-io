@@ -38,7 +38,6 @@ use crate::yuv_support::{
     CbCrInverseTransform, YuvChromaRange, YuvChromaSubsampling, YuvSourceChannels,
 };
 use core::f16;
-use std::mem::MaybeUninit;
 
 pub(crate) unsafe fn neon_yuv_p16_to_rgba_f16_row<
     const DESTINATION_CHANNELS: u8,
@@ -194,7 +193,7 @@ unsafe fn neon_yuv_p16_to_rgba_f16_impl<
     let mut cx = start_cx;
     let mut ux = start_ux;
 
-    while cx + 8 < width as usize {
+    while cx + 8 <= width as usize {
         let y_values: int16x8_t = vreinterpretq_s16_u16(vqsubq_u16(
             vreinterpretq_u16_s16(vldq_s16_endian::<ENDIANNESS, BYTES_POSITION, BIT_DEPTH>(
                 y_ld_ptr.get_unchecked(cx..).as_ptr(),
@@ -350,9 +349,9 @@ unsafe fn neon_yuv_p16_to_rgba_f16_impl<
         let diff = width as usize - cx;
         assert!(diff <= 8);
 
-        let mut y_buffer: [MaybeUninit<u16>; 8] = [MaybeUninit::uninit(); 8];
-        let mut u_buffer: [MaybeUninit<u16>; 8] = [MaybeUninit::uninit(); 8];
-        let mut v_buffer: [MaybeUninit<u16>; 8] = [MaybeUninit::uninit(); 8];
+        let mut y_buffer: [u16; 8] = [0; 8];
+        let mut u_buffer: [u16; 8] = [0; 8];
+        let mut v_buffer: [u16; 8] = [0; 8];
 
         std::ptr::copy_nonoverlapping(
             y_ld_ptr.get_unchecked(cx..).as_ptr(),

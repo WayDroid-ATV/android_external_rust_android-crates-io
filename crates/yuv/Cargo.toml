@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.82.0"
 name = "yuv"
-version = "0.8.11"
+version = "0.8.13"
 authors = ["Radzivon Bartoshyk"]
 build = false
 exclude = [
@@ -90,7 +90,7 @@ version = "1.10"
 optional = true
 
 [dev-dependencies.rand]
-version = "0.9"
+version = "0.10.0"
 
 [profile.dev.package.flate2]
 opt-level = 3

@@ -32,7 +32,6 @@ use crate::yuv_support::{
     CbCrForwardTransform, YuvChromaRange, YuvChromaSubsampling, YuvNVOrder, YuvSourceChannels,
 };
 use std::arch::aarch64::*;
-use std::mem::MaybeUninit;
 
 #[inline(always)]
 unsafe fn encode_16_part_prof<const ORIGIN_CHANNELS: u8, const UV_ORDER: u8, const SAMPLING: u8>(
@@ -216,7 +215,7 @@ pub(crate) unsafe fn neon_rgba_to_nv_prof<
     let mut cx = start_cx;
     let mut ux = start_ux;
 
-    while cx + 16 < width as usize {
+    while cx + 16 <= width as usize {
         encode_16_part_prof::<ORIGIN_CHANNELS, UV_ORDER, SAMPLING>(
             rgba.get_unchecked(cx * channels..),
             y_plane.get_unchecked_mut(cx..),
@@ -241,9 +240,9 @@ pub(crate) unsafe fn neon_rgba_to_nv_prof<
     if cx < width as usize {
         let diff = width as usize - cx;
         assert!(diff <= 16);
-        let mut src_buffer: [MaybeUninit<u8>; 16 * 4] = [MaybeUninit::uninit(); 16 * 4];
-        let mut y_buffer: [MaybeUninit<u8>; 16] = [MaybeUninit::uninit(); 16];
-        let mut uv_buffer: [MaybeUninit<u8>; 16 * 2] = [MaybeUninit::uninit(); 16 * 2];
+        let mut src_buffer: [u8; 16 * 4] = [0; 16 * 4];
+        let mut y_buffer: [u8; 16] = [0; 16];
+        let mut uv_buffer: [u8; 16 * 2] = [0; 16 * 2];
 
         // Replicate last item to one more position for subsampling
         if chroma_subsampling != YuvChromaSubsampling::Yuv444 && diff % 2 != 0 {
@@ -252,7 +251,7 @@ pub(crate) unsafe fn neon_rgba_to_nv_prof<
             let dvb = diff * channels;
             let dst = src_buffer.get_unchecked_mut(dvb..(dvb + channels));
             for (dst, src) in dst.iter_mut().zip(last_items) {
-                *dst = MaybeUninit::new(*src);
+                *dst = *src;
             }
         }
 
@@ -263,9 +262,9 @@ pub(crate) unsafe fn neon_rgba_to_nv_prof<
         );
 
         encode_16_part_prof::<ORIGIN_CHANNELS, UV_ORDER, SAMPLING>(
-            std::mem::transmute(src_buffer.as_slice()),
-            std::mem::transmute(y_buffer.as_mut_slice()),
-            std::mem::transmute(uv_buffer.as_mut_slice()),
+            src_buffer.as_slice(),
+            y_buffer.as_mut_slice(),
+            uv_buffer.as_mut_slice(),
             y_bias,
             uv_bias,
             v_weights,

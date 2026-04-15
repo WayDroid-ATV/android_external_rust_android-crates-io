@@ -31,7 +31,6 @@ use crate::internals::ProcessedOffset;
 use crate::neon::utils::*;
 use crate::yuv_support::{CbCrInverseTransform, YuvChromaRange, YuvSourceChannels};
 use std::arch::aarch64::*;
-use std::mem::MaybeUninit;
 
 #[cfg(feature = "rdm")]
 #[target_feature(enable = "rdm")]
@@ -116,7 +115,7 @@ unsafe fn neon_yuv_to_rgba_row420_impl<const DESTINATION_CHANNELS: u8, const R: 
 
     let v_weights = vld1q_s16(weights_arr.as_ptr());
 
-    while cx + 16 < width {
+    while cx + 16 <= width {
         let vl0 = vld1q_u8(y_plane0.get_unchecked(cx..).as_ptr());
         let vl1 = vld1q_u8(y_plane1.get_unchecked(cx..).as_ptr());
 
@@ -223,7 +222,7 @@ unsafe fn neon_yuv_to_rgba_row420_impl<const DESTINATION_CHANNELS: u8, const R: 
         uv_x += 8;
     }
 
-    while cx + 8 < width {
+    while cx + 8 <= width {
         let vl0 = vld1_u8(y_plane0.get_unchecked(cx..).as_ptr());
         let vl1 = vld1_u8(y_plane1.get_unchecked(cx..).as_ptr());
 
@@ -287,12 +286,12 @@ unsafe fn neon_yuv_to_rgba_row420_impl<const DESTINATION_CHANNELS: u8, const R: 
 
         assert!(diff <= 8);
 
-        let mut dst_buffer0: [MaybeUninit<u8>; 8 * 4] = [MaybeUninit::uninit(); 8 * 4];
-        let mut dst_buffer1: [MaybeUninit<u8>; 8 * 4] = [MaybeUninit::uninit(); 8 * 4];
-        let mut y_buffer0: [MaybeUninit<u8>; 8] = [MaybeUninit::uninit(); 8];
-        let mut y_buffer1: [MaybeUninit<u8>; 8] = [MaybeUninit::uninit(); 8];
-        let mut u_buffer: [MaybeUninit<u8>; 8] = [MaybeUninit::uninit(); 8];
-        let mut v_buffer: [MaybeUninit<u8>; 8] = [MaybeUninit::uninit(); 8];
+        let mut dst_buffer0: [u8; 8 * 4] = [0; 8 * 4];
+        let mut dst_buffer1: [u8; 8 * 4] = [0; 8 * 4];
+        let mut y_buffer0: [u8; 8] = [0; 8];
+        let mut y_buffer1: [u8; 8] = [0; 8];
+        let mut u_buffer: [u8; 8] = [0; 8];
+        let mut v_buffer: [u8; 8] = [0; 8];
 
         std::ptr::copy_nonoverlapping(
             y_plane0.get_unchecked(cx..).as_ptr(),

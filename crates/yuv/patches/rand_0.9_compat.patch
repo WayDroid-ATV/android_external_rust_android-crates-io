@@ -1,0 +1,91 @@
+diff --git a/src/rgb_ar30.rs b/src/rgb_ar30.rs
+index 0b7e239f2..19ca5cca9 100644
+--- a/src/rgb_ar30.rs
++++ b/src/rgb_ar30.rs
+@@ -537,7 +537,7 @@ rgb102_cnv!(
+ mod tests {
+     use super::*;
+     use crate::ar30_to_rgb8;
+-    use rand::RngExt;
++    use rand::Rng;
+ 
+     #[test]
+     fn ar30_rgb_round_trip_host() {
+diff --git a/src/yuv_nv_to_rgba.rs b/src/yuv_nv_to_rgba.rs
+index a8e3ad5de..19eed10ca 100644
+--- a/src/yuv_nv_to_rgba.rs
++++ b/src/yuv_nv_to_rgba.rs
+@@ -1978,7 +1978,7 @@ pub fn yuv_nv42_to_bgra(
+ mod tests {
+     use super::*;
+     use crate::{rgb_to_yuv_nv12, rgb_to_yuv_nv16, rgb_to_yuv_nv24, YuvBiPlanarImageMut};
+-    use rand::RngExt;
++    use rand::Rng;
+ 
+     #[test]
+     fn test_yuv444_nv_round_trip_full_range() {
+diff --git a/src/yuv_p16_rgba_f16.rs b/src/yuv_p16_rgba_f16.rs
+index 44651d4bf..853bcfb58 100644
+--- a/src/yuv_p16_rgba_f16.rs
++++ b/src/yuv_p16_rgba_f16.rs
+@@ -727,7 +727,7 @@ build_cnv!(
+ mod tests {
+     use super::*;
+     use crate::{rgb10_to_i210, rgb10_to_i410, YuvPlanarImageMut};
+-    use rand::RngExt;
++    use rand::Rng;
+ 
+     #[test]
+     fn test_yuv444_f16_round_trip_full_range() {
+diff --git a/src/yuv_p16_rgba_p16.rs b/src/yuv_p16_rgba_p16.rs
+index 89790fbfd..ff049f618 100644
+--- a/src/yuv_p16_rgba_p16.rs
++++ b/src/yuv_p16_rgba_p16.rs
+@@ -1126,7 +1126,7 @@ d_cnv!(
+ mod tests {
+     use super::*;
+     use crate::{rgb10_to_i010, rgb10_to_i210, rgb10_to_i410, YuvPlanarImageMut};
+-    use rand::RngExt;
++    use rand::Rng;
+ 
+     #[test]
+     fn test_yuv444_p16_round_trip_full_range() {
+diff --git a/src/yuv_to_rgba.rs b/src/yuv_to_rgba.rs
+index 1349265ba..3ec63fb7a 100644
+--- a/src/yuv_to_rgba.rs
++++ b/src/yuv_to_rgba.rs
+@@ -1189,7 +1189,7 @@ pub fn yuv444_to_bgr(
+ mod tests {
+     use super::*;
+     use crate::{rgb_to_yuv420, rgb_to_yuv422, rgb_to_yuv444, yuv444_to_rgb, YuvPlanarImageMut};
+-    use rand::RngExt;
++    use rand::Rng;
+ 
+     #[test]
+     fn test_yuv444_round_trip_full_range() {
+diff --git a/src/yuv_to_rgba_alpha.rs b/src/yuv_to_rgba_alpha.rs
+index 34bc02252..bd2fc0b21 100644
+--- a/src/yuv_to_rgba_alpha.rs
++++ b/src/yuv_to_rgba_alpha.rs
+@@ -715,7 +715,7 @@ pub fn yuv444_alpha_to_bgra(
+ mod tests {
+     use super::*;
+     use crate::{rgba_to_yuv444, YuvPlanarImageMut};
+-    use rand::RngExt;
++    use rand::Rng;
+ 
+     #[test]
+     fn test_yuv444_round_trip_full_range_with_alpha() {
+diff --git a/src/yuva_p16_rgba_f16.rs b/src/yuva_p16_rgba_f16.rs
+index 55cbe6738..3515445c8 100644
+--- a/src/yuva_p16_rgba_f16.rs
++++ b/src/yuva_p16_rgba_f16.rs
+@@ -655,7 +655,7 @@ build_cnv!(
+ mod tests {
+     use super::*;
+     use crate::{rgb10_to_i210, rgb10_to_i410, YuvPlanarImageMut};
+-    use rand::RngExt;
++    use rand::Rng;
+ 
+     #[test]
+     fn test_yuv444a_f16_round_trip_full_range() {

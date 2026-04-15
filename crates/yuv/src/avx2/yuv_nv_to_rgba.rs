@@ -36,7 +36,6 @@ use crate::yuv_support::{
 use std::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
-use std::mem::MaybeUninit;
 
 pub(crate) fn avx2_yuv_nv_to_rgba_row<
     const UV_ORDER: u8,
@@ -93,7 +92,7 @@ unsafe fn avx2_yuv_nv_to_rgba_row_impl<
     let v_g_coeff_1 = _mm256_set1_epi16(transform.g_coeff_1 as i16);
     let v_g_coeff_2 = _mm256_set1_epi16(transform.g_coeff_2 as i16);
 
-    while cx + 32 < width {
+    while cx + 32 <= width {
         let y_vl = _mm256_loadu_si256(y_ptr.add(cx) as *const __m256i);
 
         let (mut u_values, mut v_values);
@@ -194,9 +193,9 @@ unsafe fn avx2_yuv_nv_to_rgba_row_impl<
 
         assert!(diff <= 32);
 
-        let mut dst_buffer: [MaybeUninit<u8>; 32 * 4] = [MaybeUninit::uninit(); 32 * 4];
-        let mut y_buffer: [MaybeUninit<u8>; 32] = [MaybeUninit::uninit(); 32];
-        let mut uv_buffer: [MaybeUninit<u8>; 32 * 2] = [MaybeUninit::uninit(); 32 * 2];
+        let mut dst_buffer: [u8; 32 * 4] = [0; 32 * 4];
+        let mut y_buffer: [u8; 32] = [0; 32];
+        let mut uv_buffer: [u8; 32 * 2] = [0; 32 * 2];
 
         std::ptr::copy_nonoverlapping(
             y_plane.get_unchecked(cx..).as_ptr(),

@@ -30,7 +30,6 @@
 use crate::neon::utils::*;
 use crate::yuv_support::{CbCrInverseTransform, YuvChromaRange, YuvSourceChannels};
 use std::arch::aarch64::*;
-use std::mem::MaybeUninit;
 
 #[cfg(feature = "rdm")]
 #[target_feature(enable = "rdm")]
@@ -79,7 +78,7 @@ unsafe fn neon_y_to_rgb_row_impl<const DESTINATION_CHANNELS: u8, const R: bool>(
 
     let mut cx = start_cx;
 
-    while cx + 32 < width {
+    while cx + 32 <= width {
         let y_vals = xvld1q_u8_x2(y_plane.get_unchecked(cx..).as_ptr());
         let y_values0 = vqsubq_u8(y_vals.0, y_corr);
         let y_values1 = vqsubq_u8(y_vals.1, y_corr);
@@ -124,7 +123,7 @@ unsafe fn neon_y_to_rgb_row_impl<const DESTINATION_CHANNELS: u8, const R: bool>(
         cx += 32;
     }
 
-    while cx + 16 < width {
+    while cx + 16 <= width {
         let y_values = vqsubq_u8(vld1q_u8(y_plane.get_unchecked(cx..).as_ptr()), y_corr);
 
         let yh = vexpand_high_8_to_10(y_values);
@@ -152,7 +151,7 @@ unsafe fn neon_y_to_rgb_row_impl<const DESTINATION_CHANNELS: u8, const R: bool>(
         cx += 16;
     }
 
-    while cx + 8 < width {
+    while cx + 8 <= width {
         let y_values = vqsub_u8(
             vld1_u8(y_plane.get_unchecked(cx..).as_ptr()),
             vget_low_u8(y_corr),
@@ -182,8 +181,8 @@ unsafe fn neon_y_to_rgb_row_impl<const DESTINATION_CHANNELS: u8, const R: bool>(
         let diff = width - cx;
         assert!(diff <= 8);
 
-        let mut y_buffer: [MaybeUninit<u8>; 8] = [MaybeUninit::uninit(); 8];
-        let mut dst_buffer: [MaybeUninit<u8>; 8 * 4] = [MaybeUninit::uninit(); 8 * 4];
+        let mut y_buffer: [u8; 8] = [0; 8];
+        let mut dst_buffer: [u8; 8 * 4] = [0; 8 * 4];
         std::ptr::copy_nonoverlapping(
             y_plane.get_unchecked(cx..).as_ptr(),
             y_buffer.as_mut_ptr().cast(),

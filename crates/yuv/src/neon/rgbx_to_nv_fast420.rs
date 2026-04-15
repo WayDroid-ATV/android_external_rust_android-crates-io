@@ -31,7 +31,6 @@ use crate::internals::ProcessedOffset;
 use crate::neon::utils::neon_vld_rgb_for_yuv;
 use crate::yuv_support::{CbCrForwardTransform, YuvChromaRange, YuvNVOrder, YuvSourceChannels};
 use std::arch::aarch64::*;
-use std::mem::MaybeUninit;
 
 #[allow(clippy::cast_abs_to_unsigned)]
 pub(crate) unsafe fn neon_rgbx_to_nv_fast420<const ORIGIN_CHANNELS: u8, const UV_ORDER: u8>(
@@ -67,7 +66,7 @@ pub(crate) unsafe fn neon_rgbx_to_nv_fast420<const ORIGIN_CHANNELS: u8, const UV
     let v_cr_g = vdup_n_u8(transform.cr_g.abs() as u8);
     let v_cr_b = vdup_n_u8(transform.cr_b.abs() as u8);
 
-    while cx + 16 < width as usize {
+    while cx + 16 <= width as usize {
         let src0 = rgba0.get_unchecked(cx * channels..).as_ptr();
         let src1 = rgba1.get_unchecked(cx * channels..).as_ptr();
 
@@ -139,11 +138,11 @@ pub(crate) unsafe fn neon_rgbx_to_nv_fast420<const ORIGIN_CHANNELS: u8, const UV
         let diff = width as usize - cx;
         assert!(diff <= 16);
 
-        let mut src_buffer0: [MaybeUninit<u8>; 16 * 4] = [MaybeUninit::uninit(); 16 * 4];
-        let mut src_buffer1: [MaybeUninit<u8>; 16 * 4] = [MaybeUninit::uninit(); 16 * 4];
-        let mut y_buffer0: [MaybeUninit<u8>; 16] = [MaybeUninit::uninit(); 16];
-        let mut y_buffer1: [MaybeUninit<u8>; 16] = [MaybeUninit::uninit(); 16];
-        let mut uv_buffer: [MaybeUninit<u8>; 32] = [MaybeUninit::uninit(); 32];
+        let mut src_buffer0: [u8; 16 * 4] = [0; 16 * 4];
+        let mut src_buffer1: [u8; 16 * 4] = [0; 16 * 4];
+        let mut y_buffer0: [u8; 16] = [0; 16];
+        let mut y_buffer1: [u8; 16] = [0; 16];
+        let mut uv_buffer: [u8; 32] = [0; 32];
 
         std::ptr::copy_nonoverlapping(
             rgba0.get_unchecked(cx * channels..).as_ptr(),
@@ -165,10 +164,10 @@ pub(crate) unsafe fn neon_rgbx_to_nv_fast420<const ORIGIN_CHANNELS: u8, const UV
             let dst0 = src_buffer0.get_unchecked_mut(dvb..(dvb + channels));
             let dst1 = src_buffer1.get_unchecked_mut(dvb..(dvb + channels));
             for (dst, src) in dst0.iter_mut().zip(last_items0) {
-                *dst = MaybeUninit::new(*src);
+                *dst = *src;
             }
             for (dst, src) in dst1.iter_mut().zip(last_items1) {
-                *dst = MaybeUninit::new(*src);
+                *dst = *src;
             }
         }
 

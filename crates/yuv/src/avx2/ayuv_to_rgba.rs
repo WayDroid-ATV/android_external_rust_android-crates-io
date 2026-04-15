@@ -33,7 +33,6 @@ use crate::yuv_support::{CbCrInverseTransform, YuvPacked444Format, YuvSourceChan
 use std::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
-use std::mem::MaybeUninit;
 
 pub(crate) fn avx2_ayuv_to_rgba<const DESTINATION_CHANNELS: u8, const PACKING: u8>(
     ayuv: &[u8],
@@ -99,7 +98,7 @@ unsafe fn avx2_ayuv_to_rgba_impl<const DESTINATION_CHANNELS: u8, const PACKED: u
     let v_g_coeff_1 = _mm256_set1_epi16(transform.g_coeff_1);
     let v_g_coeff_2 = _mm256_set1_epi16(transform.g_coeff_2);
 
-    while cx + 32 < width {
+    while cx + 32 <= width {
         let (a, mut y_vals, u, v) = _mm256_load_deintl_ayuv::<PACKED>(ayuv.get_unchecked(cx * 4..));
 
         y_vals = _mm256_subs_epu8(y_vals, y_corr);
@@ -188,8 +187,8 @@ unsafe fn avx2_ayuv_to_rgba_impl<const DESTINATION_CHANNELS: u8, const PACKED: u
 
         assert!(diff <= 32);
 
-        let mut dst_buffer: [MaybeUninit<u8>; 32 * 4] = [MaybeUninit::uninit(); 32 * 4];
-        let mut src_buffer: [MaybeUninit<u8>; 32 * 4] = [MaybeUninit::uninit(); 32 * 4];
+        let mut dst_buffer: [u8; 32 * 4] = [0; 32 * 4];
+        let mut src_buffer: [u8; 32 * 4] = [0; 32 * 4];
 
         std::ptr::copy_nonoverlapping(
             ayuv.get_unchecked(cx * 4..).as_ptr(),
@@ -197,10 +196,7 @@ unsafe fn avx2_ayuv_to_rgba_impl<const DESTINATION_CHANNELS: u8, const PACKED: u
             diff * 4,
         );
 
-        let (a, mut y_vals, u, v) =
-            _mm256_load_deintl_ayuv::<PACKED>(std::mem::transmute::<&[MaybeUninit<u8>], &[u8]>(
-                src_buffer.as_slice(),
-            ));
+        let (a, mut y_vals, u, v) = _mm256_load_deintl_ayuv::<PACKED>(src_buffer.as_slice());
 
         y_vals = _mm256_subs_epu8(y_vals, y_corr);
 
