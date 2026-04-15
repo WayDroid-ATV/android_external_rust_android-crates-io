@@ -221,6 +221,7 @@ dependencies = [
  "data-encoding",
  "dc_bundle",
  "dc_figma_import",
+ "dc_jni",
  "dc_layout",
  "debug_tree",
  "der",
@@ -2382,6 +2383,27 @@ dependencies = [
  "thiserror 2.0.16",
  "unicode-segmentation",
  "vergen",
+]
+
+[[package]]
+name = "dc_jni"
+version = "0.38.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85fe78305d97399b81c2c51e57c443889a2f7336c24a8def3ee3e77672c4edaa"
+dependencies = [
+ "android_logger 0.13.3",
+ "bytes",
+ "dc_bundle",
+ "dc_figma_import",
+ "dc_layout",
+ "jni 0.21.1",
+ "log",
+ "protobuf 3.7.2",
+ "reqwest 0.12.28",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "thiserror 2.0.16",
 ]
 
 [[package]]
