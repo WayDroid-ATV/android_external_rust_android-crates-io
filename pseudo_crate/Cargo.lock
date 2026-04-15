@@ -425,6 +425,7 @@ dependencies = [
  "mockall",
  "mockall_derive",
  "mockall_double",
+ "moxcms",
  "named-lock",
  "neli",
  "netlink-packet-core",
@@ -503,6 +504,7 @@ dependencies = [
  "protobuf-support",
  "ptr_meta",
  "ptr_meta_derive",
+ "pxfm",
  "quiche",
  "quickcheck",
  "quote 1.0.45",
@@ -5839,6 +5841,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "moxcms"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb85c154ba489f01b25c0d36ae69a87e4a1c73a72631fc6c0eb6dde34a73e44b"
+dependencies = [
+ "num-traits",
+ "pxfm",
+]
+
+[[package]]
 name = "named-lock"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7072,6 +7084,12 @@ dependencies = [
  "quote 1.0.45",
  "syn 2.0.117",
 ]
+
+[[package]]
+name = "pxfm"
+version = "0.1.28"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5a041e753da8b807c9255f28de81879c78c876392ff2469cde94799b2896b9d"
 
 [[package]]
 name = "qoi"
