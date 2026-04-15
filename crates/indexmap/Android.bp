@@ -18,9 +18,9 @@ rust_library {
     host_supported: true,
     crate_name: "indexmap",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.13.1",
+    cargo_pkg_version: "2.14.0",
     crate_root: "src/lib.rs",
-    edition: "2021",
+    edition: "2024",
     features: [
         "serde",
         "std",
