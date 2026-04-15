@@ -319,6 +319,7 @@ mockall
 mockall_derive
 mockall_double
 moveit
+moxcms
 named-lock
 neli
 netlink-packet-core
@@ -398,6 +399,7 @@ protobuf-parse
 protobuf-support
 ptr_meta
 ptr_meta_derive
+pxfm
 quiche
 quickcheck
 quote
