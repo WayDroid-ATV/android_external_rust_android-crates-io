@@ -299,7 +299,6 @@ dependencies = [
  "getrandom 0.4.2",
  "gherkin",
  "gl",
- "gl_common",
  "glam",
  "glob",
  "globset",
@@ -3625,15 +3624,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a94edab108827d67608095e269cf862e60d920f144a5026d3dbcfd8b877fb404"
 dependencies = [
  "gl_generator",
-]
-
-[[package]]
-name = "gl_common"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c83fd30537051fe4abbcfb80f982d4bdd63038c66bd4346e4ac674892e06b1ca"
-dependencies = [
- "libc 0.1.12",
 ]
 
 [[package]]
