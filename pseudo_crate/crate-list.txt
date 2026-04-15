@@ -110,6 +110,7 @@ dasp_sample
 data-encoding
 dc_bundle
 dc_figma_import
+dc_jni
 dc_layout
 debug_tree
 der

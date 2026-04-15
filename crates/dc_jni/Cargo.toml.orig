@@ -1,0 +1,29 @@
+[package]
+name = "dc_jni"
+description = "Figma jni library for Android"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+rust-version.workspace = true
+homepage = "https://google.github.io/automotive-design-compose"
+repository = "https://github.com/google/automotive-design-compose"
+readme = "README.md"
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+dc_bundle.workspace = true
+dc_figma_import.workspace = true
+dc_layout.workspace = true
+log.workspace = true
+jni.workspace = true
+android_logger.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_bytes.workspace = true
+reqwest.workspace = true
+protobuf.workspace = true
+thiserror.workspace = true
+bytes.workspace = true
