@@ -223,6 +223,11 @@ impl<T> Node<T> {
                         if *common == *child.prefix && remaining == *b"/" {
                             extra_trailing_slash = true;
                         }
+                    } else {
+                        let (common, remaining) = child.prefix.split_at(suffix.len());
+                        if *common == **suffix && remaining == *b"/" {
+                            extra_trailing_slash = true;
+                        }
                     }
                 }
 
@@ -319,7 +324,7 @@ impl<T> Node<T> {
 
                     // Similarly, we are inserting a parameter suffix and this node already has a parameter
                     // prefix, we have a prefix-suffix conflict.
-                    let suffix = remaining.slice_off(wildcard.end);
+                    let suffix = remaining.slice_until(terminator).slice_off(wildcard.end);
                     if !matches!(*suffix, b"" | b"/") && node.prefix_wild_child_in_segment() {
                         return Err(InsertError::conflict(&route, remaining, node));
                     }
