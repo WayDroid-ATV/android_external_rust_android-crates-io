@@ -8,7 +8,6 @@ use types::{BigEndian, FixedSize, Scalar};
 
 use crate::array::ComputedArray;
 use crate::read::{ComputeSize, FontReadWithArgs, ReadError};
-use crate::table_ref::TableRef;
 use crate::FontRead;
 
 /// A reference to raw binary font data.
@@ -206,7 +205,8 @@ impl<'a> Cursor<'a> {
             _ if b0 < 0xE0 => ((b0 - 0xC0) << 16) | (next()? << 8) | next()?,
             _ if b0 < 0xF0 => ((b0 - 0xE0) << 24) | (next()? << 16) | (next()? << 8) | next()?,
             _ => {
-                // TODO: << 32 doesn't make sense. (b0 - 0xF0) << 32
+                // 0xF0 is a dedicated 5-byte prefix; high bits are carried entirely
+                // by the following 4 bytes.
                 (next()? << 24) | (next()? << 16) | (next()? << 8) | next()?
             }
         };
@@ -287,12 +287,6 @@ impl<'a> Cursor<'a> {
 
     pub fn is_empty(&self) -> bool {
         self.pos >= self.data.len()
-    }
-
-    pub(crate) fn finish<T>(self, shape: T) -> Result<TableRef<'a, T>, ReadError> {
-        let data = self.data;
-        data.check_in_bounds(self.pos)?;
-        Ok(TableRef { data, shape })
     }
 }
 

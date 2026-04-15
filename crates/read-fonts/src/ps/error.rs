@@ -1,29 +1,12 @@
-//! PostScript (CFF and CFF2) common tables.
+//! Errors that may occur when processing PostScript fonts.
 
-use std::fmt;
-
-mod blend;
-mod charset;
-mod encoding;
-mod fd_select;
-mod index;
-mod stack;
-mod string;
-
-pub mod charstring;
-pub mod dict;
-
-include!("../../generated/generated_postscript.rs");
-
-pub use blend::BlendState;
-pub use charset::{Charset, CharsetIter};
-pub use index::Index;
-pub use stack::{Number, Stack};
-pub use string::{Latin1String, StringId, STANDARD_STRINGS};
+use crate::ReadError;
+use core::fmt;
 
 /// Errors that are specific to PostScript processing.
 #[derive(Clone, Debug)]
 pub enum Error {
+    InvalidFontFormat,
     InvalidIndexOffsetSize(u8),
     ZeroOffsetInIndex,
     InvalidVariationStoreIndex(u16),
@@ -37,6 +20,7 @@ pub enum Error {
     CharstringNestingDepthLimitExceeded,
     MissingSubroutines,
     MissingBlendState,
+    MissingFdArray,
     MissingPrivateDict,
     MissingCharstrings,
     MissingCharset,
@@ -53,6 +37,9 @@ impl From<ReadError> for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::InvalidFontFormat => {
+                write!(f, "invalid font format")
+            }
             Self::InvalidIndexOffsetSize(size) => {
                 write!(f, "invalid offset size of {size} for INDEX (expected 1-4)")
             }
@@ -90,7 +77,7 @@ impl fmt::Display for Error {
                 write!(
                     f,
                     "exceeded subroutine nesting depth limit {} while evaluating a charstring",
-                    charstring::NESTING_DEPTH_LIMIT
+                    crate::ps::cs::NESTING_DEPTH_LIMIT
                 )
             }
             Self::MissingSubroutines => {
@@ -105,6 +92,9 @@ impl fmt::Display for Error {
                     "encountered a blend operator but no blend state was provided"
                 )
             }
+            Self::MissingFdArray => {
+                write!(f, "CFF table does not contain a font dictionary index")
+            }
             Self::MissingPrivateDict => {
                 write!(f, "CFF table does not contain a private dictionary")
             }
@@ -118,6 +108,15 @@ impl fmt::Display for Error {
                 write!(f, "seac code {code} is not valid")
             }
             Self::Read(err) => write!(f, "{err}"),
+        }
+    }
+}
+
+impl core::error::Error for Error {
+    fn source(&self) -> Option<&(dyn core::error::Error + 'static)> {
+        match self {
+            Self::Read(err) => Some(err),
+            _ => None,
         }
     }
 }
