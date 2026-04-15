@@ -45,7 +45,11 @@ mod vlan;
 #[cfg(test)]
 mod vrf;
 #[cfg(test)]
+mod vxcan;
+#[cfg(test)]
 mod vxlan;
+#[cfg(test)]
+mod wireless;
 #[cfg(test)]
 mod xdp;
 #[cfg(test)]

@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.77"
 name = "netlink-packet-route"
-version = "0.28.0"
+version = "0.29.0"
 authors = ["Corentin Henry <corentinhenry@gmail.com>"]
 build = false
 autolib = false
@@ -30,9 +30,6 @@ keywords = [
 ]
 license = "MIT"
 repository = "https://github.com/rust-netlink/netlink-packet-route"
-
-[features]
-rich_nlas = []
 
 [lib]
 name = "netlink_packet_route"
