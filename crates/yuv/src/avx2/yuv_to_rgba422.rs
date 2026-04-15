@@ -34,7 +34,6 @@ use crate::yuv_support::{CbCrInverseTransform, YuvChromaRange, YuvSourceChannels
 use std::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
-use std::mem::MaybeUninit;
 
 /// This is special path for halved chroma Row to reuse variables instead of computing them
 pub(crate) fn avx2_yuv_to_rgba_row422<const DESTINATION_CHANNELS: u8>(
@@ -85,7 +84,7 @@ unsafe fn avx2_yuv_to_rgba_row_impl422<const DESTINATION_CHANNELS: u8>(
     let v_g_coeff_1 = _mm256_set1_epi16(transform.g_coeff_1 as i16);
     let v_g_coeff_2 = _mm256_set1_epi16(transform.g_coeff_2 as i16);
 
-    while cx + 32 < width {
+    while cx + 32 <= width {
         let yvl0 = _mm256_loadu_si256(y_ptr.add(cx) as *const __m256i);
         let u_values = _mm_loadu_si128(u_ptr.add(uv_x) as *const __m128i);
         let v_values = _mm_loadu_si128(v_ptr.add(uv_x) as *const __m128i);
@@ -162,10 +161,10 @@ unsafe fn avx2_yuv_to_rgba_row_impl422<const DESTINATION_CHANNELS: u8>(
 
         assert!(diff <= 32);
 
-        let mut dst_buffer: [MaybeUninit<u8>; 32 * 4] = [MaybeUninit::uninit(); 32 * 4];
-        let mut y_buffer: [MaybeUninit<u8>; 32] = [MaybeUninit::uninit(); 32];
-        let mut u_buffer: [MaybeUninit<u8>; 32] = [MaybeUninit::uninit(); 32];
-        let mut v_buffer: [MaybeUninit<u8>; 32] = [MaybeUninit::uninit(); 32];
+        let mut dst_buffer: [u8; 32 * 4] = [0; 32 * 4];
+        let mut y_buffer: [u8; 32] = [0; 32];
+        let mut u_buffer: [u8; 32] = [0; 32];
+        let mut v_buffer: [u8; 32] = [0; 32];
 
         std::ptr::copy_nonoverlapping(
             y_plane.get_unchecked(cx..).as_ptr(),

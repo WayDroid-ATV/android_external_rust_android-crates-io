@@ -33,7 +33,6 @@ use crate::yuv_support::{
     CbCrForwardTransform, YuvChromaRange, YuvChromaSubsampling, YuvNVOrder, YuvSourceChannels,
 };
 use std::arch::aarch64::*;
-use std::mem::MaybeUninit;
 
 #[allow(clippy::cast_abs_to_unsigned)]
 pub(crate) unsafe fn neon_rgbx_to_nv_fast<
@@ -74,7 +73,7 @@ pub(crate) unsafe fn neon_rgbx_to_nv_fast<
     let mut cx = start_cx;
     let mut ux = start_ux;
 
-    while cx + 16 < width as usize {
+    while cx + 16 <= width as usize {
         let src = rgba.get_unchecked(cx * channels..).as_ptr();
 
         let (r_values0, g_values0, b_values0) = neon_vld_rgb_for_yuv::<ORIGIN_CHANNELS>(src);
@@ -170,9 +169,9 @@ pub(crate) unsafe fn neon_rgbx_to_nv_fast<
         let diff = width as usize - cx;
         assert!(diff <= 16);
 
-        let mut src_buffer: [MaybeUninit<u8>; 16 * 4] = [MaybeUninit::uninit(); 16 * 4];
-        let mut y_buffer: [MaybeUninit<u8>; 16] = [MaybeUninit::uninit(); 16];
-        let mut uv_buffer: [MaybeUninit<u8>; 16 * 2] = [MaybeUninit::uninit(); 16 * 2];
+        let mut src_buffer: [u8; 16 * 4] = [0; 16 * 4];
+        let mut y_buffer: [u8; 16] = [0; 16];
+        let mut uv_buffer: [u8; 16 * 2] = [0; 16 * 2];
 
         std::ptr::copy_nonoverlapping(
             rgba.get_unchecked(cx * channels..).as_ptr(),
@@ -187,7 +186,7 @@ pub(crate) unsafe fn neon_rgbx_to_nv_fast<
             let dvb = diff * channels;
             let dst = src_buffer.get_unchecked_mut(dvb..(dvb + channels));
             for (dst, src) in dst.iter_mut().zip(last_items) {
-                *dst = MaybeUninit::new(*src);
+                *dst = *src;
             }
         }
 

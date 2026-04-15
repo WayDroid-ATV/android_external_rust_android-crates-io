@@ -37,7 +37,6 @@ use crate::yuv_support::{CbCrForwardTransform, YuvChromaRange, YuvSourceChannels
 use std::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
-use std::mem::MaybeUninit;
 
 /// This is special path for 2 rows of BiPlanar 4:2:0 to reuse variables instead of computing them
 pub(crate) fn avx2_rgba_to_yuv420_prof<const ORIGIN_CHANNELS: u8, const PRECISION: i32>(
@@ -243,7 +242,7 @@ unsafe fn avx2_rgba_to_yuv420_prof_impl<
     let mut cx = start_cx;
     let mut uv_x = start_ux;
 
-    while cx + 32 < width {
+    while cx + 32 <= width {
         let px = cx * channels;
 
         encode_32_part::<ORIGIN_CHANNELS, PRECISION, HAS_DOT>(
@@ -265,12 +264,12 @@ unsafe fn avx2_rgba_to_yuv420_prof_impl<
         let diff = width - cx;
         assert!(diff <= 32);
 
-        let mut src_buffer0: [MaybeUninit<u8>; 32 * 4] = [MaybeUninit::uninit(); 32 * 4];
-        let mut src_buffer1: [MaybeUninit<u8>; 32 * 4] = [MaybeUninit::uninit(); 32 * 4];
-        let mut y_buffer0: [MaybeUninit<u8>; 32] = [MaybeUninit::uninit(); 32];
-        let mut y_buffer1: [MaybeUninit<u8>; 32] = [MaybeUninit::uninit(); 32];
-        let mut u_buffer: [MaybeUninit<u8>; 32] = [MaybeUninit::uninit(); 32];
-        let mut v_buffer: [MaybeUninit<u8>; 32] = [MaybeUninit::uninit(); 32];
+        let mut src_buffer0: [u8; 32 * 4] = [0; 32 * 4];
+        let mut src_buffer1: [u8; 32 * 4] = [0; 32 * 4];
+        let mut y_buffer0: [u8; 32] = [0; 32];
+        let mut y_buffer1: [u8; 32] = [0; 32];
+        let mut u_buffer: [u8; 32] = [0; 32];
+        let mut v_buffer: [u8; 32] = [0; 32];
 
         std::ptr::copy_nonoverlapping(
             rgba0.get_unchecked(cx * channels..).as_ptr(),
@@ -293,20 +292,20 @@ unsafe fn avx2_rgba_to_yuv420_prof_impl<
             let dst0 = src_buffer0.get_unchecked_mut(dvb..(dvb + channels));
             let dst1 = src_buffer1.get_unchecked_mut(dvb..(dvb + channels));
             for (dst, src) in dst0.iter_mut().zip(last_items0) {
-                *dst = MaybeUninit::new(*src);
+                *dst = *src;
             }
             for (dst, src) in dst1.iter_mut().zip(last_items1) {
-                *dst = MaybeUninit::new(*src);
+                *dst = *src;
             }
         }
 
         encode_32_part::<ORIGIN_CHANNELS, PRECISION, HAS_DOT>(
-            std::mem::transmute::<&[MaybeUninit<u8>], &[u8]>(src_buffer0.as_slice()),
-            std::mem::transmute::<&[MaybeUninit<u8>], &[u8]>(src_buffer1.as_slice()),
-            std::mem::transmute::<&mut [MaybeUninit<u8>], &mut [u8]>(y_buffer0.as_mut_slice()),
-            std::mem::transmute::<&mut [MaybeUninit<u8>], &mut [u8]>(y_buffer1.as_mut_slice()),
-            std::mem::transmute::<&mut [MaybeUninit<u8>], &mut [u8]>(u_buffer.as_mut_slice()),
-            std::mem::transmute::<&mut [MaybeUninit<u8>], &mut [u8]>(v_buffer.as_mut_slice()),
+            src_buffer0.as_slice(),
+            src_buffer1.as_slice(),
+            y_buffer0.as_mut_slice(),
+            y_buffer1.as_mut_slice(),
+            u_buffer.as_mut_slice(),
+            v_buffer.as_mut_slice(),
             range,
             transform,
         );
@@ -382,7 +381,7 @@ unsafe fn avx2_4chan_to_yuv_impl<const ORIGIN_CHANNELS: u8, const PRECISION: i32
     let mut cx = start_cx;
     let mut ux = start_ux;
 
-    while cx + 16 < width {
+    while cx + 16 <= width {
         let src_ptr0 = rgba0.get_unchecked(cx * channels..);
         let src_ptr1 = rgba1.get_unchecked(cx * channels..);
 
@@ -607,12 +606,12 @@ unsafe fn avx2_4chan_to_yuv_impl<const ORIGIN_CHANNELS: u8, const PRECISION: i32
         let diff = width - cx;
         assert!(diff <= 8);
 
-        let mut src_buffer0: [MaybeUninit<u8>; 8 * 4] = [MaybeUninit::uninit(); 8 * 4];
-        let mut src_buffer1: [MaybeUninit<u8>; 8 * 4] = [MaybeUninit::uninit(); 8 * 4];
-        let mut y_buffer0: [MaybeUninit<u8>; 8] = [MaybeUninit::uninit(); 8];
-        let mut y_buffer1: [MaybeUninit<u8>; 8] = [MaybeUninit::uninit(); 8];
-        let mut u_buffer: [MaybeUninit<u8>; 8] = [MaybeUninit::uninit(); 8];
-        let mut v_buffer: [MaybeUninit<u8>; 8] = [MaybeUninit::uninit(); 8];
+        let mut src_buffer0: [u8; 8 * 4] = [0; 8 * 4];
+        let mut src_buffer1: [u8; 8 * 4] = [0; 8 * 4];
+        let mut y_buffer0: [u8; 8] = [0; 8];
+        let mut y_buffer1: [u8; 8] = [0; 8];
+        let mut u_buffer: [u8; 8] = [0; 8];
+        let mut v_buffer: [u8; 8] = [0; 8];
 
         std::ptr::copy_nonoverlapping(
             rgba0.get_unchecked(cx * channels..).as_ptr(),
@@ -635,10 +634,10 @@ unsafe fn avx2_4chan_to_yuv_impl<const ORIGIN_CHANNELS: u8, const PRECISION: i32
             let dst0 = src_buffer0.get_unchecked_mut(dvb..(dvb + channels));
             let dst1 = src_buffer1.get_unchecked_mut(dvb..(dvb + channels));
             for (dst, src) in dst0.iter_mut().zip(last_items0) {
-                *dst = MaybeUninit::new(*src);
+                *dst = *src;
             }
             for (dst, src) in dst1.iter_mut().zip(last_items1) {
-                *dst = MaybeUninit::new(*src);
+                *dst = *src;
             }
         }
 
