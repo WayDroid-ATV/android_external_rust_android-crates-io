@@ -5,9 +5,9 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 use crate::{
     link::LinkMessageBuilder,
     packet_route::link::{
-        BondAllPortActive, BondArpAllTargets, BondArpValidate, BondFailOverMac,
-        BondLacpRate, BondMode, BondPrimaryReselect, BondXmitHashPolicy,
-        InfoBond, InfoData, InfoKind,
+        BondAdSelect, BondAllPortActive, BondArpAllTargets, BondArpValidate,
+        BondFailOverMac, BondLacpRate, BondMode, BondPrimaryReselect,
+        BondXmitHashPolicy, InfoBond, InfoData, InfoKind,
     },
 };
 
@@ -218,7 +218,7 @@ impl LinkMessageBuilder<LinkBond> {
     /// Adds the `ad_select` attribute to the bond
     /// This is equivalent to `ip link add name NAME type bond ad_select
     /// AD_SELECT`.
-    pub fn ad_select(self, ad_select: u8) -> Self {
+    pub fn ad_select(self, ad_select: BondAdSelect) -> Self {
         self.append_info_data(InfoBond::AdSelect(ad_select))
     }
 

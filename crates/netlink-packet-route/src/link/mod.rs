@@ -21,17 +21,19 @@ pub(crate) mod sriov;
 mod stats;
 mod stats64;
 mod vlan_protocol;
+mod wireless;
 mod xdp;
 
 mod tests;
 
 pub use self::{
     af_spec::{
-        AfSpecBridge, AfSpecInet, AfSpecInet6, AfSpecUnspec, BridgeFlag,
-        BridgeMode, BridgeVlanInfo, BridgeVlanInfoFlags, BridgeVlanTunnelInfo,
-        Icmp6Stats, Icmp6StatsBuffer, In6AddrGenMode, Inet6CacheInfo,
-        Inet6CacheInfoBuffer, Inet6DevConf, Inet6DevConfBuffer,
+        AfSpecBridge, AfSpecInet, AfSpecInet6, AfSpecMctp, AfSpecUnspec,
+        BridgeFlag, BridgeMode, BridgeVlanInfo, BridgeVlanInfoFlags,
+        BridgeVlanTunnelInfo, Icmp6Stats, Icmp6StatsBuffer, In6AddrGenMode,
+        Inet6CacheInfo, Inet6CacheInfoBuffer, Inet6DevConf, Inet6DevConfBuffer,
         Inet6IfaceFlags, Inet6Stats, Inet6StatsBuffer, InetDevConf,
+        MctpPhysBinding,
     },
     attribute::LinkAttribute,
     down_reason::LinkProtocolDownReason,
@@ -40,23 +42,24 @@ pub use self::{
     header::{LinkHeader, LinkMessageBuffer},
     link_flag::LinkFlags,
     link_info::{
-        BondAdInfo, BondAllPortActive, BondArpAllTargets, BondArpValidate,
-        BondFailOverMac, BondLacpRate, BondMode, BondPortState,
-        BondPrimaryReselect, BondXmitHashPolicy, BridgeBooleanOptionFlags,
-        BridgeBooleanOptions, BridgeId, BridgeIdBuffer,
-        BridgeMulticastRouterType, BridgePortState, BridgeQuerierState,
-        BridgeStpState, GeneveDf, GreEncapFlags, GreEncapType, GreIOFlags,
-        HsrProtocol, InfoBond, InfoBondPort, InfoBridge, InfoBridgePort,
-        InfoData, InfoGeneve, InfoGre, InfoGre6, InfoGtp, InfoHsr,
-        InfoIpTunnel, InfoIpVlan, InfoIpVtap, InfoIpoib, InfoKind, InfoMacSec,
-        InfoMacVlan, InfoMacVtap, InfoNetkit, InfoPortData, InfoPortKind,
-        InfoTun, InfoVeth, InfoVlan, InfoVrf, InfoVrfPort, InfoVti, InfoVxlan,
-        InfoXfrm, Ip6TunnelFlags, IpVlanFlags, IpVlanMode, IpVtapFlags,
-        IpVtapMode, IpoibMode, LinkInfo, LinkXstats, MacSecCipherId,
-        MacSecOffload, MacSecValidate, MacVlanFlags, MacVlanMacAddressMode,
-        MacVlanMode, MacVtapFlags, MacVtapMacAddressMode, MacVtapMode,
-        MiiStatus, NetkitMode, NetkitPolicy, NetkitScrub, TunnelEncapFlags,
-        TunnelEncapType, VlanFlags, VlanQosMapping,
+        BondAdInfo, BondAdSelect, BondAllPortActive, BondArpAllTargets,
+        BondArpValidate, BondFailOverMac, BondLacpRate, BondMode,
+        BondPortState, BondPrimaryReselect, BondXmitHashPolicy,
+        BridgeBooleanOptionFlags, BridgeBooleanOptions, BridgeId,
+        BridgeIdBuffer, BridgeMulticastRouterType, BridgePortState,
+        BridgeQuerierState, BridgeStpState, GeneveDf, GreEncapFlags,
+        GreEncapType, GreIOFlags, HsrProtocol, InfoBond, InfoBondPort,
+        InfoBridge, InfoBridgePort, InfoData, InfoGeneve, InfoGre, InfoGre6,
+        InfoGtp, InfoHsr, InfoIpTunnel, InfoIpVlan, InfoIpVtap, InfoIpoib,
+        InfoKind, InfoMacSec, InfoMacVlan, InfoMacVtap, InfoNetkit,
+        InfoPortData, InfoPortKind, InfoTun, InfoVeth, InfoVlan, InfoVrf,
+        InfoVrfPort, InfoVti, InfoVxcan, InfoVxlan, InfoXfrm, Ip6TunnelFlags,
+        IpVlanFlags, IpVlanMode, IpVtapFlags, IpVtapMode, IpoibMode, LinkInfo,
+        LinkXstats, MacSecCipherId, MacSecOffload, MacSecValidate,
+        MacVlanFlags, MacVlanMacAddressMode, MacVlanMode, MacVtapFlags,
+        MacVtapMacAddressMode, MacVtapMode, MiiStatus, NetkitMode,
+        NetkitPolicy, NetkitScrub, TunnelEncapFlags, TunnelEncapType,
+        VlanFlags, VlanQosMapping,
     },
     link_layer_type::LinkLayerType,
     link_mode::LinkMode,
@@ -78,5 +81,6 @@ pub use self::{
     stats::{Stats, StatsBuffer},
     stats64::{Stats64, Stats64Buffer},
     vlan_protocol::VlanProtocol,
+    wireless::WirelessEvent,
     xdp::{LinkXdp, XdpAttached},
 };
