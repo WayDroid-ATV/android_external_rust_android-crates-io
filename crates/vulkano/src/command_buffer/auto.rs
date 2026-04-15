@@ -758,6 +758,10 @@ where
     fn resources_usage(&self) -> &CommandBufferResourcesUsage {
         self.inner.resources_usage()
     }
+
+    fn is_protected(&self) -> bool {
+        self._alloc.is_protected()
+    }
 }
 
 pub struct SecondaryAutoCommandBuffer<A = StandardCommandBufferAlloc> {
@@ -790,6 +794,10 @@ where
 {
     fn usage(&self) -> CommandBufferUsage {
         self.usage
+    }
+
+    fn is_protected(&self) -> bool {
+        self._alloc.is_protected()
     }
 
     fn inheritance_info(&self) -> &CommandBufferInheritanceInfo {

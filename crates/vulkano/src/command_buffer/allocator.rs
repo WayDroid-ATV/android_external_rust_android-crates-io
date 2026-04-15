@@ -104,6 +104,9 @@ pub unsafe trait CommandBufferAlloc: DeviceOwned + Send + Sync + 'static {
 
     /// Returns the index of the queue family that the pool targets.
     fn queue_family_index(&self) -> u32;
+
+    /// Returns true if the buffer was allocated with the protected bit set.
+    fn is_protected(&self) -> bool;
 }
 
 /// Standard implementation of a command buffer allocator.
@@ -357,6 +360,7 @@ impl Pool {
             device,
             CommandPoolCreateInfo {
                 queue_family_index,
+                protected: create_info.protected,
                 ..Default::default()
             },
         )
@@ -538,6 +542,9 @@ pub struct StandardCommandBufferAllocatorCreateInfo {
     /// The default value is `256`.
     pub secondary_buffer_count: usize,
 
+    /// Set to true for a protected buffer pool.
+    pub protected: bool,
+
     pub _ne: crate::NonExhaustive,
 }
 
@@ -547,6 +554,7 @@ impl Default for StandardCommandBufferAllocatorCreateInfo {
         StandardCommandBufferAllocatorCreateInfo {
             primary_buffer_count: 256,
             secondary_buffer_count: 256,
+            protected: false,
             _ne: crate::NonExhaustive(()),
         }
     }
@@ -611,6 +619,11 @@ unsafe impl CommandBufferAlloc for StandardCommandBufferAlloc {
     #[inline]
     fn queue_family_index(&self) -> u32 {
         self.pool.inner.inner.queue_family_index()
+    }
+
+    #[inline]
+    fn is_protected(&self) -> bool {
+        self.pool.inner.inner.is_protected()
     }
 }
 

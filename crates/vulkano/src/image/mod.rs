@@ -188,11 +188,13 @@ vulkan_bitflags! {
         device_extensions: [khr_maintenance2],
     },*/
 
-    /* TODO: enable
-    // TODO: document
+    /// The buffer is protected, and can only be used in combination with protected memory and other
+    /// protected objects.
+    ///
+    /// The device API version must be at least 1.1.
     PROTECTED = PROTECTED {
         api_version: V1_1,
-    },*/
+    },
 
     /// For images with a multi-planar format, whether each plane will have its memory bound
     /// separately, rather than having a single memory binding for the whole image.

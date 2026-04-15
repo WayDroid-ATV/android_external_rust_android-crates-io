@@ -792,6 +792,7 @@ impl<'a> QueueGuard<'a> {
                 wait_semaphore_infos_vk: SmallVec<[ash::vk::SemaphoreSubmitInfo; 4]>,
                 command_buffer_infos_vk: SmallVec<[ash::vk::CommandBufferSubmitInfo; 4]>,
                 signal_semaphore_infos_vk: SmallVec<[ash::vk::SemaphoreSubmitInfo; 4]>,
+                protected_submit_info_vk: Option<ash::vk::ProtectedSubmitInfo>,
             }
 
             let (mut submit_info_vk, per_submit_vk): (SmallVec<[_; 4]>, SmallVec<[_; 4]>) =
@@ -833,6 +834,18 @@ impl<'a> QueueGuard<'a> {
                             })
                             .collect();
 
+                        let is_protected = command_buffers.iter().any(|cb| cb.is_protected());
+
+                        let protected_submit_info_vk = if is_protected {
+                            Some(ash::vk::ProtectedSubmitInfo {
+                                s_type: ash::vk::StructureType::PROTECTED_SUBMIT_INFO,
+                                p_next: ptr::null(),
+                                protected_submit: ash::vk::TRUE,
+                            })
+                        } else {
+                            None
+                        };
+
                         let signal_semaphore_infos_vk = signal_semaphores
                             .iter()
                             .map(|semaphore_submit_info| {
@@ -867,6 +880,7 @@ impl<'a> QueueGuard<'a> {
                                 wait_semaphore_infos_vk,
                                 command_buffer_infos_vk,
                                 signal_semaphore_infos_vk,
+                                protected_submit_info_vk,
                             },
                         )
                     })
@@ -878,10 +892,16 @@ impl<'a> QueueGuard<'a> {
                     wait_semaphore_infos_vk,
                     command_buffer_infos_vk,
                     signal_semaphore_infos_vk,
+                    protected_submit_info_vk,
                 },
             ) in (submit_info_vk.iter_mut()).zip(per_submit_vk.iter())
             {
+                let p_next = protected_submit_info_vk
+                    .as_ref()
+                    .map_or(ptr::null(), |p| p as *const _ as *const _);
+
                 *submit_info_vk = ash::vk::SubmitInfo2 {
+                    p_next,
                     wait_semaphore_info_count: wait_semaphore_infos_vk.len() as u32,
                     p_wait_semaphore_infos: wait_semaphore_infos_vk.as_ptr(),
                     command_buffer_info_count: command_buffer_infos_vk.len() as u32,
@@ -922,6 +942,7 @@ impl<'a> QueueGuard<'a> {
                 wait_dst_stage_mask_vk: SmallVec<[ash::vk::PipelineStageFlags; 4]>,
                 command_buffers_vk: SmallVec<[ash::vk::CommandBuffer; 4]>,
                 signal_semaphores_vk: SmallVec<[ash::vk::Semaphore; 4]>,
+                protected_submit_info_vk: Option<ash::vk::ProtectedSubmitInfo>,
             }
 
             let (mut submit_info_vk, per_submit_vk): (SmallVec<[_; 4]>, SmallVec<[_; 4]>) =
@@ -950,6 +971,18 @@ impl<'a> QueueGuard<'a> {
 
                         let command_buffers_vk =
                             command_buffers.iter().map(|cb| cb.handle()).collect();
+
+                        let is_protected = command_buffers.iter().any(|cb| cb.is_protected());
+
+                        let protected_submit_info_vk = if is_protected {
+                            Some(ash::vk::ProtectedSubmitInfo {
+                                s_type: ash::vk::StructureType::PROTECTED_SUBMIT_INFO,
+                                p_next: ptr::null(),
+                                protected_submit: ash::vk::TRUE,
+                            })
+                        } else {
+                            None
+                        };
 
                         let signal_semaphores_vk = signal_semaphores
                             .iter()
@@ -980,6 +1013,7 @@ impl<'a> QueueGuard<'a> {
                                 wait_dst_stage_mask_vk,
                                 command_buffers_vk,
                                 signal_semaphores_vk,
+                                protected_submit_info_vk,
                             },
                         )
                     })
@@ -992,10 +1026,16 @@ impl<'a> QueueGuard<'a> {
                     wait_dst_stage_mask_vk,
                     command_buffers_vk,
                     signal_semaphores_vk,
+                    protected_submit_info_vk,
                 },
             ) in (submit_info_vk.iter_mut()).zip(per_submit_vk.iter())
             {
+                let p_next = protected_submit_info_vk
+                    .as_ref()
+                    .map_or(ptr::null(), |p| p as *const _ as *const _);
+
                 *submit_info_vk = ash::vk::SubmitInfo {
+                    p_next,
                     wait_semaphore_count: wait_semaphores_vk.len() as u32,
                     p_wait_semaphores: wait_semaphores_vk.as_ptr(),
                     p_wait_dst_stage_mask: wait_dst_stage_mask_vk.as_ptr(),
