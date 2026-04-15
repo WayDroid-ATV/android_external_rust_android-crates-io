@@ -9,7 +9,7 @@ const TimeZone_box_destroy_registry = new FinalizationRegistry((ptr) => {
 });
 
 /**
- * See the [Rust documentation for `TimeZone`](https://docs.rs/icu/2.1.1/icu/time/struct.TimeZone.html) for more information.
+ * See the [Rust documentation for `TimeZone`](https://docs.rs/icu/2.2.0/icu/time/struct.TimeZone.html) for more information.
  */
 export class TimeZone {
     // Internal ptr reference:
@@ -43,7 +43,7 @@ export class TimeZone {
     /**
      * The unknown time zone.
      *
-     * See the [Rust documentation for `unknown`](https://docs.rs/icu/2.1.1/icu/time/struct.TimeZoneInfo.html#method.unknown) for more information.
+     * See the [Rust documentation for `unknown`](https://docs.rs/icu/2.2.0/icu/time/struct.TimeZoneInfo.html#method.unknown) for more information.
      */
     static unknown() {
 
@@ -54,13 +54,14 @@ export class TimeZone {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
     /**
      * Whether the time zone is the unknown zone.
      *
-     * See the [Rust documentation for `is_unknown`](https://docs.rs/icu/2.1.1/icu/time/struct.TimeZone.html#method.is_unknown) for more information.
+     * See the [Rust documentation for `is_unknown`](https://docs.rs/icu/2.2.0/icu/time/struct.TimeZone.html#method.is_unknown) for more information.
      */
     isUnknown() {
 
@@ -71,6 +72,84 @@ export class TimeZone {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
+        }
+    }
+
+    /**
+     * Construct a {@link TimeZone} from an IANA time zone ID.
+     *
+     * See the [Rust documentation for `from_iana_id`](https://docs.rs/icu/2.2.0/icu/time/struct.TimeZone.html#method.from_iana_id) for more information.
+     */
+    static createFromIanaId(ianaId) {
+        let functionGarbageCollectorGrip = new diplomatRuntime.GarbageCollectorGrip();
+        const ianaIdSlice = functionGarbageCollectorGrip.alloc(diplomatRuntime.DiplomatBuf.sliceWrapper(wasm, diplomatRuntime.DiplomatBuf.str8(wasm, ianaId)));
+        // This lifetime edge depends on lifetimes 'a
+        let aEdges = [ianaIdSlice];
+
+
+        const result = wasm.icu4x_TimeZone_create_from_iana_id_mv1(ianaIdSlice.ptr);
+
+        try {
+            return new TimeZone(diplomatRuntime.internalConstructor, result, []);
+        }
+
+        finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
+            functionGarbageCollectorGrip.releaseToGarbageCollector();
+
+        }
+    }
+
+    /**
+     * Construct a {@link TimeZone} from a Windows time zone ID and region.
+     *
+     * See the [Rust documentation for `from_windows_id`](https://docs.rs/icu/2.2.0/icu/time/struct.TimeZone.html#method.from_windows_id) for more information.
+     */
+    static createFromWindowsId(windowsId, region) {
+        let functionGarbageCollectorGrip = new diplomatRuntime.GarbageCollectorGrip();
+        const windowsIdSlice = functionGarbageCollectorGrip.alloc(diplomatRuntime.DiplomatBuf.sliceWrapper(wasm, diplomatRuntime.DiplomatBuf.str8(wasm, windowsId)));
+        const regionSlice = functionGarbageCollectorGrip.alloc(diplomatRuntime.DiplomatBuf.sliceWrapper(wasm, diplomatRuntime.DiplomatBuf.str8(wasm, region)));
+        // This lifetime edge depends on lifetimes 'a
+        let aEdges = [windowsIdSlice, regionSlice];
+
+
+        const result = wasm.icu4x_TimeZone_create_from_windows_id_mv1(windowsIdSlice.ptr, regionSlice.ptr);
+
+        try {
+            return new TimeZone(diplomatRuntime.internalConstructor, result, []);
+        }
+
+        finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
+            functionGarbageCollectorGrip.releaseToGarbageCollector();
+
+        }
+    }
+
+    /**
+     * Construct a {@link TimeZone} from the platform-specific ID.
+     *
+     * See the [Rust documentation for `from_system_id`](https://docs.rs/icu/2.2.0/icu/time/struct.TimeZone.html#method.from_system_id) for more information.
+     */
+    static createFromSystemId(id, region) {
+        let functionGarbageCollectorGrip = new diplomatRuntime.GarbageCollectorGrip();
+        const idSlice = functionGarbageCollectorGrip.alloc(diplomatRuntime.DiplomatBuf.sliceWrapper(wasm, diplomatRuntime.DiplomatBuf.str8(wasm, id)));
+        const regionSlice = functionGarbageCollectorGrip.alloc(diplomatRuntime.DiplomatBuf.sliceWrapper(wasm, diplomatRuntime.DiplomatBuf.str8(wasm, region)));
+        // This lifetime edge depends on lifetimes 'a
+        let aEdges = [idSlice, regionSlice];
+
+
+        const result = wasm.icu4x_TimeZone_create_from_system_id_mv1(idSlice.ptr, regionSlice.ptr);
+
+        try {
+            return new TimeZone(diplomatRuntime.internalConstructor, result, []);
+        }
+
+        finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
+            functionGarbageCollectorGrip.releaseToGarbageCollector();
+
         }
     }
 
@@ -79,7 +158,7 @@ export class TimeZone {
      *
      * Returns the unknown time zone if the string is not a valid BCP-47 subtag.
      *
-     * Additional information: [1](https://docs.rs/icu/2.1.1/icu/time/struct.TimeZone.html)
+     * Additional information: [1](https://docs.rs/icu/2.2.0/icu/time/struct.TimeZone.html)
      */
     static createFromBcp47(id) {
         let functionCleanupArena = new diplomatRuntime.CleanupArena();
@@ -93,13 +172,14 @@ export class TimeZone {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             functionCleanupArena.free();
 
         }
     }
 
     /**
-     * See the [Rust documentation for `with_offset`](https://docs.rs/icu/2.1.1/icu/time/struct.TimeZone.html#method.with_offset) for more information.
+     * See the [Rust documentation for `with_offset`](https://docs.rs/icu/2.2.0/icu/time/struct.TimeZone.html#method.with_offset) for more information.
      */
     withOffset(offset) {
 
@@ -110,11 +190,12 @@ export class TimeZone {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
     /**
-     * See the [Rust documentation for `without_offset`](https://docs.rs/icu/2.1.1/icu/time/struct.TimeZone.html#method.without_offset) for more information.
+     * See the [Rust documentation for `without_offset`](https://docs.rs/icu/2.2.0/icu/time/struct.TimeZone.html#method.without_offset) for more information.
      */
     withoutOffset() {
 
@@ -125,6 +206,7 @@ export class TimeZone {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 

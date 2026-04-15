@@ -13,7 +13,7 @@ const LocaleCanonicalizer_box_destroy_registry = new FinalizationRegistry((ptr) 
 /**
  * A locale canonicalizer.
  *
- * See the [Rust documentation for `LocaleCanonicalizer`](https://docs.rs/icu/2.1.1/icu/locale/struct.LocaleCanonicalizer.html) for more information.
+ * See the [Rust documentation for `LocaleCanonicalizer`](https://docs.rs/icu/2.2.0/icu/locale/struct.LocaleCanonicalizer.html) for more information.
  */
 export class LocaleCanonicalizer {
     // Internal ptr reference:
@@ -47,7 +47,7 @@ export class LocaleCanonicalizer {
     /**
      * Create a new {@link LocaleCanonicalizer} using compiled data.
      *
-     * See the [Rust documentation for `new_common`](https://docs.rs/icu/2.1.1/icu/locale/struct.LocaleCanonicalizer.html#method.new_common) for more information.
+     * See the [Rust documentation for `new_common`](https://docs.rs/icu/2.2.0/icu/locale/struct.LocaleCanonicalizer.html#method.new_common) for more information.
      */
     #defaultConstructor() {
 
@@ -58,13 +58,14 @@ export class LocaleCanonicalizer {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
     /**
      * Create a new {@link LocaleCanonicalizer}.
      *
-     * See the [Rust documentation for `new_common`](https://docs.rs/icu/2.1.1/icu/locale/struct.LocaleCanonicalizer.html#method.new_common) for more information.
+     * See the [Rust documentation for `new_common`](https://docs.rs/icu/2.2.0/icu/locale/struct.LocaleCanonicalizer.html#method.new_common) for more information.
      */
     static createCommonWithProvider(provider) {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 5, 4, true);
@@ -81,6 +82,7 @@ export class LocaleCanonicalizer {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             diplomatReceive.free();
         }
     }
@@ -88,7 +90,7 @@ export class LocaleCanonicalizer {
     /**
      * Create a new {@link LocaleCanonicalizer} with extended data using compiled data.
      *
-     * See the [Rust documentation for `new_extended`](https://docs.rs/icu/2.1.1/icu/locale/struct.LocaleCanonicalizer.html#method.new_extended) for more information.
+     * See the [Rust documentation for `new_extended`](https://docs.rs/icu/2.2.0/icu/locale/struct.LocaleCanonicalizer.html#method.new_extended) for more information.
      */
     static createExtended() {
 
@@ -99,13 +101,14 @@ export class LocaleCanonicalizer {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
     /**
      * Create a new {@link LocaleCanonicalizer} with extended data.
      *
-     * See the [Rust documentation for `new_extended`](https://docs.rs/icu/2.1.1/icu/locale/struct.LocaleCanonicalizer.html#method.new_extended) for more information.
+     * See the [Rust documentation for `new_extended`](https://docs.rs/icu/2.2.0/icu/locale/struct.LocaleCanonicalizer.html#method.new_extended) for more information.
      */
     static createExtendedWithProvider(provider) {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 5, 4, true);
@@ -122,12 +125,13 @@ export class LocaleCanonicalizer {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             diplomatReceive.free();
         }
     }
 
     /**
-     * See the [Rust documentation for `canonicalize`](https://docs.rs/icu/2.1.1/icu/locale/struct.LocaleCanonicalizer.html#method.canonicalize) for more information.
+     * See the [Rust documentation for `canonicalize`](https://docs.rs/icu/2.2.0/icu/locale/struct.LocaleCanonicalizer.html#method.canonicalize) for more information.
      */
     canonicalize(locale) {
 
@@ -138,13 +142,14 @@ export class LocaleCanonicalizer {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
     /**
      * Create a new {@link LocaleCanonicalizer} using compiled data.
      *
-     * See the [Rust documentation for `new_common`](https://docs.rs/icu/2.1.1/icu/locale/struct.LocaleCanonicalizer.html#method.new_common) for more information.
+     * See the [Rust documentation for `new_common`](https://docs.rs/icu/2.2.0/icu/locale/struct.LocaleCanonicalizer.html#method.new_common) for more information.
      */
     constructor() {
         if (arguments[0] === diplomatRuntime.exposeConstructor) {

@@ -8,7 +8,7 @@ import * as diplomatRuntime from "./diplomat-runtime.mjs";
 /**
  * The various calendar types currently supported by {@link Calendar}
  *
- * See the [Rust documentation for `AnyCalendarKind`](https://docs.rs/icu/2.1.1/icu/calendar/enum.AnyCalendarKind.html) for more information.
+ * See the [Rust documentation for `AnyCalendarKind`](https://docs.rs/icu/2.2.0/icu/calendar/enum.AnyCalendarKind.html) for more information.
  */
 export class CalendarKind {
     #value = undefined;
@@ -101,30 +101,86 @@ export class CalendarKind {
         [17]: new CalendarKind(diplomatRuntime.internalConstructor, diplomatRuntime.internalConstructor, 17),
     };
 
+    /**
+     * The kind of an Iso calendar
+     */
     static Iso = CalendarKind.#objectValues[0];
+    /**
+     * The kind of a Gregorian calendar
+     */
     static Gregorian = CalendarKind.#objectValues[1];
+    /**
+     * The kind of a Buddhist calendar
+     */
     static Buddhist = CalendarKind.#objectValues[2];
+    /**
+     * The kind of a Japanese calendar
+     */
     static Japanese = CalendarKind.#objectValues[3];
+    /**
+     * Deprecated, use `Japanese`
+     *
+     * @deprecated use `Japanese`
+     */
     static JapaneseExtended = CalendarKind.#objectValues[4];
+    /**
+     * The kind of an Ethiopian calendar, with Amete Mihret era
+     */
     static Ethiopian = CalendarKind.#objectValues[5];
+    /**
+     * The kind of an Ethiopian calendar, with Amete Alem era
+     */
     static EthiopianAmeteAlem = CalendarKind.#objectValues[6];
+    /**
+     * The kind of a Indian calendar
+     */
     static Indian = CalendarKind.#objectValues[7];
+    /**
+     * The kind of a Coptic calendar
+     */
     static Coptic = CalendarKind.#objectValues[8];
+    /**
+     * The kind of a Dangi calendar
+     */
     static Dangi = CalendarKind.#objectValues[9];
+    /**
+     * The kind of a Chinese calendar
+     */
     static Chinese = CalendarKind.#objectValues[10];
+    /**
+     * The kind of a Hebrew calendar
+     */
     static Hebrew = CalendarKind.#objectValues[11];
+    /**
+     * The kind of a Hijri tabular, type II leap years, Friday epoch, calendar
+     */
     static HijriTabularTypeIiFriday = CalendarKind.#objectValues[12];
+    /**
+     * The kind of a Hijri simulated, Mecca calendar
+     */
     static HijriSimulatedMecca = CalendarKind.#objectValues[18];
+    /**
+     * The kind of a Hijri tabular, type II leap years, Thursday epoch, calendar
+     */
     static HijriTabularTypeIiThursday = CalendarKind.#objectValues[14];
+    /**
+     * The kind of a Hijri Umm al-Qura calendar
+     */
     static HijriUmmAlQura = CalendarKind.#objectValues[15];
+    /**
+     * The kind of a Persian calendar
+     */
     static Persian = CalendarKind.#objectValues[16];
+    /**
+     * The kind of a Roc calendar
+     */
     static Roc = CalendarKind.#objectValues[17];
 
 
     /**
      * Creates a new {@link CalendarKind} for the specified locale, using compiled data.
      *
-     * See the [Rust documentation for `new`](https://docs.rs/icu/2.1.1/icu/calendar/enum.AnyCalendarKind.html#method.new) for more information.
+     * See the [Rust documentation for `new`](https://docs.rs/icu/2.2.0/icu/calendar/enum.AnyCalendarKind.html#method.new) for more information.
      */
     static create(locale) {
 
@@ -135,6 +191,7 @@ export class CalendarKind {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 

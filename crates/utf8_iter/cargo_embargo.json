@@ -4,6 +4,7 @@
     "//apex_available:platform"
   ],
   "min_sdk_version": "29",
+  "sdk_version": "29",
   "native_bridge_supported": true,
   "ramdisk_available": true,
   "recovery_available": true,

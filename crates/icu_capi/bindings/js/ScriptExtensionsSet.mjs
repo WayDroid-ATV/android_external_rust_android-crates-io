@@ -7,9 +7,9 @@ const ScriptExtensionsSet_box_destroy_registry = new FinalizationRegistry((ptr) 
 });
 
 /**
- * An object that represents the Script_Extensions property for a single character
+ * An object that represents the `Script_Extensions` property for a single character
  *
- * See the [Rust documentation for `ScriptExtensionsSet`](https://docs.rs/icu/2.1.1/icu/properties/script/struct.ScriptExtensionsSet.html) for more information.
+ * See the [Rust documentation for `ScriptExtensionsSet`](https://docs.rs/icu/2.2.0/icu/properties/script/struct.ScriptExtensionsSet.html) for more information.
  */
 export class ScriptExtensionsSet {
     // Internal ptr reference:
@@ -43,9 +43,9 @@ export class ScriptExtensionsSet {
 
 
     /**
-     * Check if the Script_Extensions property of the given code point covers the given script
+     * Check if the `Script_Extensions` property of the given code point covers the given script
      *
-     * See the [Rust documentation for `contains`](https://docs.rs/icu/2.1.1/icu/properties/script/struct.ScriptExtensionsSet.html#method.contains) for more information.
+     * See the [Rust documentation for `contains`](https://docs.rs/icu/2.2.0/icu/properties/script/struct.ScriptExtensionsSet.html#method.contains) for more information.
      */
     contains(script) {
 
@@ -56,13 +56,14 @@ export class ScriptExtensionsSet {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
     /**
      * Get the number of scripts contained in here
      *
-     * See the [Rust documentation for `iter`](https://docs.rs/icu/2.1.1/icu/properties/script/struct.ScriptExtensionsSet.html#method.iter) for more information.
+     * See the [Rust documentation for `iter`](https://docs.rs/icu/2.2.0/icu/properties/script/struct.ScriptExtensionsSet.html#method.iter) for more information.
      */
     get count() {
 
@@ -73,13 +74,14 @@ export class ScriptExtensionsSet {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
     /**
      * Get script at index
      *
-     * See the [Rust documentation for `iter`](https://docs.rs/icu/2.1.1/icu/properties/script/struct.ScriptExtensionsSet.html#method.iter) for more information.
+     * See the [Rust documentation for `iter`](https://docs.rs/icu/2.2.0/icu/properties/script/struct.ScriptExtensionsSet.html#method.iter) for more information.
      */
     scriptAt(index) {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 3, 2, true);
@@ -95,6 +97,7 @@ export class ScriptExtensionsSet {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             diplomatReceive.free();
         }
     }

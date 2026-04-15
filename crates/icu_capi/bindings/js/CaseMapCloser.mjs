@@ -10,7 +10,7 @@ const CaseMapCloser_box_destroy_registry = new FinalizationRegistry((ptr) => {
 });
 
 /**
- * See the [Rust documentation for `CaseMapCloser`](https://docs.rs/icu/2.1.1/icu/casemap/struct.CaseMapCloser.html) for more information.
+ * See the [Rust documentation for `CaseMapCloser`](https://docs.rs/icu/2.2.0/icu/casemap/struct.CaseMapCloser.html) for more information.
  */
 export class CaseMapCloser {
     // Internal ptr reference:
@@ -42,9 +42,9 @@ export class CaseMapCloser {
 
 
     /**
-     * Construct a new CaseMapCloser instance using compiled data.
+     * Construct a new `CaseMapCloser` instance using compiled data.
      *
-     * See the [Rust documentation for `new`](https://docs.rs/icu/2.1.1/icu/casemap/struct.CaseMapCloser.html#method.new) for more information.
+     * See the [Rust documentation for `new`](https://docs.rs/icu/2.2.0/icu/casemap/struct.CaseMapCloser.html#method.new) for more information.
      */
     #defaultConstructor() {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 5, 4, true);
@@ -61,14 +61,15 @@ export class CaseMapCloser {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             diplomatReceive.free();
         }
     }
 
     /**
-     * Construct a new CaseMapCloser instance using a particular data source.
+     * Construct a new `CaseMapCloser` instance using a particular data source.
      *
-     * See the [Rust documentation for `new`](https://docs.rs/icu/2.1.1/icu/casemap/struct.CaseMapCloser.html#method.new) for more information.
+     * See the [Rust documentation for `new`](https://docs.rs/icu/2.2.0/icu/casemap/struct.CaseMapCloser.html#method.new) for more information.
      */
     static createWithProvider(provider) {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 5, 4, true);
@@ -85,6 +86,7 @@ export class CaseMapCloser {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             diplomatReceive.free();
         }
     }
@@ -93,7 +95,7 @@ export class CaseMapCloser {
      * Adds all simple case mappings and the full case folding for `c` to `builder`.
      * Also adds special case closure mappings.
      *
-     * See the [Rust documentation for `add_case_closure_to`](https://docs.rs/icu/2.1.1/icu/casemap/struct.CaseMapCloserBorrowed.html#method.add_case_closure_to) for more information.
+     * See the [Rust documentation for `add_case_closure_to`](https://docs.rs/icu/2.2.0/icu/casemap/struct.CaseMapCloserBorrowed.html#method.add_case_closure_to) for more information.
      */
     addCaseClosureTo(c, builder) {
     wasm.icu4x_CaseMapCloser_add_case_closure_to_mv1(this.ffiValue, c, builder.ffiValue);
@@ -101,6 +103,7 @@ export class CaseMapCloser {
         try {}
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
@@ -110,7 +113,7 @@ export class CaseMapCloser {
      *
      * Returns true if the string was found
      *
-     * See the [Rust documentation for `add_string_case_closure_to`](https://docs.rs/icu/2.1.1/icu/casemap/struct.CaseMapCloserBorrowed.html#method.add_string_case_closure_to) for more information.
+     * See the [Rust documentation for `add_string_case_closure_to`](https://docs.rs/icu/2.2.0/icu/casemap/struct.CaseMapCloserBorrowed.html#method.add_string_case_closure_to) for more information.
      */
     addStringCaseClosureTo(s, builder) {
         let functionCleanupArena = new diplomatRuntime.CleanupArena();
@@ -124,15 +127,16 @@ export class CaseMapCloser {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             functionCleanupArena.free();
 
         }
     }
 
     /**
-     * Construct a new CaseMapCloser instance using compiled data.
+     * Construct a new `CaseMapCloser` instance using compiled data.
      *
-     * See the [Rust documentation for `new`](https://docs.rs/icu/2.1.1/icu/casemap/struct.CaseMapCloser.html#method.new) for more information.
+     * See the [Rust documentation for `new`](https://docs.rs/icu/2.2.0/icu/casemap/struct.CaseMapCloser.html#method.new) for more information.
      */
     constructor() {
         if (arguments[0] === diplomatRuntime.exposeConstructor) {

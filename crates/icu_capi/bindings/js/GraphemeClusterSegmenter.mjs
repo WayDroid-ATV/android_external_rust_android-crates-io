@@ -13,7 +13,7 @@ const GraphemeClusterSegmenter_box_destroy_registry = new FinalizationRegistry((
  * An ICU4X grapheme-cluster-break segmenter, capable of finding grapheme cluster breakpoints
  * in strings.
  *
- * See the [Rust documentation for `GraphemeClusterSegmenter`](https://docs.rs/icu/2.1.1/icu/segmenter/struct.GraphemeClusterSegmenter.html) for more information.
+ * See the [Rust documentation for `GraphemeClusterSegmenter`](https://docs.rs/icu/2.2.0/icu/segmenter/struct.GraphemeClusterSegmenter.html) for more information.
  */
 export class GraphemeClusterSegmenter {
     // Internal ptr reference:
@@ -47,7 +47,7 @@ export class GraphemeClusterSegmenter {
     /**
      * Construct an {@link GraphemeClusterSegmenter} using compiled data.
      *
-     * See the [Rust documentation for `new`](https://docs.rs/icu/2.1.1/icu/segmenter/struct.GraphemeClusterSegmenter.html#method.new) for more information.
+     * See the [Rust documentation for `new`](https://docs.rs/icu/2.2.0/icu/segmenter/struct.GraphemeClusterSegmenter.html#method.new) for more information.
      */
     #defaultConstructor() {
 
@@ -58,13 +58,14 @@ export class GraphemeClusterSegmenter {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
     /**
      * Construct an {@link GraphemeClusterSegmenter}.
      *
-     * See the [Rust documentation for `new`](https://docs.rs/icu/2.1.1/icu/segmenter/struct.GraphemeClusterSegmenter.html#method.new) for more information.
+     * See the [Rust documentation for `new`](https://docs.rs/icu/2.2.0/icu/segmenter/struct.GraphemeClusterSegmenter.html#method.new) for more information.
      */
     static createWithProvider(provider) {
         const diplomatReceive = new diplomatRuntime.DiplomatReceiveBuf(wasm, 5, 4, true);
@@ -81,6 +82,7 @@ export class GraphemeClusterSegmenter {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             diplomatReceive.free();
         }
     }
@@ -91,7 +93,7 @@ export class GraphemeClusterSegmenter {
      * Ill-formed input is treated as if errors had been replaced with REPLACEMENT CHARACTERs according
      * to the WHATWG Encoding Standard.
      *
-     * See the [Rust documentation for `segment_utf16`](https://docs.rs/icu/2.1.1/icu/segmenter/struct.GraphemeClusterSegmenterBorrowed.html#method.segment_utf16) for more information.
+     * See the [Rust documentation for `segment_utf16`](https://docs.rs/icu/2.2.0/icu/segmenter/struct.GraphemeClusterSegmenterBorrowed.html#method.segment_utf16) for more information.
      */
     segment(input) {
         let functionGarbageCollectorGrip = new diplomatRuntime.GarbageCollectorGrip();
@@ -107,6 +109,7 @@ export class GraphemeClusterSegmenter {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             functionGarbageCollectorGrip.releaseToGarbageCollector();
 
         }
@@ -115,7 +118,7 @@ export class GraphemeClusterSegmenter {
     /**
      * Construct an {@link GraphemeClusterSegmenter} using compiled data.
      *
-     * See the [Rust documentation for `new`](https://docs.rs/icu/2.1.1/icu/segmenter/struct.GraphemeClusterSegmenter.html#method.new) for more information.
+     * See the [Rust documentation for `new`](https://docs.rs/icu/2.2.0/icu/segmenter/struct.GraphemeClusterSegmenter.html#method.new) for more information.
      */
     constructor() {
         if (arguments[0] === diplomatRuntime.exposeConstructor) {

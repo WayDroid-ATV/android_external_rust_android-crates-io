@@ -7,9 +7,7 @@ import * as diplomatRuntime from "./diplomat-runtime.mjs";
 
 
 /**
- * 🚧 This API is experimental and may experience breaking changes outside major releases.
- *
- * See the [Rust documentation for `DateFromFieldsOptions`](https://docs.rs/icu/2.1.1/icu/calendar/options/struct.DateFromFieldsOptions.html) for more information.
+ * See the [Rust documentation for `DateFromFieldsOptions`](https://docs.rs/icu/2.2.0/icu/calendar/options/struct.DateFromFieldsOptions.html) for more information.
  */
 export class DateFromFieldsOptions {
     #overflow;
@@ -54,16 +52,23 @@ export class DateFromFieldsOptions {
     // Return this struct in FFI function friendly format.
     // Returns an array that can be expanded with spread syntax (...)
     _intoFFI(
+        dst,
         functionCleanupArena,
         appendArrayMap
     ) {
-        let buffer = diplomatRuntime.DiplomatBuf.struct(wasm, 16, 4);
 
-        this._writeToArrayBuffer(wasm.memory.buffer, buffer.ptr, functionCleanupArena, appendArrayMap);
+        this._writeToArrayBuffer(wasm.memory.buffer, dst, functionCleanupArena, appendArrayMap);
 
-        functionCleanupArena.alloc(buffer);
+        return dst;
+    }
 
-        return buffer.ptr;
+    static get _sizeBytes() {
+        return 16;
+    }
+
+    /// Currently unused, we may want to use later on though:
+    static get _sizeAlign() {
+        return 4;
     }
 
     static _fromSuppliedValue(internalConstructor, obj) {

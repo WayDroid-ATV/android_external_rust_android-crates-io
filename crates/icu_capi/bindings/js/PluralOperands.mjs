@@ -9,7 +9,7 @@ const PluralOperands_box_destroy_registry = new FinalizationRegistry((ptr) => {
 });
 
 /**
- * See the [Rust documentation for `PluralOperands`](https://docs.rs/icu/2.1.1/icu/plurals/struct.PluralOperands.html) for more information.
+ * See the [Rust documentation for `PluralOperands`](https://docs.rs/icu/2.2.0/icu/plurals/struct.PluralOperands.html) for more information.
  */
 export class PluralOperands {
     // Internal ptr reference:
@@ -43,7 +43,7 @@ export class PluralOperands {
     /**
      * Construct for a given string representing a number
      *
-     * See the [Rust documentation for `from_str`](https://docs.rs/icu/2.1.1/icu/plurals/struct.PluralOperands.html#method.from_str) for more information.
+     * See the [Rust documentation for `from_str`](https://docs.rs/icu/2.2.0/icu/plurals/struct.PluralOperands.html#method.from_str) for more information.
      */
     static fromString(s) {
         let functionCleanupArena = new diplomatRuntime.CleanupArena();
@@ -63,6 +63,7 @@ export class PluralOperands {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             functionCleanupArena.free();
 
             diplomatReceive.free();
@@ -81,11 +82,12 @@ export class PluralOperands {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
     /**
-     * Construct from a FixedDecimal
+     * Construct from a `FixedDecimal`
      *
      * Retains at most 18 digits each from the integer and fraction parts.
      */
@@ -98,6 +100,7 @@ export class PluralOperands {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
