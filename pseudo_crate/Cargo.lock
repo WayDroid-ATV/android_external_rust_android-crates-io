@@ -169,7 +169,6 @@ dependencies = [
  "bytes",
  "bzip2-cli",
  "camino",
- "caps",
  "cargo-platform",
  "cargo_metadata",
  "cargo_toml",
@@ -1602,15 +1601,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e629a66d692cb9ff1a1c664e41771b3dcaf961985a9774c0eb0bd1b51cf60a48"
 dependencies = [
  "serde_core",
-]
-
-[[package]]
-name = "caps"
-version = "0.5.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd1ddba47aba30b6a889298ad0109c3b8dcb0e8fc993b459daa7067d46f865e0"
-dependencies = [
- "libc 0.2.184",
 ]
 
 [[package]]
