@@ -6,7 +6,7 @@ import * as diplomatRuntime from "./diplomat-runtime.mjs";
 
 
 /**
- * See the [Rust documentation for `MismatchedCalendarError`](https://docs.rs/icu/2.1.1/icu/datetime/struct.MismatchedCalendarError.html) for more information.
+ * See the [Rust documentation for `MismatchedCalendarError`](https://docs.rs/icu/2.2.0/icu/datetime/struct.MismatchedCalendarError.html) for more information.
  */
 export class DateTimeMismatchedCalendarError {
     #thisKind;
@@ -51,16 +51,23 @@ export class DateTimeMismatchedCalendarError {
     // Return this struct in FFI function friendly format.
     // Returns an array that can be expanded with spread syntax (...)
     _intoFFI(
+        dst,
         functionCleanupArena,
         appendArrayMap
     ) {
-        let buffer = diplomatRuntime.DiplomatBuf.struct(wasm, 12, 4);
 
-        this._writeToArrayBuffer(wasm.memory.buffer, buffer.ptr, functionCleanupArena, appendArrayMap);
+        this._writeToArrayBuffer(wasm.memory.buffer, dst, functionCleanupArena, appendArrayMap);
 
-        functionCleanupArena.alloc(buffer);
+        return dst;
+    }
 
-        return buffer.ptr;
+    static get _sizeBytes() {
+        return 12;
+    }
+
+    /// Currently unused, we may want to use later on though:
+    static get _sizeAlign() {
+        return 4;
     }
 
     static _fromSuppliedValue(internalConstructor, obj) {

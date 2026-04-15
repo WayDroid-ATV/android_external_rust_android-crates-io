@@ -6,7 +6,7 @@ import type { pointer, codepoint } from "./diplomat-runtime.d.ts";
 /**
  * The sign of a Decimal, as shown in formatting.
  *
- * See the [Rust documentation for `Sign`](https://docs.rs/fixed_decimal/0.7.0/fixed_decimal/enum.Sign.html) for more information.
+ * See the [Rust documentation for `Sign`](https://docs.rs/fixed_decimal/0.7.2/fixed_decimal/enum.Sign.html) for more information.
  */
 export class DecimalSign {
 
@@ -18,8 +18,17 @@ export class DecimalSign {
     /** @internal */
     get ffiValue(): number;
 
+    /**
+     * No sign (implicitly positive, e.g., 1729).
+     */
     static None : DecimalSign;
+    /**
+     * A negative sign, e.g., -1729.
+     */
     static Negative : DecimalSign;
+    /**
+     * An explicit positive sign, e.g., +1729.
+     */
     static Positive : DecimalSign;
 
 

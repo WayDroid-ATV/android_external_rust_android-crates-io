@@ -13,7 +13,7 @@ const Bidi_box_destroy_registry = new FinalizationRegistry((ptr) => {
 /**
  * An ICU4X Bidi object, containing loaded bidi data
  *
- * See the [Rust documentation for `BidiClass`](https://docs.rs/icu/2.1.1/icu/properties/props/struct.BidiClass.html) for more information.
+ * See the [Rust documentation for `BidiClass`](https://docs.rs/icu/2.2.0/icu/properties/props/struct.BidiClass.html) for more information.
  */
 export class Bidi {
     // Internal ptr reference:
@@ -56,6 +56,7 @@ export class Bidi {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
@@ -77,6 +78,7 @@ export class Bidi {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             diplomatReceive.free();
         }
     }
@@ -104,6 +106,7 @@ export class Bidi {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             functionCleanupArena.free();
 
             functionGarbageCollectorGrip.releaseToGarbageCollector();
@@ -135,13 +138,14 @@ export class Bidi {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
             functionCleanupArena.free();
 
         }
     }
 
     /**
-     * Check if a Level returned by level_at is an RTL level.
+     * Check if a Level returned by `level_at` is an RTL level.
      *
      * Invalid levels (numbers greater than 125) will be assumed LTR
      *
@@ -156,11 +160,12 @@ export class Bidi {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
     /**
-     * Check if a Level returned by level_at is an LTR level.
+     * Check if a Level returned by `level_at` is an LTR level.
      *
      * Invalid levels (numbers greater than 125) will be assumed LTR
      *
@@ -175,6 +180,7 @@ export class Bidi {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
@@ -192,6 +198,7 @@ export class Bidi {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 
@@ -209,6 +216,7 @@ export class Bidi {
         }
 
         finally {
+            diplomatRuntime.FUNCTION_PARAM_ALLOC.clean();
         }
     }
 

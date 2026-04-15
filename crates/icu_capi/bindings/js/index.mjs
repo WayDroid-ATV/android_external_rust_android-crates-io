@@ -4,6 +4,12 @@ export { TitlecaseOptions } from "./TitlecaseOptions.mjs"
 
 export { CollatorOptions } from "./CollatorOptions.mjs"
 
+export { DateAddOptions } from "./DateAddOptions.mjs"
+
+export { DateDifferenceOptions } from "./DateDifferenceOptions.mjs"
+
+export { DateDuration } from "./DateDuration.mjs"
+
 export { DateFields } from "./DateFields.mjs"
 
 export { DateFromFieldsOptions } from "./DateFromFieldsOptions.mjs"
@@ -11,6 +17,8 @@ export { DateFromFieldsOptions } from "./DateFromFieldsOptions.mjs"
 export { IsoWeekOfYear } from "./IsoWeekOfYear.mjs"
 
 export { DisplayNamesOptions } from "./DisplayNamesOptions.mjs"
+
+export { CalendarMismatchedCalendarError } from "./CalendarMismatchedCalendarError.mjs"
 
 export { DateTimeMismatchedCalendarError } from "./DateTimeMismatchedCalendarError.mjs"
 
@@ -47,6 +55,8 @@ export { VariantOffsets } from "./VariantOffsets.mjs"
 export { ZonedDateTime } from "./ZonedDateTime.mjs"
 
 export { ZonedIsoDateTime } from "./ZonedIsoDateTime.mjs"
+
+export { ZonedTime } from "./ZonedTime.mjs"
 
 export { Bidi } from "./Bidi.mjs"
 
@@ -131,6 +141,8 @@ export { CanonicalDecomposition } from "./CanonicalDecomposition.mjs"
 export { PluralOperands } from "./PluralOperands.mjs"
 
 export { PluralRules } from "./PluralRules.mjs"
+
+export { PluralRulesWithRanges } from "./PluralRulesWithRanges.mjs"
 
 export { CodePointRangeIterator } from "./CodePointRangeIterator.mjs"
 
@@ -236,6 +248,8 @@ export { CollatorNumericOrdering } from "./CollatorNumericOrdering.mjs"
 
 export { CollatorStrength } from "./CollatorStrength.mjs"
 
+export { DateDurationUnit } from "./DateDurationUnit.mjs"
+
 export { DateMissingFieldsStrategy } from "./DateMissingFieldsStrategy.mjs"
 
 export { DateOverflow } from "./DateOverflow.mjs"
@@ -258,11 +272,15 @@ export { DisplayNamesStyle } from "./DisplayNamesStyle.mjs"
 
 export { LanguageDisplay } from "./LanguageDisplay.mjs"
 
+export { CalendarDateAddError } from "./CalendarDateAddError.mjs"
+
 export { CalendarDateFromFieldsError } from "./CalendarDateFromFieldsError.mjs"
 
 export { CalendarError } from "./CalendarError.mjs"
 
 export { DataError } from "./DataError.mjs"
+
+export { DateDurationParseError } from "./DateDurationParseError.mjs"
 
 export { DateTimeFormatterLoadError } from "./DateTimeFormatterLoadError.mjs"
 
@@ -310,9 +328,13 @@ export { IndicConjunctBreak } from "./IndicConjunctBreak.mjs"
 
 export { IndicSyllabicCategory } from "./IndicSyllabicCategory.mjs"
 
+export { JoiningGroup } from "./JoiningGroup.mjs"
+
 export { JoiningType } from "./JoiningType.mjs"
 
 export { LineBreak } from "./LineBreak.mjs"
+
+export { NumericType } from "./NumericType.mjs"
 
 export { Script } from "./Script.mjs"
 
@@ -329,3 +351,8 @@ export { LineBreakWordOption } from "./LineBreakWordOption.mjs"
 export { SegmenterWordType } from "./SegmenterWordType.mjs"
 
 export { TimeZoneVariant } from "./TimeZoneVariant.mjs"
+
+import wasm from "./diplomat-wasm.mjs";
+import {FUNCTION_PARAM_ALLOC, internalConstructor} from "./diplomat-runtime.mjs";
+
+FUNCTION_PARAM_ALLOC.reserve(internalConstructor, wasm, 67);

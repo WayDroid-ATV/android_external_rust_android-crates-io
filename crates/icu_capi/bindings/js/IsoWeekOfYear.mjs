@@ -5,7 +5,7 @@ import * as diplomatRuntime from "./diplomat-runtime.mjs";
 
 
 /**
- * See the [Rust documentation for `IsoWeekOfYear`](https://docs.rs/icu/2.1.1/icu/calendar/types/struct.IsoWeekOfYear.html) for more information.
+ * See the [Rust documentation for `IsoWeekOfYear`](https://docs.rs/icu/2.2.0/icu/calendar/types/struct.IsoWeekOfYear.html) for more information.
  */
 export class IsoWeekOfYear {
     #weekNumber;
@@ -50,16 +50,23 @@ export class IsoWeekOfYear {
     // Return this struct in FFI function friendly format.
     // Returns an array that can be expanded with spread syntax (...)
     _intoFFI(
+        dst,
         functionCleanupArena,
         appendArrayMap
     ) {
-        let buffer = diplomatRuntime.DiplomatBuf.struct(wasm, 8, 4);
 
-        this._writeToArrayBuffer(wasm.memory.buffer, buffer.ptr, functionCleanupArena, appendArrayMap);
+        this._writeToArrayBuffer(wasm.memory.buffer, dst, functionCleanupArena, appendArrayMap);
 
-        functionCleanupArena.alloc(buffer);
+        return dst;
+    }
 
-        return buffer.ptr;
+    static get _sizeBytes() {
+        return 8;
+    }
+
+    /// Currently unused, we may want to use later on though:
+    static get _sizeAlign() {
+        return 4;
     }
 
     static _fromSuppliedValue(internalConstructor, obj) {

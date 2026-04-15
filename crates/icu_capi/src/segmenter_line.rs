@@ -51,21 +51,21 @@ pub mod ffi {
         pub word_option: DiplomatOption<LineBreakWordOption>,
     }
 
-    #[diplomat::opaque]
+    #[diplomat::opaque_mut]
     #[diplomat::rust_link(icu::segmenter::iterators::LineBreakIterator, Struct)]
     #[diplomat::attr(demo_gen, disable)] // iterator type
     pub struct LineBreakIteratorUtf8<'a>(
         icu_segmenter::iterators::LineBreakIterator<'a, 'a, PotentiallyIllFormedUtf8>,
     );
 
-    #[diplomat::opaque]
+    #[diplomat::opaque_mut]
     #[diplomat::rust_link(icu::segmenter::iterators::LineBreakIterator, Struct)]
     #[diplomat::attr(demo_gen, disable)] // iterator type
     pub struct LineBreakIteratorUtf16<'a>(
         icu_segmenter::iterators::LineBreakIterator<'a, 'a, Utf16>,
     );
 
-    #[diplomat::opaque]
+    #[diplomat::opaque_mut]
     #[diplomat::rust_link(icu::segmenter::iterators::LineBreakIterator, Struct)]
     #[diplomat::attr(demo_gen, disable)] // iterator type
     pub struct LineBreakIteratorLatin1<'a>(
@@ -287,6 +287,7 @@ pub mod ffi {
                 )?,
             )))
         }
+
         /// Segments a string.
         ///
         /// Ill-formed input is treated as if errors had been replaced with REPLACEMENT CHARACTERs according

@@ -7,7 +7,7 @@ import * as diplomatRuntime from "./diplomat-runtime.mjs";
 /**
  * The sign of a Decimal, as shown in formatting.
  *
- * See the [Rust documentation for `Sign`](https://docs.rs/fixed_decimal/0.7.0/fixed_decimal/enum.Sign.html) for more information.
+ * See the [Rust documentation for `Sign`](https://docs.rs/fixed_decimal/0.7.2/fixed_decimal/enum.Sign.html) for more information.
  */
 export class DecimalSign {
     #value = undefined;
@@ -66,8 +66,17 @@ export class DecimalSign {
         new DecimalSign(diplomatRuntime.internalConstructor, diplomatRuntime.internalConstructor, 2),
     ];
 
+    /**
+     * No sign (implicitly positive, e.g., 1729).
+     */
     static None = DecimalSign.#objectValues[0];
+    /**
+     * A negative sign, e.g., -1729.
+     */
     static Negative = DecimalSign.#objectValues[1];
+    /**
+     * An explicit positive sign, e.g., +1729.
+     */
     static Positive = DecimalSign.#objectValues[2];
 
 
