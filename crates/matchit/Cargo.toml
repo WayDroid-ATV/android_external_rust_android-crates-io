@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.66"
 name = "matchit"
-version = "0.9.1"
+version = "0.9.2"
 authors = ["Ibraheem Ahmed <ibraheem@ibraheem.ca>"]
 build = false
 autolib = false
