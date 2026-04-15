@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.3.0
+
+### Breaking changes
+
+- Take `self` rather than `&mut self` for `UniqueMmioPointer::split`. The old behaviour can be
+  achieved by calling `reborrow` first.
+- Take `self` rather than `&self` for `SharedMmioPointer::split`. `SharedMmioPointer` is `Copy` so
+  this should make no difference in most cases.
+
+### Improvements
+
+- Added `modify` and `modify_mut` methods to `UniqueMmioPointer<ReadWrite<T>>` and
+  `UniqueMmioPointer<ReadPureWrite<T>>`.
+- Added `get_range()` methods to `UniqueMmioPointer<[T]>`, `UniqueMmioPointer<[T; LEN]>`,
+  `SharedMmioPointer<[T]>`, `SharedMmioPointer<[T; LEN]>`. These methods return a pointer to the
+  subset of elements, specified by a `Range`.
+- Added `iter()` methods to `UniqueMmioPointer<[T]>`, `UniqueMmioPointer<[T; LEN]>`,
+  `SharedMmioPointer<[T]>`, `SharedMmioPointer<[T; LEN]>`. These methods return an iterator to the
+  items of the pointer slices or arrays.
+
 ## 0.2.7
 
 ### Improvements
