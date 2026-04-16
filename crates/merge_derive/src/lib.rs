@@ -11,9 +11,9 @@
 extern crate proc_macro;
 
 use proc_macro2::TokenStream;
+use proc_macro_error2::{abort, abort_call_site, dummy::set_dummy, proc_macro_error, ResultExt};
 use quote::{quote, quote_spanned};
-use std::convert::TryFrom;
-use syn::{Error, Result, Token};
+use syn::Token;
 
 struct Field {
     name: syn::Member,
@@ -33,85 +33,98 @@ enum FieldAttr {
 }
 
 #[proc_macro_derive(Merge, attributes(merge))]
+#[proc_macro_error]
 pub fn merge_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let ast = syn::parse(input).unwrap();
-    impl_merge(&ast)
-        .unwrap_or_else(Error::into_compile_error)
-        .into()
+    impl_merge(&ast).into()
 }
 
-fn impl_merge(ast: &syn::DeriveInput) -> Result<TokenStream> {
+fn impl_merge(ast: &syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
+    let default_strategy = FieldAttrs::from(ast.attrs.iter());
+
+    set_dummy(quote! {
+        impl ::merge::Merge for #name {
+            fn merge(&mut self, other: Self) {
+                unimplemented!()
+            }
+        }
+    });
 
     if let syn::Data::Struct(syn::DataStruct { ref fields, .. }) = ast.data {
-        impl_merge_for_struct(name, fields)
+        impl_merge_for_struct(name, fields, default_strategy)
     } else {
-        Err(Error::new_spanned(
-            ast,
-            "merge::Merge can only be derived for structs",
-        ))
+        abort_call_site!("merge::Merge can only be derived for structs")
     }
 }
 
-fn impl_merge_for_struct(name: &syn::Ident, fields: &syn::Fields) -> Result<TokenStream> {
-    let assignments = gen_assignments(fields)?;
+fn impl_merge_for_struct(
+    name: &syn::Ident,
+    fields: &syn::Fields,
+    default_strategy: FieldAttrs,
+) -> TokenStream {
+    let assignments = gen_assignments(fields, default_strategy);
 
-    Ok(quote! {
+    quote! {
         impl ::merge::Merge for #name {
             fn merge(&mut self, other: Self) {
                 #assignments
             }
         }
-    })
+    }
 }
 
-fn gen_assignments(fields: &syn::Fields) -> Result<TokenStream> {
-    let fields = fields
-        .iter()
-        .enumerate()
-        .map(Field::try_from)
-        .collect::<Result<Vec<_>>>()?;
+fn gen_assignments(fields: &syn::Fields, default_strategy: FieldAttrs) -> TokenStream {
+    let fields = fields.iter().enumerate().map(Field::from);
     let assignments = fields
-        .iter()
         .filter(|f| !f.attrs.skip)
-        .map(|f| gen_assignment(&f));
-    Ok(quote! {
+        .map(|f| gen_assignment(&f, &default_strategy));
+    quote! {
         #( #assignments )*
-    })
+    }
 }
 
-fn gen_assignment(field: &Field) -> TokenStream {
+fn gen_assignment(field: &Field, default_strategy: &FieldAttrs) -> TokenStream {
     use syn::spanned::Spanned;
 
     let name = &field.name;
     if let Some(strategy) = &field.attrs.strategy {
         quote_spanned!(strategy.span()=> #strategy(&mut self.#name, other.#name);)
+    } else if let Some(default) = &default_strategy.strategy {
+        quote_spanned!(default.span()=> #default(&mut self.#name, other.#name);)
     } else {
         quote_spanned!(field.span=> ::merge::Merge::merge(&mut self.#name, other.#name);)
     }
 }
 
-impl TryFrom<(usize, &syn::Field)> for Field {
-    type Error = syn::Error;
-
-    fn try_from(data: (usize, &syn::Field)) -> std::result::Result<Self, Self::Error> {
+impl From<(usize, &syn::Field)> for Field {
+    fn from(data: (usize, &syn::Field)) -> Self {
         use syn::spanned::Spanned;
 
         let (index, field) = data;
-        Ok(Field {
+        Field {
             name: if let Some(ident) = &field.ident {
                 syn::Member::Named(ident.clone())
             } else {
                 syn::Member::Unnamed(index.into())
             },
             span: field.span(),
-            attrs: FieldAttrs::new(field.attrs.iter())?,
-        })
+            attrs: field.attrs.iter().into(),
+        }
     }
 }
 
 impl FieldAttrs {
-    fn new<'a, I: Iterator<Item = &'a syn::Attribute>>(iter: I) -> Result<Self> {
+    fn apply(&mut self, attr: FieldAttr) {
+        match attr {
+            FieldAttr::Skip => self.skip = true,
+            FieldAttr::Strategy(path) => self.strategy = Some(path),
+        }
+    }
+}
+
+impl<'a, I: Iterator<Item = &'a syn::Attribute>> From<I> for FieldAttrs {
+    fn from(iter: I) -> Self {
         let mut field_attrs = Self::default();
 
         for attr in iter {
@@ -120,19 +133,12 @@ impl FieldAttrs {
             }
 
             let parser = syn::punctuated::Punctuated::<FieldAttr, Token![,]>::parse_terminated;
-            for attr in attr.parse_args_with(parser)? {
+            for attr in attr.parse_args_with(parser).unwrap_or_abort() {
                 field_attrs.apply(attr);
             }
         }
 
-        Ok(field_attrs)
-    }
-
-    fn apply(&mut self, attr: FieldAttr) {
-        match attr {
-            FieldAttr::Skip => self.skip = true,
-            FieldAttr::Strategy(path) => self.strategy = Some(path),
-        }
+        field_attrs
     }
 }
 
@@ -147,10 +153,7 @@ impl syn::parse::Parse for FieldAttr {
             let path: syn::Path = input.parse()?;
             Ok(FieldAttr::Strategy(path))
         } else {
-            Err(Error::new_spanned(
-                &name,
-                format!("Unexpected attribute: {}", name),
-            ))
+            abort!(name, "Unexpected attribute: {}", name)
         }
     }
 }

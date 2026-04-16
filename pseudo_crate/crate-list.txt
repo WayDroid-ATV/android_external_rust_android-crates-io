@@ -394,6 +394,8 @@ predicates-core
 predicates-tree
 prettyplease
 primal-check
+proc-macro-error-attr2
+proc-macro-error2
 proc-macro2
 protobuf
 protobuf-codegen
