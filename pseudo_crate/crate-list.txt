@@ -193,6 +193,7 @@ gl_common
 glam
 glob
 globset
+glow
 googletest
 googletest_macro
 gpio-cdev
