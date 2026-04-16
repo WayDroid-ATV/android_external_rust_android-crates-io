@@ -21,6 +21,7 @@ rust_library {
     cargo_pkg_version: "0.3.5",
     crate_root: "src/lib.rs",
     edition: "2021",
+    features: ["huffman_hpack"],
     apex_available: [
         "//apex_available:platform",
         "com.android.resolv",
@@ -44,4 +45,5 @@ rust_test {
         unit_test: true,
     },
     edition: "2021",
+    features: ["huffman_hpack"],
 }
