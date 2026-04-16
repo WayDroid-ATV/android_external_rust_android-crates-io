@@ -412,7 +412,7 @@ dependencies = [
  "memmap2",
  "memoffset",
  "merge",
- "merge_derive 0.1.0",
+ "merge_derive",
  "miette",
  "miette-derive",
  "mime",
@@ -498,6 +498,8 @@ dependencies = [
  "predicates-tree",
  "prettyplease 0.2.37",
  "primal-check",
+ "proc-macro-error-attr2",
+ "proc-macro-error2",
  "proc-macro2 1.0.106",
  "protobuf 3.7.2",
  "protobuf-codegen",
@@ -5582,20 +5584,8 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56e520ba58faea3487f75df198b1d079644ec226ea3b0507d002c6fa4b8cf93a"
 dependencies = [
- "merge_derive 0.2.0",
+ "merge_derive",
  "num-traits",
-]
-
-[[package]]
-name = "merge_derive"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "209d075476da2e63b4b29e72a2ef627b840589588e71400a25e3565c4f849d07"
-dependencies = [
- "proc-macro-error",
- "proc-macro2 1.0.106",
- "quote 1.0.45",
- "syn 1.0.109",
 ]
 
 [[package]]
