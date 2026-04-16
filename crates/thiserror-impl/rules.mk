@@ -14,4 +14,6 @@ MODULE_LIBRARY_DEPS := \
 	$(call FIND_CRATE,quote) \
 	$(call FIND_CRATE,syn)
 
+MODULE_RUST_ENV += CARGO_PKG_VERSION_PATCH=18
+
 include make/library.mk

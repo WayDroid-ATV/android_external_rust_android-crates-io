@@ -13,16 +13,25 @@ license {
     license_text: ["LICENSE"],
 }
 
+genrule {
+    name: "copy_thiserror_build_out",
+    srcs: ["out/*"],
+    cmd: "cp $(in) $(genDir)",
+    out: ["private.rs"],
+}
+
 rust_library {
     name: "libthiserror",
     defaults: ["rust_baremetal_nostd_defaults"],
     host_supported: true,
     crate_name: "thiserror",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.0.16",
+    cargo_pkg_version: "2.0.18",
     crate_root: "src/lib.rs",
+    srcs: [":copy_thiserror_build_out"],
     edition: "2021",
     features: ["std"],
+    cfgs: ["error_generic_member_access"],
     proc_macros: ["libthiserror_impl"],
     target: {
         windows: {

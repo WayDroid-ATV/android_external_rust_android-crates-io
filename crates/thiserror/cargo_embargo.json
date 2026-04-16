@@ -4,10 +4,10 @@
   "sdk_version": "current",
   "package": {
     "thiserror": {
+      "copy_out": true,
       "target_windows": true
     }
   },
-  "run_cargo": false,
   "variants": [
     {"features": ["std"]},
     {

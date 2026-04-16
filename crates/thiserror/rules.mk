@@ -8,8 +8,25 @@ MODULE := $(LOCAL_DIR)
 MODULE_CRATE_NAME := thiserror
 MODULE_RUST_CRATE_TYPES := rlib
 MODULE_SRCS := $(LOCAL_DIR)/src/lib.rs
+OUT_FILES := private.rs
+BUILD_OUT_FILES := $(addprefix $(call TOBUILDDIR,$(MODULE))/,$(OUT_FILES))
+$(BUILD_OUT_FILES): $(call TOBUILDDIR,$(MODULE))/% : $(MODULE)/out/%
+	@echo copying $^ to $@
+	@$(MKDIR)
+	@cp $^ $@
+
+MODULE_RUST_ENV += OUT_DIR=$(call TOBUILDDIR,$(MODULE))
+
+MODULE_SRCDEPS += $(BUILD_OUT_FILES)
+
+OUT_FILES :=
+BUILD_OUT_FILES :=
+
 MODULE_ADD_IMPLICIT_DEPS := false
 MODULE_RUST_EDITION := 2021
+MODULE_RUSTFLAGS += \
+	--cfg 'error_generic_member_access'
+
 MODULE_LIBRARY_DEPS := \
 	$(call FIND_CRATE,thiserror-impl) \
 	trusty/user/base/lib/libcompiler_builtins-rust \
