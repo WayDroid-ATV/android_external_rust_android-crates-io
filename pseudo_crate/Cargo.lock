@@ -604,7 +604,6 @@ dependencies = [
  "symphonia-metadata",
  "symphonia-utils-xiph",
  "syn 2.0.117",
- "syn-mid",
  "sync_wrapper",
  "synstructure",
  "taffy 0.7.7",
@@ -8821,17 +8820,6 @@ dependencies = [
  "proc-macro2 1.0.106",
  "quote 1.0.45",
  "unicode-ident",
-]
-
-[[package]]
-name = "syn-mid"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d5e166bbae6b7432f98746c4ae88499edc64b08f407eb0c3ba7ceff690aaf5f"
-dependencies = [
- "proc-macro2 1.0.106",
- "quote 1.0.45",
- "syn 2.0.117",
 ]
 
 [[package]]
