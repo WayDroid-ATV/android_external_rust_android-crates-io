@@ -1,3 +1,4 @@
+autocfg
 caps
 gl_common
 icu_provider_baked

@@ -146,7 +146,6 @@ dependencies = [
  "atomic",
  "atomic-waker",
  "atty",
- "autocfg",
  "automotive_diag",
  "aws-lc-rs",
  "axum",
