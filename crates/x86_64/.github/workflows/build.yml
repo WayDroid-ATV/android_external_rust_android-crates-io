@@ -30,15 +30,18 @@ jobs:
       # rustup prioritizes environment variables over rust-toolchain.toml files.
       RUSTUP_TOOLCHAIN: ${{ matrix.rust }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
       - run: cargo build --no-default-features --features instructions
+      - run: cargo build --no-default-features --features memory_encryption
       - run: cargo build --no-default-features
       - run: cargo doc --no-default-features --features instructions
+      - run: cargo doc --no-default-features --features memory_encryption
       - run: cargo doc --no-default-features
       - run: cargo test --no-default-features --features instructions
+      - run: cargo test --no-default-features --features memory_encryption
       - run: cargo test --no-default-features
 
   test:
@@ -47,13 +50,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, macos-12, macos-latest, windows-latest]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
 
     runs-on: ${{ matrix.platform }}
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-unknown-linux-musl, i686-unknown-linux-musl, thumbv7em-none-eabihf
@@ -89,12 +92,9 @@ jobs:
     runs-on: ${{ matrix.platform }}
     timeout-minutes: 15
 
-    env:
-      RUSTFLAGS: -Crelocation-model=static -Dwarnings
-
     steps:
       - name: "Checkout Repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Cache binaries
         id: cache-bin
@@ -137,16 +137,18 @@ jobs:
         run: qemu-system-x86_64 --version
 
       - name: "Run Test Framework"
-        run: cargo test
+        run: cargo test --target x86_64-unknown-none
         shell: bash
         working-directory: "testing"
+        env:
+          RUSTFLAGS: -Crelocation-model=static -Dwarnings
 
   check_formatting:
     name: "Check Formatting"
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
@@ -157,7 +159,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: clippy
@@ -167,19 +169,19 @@ jobs:
     name: Semver Checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "semver-checks"
           cache-targets: false
       - run: cargo install cargo-semver-checks --locked
       - name: Check semver
-        run: cargo +stable semver-checks check-release
+        run: cargo +stable semver-checks check-release --default-features
 
   kani:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "kani"

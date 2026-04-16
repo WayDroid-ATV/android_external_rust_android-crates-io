@@ -18,7 +18,7 @@ rust_library {
     defaults: ["rust_baremetal_defaults"],
     crate_name: "x86_64",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.15.2",
+    cargo_pkg_version: "0.15.4",
     crate_root: "src/lib.rs",
     edition: "2018",
     features: [
@@ -35,7 +35,11 @@ rust_library {
         "libbitflags",
         "libvolatile",
     ],
-    proc_macros: ["librustversion"],
+    proc_macros: [
+        "libconst_fn",
+        "librustversion",
+    ],
+    aliases: ["const_fn:dep_const_fn"],
     apex_available: [
         "//apex_available:platform",
         "com.android.virt",
