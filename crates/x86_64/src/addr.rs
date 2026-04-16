@@ -5,10 +5,16 @@ use core::fmt;
 #[cfg(feature = "step_trait")]
 use core::iter::Step;
 use core::ops::{Add, AddAssign, Sub, SubAssign};
+#[cfg(feature = "memory_encryption")]
+use core::sync::atomic::Ordering;
 
+#[cfg(feature = "memory_encryption")]
+use crate::structures::mem_encrypt::ENC_BIT_MASK;
 use crate::structures::paging::page_table::PageTableLevel;
 use crate::structures::paging::{PageOffset, PageTableIndex};
+
 use bit_field::BitField;
+use dep_const_fn::const_fn;
 
 const ADDRESS_SPACE_SIZE: u64 = 0x1_0000_0000_0000;
 
@@ -364,13 +370,41 @@ impl fmt::Pointer for VirtAddr {
 
 impl Add<u64> for VirtAddr {
     type Output = Self;
+
+    #[cfg_attr(not(feature = "step_trait"), allow(rustdoc::broken_intra_doc_links))]
+    /// Add an offset to a virtual address.
+    ///
+    /// This function performs normal arithmetic addition and doesn't jump the
+    /// address gap. If you're looking for a successor operation that jumps the
+    /// address gap, use [`Step::forward`].
+    ///
+    /// # Panics
+    ///
+    /// This function will panic on overflow or if the result is not a
+    /// canonical address.
     #[inline]
     fn add(self, rhs: u64) -> Self::Output {
-        VirtAddr::new(self.0 + rhs)
+        VirtAddr::try_new(
+            self.0
+                .checked_add(rhs)
+                .expect("attempt to add with overflow"),
+        )
+        .expect("attempt to add resulted in non-canonical virtual address")
     }
 }
 
 impl AddAssign<u64> for VirtAddr {
+    #[cfg_attr(not(feature = "step_trait"), allow(rustdoc::broken_intra_doc_links))]
+    /// Add an offset to a virtual address.
+    ///
+    /// This function performs normal arithmetic addition and doesn't jump the
+    /// address gap. If you're looking for a successor operation that jumps the
+    /// address gap, use [`Step::forward`].
+    ///
+    /// # Panics
+    ///
+    /// This function will panic on overflow or if the result is not a
+    /// canonical address.
     #[inline]
     fn add_assign(&mut self, rhs: u64) {
         *self = *self + rhs;
@@ -379,13 +413,41 @@ impl AddAssign<u64> for VirtAddr {
 
 impl Sub<u64> for VirtAddr {
     type Output = Self;
+
+    #[cfg_attr(not(feature = "step_trait"), allow(rustdoc::broken_intra_doc_links))]
+    /// Subtract an offset from a virtual address.
+    ///
+    /// This function performs normal arithmetic subtraction and doesn't jump
+    /// the address gap. If you're looking for a predecessor operation that
+    /// jumps the address gap, use [`Step::backward`].
+    ///
+    /// # Panics
+    ///
+    /// This function will panic on overflow or if the result is not a
+    /// canonical address.
     #[inline]
     fn sub(self, rhs: u64) -> Self::Output {
-        VirtAddr::new(self.0.checked_sub(rhs).unwrap())
+        VirtAddr::try_new(
+            self.0
+                .checked_sub(rhs)
+                .expect("attempt to subtract with overflow"),
+        )
+        .expect("attempt to subtract resulted in non-canonical virtual address")
     }
 }
 
 impl SubAssign<u64> for VirtAddr {
+    #[cfg_attr(not(feature = "step_trait"), allow(rustdoc::broken_intra_doc_links))]
+    /// Subtract an offset from a virtual address.
+    ///
+    /// This function performs normal arithmetic subtraction and doesn't jump
+    /// the address gap. If you're looking for a predecessor operation that
+    /// jumps the address gap, use [`Step::backward`].
+    ///
+    /// # Panics
+    ///
+    /// This function will panic on overflow or if the result is not a
+    /// canonical address.
     #[inline]
     fn sub_assign(&mut self, rhs: u64) {
         *self = *self - rhs;
@@ -394,9 +456,17 @@ impl SubAssign<u64> for VirtAddr {
 
 impl Sub<VirtAddr> for VirtAddr {
     type Output = u64;
+
+    /// Returns the difference between two addresses.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic on overflow.
     #[inline]
     fn sub(self, rhs: VirtAddr) -> Self::Output {
-        self.as_u64().checked_sub(rhs.as_u64()).unwrap()
+        self.as_u64()
+            .checked_sub(rhs.as_u64())
+            .expect("attempt to subtract with overflow")
     }
 }
 
@@ -439,7 +509,10 @@ impl PhysAddr {
     /// ## Panics
     ///
     /// This function panics if a bit in the range 52 to 64 is set.
+    // If the `memory_encryption` feature has been enabled and an encryption bit has been
+    // configured, this also panics if the encryption bit is manually set in the address.
     #[inline]
+    #[const_fn(cfg(not(feature = "memory_encryption")))]
     pub const fn new(addr: u64) -> Self {
         // TODO: Replace with .ok().expect(msg) when that works on stable.
         match Self::try_new(addr) {
@@ -449,9 +522,17 @@ impl PhysAddr {
     }
 
     /// Creates a new physical address, throwing bits 52..64 away.
+    #[cfg(not(feature = "memory_encryption"))]
     #[inline]
     pub const fn new_truncate(addr: u64) -> PhysAddr {
         PhysAddr(addr % (1 << 52))
+    }
+
+    /// Creates a new physical address, throwing bits 52..64 and the encryption bit away.
+    #[cfg(feature = "memory_encryption")]
+    #[inline]
+    pub fn new_truncate(addr: u64) -> PhysAddr {
+        PhysAddr((addr % (1 << 52)) & !ENC_BIT_MASK.load(Ordering::Relaxed))
     }
 
     /// Creates a new physical address, without any checks.
@@ -467,7 +548,10 @@ impl PhysAddr {
     /// Tries to create a new physical address.
     ///
     /// Fails if any bits in the range 52 to 64 are set.
+    /// If the `memory_encryption` feature has been enabled and an encryption bit has been
+    /// configured, this also fails if the encryption bit is manually set in the address.
     #[inline]
+    #[const_fn(cfg(not(feature = "memory_encryption")))]
     pub const fn try_new(addr: u64) -> Result<Self, PhysAddrNotValid> {
         let p = Self::new_truncate(addr);
         if p.0 == addr {
@@ -593,7 +677,7 @@ impl Add<u64> for PhysAddr {
     type Output = Self;
     #[inline]
     fn add(self, rhs: u64) -> Self::Output {
-        PhysAddr::new(self.0 + rhs)
+        PhysAddr::new(self.0.checked_add(rhs).unwrap())
     }
 }
 
@@ -662,6 +746,30 @@ pub const fn align_up(addr: u64, align: u64) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    #[should_panic]
+    pub fn add_overflow_virtaddr() {
+        let _ = VirtAddr::new(0xffff_ffff_ffff_ffff) + 1;
+    }
+
+    #[test]
+    #[should_panic]
+    pub fn add_overflow_physaddr() {
+        let _ = PhysAddr::new(0x000f_ffff_ffff_ffff) + 0xffff_0000_0000_0000;
+    }
+
+    #[test]
+    #[should_panic]
+    pub fn sub_underflow_virtaddr() {
+        let _ = VirtAddr::new(0) - 1;
+    }
+
+    #[test]
+    #[should_panic]
+    pub fn sub_overflow_physaddr() {
+        let _ = PhysAddr::new(0) - 1;
+    }
 
     #[test]
     pub fn virtaddr_new_truncate() {

@@ -13,7 +13,7 @@
 edition = "2018"
 rust-version = "1.59"
 name = "x86_64"
-version = "0.15.2"
+version = "0.15.4"
 authors = [
     "Gerd Zellweger <mail@gerdzellweger.com>",
     "Eric Kidd <git@randomhacks.net>",
@@ -47,18 +47,38 @@ all-features = true
 [package.metadata.release]
 dev-version = false
 pre-release-commit-message = "Bump version to {{version}}"
-publish = false
 push = false
+publish = false
 tag = false
 
 [[package.metadata.release.pre-release-replacements]]
-exactly = 1
 file = "Changelog.md"
+search = "# Unreleased"
 replace = """
 # Unreleased
 
 # {{version}} – {{date}}"""
-search = "# Unreleased"
+exactly = 1
+
+[features]
+abi_x86_interrupt = []
+asm_const = []
+const_fn = []
+default = [
+    "nightly",
+    "instructions",
+]
+doc_auto_cfg = []
+doc_cfg = []
+instructions = []
+memory_encryption = []
+nightly = [
+    "const_fn",
+    "step_trait",
+    "abi_x86_interrupt",
+    "asm_const",
+]
+step_trait = []
 
 [lib]
 name = "x86_64"
@@ -70,29 +90,15 @@ version = "0.10.1"
 [dependencies.bitflags]
 version = "2.3.2"
 
+[dependencies.dep_const_fn]
+version = "0.4.11"
+package = "const_fn"
+
 [dependencies.rustversion]
 version = "1.0.5"
 
 [dependencies.volatile]
 version = "0.4.4"
-
-[features]
-abi_x86_interrupt = []
-asm_const = []
-const_fn = []
-default = [
-    "nightly",
-    "instructions",
-]
-doc_auto_cfg = []
-instructions = []
-nightly = [
-    "const_fn",
-    "step_trait",
-    "abi_x86_interrupt",
-    "asm_const",
-]
-step_trait = []
 
 [lints.rust.unexpected_cfgs]
 level = "warn"

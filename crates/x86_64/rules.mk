@@ -22,6 +22,7 @@ MODULE_RUSTFLAGS += \
 MODULE_LIBRARY_DEPS := \
 	$(call FIND_CRATE,bit_field) \
 	$(call FIND_CRATE,bitflags) \
+	$(call FIND_CRATE,const_fn) \
 	$(call FIND_CRATE,rustversion) \
 	$(call FIND_CRATE,volatile) \
 	trusty/user/base/lib/libcompiler_builtins-rust \
