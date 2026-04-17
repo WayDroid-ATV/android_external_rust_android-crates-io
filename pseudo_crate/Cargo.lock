@@ -973,7 +973,7 @@ checksum = "8797e113733a36b5fa906c81aefc126d255b88dd1c10a737749aa22ec7736b6a"
 dependencies = [
  "bitflags 2.11.0",
  "embedded-hal-nb",
- "embedded-io",
+ "embedded-io 0.6.1",
  "safe-mmio 0.2.7",
  "thiserror 2.0.18",
  "zerocopy",
@@ -2852,6 +2852,12 @@ name = "embedded-io"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "edd0f118536f44f5ccd48bcb8b111bdc3de888b58c74639dfb034a357d0f206d"
+
+[[package]]
+name = "embedded-io"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9eb1aa714776b75c7e67e1da744b81a129b3ff919c8712b5e1b32252c1f07cc7"
 
 [[package]]
 name = "encoding_rs"
@@ -10047,15 +10053,15 @@ checksum = "091f1f09cfbf2a78563b562e7a949465cce1aef63b6065645188d995162f8868"
 
 [[package]]
 name = "virtio-drivers"
-version = "0.11.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7fe3f779fd88436e27b51540d9563c7454c8c814893a1e6f9bb6138bcac60627"
+checksum = "cfdc1c628cdd8ce7c3b9e65a8ed550d0338e9ef9f911e729666f1cce097de2f7"
 dependencies = [
  "bitflags 2.11.0",
- "embedded-io",
+ "embedded-io 0.7.1",
  "enumn",
  "log",
- "safe-mmio 0.2.7",
+ "safe-mmio 0.3.0",
  "thiserror 2.0.18",
  "zerocopy",
 ]
@@ -10067,7 +10073,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86b0e5aa3bf008543bf48e3dffea92f15b53b37b72abc99da4ef677ae412b1b6"
 dependencies = [
  "bitflags 2.11.0",
- "embedded-io",
+ "embedded-io 0.6.1",
  "enumn",
  "log",
  "thiserror 2.0.18",

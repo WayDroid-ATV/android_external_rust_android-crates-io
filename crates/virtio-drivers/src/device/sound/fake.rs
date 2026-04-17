@@ -1,16 +1,16 @@
 //! Fake VirtIO sound device for tests.
 
 use super::{
-    CommandCode, VirtIOSndChmapInfo, VirtIOSndHdr, VirtIOSndJackInfo, VirtIOSndPcmInfo,
-    VirtIOSndPcmStatus, VirtIOSndPcmXfer, VirtIOSndQueryInfo, VirtIOSoundConfig, CONTROL_QUEUE_IDX,
-    QUEUE_SIZE, TX_QUEUE_IDX,
+    CONTROL_QUEUE_IDX, CommandCode, QUEUE_SIZE, TX_QUEUE_IDX, VirtIOSndChmapInfo, VirtIOSndHdr,
+    VirtIOSndJackInfo, VirtIOSndPcmInfo, VirtIOSndPcmStatus, VirtIOSndPcmXfer, VirtIOSndQueryInfo,
+    VirtIOSoundConfig,
 };
 use crate::{
     config::ReadOnly,
     device::sound::{VirtIOSndPcmHdr, VirtIOSndPcmSetParams},
     transport::{
-        fake::{FakeTransport, QueueStatus, State},
         DeviceType,
+        fake::{FakeTransport, QueueStatus, State},
     },
 };
 use alloc::{sync::Arc, vec};
@@ -22,8 +22,8 @@ use core::{
 use std::{
     iter::repeat_with,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Mutex,
+        atomic::{AtomicBool, Ordering},
     },
     thread::{self, JoinHandle},
 };
@@ -33,7 +33,7 @@ use zerocopy::{FromBytes, IntoBytes};
 pub struct FakeSoundDevice {
     pub state: Arc<Mutex<State<VirtIOSoundConfig>>>,
     pub terminate: Arc<AtomicBool>,
-    /// The paramaters set for each stream, if any.
+    /// The parameters set for each stream, if any.
     pub params: Arc<Mutex<Vec<Option<VirtIOSndPcmSetParams>>>>,
     /// The bytes send on the TX queue for each channel.
     pub played_bytes: Arc<Mutex<Vec<Vec<u8>>>>,

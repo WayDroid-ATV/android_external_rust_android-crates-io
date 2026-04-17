@@ -1,10 +1,11 @@
-use super::{Config, EthernetAddress, Features, VirtioNetHdr};
-use super::{MIN_BUFFER_LEN, NET_HDR_SIZE, QUEUE_RECEIVE, QUEUE_TRANSMIT, SUPPORTED_FEATURES};
+use super::{Config, EthernetAddress, Features, VirtioNetHdr, VirtioNetHdrLegacy};
+use super::{MIN_BUFFER_LEN, QUEUE_RECEIVE, QUEUE_TRANSMIT, SUPPORTED_FEATURES};
 use crate::config::read_config;
 use crate::hal::Hal;
 use crate::queue::VirtQueue;
-use crate::transport::Transport;
+use crate::transport::{InterruptStatus, Transport};
 use crate::{Error, Result};
+use core::mem::size_of;
 use log::{debug, info, warn};
 use zerocopy::IntoBytes;
 
@@ -21,6 +22,8 @@ pub struct VirtIONetRaw<H: Hal, T: Transport, const QUEUE_SIZE: usize> {
     mac: EthernetAddress,
     recv_queue: VirtQueue<H, QUEUE_SIZE>,
     send_queue: VirtQueue<H, QUEUE_SIZE>,
+    /// Whether `num_buffers` is missing in the `virtio_net_hdr` struct.
+    pub(crate) legacy_header: bool,
 }
 
 impl<H: Hal, T: Transport, const QUEUE_SIZE: usize> VirtIONetRaw<H, T, QUEUE_SIZE> {
@@ -54,11 +57,13 @@ impl<H: Hal, T: Transport, const QUEUE_SIZE: usize> VirtIONetRaw<H, T, QUEUE_SIZ
             mac,
             recv_queue,
             send_queue,
+            legacy_header: !negotiated_features.contains(Features::VERSION_1)
+                && !negotiated_features.contains(Features::MRG_RXBUF),
         })
     }
 
     /// Acknowledge interrupt.
-    pub fn ack_interrupt(&mut self) -> bool {
+    pub fn ack_interrupt(&mut self) -> InterruptStatus {
         self.transport.ack_interrupt()
     }
 
@@ -95,8 +100,13 @@ impl<H: Hal, T: Transport, const QUEUE_SIZE: usize> VirtIONetRaw<H, T, QUEUE_SIZ
     }
 
     /// Whether the length of the transmit buffer is valid.
-    fn check_tx_buf_len(tx_buf: &[u8]) -> Result<()> {
-        if tx_buf.len() < NET_HDR_SIZE {
+    fn check_tx_buf_len(&self, tx_buf: &[u8]) -> Result<()> {
+        let hdr_size = if self.legacy_header {
+            size_of::<VirtioNetHdrLegacy>()
+        } else {
+            size_of::<VirtioNetHdr>()
+        };
+        if tx_buf.len() < hdr_size {
             warn!("Transmit buffer len {} is too small", tx_buf.len());
             Err(Error::InvalidParam)
         } else {
@@ -108,12 +118,21 @@ impl<H: Hal, T: Transport, const QUEUE_SIZE: usize> VirtIONetRaw<H, T, QUEUE_SIZ
     ///
     /// If the `buffer` is not large enough, it returns [`Error::InvalidParam`].
     pub fn fill_buffer_header(&self, buffer: &mut [u8]) -> Result<usize> {
-        if buffer.len() < NET_HDR_SIZE {
-            return Err(Error::InvalidParam);
+        macro_rules! fill {
+            ($hdr:ty) => {{
+                if buffer.len() < size_of::<$hdr>() {
+                    return Err(Error::InvalidParam);
+                }
+                let header = <$hdr>::default();
+                buffer[..size_of::<$hdr>()].copy_from_slice(header.as_bytes());
+                Ok(size_of::<$hdr>())
+            }};
         }
-        let header = VirtioNetHdr::default();
-        buffer[..NET_HDR_SIZE].copy_from_slice(header.as_bytes());
-        Ok(NET_HDR_SIZE)
+        if self.legacy_header {
+            fill!(VirtioNetHdrLegacy)
+        } else {
+            fill!(VirtioNetHdr)
+        }
     }
 
     /// Submits a request to transmit a buffer immediately without waiting for
@@ -141,8 +160,9 @@ impl<H: Hal, T: Transport, const QUEUE_SIZE: usize> VirtIONetRaw<H, T, QUEUE_SIZ
     /// [`poll_transmit`]: Self::poll_transmit
     /// [`transmit_complete`]: Self::transmit_complete
     pub unsafe fn transmit_begin(&mut self, tx_buf: &[u8]) -> Result<u16> {
-        Self::check_tx_buf_len(tx_buf)?;
-        let token = self.send_queue.add(&[tx_buf], &mut [])?;
+        self.check_tx_buf_len(tx_buf)?;
+        // SAFETY: The caller promises that `tx_buf` is not accessed before the request completes.
+        let token = unsafe { self.send_queue.add(&[tx_buf], &mut [])? };
         if self.send_queue.should_notify() {
             self.transport.notify(QUEUE_TRANSMIT);
         }
@@ -166,7 +186,9 @@ impl<H: Hal, T: Transport, const QUEUE_SIZE: usize> VirtIONetRaw<H, T, QUEUE_SIZ
     ///
     /// [`transmit_begin`]: Self::transmit_begin
     pub unsafe fn transmit_complete(&mut self, token: u16, tx_buf: &[u8]) -> Result<usize> {
-        let len = self.send_queue.pop_used(token, &[tx_buf], &mut [])?;
+        // SAFETY: The caller promises that `tx_buf` is the same one passed to the corresponding
+        // call to `transmit_begin`.
+        let len = unsafe { self.send_queue.pop_used(token, &[tx_buf], &mut [])? };
         Ok(len as usize)
     }
 
@@ -194,7 +216,8 @@ impl<H: Hal, T: Transport, const QUEUE_SIZE: usize> VirtIONetRaw<H, T, QUEUE_SIZ
     /// [`receive_complete`]: Self::receive_complete
     pub unsafe fn receive_begin(&mut self, rx_buf: &mut [u8]) -> Result<u16> {
         Self::check_rx_buf_len(rx_buf)?;
-        let token = self.recv_queue.add(&[], &mut [rx_buf])?;
+        // SAFETY: The caller promises that `rx_buf` is not accessed before the request completes.
+        let token = unsafe { self.recv_queue.add(&[], &mut [rx_buf])? };
         if self.recv_queue.should_notify() {
             self.transport.notify(QUEUE_RECEIVE);
         }
@@ -225,29 +248,45 @@ impl<H: Hal, T: Transport, const QUEUE_SIZE: usize> VirtIONetRaw<H, T, QUEUE_SIZ
         token: u16,
         rx_buf: &mut [u8],
     ) -> Result<(usize, usize)> {
-        let len = self.recv_queue.pop_used(token, &[], &mut [rx_buf])? as usize;
-        let packet_len = len.checked_sub(NET_HDR_SIZE).ok_or(Error::IoError)?;
-        Ok((NET_HDR_SIZE, packet_len))
+        // SAFETY: The caller promises that `rx_buf` is the same one passed to the corresponding
+        // call to `receive_begin`.
+        let len = unsafe { self.recv_queue.pop_used(token, &[], &mut [rx_buf])? } as usize;
+        let hdr_size = if self.legacy_header {
+            size_of::<VirtioNetHdrLegacy>()
+        } else {
+            size_of::<VirtioNetHdr>()
+        };
+        let packet_len = len.checked_sub(hdr_size).ok_or(Error::IoError)?;
+        Ok((hdr_size, packet_len))
     }
 
     /// Sends a packet to the network, and blocks until the request completed.
     pub fn send(&mut self, tx_buf: &[u8]) -> Result {
-        let header = VirtioNetHdr::default();
-        if tx_buf.is_empty() {
-            // Special case sending an empty packet, to avoid adding an empty buffer to the
-            // virtqueue.
-            self.send_queue.add_notify_wait_pop(
-                &[header.as_bytes()],
-                &mut [],
-                &mut self.transport,
-            )?;
-        } else {
-            self.send_queue.add_notify_wait_pop(
-                &[header.as_bytes(), tx_buf],
-                &mut [],
-                &mut self.transport,
-            )?;
+        macro_rules! send {
+            ($header:expr) => {{
+                let header = $header;
+                if tx_buf.is_empty() {
+                    // Special case sending an empty packet, to avoid adding an empty buffer to the
+                    // virtqueue.
+                    self.send_queue.add_notify_wait_pop(
+                        &[header.as_bytes()],
+                        &mut [],
+                        &mut self.transport,
+                    )?;
+                } else {
+                    self.send_queue.add_notify_wait_pop(
+                        &[header.as_bytes(), tx_buf],
+                        &mut [],
+                        &mut self.transport,
+                    )?;
+                }
+            }};
         }
+        if self.legacy_header {
+            send!(VirtioNetHdrLegacy::default())
+        } else {
+            send!(VirtioNetHdr::default())
+        };
         Ok(())
     }
 

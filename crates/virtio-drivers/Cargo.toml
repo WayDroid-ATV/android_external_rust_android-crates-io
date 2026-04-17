@@ -10,9 +10,9 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
+edition = "2024"
 name = "virtio-drivers"
-version = "0.11.0"
+version = "0.13.0"
 authors = [
     "Jiajie Chen <noc@jiegec.ac.cn>",
     "Runji Wang <wangrunji0408@163.com>",
@@ -35,6 +35,13 @@ categories = [
 license = "MIT"
 repository = "https://github.com/rcore-os/virtio-drivers"
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
+]
+
 [features]
 alloc = ["zerocopy/alloc"]
 default = [
@@ -48,29 +55,29 @@ name = "virtio_drivers"
 path = "src/lib.rs"
 
 [dependencies.bitflags]
-version = "2.9.0"
+version = "2.11.0"
 
 [dependencies.embedded-io]
-version = "0.6.1"
+version = "0.7.1"
 optional = true
 
 [dependencies.enumn]
 version = "0.1.14"
 
 [dependencies.log]
-version = "0.4.27"
+version = "0.4.29"
 
 [dependencies.safe-mmio]
-version = "0.2.4"
+version = "0.3.0"
 
 [dependencies.thiserror]
-version = "2.0.12"
+version = "2.0.18"
 default-features = false
 
 [dependencies.zerocopy]
-version = "0.8.24"
+version = "0.8.40"
 features = ["derive"]
 
 [dev-dependencies.zerocopy]
-version = "0.8.24"
+version = "0.8.40"
 features = ["alloc"]

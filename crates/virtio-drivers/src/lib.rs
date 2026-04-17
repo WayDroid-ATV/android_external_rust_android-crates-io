@@ -42,19 +42,25 @@
 //! ```
 
 #![cfg_attr(not(test), no_std)]
-#![deny(unused_must_use, missing_docs, clippy::undocumented_unsafe_blocks)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![deny(
+    unsafe_op_in_unsafe_fn,
+    unused_must_use,
+    missing_docs,
+    clippy::undocumented_unsafe_blocks
+)]
 #![allow(clippy::identity_op)]
 #![allow(dead_code)]
 
 #[cfg(any(feature = "alloc", test))]
 extern crate alloc;
 
-mod config;
+pub mod config;
 pub mod device;
 #[cfg(feature = "embedded-io")]
 mod embedded_io;
 mod hal;
-mod queue;
+pub mod queue;
 pub mod transport;
 
 use device::socket::SocketError;
@@ -65,6 +71,8 @@ pub use safe_mmio::UniqueMmioPointer;
 
 /// The page size in bytes supported by the library (4 KiB).
 pub const PAGE_SIZE: usize = 0x1000;
+
+const PAGE_SIZE_PHYS: PhysAddr = PAGE_SIZE as PhysAddr;
 
 /// The type returned by driver methods.
 pub type Result<T = ()> = core::result::Result<T, Error>;
@@ -117,6 +125,11 @@ impl From<alloc::string::FromUtf8Error> for Error {
 /// Align `size` up to a page.
 fn align_up(size: usize) -> usize {
     (size + PAGE_SIZE) & !(PAGE_SIZE - 1)
+}
+
+/// Align `size` up to a page.
+fn align_up_phys(size: PhysAddr) -> PhysAddr {
+    (size + PAGE_SIZE_PHYS) & !(PAGE_SIZE_PHYS - 1)
 }
 
 /// The number of pages required to store `size` bytes, rounded up to a whole number of pages.

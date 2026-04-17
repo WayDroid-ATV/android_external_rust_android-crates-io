@@ -1,11 +1,11 @@
 //! Driver for VirtIO input devices.
 
 use super::common::Feature;
-use crate::config::{read_config, write_config, ReadOnly, WriteOnly};
+use crate::Error;
+use crate::config::{ReadOnly, WriteOnly, read_config, write_config};
 use crate::hal::Hal;
 use crate::queue::VirtQueue;
-use crate::transport::Transport;
-use crate::Error;
+use crate::transport::{InterruptStatus, Transport};
 use alloc::{boxed::Box, string::String};
 use core::cmp::min;
 use core::mem::{offset_of, size_of};
@@ -62,7 +62,7 @@ impl<H: Hal, T: Transport> VirtIOInput<H, T> {
     }
 
     /// Acknowledge interrupt and process events.
-    pub fn ack_interrupt(&mut self) -> bool {
+    pub fn ack_interrupt(&mut self) -> InterruptStatus {
         self.transport.ack_interrupt()
     }
 
@@ -301,7 +301,9 @@ pub struct InputEvent {
 
 const QUEUE_EVENT: u16 = 0;
 const QUEUE_STATUS: u16 = 1;
-const SUPPORTED_FEATURES: Feature = Feature::RING_EVENT_IDX.union(Feature::RING_INDIRECT_DESC);
+const SUPPORTED_FEATURES: Feature = Feature::RING_EVENT_IDX
+    .union(Feature::RING_INDIRECT_DESC)
+    .union(Feature::VERSION_1);
 
 // a parameter that can change
 const QUEUE_SIZE: usize = 32;
@@ -312,8 +314,8 @@ mod tests {
     use crate::{
         hal::fake::FakeHal,
         transport::{
-            fake::{FakeTransport, QueueStatus, State},
             DeviceType,
+            fake::{FakeTransport, QueueStatus, State},
         },
     };
     use alloc::{sync::Arc, vec};
