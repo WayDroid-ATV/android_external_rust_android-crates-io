@@ -6,7 +6,6 @@ icu_provider_macros
 instant
 moveit
 oneshot-uniffi
-os_str_bytes
 syn-mid
 uniffi
 uniffi_checksum_derive

@@ -1,14 +1,6 @@
-#![cfg(target_os = "linux")]
+#![cfg(any(target_os = "linux", target_os = "android"))]
 #![doc = include_str!("../README.md")]
-#![doc(html_root_url = "https://docs.rs/selinux-sys/0.6.13")]
-#![warn(unsafe_op_in_unsafe_fn)]
-#![allow(
-    non_upper_case_globals,
-    non_camel_case_types,
-    non_snake_case,
-    clippy::redundant_static_lifetimes,
-    clippy::upper_case_acronyms
-)]
+#![doc(html_root_url = "https://docs.rs/selinux-sys/0.7.0")]
 
 #[cfg(test)]
 mod tests;
@@ -27,7 +19,7 @@ pub unsafe fn avc_entry_ref_init(aeref: *mut avc_entry_ref) {
         unsafe {
             aeref.write(avc_entry_ref {
                 ae: std::ptr::null_mut(),
-            })
-        };
+            });
+        }
     }
 }

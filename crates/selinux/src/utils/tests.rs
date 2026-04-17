@@ -58,7 +58,7 @@ fn ret_val_to_result() {
     super::ret_val_to_result("xyz", 0).unwrap();
     super::ret_val_to_result("xyz", 1).unwrap();
 
-    crate::errors::Error::set_errno(1);
+    errno::set_errno(errno::Errno(1));
     let err = super::ret_val_to_result("xyz", -1).unwrap_err();
     assert_matches!(err, crate::errors::Error::IO { .. });
     if let crate::errors::Error::IO { source, .. } = err {
@@ -73,7 +73,7 @@ fn ret_val_to_result_with_path() {
     super::ret_val_to_result_with_path("xyz", 0, test_path).unwrap();
     super::ret_val_to_result_with_path("xyz", 1, test_path).unwrap();
 
-    crate::errors::Error::set_errno(1);
+    errno::set_errno(errno::Errno(1));
     let err = super::ret_val_to_result_with_path("xyz", -1, test_path).unwrap_err();
     crate::errors::Error::clear_errno();
 

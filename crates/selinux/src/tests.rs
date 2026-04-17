@@ -25,7 +25,7 @@ fn security_context_from_c_str() {
 fn security_context_from_result() {
     super::SecurityContext::from_result("xyz", 0, ptr::null_mut(), false).unwrap_err();
 
-    crate::errors::Error::set_errno(1);
+    errno::set_errno(errno::Errno(1));
 
     #[allow(clippy::as_conversions)]
     super::SecurityContext::from_result("xyz", -1, 0x1000 as *mut c_char, false).unwrap_err();
@@ -37,7 +37,7 @@ fn security_context_from_result_with_name() {
     super::SecurityContext::from_result_with_name("xyz", 0, ptr::null_mut(), "abc", false)
         .unwrap_err();
 
-    crate::errors::Error::set_errno(1);
+    errno::set_errno(errno::Errno(1));
 
     #[allow(clippy::as_conversions)]
     super::SecurityContext::from_result_with_name("xyz", -1, 0x1000 as *mut c_char, "abc", false)
@@ -49,7 +49,7 @@ fn security_context_from_result_with_name() {
 fn security_context_from_result_with_pid() {
     super::SecurityContext::from_result_with_pid("xyz", 0, ptr::null_mut(), 1, false).unwrap_err();
 
-    crate::errors::Error::set_errno(1);
+    errno::set_errno(errno::Errno(1));
 
     #[allow(clippy::as_conversions)]
     super::SecurityContext::from_result_with_pid("xyz", -1, 0x1000 as *mut c_char, 1, false)
@@ -59,7 +59,7 @@ fn security_context_from_result_with_pid() {
 
 #[test]
 fn security_context_parse_context_color() {
-    use super::{LayerColors, SecurityContext, SecurityContextColors, RGB};
+    use super::{LayerColors, RGB, SecurityContext, SecurityContextColors};
 
     for &bytes in &[
         b"".as_slice(),
@@ -102,7 +102,7 @@ fn security_context_parse_context_color() {
 
 #[test]
 fn security_context_color() {
-    use super::{LayerColors, SecurityContextColors, RGB};
+    use super::{LayerColors, RGB, SecurityContextColors};
 
     let scc = SecurityContextColors::new(
         LayerColors::new(RGB::new(0x22, 0, 0), RGB::new(0x11, 0, 0)),

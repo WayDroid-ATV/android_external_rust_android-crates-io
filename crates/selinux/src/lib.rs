@@ -1,55 +1,9 @@
-#![cfg(target_os = "linux")]
+#![cfg(any(target_os = "linux", target_os = "android"))]
 #![doc = include_str!("../README.md")]
-#![doc(html_root_url = "https://docs.rs/selinux/0.4.6")]
-#![allow(clippy::upper_case_acronyms)]
-#![warn(
-    unsafe_op_in_unsafe_fn,
-    missing_docs,
-    clippy::must_use_candidate,
-    clippy::default_numeric_fallback,
-    clippy::single_char_lifetime_names,
-    clippy::alloc_instead_of_core,
-    clippy::std_instead_of_core,
-    clippy::std_instead_of_alloc
-)]
+#![doc(html_root_url = "https://docs.rs/selinux/0.6.1")]
 //
 // https://rust-lang.github.io/api-guidelines/checklist.html
 //
-
-// Activate these lints to clean up the code and hopefully detect some issues.
-//#![warn(clippy::all, clippy::pedantic, clippy::restriction)]
-#![allow(
-    clippy::absolute_paths,
-    clippy::arbitrary_source_item_ordering,
-    clippy::doc_markdown,
-    clippy::error_impl_error,
-    clippy::exhaustive_structs,
-    clippy::expect_used,
-    clippy::field_scoped_visibility_modifiers,
-    clippy::impl_trait_in_params,
-    clippy::implicit_return,
-    clippy::indexing_slicing,
-    clippy::min_ident_chars,
-    clippy::missing_docs_in_private_items,
-    clippy::missing_errors_doc,
-    clippy::missing_inline_in_public_items,
-    clippy::missing_trait_methods,
-    clippy::mod_module_files,
-    clippy::module_name_repetitions,
-    clippy::multiple_unsafe_ops_per_block,
-    clippy::needless_pass_by_value,
-    clippy::pattern_type_mismatch,
-    clippy::pub_use,
-    clippy::pub_with_shorthand,
-    clippy::question_mark_used,
-    clippy::separated_literal_suffix,
-    clippy::shadow_reuse,
-    clippy::shadow_unrelated,
-    clippy::single_call_fn,
-    clippy::undocumented_unsafe_blocks,
-    clippy::unused_self,
-    clippy::unused_trait_names
-)]
 #![cfg_attr(test, allow(clippy::unwrap_used))]
 
 #[cfg(test)]
@@ -80,7 +34,7 @@ use core::ffi::CStr;
 use core::marker::PhantomData;
 use core::mem::MaybeUninit;
 use core::{cmp, fmt, mem, ptr, slice, str};
-use std::collections::{hash_map, HashMap};
+use std::collections::{HashMap, hash_map};
 use std::io;
 use std::os::raw::{c_char, c_int, c_uint, c_void};
 use std::os::unix::io::AsRawFd;
@@ -93,8 +47,8 @@ extern crate bitflags;
 
 use errors::{Error, Result};
 use utils::{
-    c_str_to_non_null_ptr, os_str_to_c_string, ret_val_to_result, ret_val_to_result_with_path,
-    str_to_c_string, CAllocatedBlock, OptionalNativeFunctions,
+    CAllocatedBlock, OptionalNativeFunctions, c_str_to_non_null_ptr, os_str_to_c_string,
+    ret_val_to_result, ret_val_to_result_with_path, str_to_c_string,
 };
 
 /// Red, green and blue components of a color.
@@ -168,7 +122,7 @@ impl SecurityContextColors {
 }
 
 /// SELinux security context.
-#[derive(Debug)]
+#[derive(Debug, Eq)]
 pub struct SecurityContext<'context> {
     context: ptr::NonNull<c_char>,
     size: Option<usize>,
@@ -208,7 +162,7 @@ impl<'context> SecurityContext<'context> {
     /// Return the string value of this security context.
     ///
     /// If the context is empty, then this returns `Ok(None)`.
-    pub fn to_c_string(&self) -> Result<Option<Cow<CStr>>> {
+    pub fn to_c_string(&self) -> Result<Option<Cow<'_, CStr>>> {
         if let Some(size) = self.size {
             let bytes = unsafe { slice::from_raw_parts(self.context.as_ptr().cast(), size) };
             if bytes.is_empty() {
@@ -260,7 +214,7 @@ impl<'context> SecurityContext<'context> {
         };
 
         let mut context: *mut c_char = ptr::null_mut();
-        let r = unsafe { proc(&mut context) };
+        let r = unsafe { proc(&raw mut context) };
         Self::from_result(proc_name, r, context, raw_format)
     }
 
@@ -293,7 +247,7 @@ impl<'context> SecurityContext<'context> {
                 (onf.getpidprevcon, "getpidprevcon()")
             };
 
-            let r = unsafe { proc(process_id, &mut context) };
+            let r = unsafe { proc(process_id, &raw mut context) };
             Self::from_result_with_pid(proc_name, r, context, process_id, raw_format)
         } else {
             let (proc, proc_name): (unsafe extern "C" fn(_) -> _, _) = if raw_format {
@@ -302,7 +256,7 @@ impl<'context> SecurityContext<'context> {
                 (selinux_sys::getprevcon, "getprevcon()")
             };
 
-            let r = unsafe { proc(&mut context) };
+            let r = unsafe { proc(&raw mut context) };
             Self::from_result(proc_name, r, context, raw_format)
         }
     }
@@ -336,7 +290,7 @@ impl<'context> SecurityContext<'context> {
 
         let c_name = str_to_c_string(name)?;
         let mut context: *mut c_char = ptr::null_mut();
-        let r = unsafe { proc(c_name.as_ptr(), &mut context) };
+        let r = unsafe { proc(c_name.as_ptr(), &raw mut context) };
         Self::from_result_with_name(proc_name, r, context, name, raw_format)
     }
 
@@ -348,7 +302,7 @@ impl<'context> SecurityContext<'context> {
     pub fn of_media_type(name: &str) -> Result<Self> {
         let c_name = str_to_c_string(name)?;
         let mut context: *mut c_char = ptr::null_mut();
-        let r = unsafe { selinux_sys::matchmediacon(c_name.as_ptr(), &mut context) };
+        let r = unsafe { selinux_sys::matchmediacon(c_name.as_ptr(), &raw mut context) };
         Self::from_result_with_name("matchmediacon()", r, context, name, false)
     }
 
@@ -364,7 +318,7 @@ impl<'context> SecurityContext<'context> {
         };
 
         let mut context: *mut c_char = ptr::null_mut();
-        let r = unsafe { proc(process_id, &mut context) };
+        let r = unsafe { proc(process_id, &raw mut context) };
         Self::from_result_with_pid(proc_name, r, context, process_id, raw_format)
     }
 
@@ -380,7 +334,7 @@ impl<'context> SecurityContext<'context> {
 
         let mut context: *mut c_char = ptr::null_mut();
         let r = unsafe {
-            selinux_sys::selinux_trans_to_raw_context(self.context.as_ptr(), &mut context)
+            selinux_sys::selinux_trans_to_raw_context(self.context.as_ptr(), &raw mut context)
         };
         Self::from_result("selinux_trans_to_raw_context()", r, context, true)
     }
@@ -397,7 +351,7 @@ impl<'context> SecurityContext<'context> {
 
         let mut context: *mut c_char = ptr::null_mut();
         let r = unsafe {
-            selinux_sys::selinux_raw_to_trans_context(self.context.as_ptr(), &mut context)
+            selinux_sys::selinux_raw_to_trans_context(self.context.as_ptr(), &raw mut context)
         };
         Self::from_result("selinux_raw_to_trans_context()", r, context, false)
     }
@@ -410,7 +364,8 @@ impl<'context> SecurityContext<'context> {
     pub fn of_se_user_with_selected_context(se_user: &str, raw_format: bool) -> Result<Self> {
         let mut context: *mut c_char = ptr::null_mut();
         let c_se_user = str_to_c_string(se_user)?;
-        let r = unsafe { selinux_sys::manual_user_enter_context(c_se_user.as_ptr(), &mut context) };
+        let r =
+            unsafe { selinux_sys::manual_user_enter_context(c_se_user.as_ptr(), &raw mut context) };
         Self::from_result("manual_user_enter_context()", r, context, raw_format)
     }
 
@@ -455,7 +410,7 @@ impl<'context> SecurityContext<'context> {
                     selinux_sys::get_default_context(
                         c_se_user.as_ptr(),
                         reachable_from_context,
-                        &mut context,
+                        &raw mut context,
                     ),
                     "get_default_context()",
                 ),
@@ -465,7 +420,7 @@ impl<'context> SecurityContext<'context> {
                         c_se_user.as_ptr(),
                         c_level.as_ptr(),
                         reachable_from_context,
-                        &mut context,
+                        &raw mut context,
                     ),
                     "get_default_context_with_level()",
                 ),
@@ -475,7 +430,7 @@ impl<'context> SecurityContext<'context> {
                         c_se_user.as_ptr(),
                         c_role.as_ptr(),
                         reachable_from_context,
-                        &mut context,
+                        &raw mut context,
                     ),
                     "get_default_context_with_role()",
                 ),
@@ -486,7 +441,7 @@ impl<'context> SecurityContext<'context> {
                         c_role.as_ptr(),
                         c_level.as_ptr(),
                         reachable_from_context,
-                        &mut context,
+                        &raw mut context,
                     ),
                     "get_default_context_with_rolelevel()",
                 ),
@@ -668,7 +623,7 @@ impl<'context> SecurityContext<'context> {
 
         let c_path = os_str_to_c_string(path.as_ref().as_os_str())?;
         let mut context: *mut c_char = ptr::null_mut();
-        let r: c_int = unsafe { proc(c_path.as_ptr(), &mut context) };
+        let r: c_int = unsafe { proc(c_path.as_ptr(), &raw mut context) };
         if r == -1_i32 {
             let err = io::Error::last_os_error();
             if let Some(libc::ENODATA) = err.raw_os_error() {
@@ -678,6 +633,7 @@ impl<'context> SecurityContext<'context> {
             }
         } else {
             Ok(ptr::NonNull::new(context).map(|context| {
+                #[allow(clippy::cast_sign_loss)]
                 let size = (r >= 0_i32).then_some(r as c_uint);
                 Self::from_ptr(context, size, raw_format)
             }))
@@ -733,7 +689,7 @@ impl<'context> SecurityContext<'context> {
         };
 
         let mut context: *mut c_char = ptr::null_mut();
-        let r: c_int = unsafe { proc(fd.as_raw_fd(), &mut context) };
+        let r: c_int = unsafe { proc(fd.as_raw_fd(), &raw mut context) };
         if r == -1_i32 {
             let err = io::Error::last_os_error();
             if let Some(libc::ENODATA) = err.raw_os_error() {
@@ -785,7 +741,7 @@ impl<'context> SecurityContext<'context> {
         };
 
         let mut context: *mut c_char = ptr::null_mut();
-        let r = unsafe { proc(socket.as_raw_fd(), &mut context) };
+        let r = unsafe { proc(socket.as_raw_fd(), &raw mut context) };
         Self::from_result(proc_name, r, context, raw_format)
     }
 
@@ -861,7 +817,7 @@ impl<'context> SecurityContext<'context> {
                 target_context.context.as_ptr(),
                 target_class.0,
                 c_object_name.as_ptr(),
-                &mut context,
+                &raw mut context,
             )
         };
 
@@ -895,7 +851,7 @@ impl<'context> SecurityContext<'context> {
                 self.context.as_ptr(),
                 target_context.context.as_ptr(),
                 target_class.0,
-                &mut context,
+                &raw mut context,
             )
         };
 
@@ -930,7 +886,7 @@ impl<'context> SecurityContext<'context> {
                 self.context.as_ptr(),
                 target_context.context.as_ptr(),
                 target_class.0,
-                &mut context,
+                &raw mut context,
             )
         };
 
@@ -1016,7 +972,7 @@ impl<'context> SecurityContext<'context> {
         };
 
         let mut context: *mut c_char = ptr::null_mut();
-        let r = unsafe { proc(self.context.as_ptr(), &mut context) };
+        let r = unsafe { proc(self.context.as_ptr(), &raw mut context) };
         Self::from_result(proc_name, r, context, self.is_raw)
     }
 
@@ -1084,7 +1040,7 @@ impl<'context> SecurityContext<'context> {
 
         let mut color_ptr: *mut c_char = ptr::null_mut();
         let r: c_int = unsafe {
-            selinux_sys::selinux_raw_context_to_color(self.context.as_ptr(), &mut color_ptr)
+            selinux_sys::selinux_raw_context_to_color(self.context.as_ptr(), &raw mut color_ptr)
         };
 
         if r == -1_i32 {
@@ -1158,7 +1114,7 @@ impl<'context> SecurityContext<'context> {
         raw_format: bool,
     ) -> Result<Option<Self>> {
         let mut context: *mut c_char = ptr::null_mut();
-        if unsafe { proc(&mut context) } == -1_i32 {
+        if unsafe { proc(&raw mut context) } == -1_i32 {
             Err(Error::last_io_error(proc_name))
         } else {
             Ok(ptr::NonNull::new(context).map(|c| Self::from_ptr(c, None, raw_format)))
@@ -1242,10 +1198,10 @@ impl<'context> SecurityContext<'context> {
             .split(u8::is_ascii_whitespace)
             .filter(|&bytes| !bytes.is_empty())
             .take(8)
-            .flat_map(|bytes| bytes.strip_prefix(b"#"))
+            .filter_map(|bytes| bytes.strip_prefix(b"#"))
             .filter(|&bytes| !bytes.is_empty())
-            .flat_map(|bytes| str::from_utf8(bytes).ok())
-            .flat_map(|s| u32::from_str_radix(s, 16).ok())
+            .filter_map(|bytes| str::from_utf8(bytes).ok())
+            .filter_map(|s| u32::from_str_radix(s, 16).ok())
             .filter(|&n| n <= 0x00ff_ffff_u32)
             .map(|n| RGB {
                 red: (n & 0xff_u32) as u8,
@@ -1295,8 +1251,28 @@ impl Drop for SecurityContext<'_> {
     }
 }
 
+impl PartialEq for SecurityContext<'_> {
+    /// Test whether this security context is equal to another security context,
+    /// potentially after **canonicalizing** both of them.
+    ///
+    /// If a security context fails canonicalization, then it is used as is for the purpose
+    /// of this equality test.
+    fn eq(&self, that: &Self) -> bool {
+        if self.is_raw != that.is_raw {
+            return false;
+        }
+
+        match (self.canonicalize(), that.canonicalize()) {
+            (Ok(this_canon), Ok(that_canon)) => this_canon.as_bytes() == that_canon.as_bytes(),
+            (Ok(this_canon), Err(_)) => this_canon.as_bytes() == that.as_bytes(),
+            (Err(_), Ok(that_canon)) => self.as_bytes() == that_canon.as_bytes(),
+            (Err(_), Err(_)) => self.as_bytes() == that.as_bytes(),
+        }
+    }
+}
+
 /// List of security contexts.
-#[derive(Debug)]
+#[derive(Debug, Eq)]
 pub struct SecurityContextList {
     context_list: ptr::NonNull<*mut c_char>,
     count: usize,
@@ -1358,14 +1334,14 @@ impl SecurityContextList {
                     c_se_user.as_ptr(),
                     c_level.as_ptr(),
                     reachable_from_context,
-                    &mut context_list,
+                    &raw mut context_list,
                 );
                 (r, "get_ordered_context_list_with_level()")
             } else {
                 let r = selinux_sys::get_ordered_context_list(
                     c_se_user.as_ptr(),
                     reachable_from_context,
-                    &mut context_list,
+                    &raw mut context_list,
                 );
                 (r, "get_ordered_context_list()")
             }
@@ -1416,10 +1392,11 @@ impl SecurityContextList {
     ///
     /// See: `query_user_context()`.
     #[doc(alias = "query_user_context")]
-    pub fn user_selected_context(&self, raw_format: bool) -> Result<SecurityContext> {
+    pub fn user_selected_context(&self, raw_format: bool) -> Result<SecurityContext<'_>> {
         let mut context: *mut c_char = ptr::null_mut();
-        let r =
-            unsafe { selinux_sys::query_user_context(self.context_list.as_ptr(), &mut context) };
+        let r = unsafe {
+            selinux_sys::query_user_context(self.context_list.as_ptr(), &raw mut context)
+        };
         SecurityContext::from_result("query_user_context()", r, context, raw_format)
     }
 }
@@ -1434,6 +1411,29 @@ impl Drop for SecurityContextList {
     }
 }
 
+impl PartialEq for SecurityContextList {
+    fn eq(&self, that: &Self) -> bool {
+        if self.count != that.count {
+            return false;
+        }
+
+        let mut this_ptr = self.context_list.as_ptr();
+        let this_end = this_ptr.wrapping_add(self.count);
+        let mut that_ptr = that.context_list.as_ptr();
+
+        while this_ptr < this_end {
+            if unsafe { CStr::from_ptr(*this_ptr) != CStr::from_ptr(*that_ptr) } {
+                return false;
+            }
+
+            this_ptr = this_ptr.wrapping_add(1);
+            that_ptr = that_ptr.wrapping_add(1);
+        }
+
+        true
+    }
+}
+
 /// File access mode.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct FileAccessMode(selinux_sys::mode_t);
@@ -1442,11 +1442,7 @@ impl FileAccessMode {
     /// Create a new file access mode, if given a non-zero `mode`.
     #[must_use]
     pub fn new(mode: selinux_sys::mode_t) -> Option<Self> {
-        if mode == 0 {
-            None
-        } else {
-            Some(Self(mode))
-        }
+        (mode != 0).then_some(Self(mode))
     }
 
     /// Return the mode value.
@@ -1555,7 +1551,7 @@ impl SecurityClass {
     ) -> Result<CAllocatedBlock<c_char>> {
         let mut name_ptr: *mut c_char = ptr::null_mut();
         let r: c_int =
-            unsafe { selinux_sys::security_av_string(self.0, access_vector, &mut name_ptr) };
+            unsafe { selinux_sys::security_av_string(self.0, access_vector, &raw mut name_ptr) };
         if r == -1_i32 {
             Err(Error::last_io_error("security_av_string()"))
         } else {
@@ -1583,10 +1579,34 @@ impl TryFrom<FileAccessMode> for SecurityClass {
 }
 
 /// Opaque security context.
-#[derive(Debug)]
+#[derive(Debug, Eq)]
 pub struct OpaqueSecurityContext {
     context: ptr::NonNull<selinux_sys::context_s_t>,
     _phantom_data: PhantomData<selinux_sys::context_s_t>,
+}
+
+/// **ASSUMPTION:** The tuple **(type, range, role, user)** completely identifies an opaque security
+/// context, irrespective of its format.
+impl PartialEq for OpaqueSecurityContext {
+    fn eq(&self, that: &Self) -> bool {
+        if let Ok(this_type) = self.the_type()
+            && let Ok(that_type) = that.the_type()
+            && this_type == that_type
+            && let Ok(this_range) = self.range()
+            && let Ok(that_range) = that.range()
+            && this_range == that_range
+            && let Ok(this_role) = self.role()
+            && let Ok(that_role) = that.role()
+            && this_role == that_role
+            && let Ok(this_user) = self.user()
+            && let Ok(that_user) = that.user()
+            && this_user == that_user
+        {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 impl OpaqueSecurityContext {
@@ -1881,7 +1901,7 @@ pub fn kernel_support() -> KernelSupport {
 #[doc(alias = "selinux_getenforcemode")]
 pub fn boot_mode() -> Result<SELinuxMode> {
     let mut enforce: c_int = -1;
-    if unsafe { selinux_sys::selinux_getenforcemode(&mut enforce) } == -1_i32 {
+    if unsafe { selinux_sys::selinux_getenforcemode(&raw mut enforce) } == -1_i32 {
         Err(Error::last_io_error("selinux_getenforcemode()"))
     } else {
         match enforce {
@@ -2089,15 +2109,19 @@ pub fn se_user_and_level(
             selinux_sys::getseuser(
                 c_user_name.as_ptr(),
                 c_service.as_ptr(),
-                &mut se_user_ptr,
-                &mut level_ptr,
+                &raw mut se_user_ptr,
+                &raw mut level_ptr,
             )
         };
 
         (r, "getseuser()")
     } else {
         let r = unsafe {
-            selinux_sys::getseuserbyname(c_user_name.as_ptr(), &mut se_user_ptr, &mut level_ptr)
+            selinux_sys::getseuserbyname(
+                c_user_name.as_ptr(),
+                &raw mut se_user_ptr,
+                &raw mut level_ptr,
+            )
         };
 
         (r, "getseuserbyname()")
@@ -2133,7 +2157,7 @@ pub fn reset_config() {
 pub fn default_type_for_role(role: &str) -> Result<CAllocatedBlock<c_char>> {
     let mut c_type: *mut c_char = ptr::null_mut();
     let c_role = str_to_c_string(role)?;
-    if unsafe { selinux_sys::get_default_type(c_role.as_ptr(), &mut c_type) } == -1_i32 {
+    if unsafe { selinux_sys::get_default_type(c_role.as_ptr(), &raw mut c_type) } == -1_i32 {
         Err(Error::last_io_error("get_default_type()"))
     } else {
         CAllocatedBlock::new(c_type)

@@ -11,7 +11,7 @@ fn labeler_new_file() {
     assert_eq!(labeler1.as_ptr(), labeler1.as_mut_ptr());
     assert!(!labeler1.is_raw_format());
 
-    let _ignored = format!("{:?}", &labeler1);
+    let _ignored = format!("{labeler1:?}");
 
     let labeler2 = super::Labeler::<super::back_end::File>::new(&[], false).unwrap();
     assert_eq!(labeler1, labeler2);
@@ -26,7 +26,7 @@ fn labeler_log_statistics() {
 #[test]
 fn labeler_digest() {
     #[allow(clippy::as_conversions)]
-    let options = &[(selinux_sys::SELABEL_OPT_DIGEST, 1 as *const c_void)];
+    let options = &[(selinux_sys::SELABEL_OPT_DIGEST, ptr::dangling::<c_void>())];
     let labeler = super::Labeler::<super::back_end::File>::new(options, false).unwrap();
 
     let digest = labeler.digest().unwrap();
@@ -80,7 +80,7 @@ fn labeler_get_digests_all_partial_matches_by_path() {
 
     if let Err(r) = labeler.get_digests_all_partial_matches_by_path("/tmp") {
         let r = r.io_source().unwrap().raw_os_error();
-        assert_matches!(r, Some(libc::ENOSYS | libc::ENOENT));
+        assert_matches!(r, Some(libc::ENOSYS | libc::ENOENT | libc::ENODATA));
     }
 }
 

@@ -8,8 +8,8 @@ use std::path::Path;
 
 use crate::errors::{Error, Result};
 use crate::utils::{
-    get_static_path, os_str_to_c_string, ret_val_to_result, ret_val_to_result_with_path,
-    CAllocatedBlock,
+    CAllocatedBlock, get_static_path, os_str_to_c_string, ret_val_to_result,
+    ret_val_to_result_with_path,
 };
 
 /// Load a new SELinux policy.
@@ -42,7 +42,7 @@ pub fn make_and_load() -> Result<()> {
 #[doc(alias = "selinux_init_load_policy")]
 pub fn load_initial() -> Result<c_int> {
     let mut enforce: c_int = 0;
-    if unsafe { selinux_sys::selinux_init_load_policy(&mut enforce) } == -1_i32 {
+    if unsafe { selinux_sys::selinux_init_load_policy(&raw mut enforce) } == -1_i32 {
         Err(Error::last_io_error("selinux_init_load_policy()"))
     } else {
         Ok(enforce)
@@ -55,7 +55,7 @@ pub fn load_initial() -> Result<c_int> {
 #[doc(alias = "selinux_getpolicytype")]
 pub fn policy_type() -> Result<CAllocatedBlock<c_char>> {
     let mut name_ptr: *mut c_char = ptr::null_mut();
-    if unsafe { selinux_sys::selinux_getpolicytype(&mut name_ptr) } == -1_i32 {
+    if unsafe { selinux_sys::selinux_getpolicytype(&raw mut name_ptr) } == -1_i32 {
         Err(Error::last_io_error("selinux_getpolicytype()"))
     } else {
         CAllocatedBlock::new(name_ptr).ok_or_else(|| {

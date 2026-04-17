@@ -11,9 +11,9 @@ use std::os::raw::{c_char, c_int, c_uint, c_void};
 
 use parking_lot::Mutex;
 
+use crate::SecurityContext;
 use crate::errors::{Error, Result};
 use crate::utils::{ret_val_to_result, str_to_c_string};
-use crate::SecurityContext;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
@@ -35,7 +35,7 @@ impl AccessVectorCache {
     ///
     /// The `options` parameter produces zero or more `(type, value)` tuples, where:
     /// - `type` is one of `selinux_sys::AVC_OPT_*` values,
-    ///    *e.g.*, [`selinux_sys::AVC_OPT_SETENFORCE`].
+    ///   *e.g.*, [`selinux_sys::AVC_OPT_SETENFORCE`].
     /// - `value` is a pointer whose semantics are specific to `type`.
     ///
     /// Attempting to initialize the access vector cache while it is still
@@ -120,7 +120,8 @@ impl AccessVectorCache {
     ) -> Result<SecurityID<'context>> {
         let c_name = str_to_c_string(security_id_name)?;
         let mut security_id: *mut selinux_sys::security_id = ptr::null_mut();
-        if unsafe { selinux_sys::avc_get_initial_sid(c_name.as_ptr(), &mut security_id) } == -1_i32
+        if unsafe { selinux_sys::avc_get_initial_sid(c_name.as_ptr(), &raw mut security_id) }
+            == -1_i32
         {
             Err(Error::last_io_error("avc_get_initial_sid()"))
         } else {
@@ -150,7 +151,7 @@ impl AccessVectorCache {
         };
 
         let mut context: *mut c_char = ptr::null_mut();
-        let r = unsafe { proc(security_id.as_mut_ptr(), &mut context) };
+        let r = unsafe { proc(security_id.as_mut_ptr(), &raw mut context) };
         SecurityContext::from_result(proc_name, r, context, is_raw)
     }
 
@@ -172,7 +173,7 @@ impl AccessVectorCache {
         };
 
         let mut security_id: *mut selinux_sys::security_id = ptr::null_mut();
-        if unsafe { proc(context.as_ptr(), &mut security_id) } == -1_i32 {
+        if unsafe { proc(context.as_ptr(), &raw mut security_id) } == -1_i32 {
             Err(Error::last_io_error(proc_name))
         } else {
             Ok(SecurityID {

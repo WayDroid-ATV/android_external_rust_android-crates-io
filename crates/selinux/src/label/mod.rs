@@ -12,7 +12,7 @@ use std::path::Path;
 
 use crate::errors::{Error, Result};
 use crate::utils::{
-    c_str_ptr_to_path, os_str_to_c_string, CAllocatedBlock, OptionalNativeFunctions,
+    CAllocatedBlock, OptionalNativeFunctions, c_str_ptr_to_path, os_str_to_c_string,
 };
 use crate::{FileAccessMode, SecurityContext};
 
@@ -84,7 +84,7 @@ impl<T: BackEnd> Labeler<T> {
     ///
     /// See: `selabel_lookup()`.
     #[doc(alias = "selabel_lookup")]
-    pub fn look_up(&self, key: &CStr, key_type: c_int) -> Result<SecurityContext> {
+    pub fn look_up(&self, key: &CStr, key_type: c_int) -> Result<SecurityContext<'_>> {
         let (proc, proc_name): (unsafe extern "C" fn(_, _, _, _) -> _, _) = if self.is_raw {
             (selinux_sys::selabel_lookup_raw, "selabel_lookup_raw()")
         } else {
@@ -93,7 +93,7 @@ impl<T: BackEnd> Labeler<T> {
 
         let handle = self.pointer.as_ptr();
         let mut context: *mut c_char = ptr::null_mut();
-        let r = unsafe { proc(handle, &mut context, key.as_ptr(), key_type) };
+        let r = unsafe { proc(handle, &raw mut context, key.as_ptr(), key_type) };
         SecurityContext::from_result(proc_name, r, context, self.is_raw)
     }
 
@@ -109,10 +109,10 @@ impl<T: BackEnd> Labeler<T> {
         let r: c_int = unsafe {
             selinux_sys::selabel_digest(
                 self.pointer.as_ptr(),
-                &mut digest_ptr,
-                &mut digest_size,
-                &mut spec_files_ptr,
-                &mut num_spec_files,
+                &raw mut digest_ptr,
+                &raw mut digest_size,
+                &raw mut spec_files_ptr,
+                &raw mut num_spec_files,
             )
         };
 
@@ -192,7 +192,7 @@ impl Labeler<back_end::File> {
         &self,
         path: impl AsRef<Path>,
         mode: Option<FileAccessMode>,
-    ) -> Result<SecurityContext> {
+    ) -> Result<SecurityContext<'_>> {
         let (proc, proc_name): (unsafe extern "C" fn(_, _, _, _) -> _, _) = if self.is_raw {
             (selinux_sys::selabel_lookup_raw, "selabel_lookup_raw()")
         } else {
@@ -206,7 +206,7 @@ impl Labeler<back_end::File> {
         #[allow(clippy::cast_possible_wrap, clippy::as_conversions)]
         let mode = mode.map_or(0, FileAccessMode::mode) as c_int;
 
-        let r = unsafe { proc(handle, &mut context, c_path.as_ptr(), mode) };
+        let r = unsafe { proc(handle, &raw mut context, c_path.as_ptr(), mode) };
         SecurityContext::from_result(proc_name, r, context, self.is_raw)
     }
 
@@ -219,7 +219,7 @@ impl Labeler<back_end::File> {
         path: impl AsRef<Path>,
         alias_paths: &[impl AsRef<Path>],
         mode: Option<FileAccessMode>,
-    ) -> Result<SecurityContext> {
+    ) -> Result<SecurityContext<'_>> {
         let (proc, proc_name): (unsafe extern "C" fn(_, _, _, _, _) -> _, _) = if self.is_raw {
             let proc_name = "selabel_lookup_best_match_raw()";
             (selinux_sys::selabel_lookup_best_match_raw, proc_name)
@@ -257,7 +257,7 @@ impl Labeler<back_end::File> {
             #[allow(clippy::cast_possible_wrap, clippy::as_conversions)]
             proc(
                 self.pointer.as_ptr(),
-                &mut context,
+                &raw mut context,
                 c_path.as_ptr(),
                 aliases_ptr,
                 mode.map_or(0, FileAccessMode::mode) as c_int,
@@ -294,9 +294,9 @@ impl Labeler<back_end::File> {
             (OptionalNativeFunctions::get().selabel_get_digests_all_partial_matches)(
                 self.pointer.as_ptr(),
                 c_path.as_ptr(),
-                &mut calculated_digest_ptr,
-                &mut xattr_digest_ptr,
-                &mut digest_size,
+                &raw mut calculated_digest_ptr,
+                &raw mut xattr_digest_ptr,
+                &raw mut digest_size,
             )
         };
 

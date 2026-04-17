@@ -34,7 +34,7 @@ impl CallBack for Log {
     }
 
     fn set_call_back(func_log: Option<Self::CallBackType>) {
-        use selinux_sys::{selinux_callback, selinux_set_callback, SELINUX_CB_LOG};
+        use selinux_sys::{SELINUX_CB_LOG, selinux_callback, selinux_set_callback};
         unsafe { selinux_set_callback(SELINUX_CB_LOG, selinux_callback { func_log }) }
     }
 }
@@ -57,7 +57,7 @@ impl CallBack for Audit {
     }
 
     fn set_call_back(func_audit: Option<Self::CallBackType>) {
-        use selinux_sys::{selinux_callback, selinux_set_callback, SELINUX_CB_AUDIT};
+        use selinux_sys::{SELINUX_CB_AUDIT, selinux_callback, selinux_set_callback};
         unsafe { selinux_set_callback(SELINUX_CB_AUDIT, selinux_callback { func_audit }) }
     }
 }
@@ -75,7 +75,7 @@ impl CallBack for ContextValidation {
     }
 
     fn set_call_back(func_validate: Option<Self::CallBackType>) {
-        use selinux_sys::{selinux_callback, selinux_set_callback, SELINUX_CB_VALIDATE};
+        use selinux_sys::{SELINUX_CB_VALIDATE, selinux_callback, selinux_set_callback};
         unsafe { selinux_set_callback(SELINUX_CB_VALIDATE, selinux_callback { func_validate }) }
     }
 }
@@ -89,12 +89,12 @@ impl CallBack for EnforcingChange {
     type CallBackType = unsafe extern "C" fn(c_int) -> c_int;
 
     fn get_call_back() -> Option<Self::CallBackType> {
-        use selinux_sys::{selinux_get_callback, SELINUX_CB_SETENFORCE};
+        use selinux_sys::{SELINUX_CB_SETENFORCE, selinux_get_callback};
         unsafe { selinux_get_callback(SELINUX_CB_SETENFORCE).func_setenforce }
     }
 
     fn set_call_back(func_setenforce: Option<Self::CallBackType>) {
-        use selinux_sys::{selinux_callback, selinux_set_callback, SELINUX_CB_SETENFORCE};
+        use selinux_sys::{SELINUX_CB_SETENFORCE, selinux_callback, selinux_set_callback};
         unsafe { selinux_set_callback(SELINUX_CB_SETENFORCE, selinux_callback { func_setenforce }) }
     }
 }
@@ -108,12 +108,12 @@ impl CallBack for SecurityPolicyReload {
     type CallBackType = unsafe extern "C" fn(c_int) -> c_int;
 
     fn get_call_back() -> Option<Self::CallBackType> {
-        use selinux_sys::{selinux_get_callback, SELINUX_CB_POLICYLOAD};
+        use selinux_sys::{SELINUX_CB_POLICYLOAD, selinux_get_callback};
         unsafe { selinux_get_callback(SELINUX_CB_POLICYLOAD).func_policyload }
     }
 
     fn set_call_back(func_policyload: Option<Self::CallBackType>) {
-        use selinux_sys::{selinux_callback, selinux_set_callback, SELINUX_CB_POLICYLOAD};
+        use selinux_sys::{SELINUX_CB_POLICYLOAD, selinux_callback, selinux_set_callback};
         unsafe { selinux_set_callback(SELINUX_CB_POLICYLOAD, selinux_callback { func_policyload }) }
     }
 }

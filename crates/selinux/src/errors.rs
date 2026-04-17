@@ -1,7 +1,6 @@
 use core::num::TryFromIntError;
 use core::str::Utf8Error;
 use std::io;
-use std::os::raw::c_int;
 use std::path::PathBuf;
 
 use selinux_sys::pid_t;
@@ -131,17 +130,11 @@ impl Error {
         }
     }
 
-    pub(crate) fn set_errno(errno: c_int) {
-        unsafe {
-            *libc::__errno_location() = errno;
-        }
-    }
-
     pub(crate) fn clear_errno() {
-        Self::set_errno(0);
+        errno::set_errno(errno::Errno(0));
     }
 
-    #[allow(dead_code, reason = "used by unit tests")]
+    #[cfg_attr(not(test), expect(dead_code, reason = "used by unit tests"))]
     pub(crate) fn io_source(&self) -> Option<&io::Error> {
         match self {
             Self::IO { source, .. }
