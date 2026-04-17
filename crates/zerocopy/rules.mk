@@ -13,6 +13,7 @@ MODULE_RUST_EDITION := 2021
 MODULE_RUSTFLAGS += \
 	--cfg 'feature="alloc"' \
 	--cfg 'feature="derive"' \
+	--cfg 'feature="simd"' \
 	--cfg 'feature="zerocopy-derive"'
 
 MODULE_LIBRARY_DEPS := \

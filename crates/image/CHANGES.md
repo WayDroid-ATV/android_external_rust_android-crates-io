@@ -6,6 +6,117 @@
 
 ## Changes
 
+### Version 0.25.10
+
+Features:
+- Added `GenericImage::copy_from_samples` that can be implemented for images
+  that can be efficiently filled from a matrix-layout of samples. Its default
+  implementation will *not* defer to `copy_from`, consider implementing this if
+  you specialized the latter.
+- Added `GenericImageView::to_pixel_view` that can be implemented to describe
+  the buffer in terms our `FlatSamples` matrix layout, if applicable. This
+  allows algorithms over generic images to run a specialized version where they
+  can be more efficient over an raw input slice.
+- Added `ImageBuffer::from_raw_bgr{,a}` to efficiently byte-swap images into
+  the RGBA layout of the buffer (#2596).
+- Added `ExtendedColorType::Rgb5x1` to represent 5-bit colors as from TGA (#2609).
+- Added `metadata::LoopCount` and `AnimationDecoder::loop_count` to query if
+  animations should repeat in a uniform manner (gif, webp, avif) (#2719, #2786).
+- `load_from_memory` now utilizes format detection hooks if any are applicable.
+
+Structural changes:
+- Various changes that reduce the compile time of `image` on codegen by
+  reducing the number of monomorphizations (#2804, #2800, #2807).
+- `GenericImage::copy_from`'s default implementation tries `copy_from_samples`
+  first if the source can be successfully cast with `to_pixel_view`.
+- `<ImageBuffer as GenericImage>::copy_from` is now must faster for
+  `ImageBuffer` when the source implements `GenericImageView::to_pixel_view`.
+- `<SubImage<_> as GenericImage>::copy_from` inherits the previously mentioned
+  optimizations for pixel sources when the inner type provides them. It also
+  provides `to_pixel_view` based on the inner type.
+- `ImageBuffer::as_flat_samples` no longer requires `AsRef<[P::Subpixel]>` for
+  the underlying container, just `Deref` (#2777).
+
+Bug fixes:
+- Fixed a panic in TGA where indices have more bits than mapped colors (#2673).
+
+Notable decoder changes:
+- Bump `tiff` to `0.11`, supporting planar layout images (#2743).
+- ICC profiles can now be written for TIFF files (#2746)
+- Update `ravif` to `0.13`, supporting EXIF (#2733).
+- Update `jpeg-encoder` to `0.7` bringing SIMD acceleration (#2736).
+- The `pnm` decoder decodes binary data quicker with fewer allocations (#2797).
+- The `tga` decoder handles 5-bit data and colormaps correctly (#2608, #2609).
+
+Compatibility notes (new section):
+- Bump rust-version to `1.88`.
+- Registered hooks now normalize the file extension they are registered against
+  to ascii-lowercase. It is no longer necessary to register all such variants.
+  This may conflate two hooks that previously hooked the same format with
+  different casing.
+
+### Version 0.25.9
+
+Features:
+ - Support extracting XMP metadata from PNG, JPEG, GIF, WebP and TIFF files (#2567, #2634, #2644)
+ - Support reading IPTC metadata from PNG and JPG files (#2611)
+ - Support reading ICC profile from GIF files (#2644)
+ - Allow setting a specific DEFLATE compression level when writing PNG (#2583)
+ - Initial support for 16-bit CMYK TIFF files (#2588)
+ - Allow extracting the alpha channel of a `Pixel` in a generic way (#2638)
+
+Structural changes:
+ - EXR format decoding now only uses multi-threading via Rayon when the `rayon` feature is enabled (#2643)
+ - Upgraded zune-jpeg to 0.5.x, ravif to 0.12.x, gif to 0.14.x
+ - pnm: parse integers in PBM/PGM/PPM headers without allocations (#2620)
+ - Replace `doc_auto_cfg` with `doc_cfg` (#2637)
+
+Bug fixes:
+ - Do not encode empty JPEG images (#2624)
+ - tga: reject empty images (#2614)
+ - tga: fix orientation flip for color mapped images (#2607)
+ - tga: adjust colormap lookup to match tga 2.0 spec (#2608)
+
+### Version 0.25.8
+
+Re-release of `0.25.7`
+
+Fixes:
+- Reverted a signature change to `load_from_memory` that lead to large scale
+  type inference breakage despite being technically compatible.
+- Color conversion Luma to Rgb used incorrect coefficients instead of broadcasting.
+
+### Version 0.25.7 (yanked)
+
+Features:
+  - Added an API for external image format implementations to register themselves as decoders for a specific format in `image` (#2372)
+  - Added [CICP](https://www.color.org/iccmax/download/CICP_tag_and_type_amendment.pdf) awarenes via [moxcms](https://crates.io/crates/moxcms) to support color spaces (#2531). The support for transforming is limited for now and will be gradually expanded.
+  - You can now embed Exif metadata when writing JPEG, PNG and WebP images (#2537, #2539)
+  - Added functions to extract orientation from Exif metadata and optionally clear it in the Exif chunk (#2484)
+  - Serde support for more types (#2445)
+  - PNM encoder now supports writing 16-bit images (#2431)
+
+Structural changes:
+  - Increased MSRV to 1.85.0 (from 1.78.0)
+
+API improvements:
+  - `save`, `save_with_format`, `write_to` and `write_with_encoder` methods on `DynamicImage` now automatically convert the pixel format when necessary instead of returning an error (#2501)
+  - Added `DynamicImage::has_alpha()` convenience method
+  - Implemented `TryFrom<ExtendedColorType>` for `ColorType` (#2444)
+  - Added `const HAS_ALPHA` to trait `Pixel`
+  - Unified the error for unsupported encoder colors (#2543)
+  - Added a `hooks` module to customize builtin behavior, `register_format_detection_hook` and  `register_decoding_hook` for the determining format of a file and selecting an `ImageDecoder` implementation respectively. (#2372)
+
+Performance improvements:
+  - Gaussian blur (#2496) and box blur (#2515) are now faster
+  - Improve compilation times by avoiding unnecessary instantiation of generic functions (#2468, #2470)
+
+Bug fixes:
+  - Many improvements to image format decoding: TIFF, WebP, AVIF, PNG, GIF, BMP, TGA
+  - Fixed `GifEncoder::encode()` ignoring the speed parameter and always using the slowest speed (#2504)
+  - `.pnm` is now recognized as a file extension for the PNM format (#2559)
+
+
 ### Version 0.25.6
 
 Features:

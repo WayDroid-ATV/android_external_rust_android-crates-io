@@ -18,7 +18,7 @@ use crate::{ImageError, ImageResult};
 
 use bytemuck::{try_cast_slice, try_cast_slice_mut, Pod, PodCastError};
 use num_traits::Zero;
-use ravif::{Encoder, Img, RGB8, RGBA8};
+use ravif::{BitDepth, Encoder, Img, RGB8, RGBA8};
 use rgb::AsPixels;
 
 /// AVIF Encoder.
@@ -26,7 +26,7 @@ use rgb::AsPixels;
 /// Writes one image into the chosen output.
 pub struct AvifEncoder<W> {
     inner: W,
-    encoder: Encoder,
+    encoder: Encoder<'static>,
 }
 
 /// An enumeration over supported AVIF color spaces
@@ -40,10 +40,10 @@ pub enum ColorSpace {
 }
 
 impl ColorSpace {
-    fn to_ravif(self) -> ravif::ColorSpace {
+    fn to_ravif(self) -> ravif::ColorModel {
         match self {
-            Self::Srgb => ravif::ColorSpace::RGB,
-            Self::Bt709 => ravif::ColorSpace::YCbCr,
+            Self::Srgb => ravif::ColorModel::RGB,
+            Self::Bt709 => ravif::ColorModel::YCbCr,
         }
     }
 }
@@ -72,7 +72,7 @@ impl<W: Write> AvifEncoder<W> {
             .with_quality(f32::from(quality))
             .with_alpha_quality(f32::from(quality))
             .with_speed(speed)
-            .with_depth(Some(8));
+            .with_bit_depth(BitDepth::Eight);
 
         AvifEncoder { inner: w, encoder }
     }
@@ -81,7 +81,7 @@ impl<W: Write> AvifEncoder<W> {
     pub fn with_colorspace(mut self, color_space: ColorSpace) -> Self {
         self.encoder = self
             .encoder
-            .with_internal_color_space(color_space.to_ravif());
+            .with_internal_color_model(color_space.to_ravif());
         self
     }
 
@@ -130,6 +130,12 @@ impl<W: Write> ImageEncoder for AvifEncoder<W> {
         self.inner.write_all(&data.avif_file)?;
         Ok(())
     }
+
+    fn set_exif_metadata(&mut self, exif: Vec<u8>) -> Result<(), UnsupportedError> {
+        let encoder = core::mem::replace(&mut self.encoder, Encoder::new());
+        self.encoder = encoder.with_exif(exif);
+        Ok(())
+    }
 }
 
 impl<W: Write> AvifEncoder<W> {
@@ -176,7 +182,7 @@ impl<W: Write> AvifEncoder<W> {
 
         // Cast the input slice using few buffer allocations if possible.
         // In particular try not to allocate if the caller did the infallible reverse.
-        fn cast_buffer<Channel>(buf: &[u8]) -> ImageResult<Cow<[Channel]>>
+        fn cast_buffer<Channel>(buf: &[u8]) -> ImageResult<Cow<'_, [Channel]>>
         where
             Channel: Pod + Zero,
         {
@@ -188,7 +194,7 @@ impl<W: Write> AvifEncoder<W> {
                 Err(PodCastError::TargetAlignmentGreaterAndInputNotAligned) => {
                     // Sad, but let's allocate.
                     // bytemuck checks alignment _before_ slop but size mismatch before this..
-                    if buf.len() % size_of::<Channel>() != 0 {
+                    if !buf.len().is_multiple_of(size_of::<Channel>()) {
                         Err(ImageError::Parameter(ParameterError::from_kind(
                             ParameterErrorKind::DimensionMismatch,
                         )))

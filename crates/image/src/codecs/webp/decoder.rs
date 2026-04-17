@@ -1,10 +1,14 @@
 use std::io::{BufRead, Read, Seek};
 
+use image_webp::LoopCount;
+
 use crate::buffer::ConvertBuffer;
 use crate::error::{DecodingError, ImageError, ImageResult};
-use crate::image::{ImageDecoder, ImageFormat};
 use crate::metadata::Orientation;
-use crate::{AnimationDecoder, ColorType, Delay, Frame, Frames, RgbImage, Rgba, RgbaImage};
+use crate::{
+    AnimationDecoder, ColorType, Delay, Frame, Frames, ImageDecoder, ImageFormat, RgbImage, Rgba,
+    RgbaImage,
+};
 
 /// WebP Image format decoder.
 ///
@@ -82,6 +86,12 @@ impl<R: BufRead + Seek> ImageDecoder for WebPDecoder<R> {
         Ok(exif)
     }
 
+    fn xmp_metadata(&mut self) -> ImageResult<Option<Vec<u8>>> {
+        self.inner
+            .xmp_metadata()
+            .map_err(ImageError::from_webp_decode)
+    }
+
     fn orientation(&mut self) -> ImageResult<Orientation> {
         // `exif_metadata` caches the orientation, so call it if `orientation` hasn't been set yet.
         if self.orientation.is_none() {
@@ -92,6 +102,13 @@ impl<R: BufRead + Seek> ImageDecoder for WebPDecoder<R> {
 }
 
 impl<'a, R: 'a + BufRead + Seek> AnimationDecoder<'a> for WebPDecoder<R> {
+    fn loop_count(&self) -> crate::metadata::LoopCount {
+        match self.inner.loop_count() {
+            LoopCount::Forever => crate::metadata::LoopCount::Infinite,
+            LoopCount::Times(n) => crate::metadata::LoopCount::Finite(n.into()),
+        }
+    }
+
     fn into_frames(self) -> Frames<'a> {
         struct FramesInner<R: Read + Seek> {
             decoder: WebPDecoder<R>,

@@ -19,13 +19,17 @@ rust_library {
     host_supported: true,
     crate_name: "half",
     cargo_env_compat: true,
-    cargo_pkg_version: "2.2.1",
+    cargo_pkg_version: "2.7.1",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
         "alloc",
         "default",
         "std",
+    ],
+    rustlibs: [
+        "libcfg_if",
+        "libzerocopy",
     ],
     apex_available: [
         "//apex_available:platform",

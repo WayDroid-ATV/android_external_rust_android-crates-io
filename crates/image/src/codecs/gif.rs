@@ -30,23 +30,23 @@
 use std::io::{self, BufRead, Cursor, Read, Seek, Write};
 use std::marker::PhantomData;
 use std::mem;
+use std::num::NonZeroU32;
 
 use gif::ColorOutput;
 use gif::{DisposalMethod, Frame};
 
 use crate::animation::{self, Ratio};
 use crate::color::{ColorType, Rgba};
-use crate::error::LimitError;
-use crate::error::LimitErrorKind;
 use crate::error::{
-    DecodingError, EncodingError, ImageError, ImageResult, ParameterError, ParameterErrorKind,
-    UnsupportedError, UnsupportedErrorKind,
+    DecodingError, EncodingError, ImageError, ImageResult, LimitError, LimitErrorKind,
+    ParameterError, ParameterErrorKind, UnsupportedError, UnsupportedErrorKind,
 };
-use crate::image::{AnimationDecoder, ImageDecoder, ImageFormat};
+use crate::metadata::LoopCount;
 use crate::traits::Pixel;
-use crate::ExtendedColorType;
-use crate::ImageBuffer;
-use crate::Limits;
+use crate::{
+    AnimationDecoder, ExtendedColorType, ImageBuffer, ImageDecoder, ImageEncoder, ImageFormat,
+    Limits,
+};
 
 /// GIF decoder
 pub struct GifDecoder<R: Read> {
@@ -216,6 +216,16 @@ impl<R: BufRead + Seek> ImageDecoder for GifDecoder<R> {
         Ok(())
     }
 
+    fn icc_profile(&mut self) -> ImageResult<Option<Vec<u8>>> {
+        // Similar to XMP metadata
+        Ok(self.reader.icc_profile().map(Vec::from))
+    }
+
+    fn xmp_metadata(&mut self) -> ImageResult<Option<Vec<u8>>> {
+        // XMP metadata must be part of the header which is read with `read_info`.
+        Ok(self.reader.xmp_metadata().map(Vec::from))
+    }
+
     fn read_image_boxed(self: Box<Self>, buf: &mut [u8]) -> ImageResult<()> {
         (*self).read_image(buf)
     }
@@ -229,6 +239,9 @@ struct GifFrameIterator<R: Read> {
 
     non_disposed_frame: Option<ImageBuffer<Rgba<u8>, Vec<u8>>>,
     limits: Limits,
+    // `is_end` is used to indicate whether the iterator has reached the end of the frames.
+    // Or encounter any un-recoverable error.
+    is_end: bool,
 }
 
 impl<R: BufRead + Seek> GifFrameIterator<R> {
@@ -244,6 +257,7 @@ impl<R: BufRead + Seek> GifFrameIterator<R> {
             height,
             non_disposed_frame: None,
             limits,
+            is_end: false,
         }
     }
 }
@@ -252,6 +266,10 @@ impl<R: Read> Iterator for GifFrameIterator<R> {
     type Item = ImageResult<animation::Frame>;
 
     fn next(&mut self) -> Option<ImageResult<animation::Frame>> {
+        if self.is_end {
+            return None;
+        }
+
         // The iterator always produces RGBA8 images
         const COLOR_TYPE: ColorType = ColorType::Rgba8;
 
@@ -285,7 +303,18 @@ impl<R: Read> Iterator for GifFrameIterator<R> {
                     return None;
                 }
             }
-            Err(err) => return Some(Err(ImageError::from_decoding(err))),
+            Err(err) => match err {
+                gif::DecodingError::Io(ref e) => {
+                    if e.kind() == io::ErrorKind::UnexpectedEof {
+                        // end of file reached, no more frames
+                        self.is_end = true;
+                    }
+                    return Some(Err(ImageError::from_decoding(err)));
+                }
+                _ => {
+                    return Some(Err(ImageError::from_decoding(err)));
+                }
+            },
         };
 
         // All allocations we do from now on will be freed at the end of this function.
@@ -395,6 +424,15 @@ impl<R: Read> Iterator for GifFrameIterator<R> {
 }
 
 impl<'a, R: BufRead + Seek + 'a> AnimationDecoder<'a> for GifDecoder<R> {
+    fn loop_count(&self) -> LoopCount {
+        match self.reader.repeat() {
+            gif::Repeat::Finite(n @ 1..) => {
+                LoopCount::Finite(NonZeroU32::new(n.into()).expect("repeat is non-zero"))
+            }
+            gif::Repeat::Finite(0) | gif::Repeat::Infinite => LoopCount::Infinite,
+        }
+    }
+
     fn into_frames(self) -> animation::Frames<'a> {
         animation::Frames::new(Box::new(GifFrameIterator::new(self)))
     }
@@ -492,10 +530,15 @@ impl<W: Write> GifEncoder<W> {
     ) -> ImageResult<()> {
         let (width, height) = self.gif_dimensions(width, height)?;
         match color {
-            ExtendedColorType::Rgb8 => self.encode_gif(Frame::from_rgb(width, height, data)),
-            ExtendedColorType::Rgba8 => {
-                self.encode_gif(Frame::from_rgba(width, height, &mut data.to_owned()))
+            ExtendedColorType::Rgb8 => {
+                self.encode_gif(Frame::from_rgb_speed(width, height, data, self.speed))
             }
+            ExtendedColorType::Rgba8 => self.encode_gif(Frame::from_rgba_speed(
+                width,
+                height,
+                &mut data.to_owned(),
+                self.speed,
+            )),
             _ => Err(ImageError::Unsupported(
                 UnsupportedError::from_format_and_kind(
                     ImageFormat::Gif.into(),
@@ -596,25 +639,32 @@ impl<W: Write> GifEncoder<W> {
             .map_err(ImageError::from_encoding)
     }
 }
+impl<W: Write> ImageEncoder for GifEncoder<W> {
+    fn write_image(
+        mut self,
+        buf: &[u8],
+        width: u32,
+        height: u32,
+        color_type: ExtendedColorType,
+    ) -> ImageResult<()> {
+        self.encode(buf, width, height, color_type)
+    }
+}
 
 impl ImageError {
     fn from_decoding(err: gif::DecodingError) -> ImageError {
         use gif::DecodingError::*;
         match err {
-            err @ Format(_) => {
-                ImageError::Decoding(DecodingError::new(ImageFormat::Gif.into(), err))
-            }
             Io(io_err) => ImageError::IoError(io_err),
+            other => ImageError::Decoding(DecodingError::new(ImageFormat::Gif.into(), other)),
         }
     }
 
     fn from_encoding(err: gif::EncodingError) -> ImageError {
         use gif::EncodingError::*;
         match err {
-            err @ Format(_) => {
-                ImageError::Encoding(EncodingError::new(ImageFormat::Gif.into(), err))
-            }
             Io(io_err) => ImageError::IoError(io_err),
+            other => ImageError::Encoding(EncodingError::new(ImageFormat::Gif.into(), other)),
         }
     }
 }
