@@ -1,17 +1,17 @@
 name: "tokio-macros"
 description: "Tokio\'s proc macros."
 third_party {
-  version: "2.6.1"
+  version: "2.7.0"
   license_type: NOTICE
   last_upgrade_date {
     year: 2026
-    month: 3
-    day: 6
+    month: 4
+    day: 13
   }
   homepage: "https://crates.io/crates/tokio-macros"
   identifier {
     type: "crates.io"
     value: "tokio-macros"
-    version: "2.6.1"
+    version: "2.7.0"
   }
 }
