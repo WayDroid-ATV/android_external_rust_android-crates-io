@@ -11,14 +11,21 @@
 
 [package]
 edition = "2021"
-rust-version = "1.58"
+rust-version = "1.81"
 name = "half"
-version = "2.2.1"
+version = "2.7.1"
 authors = ["Kathryn Long <squeeself@gmail.com>"]
+build = false
 exclude = [
     ".git*",
     ".editorconfig",
+    ".circleci",
 ]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Half-precision floating point f16 and bf16 types for Rust implementing the IEEE 754-2008 standard binary16 and bfloat16 types."
 readme = "README.md"
 keywords = [
@@ -32,24 +39,40 @@ categories = [
     "encoding",
 ]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/starkat99/half-rs"
+repository = "https://github.com/VoidStarKat/half-rs"
 
 [package.metadata.docs.rs]
-rustc-args = [
+all-features = true
+rustdoc-args = [
     "--cfg",
     "docsrs",
 ]
-features = [
-    "std",
-    "serde",
-    "bytemuck",
-    "num-traits",
-    "zerocopy",
+
+[features]
+alloc = []
+default = ["std"]
+nightly = []
+rand_distr = [
+    "dep:rand",
+    "dep:rand_distr",
 ]
+std = ["alloc"]
+use-intrinsics = []
+zerocopy = []
+
+[lib]
+name = "half"
+path = "src/lib.rs"
 
 [[bench]]
 name = "convert"
+path = "benches/convert.rs"
 harness = false
+
+[dependencies.arbitrary]
+version = "1.4.1"
+features = ["derive"]
+optional = true
 
 [dependencies.bytemuck]
 version = "1.4.1"
@@ -57,11 +80,29 @@ features = ["derive"]
 optional = true
 default-features = false
 
+[dependencies.cfg-if]
+version = "1.0.0"
+
 [dependencies.num-traits]
-version = "0.2.14"
+version = "0.2.16"
 features = ["libm"]
 optional = true
 default-features = false
+
+[dependencies.rand]
+version = "0.9.0"
+features = ["thread_rng"]
+optional = true
+default-features = false
+
+[dependencies.rand_distr]
+version = "0.5.0"
+optional = true
+default-features = false
+
+[dependencies.rkyv]
+version = "0.8.0"
+optional = true
 
 [dependencies.serde]
 version = "1.0"
@@ -70,12 +111,15 @@ optional = true
 default-features = false
 
 [dependencies.zerocopy]
-version = "0.6.0"
-optional = true
+version = "0.8.26"
+features = [
+    "derive",
+    "simd",
+]
 default-features = false
 
 [dev-dependencies.criterion]
-version = "0.4.0"
+version = "0.5"
 
 [dev-dependencies.crunchy]
 version = "0.2.2"
@@ -87,13 +131,7 @@ version = "1.0"
 version = "1.0"
 
 [dev-dependencies.rand]
-version = "0.8.4"
+version = "0.9.0"
 
-[features]
-alloc = []
-default = ["std"]
-std = ["alloc"]
-use-intrinsics = []
-
-[target."cfg(target_arch = \"spirv\")".dependencies.crunchy]
+[target.'cfg(target_arch = "spirv")'.dependencies.crunchy]
 version = "0.2.2"

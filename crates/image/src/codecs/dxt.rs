@@ -11,7 +11,8 @@ use std::io::{self, Read};
 
 use crate::color::ColorType;
 use crate::error::{ImageError, ImageResult, ParameterError, ParameterErrorKind};
-use crate::image::ImageDecoder;
+use crate::io::ReadExt;
+use crate::ImageDecoder;
 
 /// What version of DXT compression are we using?
 /// Note that DXT2 and DXT4 are left away as they're
@@ -79,7 +80,7 @@ impl<R: Read> DxtDecoder<R> {
         height: u32,
         variant: DxtVariant,
     ) -> Result<DxtDecoder<R>, ImageError> {
-        if width % 4 != 0 || height % 4 != 0 {
+        if !width.is_multiple_of(4) || !height.is_multiple_of(4) {
             // TODO: this is actually a bit of a weird case. We could return `DecodingError` but
             // it's not really the format that is wrong However, the encoder should surely return
             // `EncodingError` so it would be the logical choice for symmetry.
@@ -111,9 +112,10 @@ impl<R: Read> DxtDecoder<R> {
             )
         );
 
-        let mut src =
-            vec![0u8; self.variant.encoded_bytes_per_block() * self.width_blocks as usize];
-        self.inner.read_exact(&mut src)?;
+        let len = self.variant.encoded_bytes_per_block() * self.width_blocks as usize;
+        let mut src = Vec::new();
+        self.inner.read_exact_vec(&mut src, len)?;
+
         match self.variant {
             DxtVariant::DXT1 => decode_dxt1_row(&src, buf),
             DxtVariant::DXT3 => decode_dxt3_row(&src, buf),
@@ -194,6 +196,7 @@ fn alpha_table_dxt5(alpha0: u8, alpha1: u8) -> [u8; 8] {
 
 /// decodes an 8-byte dxt color block into the RGB channels of a 16xRGB or 16xRGBA block.
 /// source should have a length of 8, dest a length of 48 (RGB) or 64 (RGBA)
+#[allow(clippy::needless_range_loop)] // False positive, the 0..3 loop is not an enumerate
 fn decode_dxt_colors(source: &[u8], dest: &mut [u8], is_dxt1: bool) {
     // sanity checks, also enable the compiler to elide all following bound checks
     assert!(source.len() == 8 && (dest.len() == 48 || dest.len() == 64));
@@ -224,7 +227,7 @@ fn decode_dxt_colors(source: &[u8], dest: &mut [u8], is_dxt1: bool) {
     } else {
         // linearly interpolate one other entry, keep the other at 0
         for i in 0..3 {
-            colors[2][i] = ((u16::from(colors[0][i]) + u16::from(colors[1][i]) + 1) / 2) as u8;
+            colors[2][i] = (u16::from(colors[0][i]) + u16::from(colors[1][i])).div_ceil(2) as u8;
         }
     }
 
@@ -286,7 +289,7 @@ fn decode_dxt1_block(source: &[u8], dest: &mut [u8]) {
 /// Decode a row of DXT1 data to four rows of RGB data.
 /// `source.len()` should be a multiple of 8, otherwise this panics.
 fn decode_dxt1_row(source: &[u8], dest: &mut [u8]) {
-    assert!(source.len() % 8 == 0);
+    assert!(source.len().is_multiple_of(8));
     let block_count = source.len() / 8;
     assert!(dest.len() >= block_count * 48);
 
@@ -307,7 +310,7 @@ fn decode_dxt1_row(source: &[u8], dest: &mut [u8]) {
 /// Decode a row of DXT3 data to four rows of RGBA data.
 /// `source.len()` should be a multiple of 16, otherwise this panics.
 fn decode_dxt3_row(source: &[u8], dest: &mut [u8]) {
-    assert!(source.len() % 16 == 0);
+    assert!(source.len().is_multiple_of(16));
     let block_count = source.len() / 16;
     assert!(dest.len() >= block_count * 64);
 
@@ -328,7 +331,7 @@ fn decode_dxt3_row(source: &[u8], dest: &mut [u8]) {
 /// Decode a row of DXT5 data to four rows of RGBA data.
 /// `source.len()` should be a multiple of 16, otherwise this panics.
 fn decode_dxt5_row(source: &[u8], dest: &mut [u8]) {
-    assert!(source.len() % 16 == 0);
+    assert!(source.len().is_multiple_of(16));
     let block_count = source.len() / 16;
     assert!(dest.len() >= block_count * 64);
 

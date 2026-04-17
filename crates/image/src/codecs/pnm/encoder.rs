@@ -1,18 +1,19 @@
 //! Encoding of PNM Images
+use crate::utils::vec_try_with_capacity;
 use std::fmt;
 use std::io;
-
 use std::io::Write;
 
 use super::AutoBreak;
 use super::{ArbitraryHeader, ArbitraryTuplType, BitmapHeader, GraymapHeader, PixmapHeader};
 use super::{HeaderRecord, PnmHeader, PnmSubtype, SampleEncoding};
+
 use crate::color::ExtendedColorType;
 use crate::error::{
     ImageError, ImageResult, ParameterError, ParameterErrorKind, UnsupportedError,
     UnsupportedErrorKind,
 };
-use crate::image::{ImageEncoder, ImageFormat};
+use crate::{ImageEncoder, ImageFormat};
 
 use byteorder_lite::{BigEndian, WriteBytesExt};
 
@@ -135,7 +136,12 @@ impl<W: Write> PnmEncoder<W> {
         }
     }
 
-    /// Encode an image whose samples are represented as `u8`.
+    /// Encode an image whose samples are represented as a sequence of `u8` or `u16` data.
+    ///
+    /// If `image` is a slice of `u8`, the samples will be interpreted based on the chosen `color` option.
+    /// Color types of 16-bit precision means that the bytes are reinterpreted as 16-bit samples,
+    /// otherwise they are treated as 8-bit samples.
+    /// If `image` is a slice of `u16`, the samples will be interpreted as 16-bit samples directly.
     ///
     /// Some `pnm` subtypes are incompatible with some color options, a chosen header most
     /// certainly with any deviation from the original decoded image.
@@ -150,13 +156,58 @@ impl<W: Write> PnmEncoder<W> {
         S: Into<FlatSamples<'s>>,
     {
         let image = image.into();
+
+        // adapt samples so that they are aligned even in 16-bit samples,
+        // required due to the narrowing of the image buffer to &[u8]
+        // on dynamic image writing
+        let image = match (image, color) {
+            (
+                FlatSamples::U8(samples),
+                ExtendedColorType::L16
+                | ExtendedColorType::La16
+                | ExtendedColorType::Rgb16
+                | ExtendedColorType::Rgba16,
+            ) => {
+                match bytemuck::try_cast_slice(samples) {
+                    // proceed with aligned 16-bit samples
+                    Ok(samples) => FlatSamples::U16(samples),
+                    Err(_e) => {
+                        // reallocation is required
+                        let new_samples: Vec<u16> = samples
+                            .chunks(2)
+                            .map(|chunk| u16::from_ne_bytes([chunk[0], chunk[1]]))
+                            .collect();
+
+                        let image = FlatSamples::U16(&new_samples);
+
+                        // make a separate encoding path,
+                        // because the image buffer lifetime has changed
+                        return self.encode_impl(image, width, height, color);
+                    }
+                }
+            }
+            // should not be necessary for any other case
+            _ => image,
+        };
+
+        self.encode_impl(image, width, height, color)
+    }
+
+    /// Encode an image whose samples are already interpreted correctly.
+    fn encode_impl(
+        &mut self,
+        samples: FlatSamples<'_>,
+        width: u32,
+        height: u32,
+        color: ExtendedColorType,
+    ) -> ImageResult<()> {
         match self.header {
-            HeaderStrategy::Dynamic => self.write_dynamic_header(image, width, height, color),
+            HeaderStrategy::Dynamic => self.write_dynamic_header(samples, width, height, color),
             HeaderStrategy::Subtype(subtype) => {
-                self.write_subtyped_header(subtype, image, width, height, color)
+                self.write_subtyped_header(subtype, samples, width, height, color)
             }
             HeaderStrategy::Chosen(ref header) => {
-                Self::write_with_header(&mut self.writer, header, image, width, height, color)
+                Self::write_with_header(&mut self.writer, header, samples, width, height, color)
             }
         }
     }
@@ -249,11 +300,12 @@ impl<W: Write> PnmEncoder<W> {
                 }
             }
             (_, _) => {
-                return Err(ImageError::Parameter(ParameterError::from_kind(
-                    ParameterErrorKind::Generic(
-                        "Color type can not be represented in the chosen format".to_owned(),
+                return Err(ImageError::Unsupported(
+                    UnsupportedError::from_format_and_kind(
+                        ImageFormat::Pnm.into(),
+                        UnsupportedErrorKind::Color(color),
                     ),
-                )));
+                ))
             }
         };
 
@@ -417,7 +469,9 @@ impl<'a> CheckedDimensions<'a> {
                 (&Some(ArbitraryTuplType::GrayscaleAlpha), ExtendedColorType::La8) => (),
 
                 (&Some(ArbitraryTuplType::RGB), ExtendedColorType::Rgb8) => (),
+                (&Some(ArbitraryTuplType::RGB), ExtendedColorType::Rgb16) => (),
                 (&Some(ArbitraryTuplType::RGBAlpha), ExtendedColorType::Rgba8) => (),
+                (&Some(ArbitraryTuplType::RGBAlpha), ExtendedColorType::Rgba16) => (),
 
                 (&None, _) if depth == components => (),
                 (&Some(ArbitraryTuplType::Custom(_)), _) if depth == components => (),
@@ -528,7 +582,7 @@ impl SampleWriter<'_> {
         V: Iterator,
         V::Item: fmt::Display,
     {
-        let mut auto_break_writer = AutoBreak::new(self.0, 70);
+        let mut auto_break_writer = AutoBreak::new(self.0, 70)?;
         for value in samples {
             write!(auto_break_writer, "{value} ")?;
         }
@@ -544,7 +598,7 @@ impl SampleWriter<'_> {
         let line_width = (width - 1) / 8 + 1;
 
         // We'll be writing single bytes, so buffer
-        let mut line_buffer = Vec::with_capacity(line_width as usize);
+        let mut line_buffer = vec_try_with_capacity(line_width as usize)?;
 
         for line in samples.chunks(width as usize) {
             for byte_bits in line.chunks(8) {
@@ -577,8 +631,8 @@ impl<'a> FlatSamples<'a> {
 
     fn all_smaller(&self, max_val: u32) -> bool {
         match *self {
-            FlatSamples::U8(arr) => arr.iter().any(|&val| u32::from(val) > max_val),
-            FlatSamples::U16(arr) => arr.iter().any(|&val| u32::from(val) > max_val),
+            FlatSamples::U8(arr) => arr.iter().all(|&val| u32::from(val) <= max_val),
+            FlatSamples::U16(arr) => arr.iter().all(|&val| u32::from(val) <= max_val),
         }
     }
 
@@ -672,4 +726,45 @@ impl TupleEncoding<'_> {
                 .map_err(ImageError::IoError),
         }
     }
+}
+
+#[test]
+fn pbm_allows_black() {
+    let imgbuf = crate::DynamicImage::new_luma8(50, 50);
+
+    let mut buffer = vec![];
+    let encoder =
+        PnmEncoder::new(&mut buffer).with_subtype(PnmSubtype::Bitmap(SampleEncoding::Ascii));
+
+    imgbuf
+        .write_with_encoder(encoder)
+        .expect("all-zeroes is a black image");
+}
+
+#[test]
+fn pbm_allows_white() {
+    let imgbuf =
+        crate::DynamicImage::ImageLuma8(crate::ImageBuffer::from_pixel(50, 50, crate::Luma([1])));
+
+    let mut buffer = vec![];
+    let encoder =
+        PnmEncoder::new(&mut buffer).with_subtype(PnmSubtype::Bitmap(SampleEncoding::Ascii));
+
+    imgbuf
+        .write_with_encoder(encoder)
+        .expect("all-zeroes is a white image");
+}
+
+#[test]
+fn pbm_verifies_pixels() {
+    let imgbuf =
+        crate::DynamicImage::ImageLuma8(crate::ImageBuffer::from_pixel(50, 50, crate::Luma([255])));
+
+    let mut buffer = vec![];
+    let encoder =
+        PnmEncoder::new(&mut buffer).with_subtype(PnmSubtype::Bitmap(SampleEncoding::Ascii));
+
+    imgbuf
+        .write_with_encoder(encoder)
+        .expect_err("failed to catch violating samples");
 }

@@ -4,7 +4,7 @@
 [![Build Status](https://github.com/image-rs/image/workflows/Rust%20CI/badge.svg)](https://github.com/image-rs/image/actions)
 [![Gitter](https://badges.gitter.im/image-rs/image.svg)](https://gitter.im/image-rs/image?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Maintainers: [@HeroicKatora](https://github.com/HeroicKatora), [@fintelia](https://github.com/fintelia)
+Maintainers: [@197g](https://github.com/197g), [@fintelia](https://github.com/fintelia)
 
 [How to contribute](https://github.com/image-rs/organization/blob/master/CONTRIBUTING.md)
 
@@ -37,30 +37,27 @@ img2.write_to(&mut Cursor::new(&mut bytes), image::ImageFormat::Png)?;
 
 ## Supported Image Formats
 
-With default features enabled, `image` provides implementations of many common
-image format encoders and decoders.
+With default features enabled, `image` provides implementations of [many common
+image format encoders and decoders.](https://docs.rs/image/latest/image/codecs/index.html#supported-formats)
 
-<!--- NOTE: Make sure to keep this table in sync with the one in src/lib.rs -->
+Decoding support for additional image formats is provided by
+[`image-extras`](https://github.com/image-rs/image-extras), and the same plugin
+interface lets third-party crates act as format implementations for `image`. If
+you need to handle some other image format, check crates.io for crates that
+implement it.
 
-| Format   | Decoding                                  | Encoding                                |
-| -------- | ----------------------------------------- | --------------------------------------- |
-| AVIF     | Yes \*                                    | Yes (lossy only)                        |
-| BMP      | Yes                                       | Yes                                     |
-| DDS      | Yes                                       | ---                                     |
-| Farbfeld | Yes                                       | Yes                                     |
-| GIF      | Yes                                       | Yes                                     |
-| HDR      | Yes                                       | Yes                                     |
-| ICO      | Yes                                       | Yes                                     |
-| JPEG     | Yes                                       | Yes                                     |
-| EXR      | Yes                                       | Yes                                     |
-| PNG      | Yes                                       | Yes                                     |
-| PNM      | Yes                                       | Yes                                     |
-| QOI      | Yes                                       | Yes                                     |
-| TGA      | Yes                                       | Yes                                     |
-| TIFF     | Yes                                       | Yes                                     |
-| WebP     | Yes                                       | Yes (lossless only)                     |
+## Feature Flags
 
-- \* Requires the `avif-native` feature, uses the libdav1d C library.
+| Feature           | Description
+| ----------------- | -----------
+| `default-formats` | **Default**<br>Format support for common image formats: AVIF, BMP, DDS, EXR, FF, GIF, HDR, ICO, JPEG, PNG, PNM, QOI, TGA, TIFF, and WebP
+| `rayon`           | **Default**<br>Enables multi-threading with rayon context in some dependencies
+| `nasm`            | Enables the build-time use of `nasm` for `ravif`, requires `nasm` installed
+| `color_quant`     | Includes `color_quant` as an implementation of `imageops::ColorMap`
+| `avif-native`     | Enables non-Rust dependencies of `avif` (`mp4parse` and `dav1d`)
+| `serde`           | Enables `serde` integration for various structs and options
+
+Note: When using `image` in a library you intend to publish, it is recommended to set `default-features = false` and then explicitly enable format features that are absolutely necessary. This ensures a smaller dependency tree and faster iteration time. The default feature configuration would also enable multithreading which may cause unexpected behavior when running for inherently single-threaded environments such as `wasm` targets.
 
 ## Image Types
 

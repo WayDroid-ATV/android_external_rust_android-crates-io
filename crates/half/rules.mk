@@ -15,7 +15,8 @@ MODULE_RUSTFLAGS += \
 	--cfg 'feature="std"'
 
 MODULE_LIBRARY_DEPS := \
-	
+	$(call FIND_CRATE,cfg-if) \
+	$(call FIND_CRATE,zerocopy)
 
 include make/library.mk
 LOCAL_DIR := $(GET_LOCAL_DIR)
@@ -29,6 +30,8 @@ MODULE_RUSTFLAGS += \
 	--cfg 'feature="alloc"'
 
 MODULE_LIBRARY_DEPS := \
+	$(call FIND_CRATE,cfg-if) \
+	$(call FIND_CRATE,zerocopy) \
 	trusty/user/base/lib/liballoc-rust \
 	trusty/user/base/lib/libcompiler_builtins-rust \
 	trusty/user/base/lib/libcore-rust

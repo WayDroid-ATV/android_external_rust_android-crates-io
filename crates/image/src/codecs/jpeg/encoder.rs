@@ -1,19 +1,22 @@
 #![allow(clippy::too_many_arguments)]
-
-use crate::error::{
-    ImageError, ImageResult, ParameterError, ParameterErrorKind, UnsupportedError,
-    UnsupportedErrorKind,
-};
-use crate::image::{ImageEncoder, ImageFormat};
-use crate::utils::clamp;
-use crate::{ExtendedColorType, GenericImageView, ImageBuffer, Luma, Pixel, Rgb};
-use num_traits::ToPrimitive;
 use std::borrow::Cow;
 use std::io::{self, Write};
+use std::{error, fmt};
+
+use crate::error::{
+    EncodingError, ImageError, ImageResult, UnsupportedError, UnsupportedErrorKind,
+};
+use crate::traits::PixelWithColorType;
+use crate::utils::clamp;
+use crate::{
+    ColorType, DynamicImage, ExtendedColorType, GenericImageView, ImageBuffer, ImageEncoder,
+    ImageFormat, Luma, Pixel, Rgb,
+};
+
+use num_traits::ToPrimitive;
 
 use super::entropy::build_huff_lut_const;
 use super::transform;
-use crate::traits::PixelWithColorType;
 
 // Markers
 // Baseline DCT
@@ -30,6 +33,7 @@ static SOS: u8 = 0xDA;
 static DQT: u8 = 0xDB;
 // Application segments start and end
 static APP0: u8 = 0xE0;
+static APP1: u8 = 0xE1;
 static APP2: u8 = 0xE2;
 
 // section K.1
@@ -149,6 +153,10 @@ static UNZIGZAG: [u8; 64] = [
     58, 59, 52, 45, 38, 31, 39, 46,
     53, 60, 61, 54, 47, 55, 62, 63,
 ];
+
+// E x i f \0 \0
+/// The header for an EXIF APP1 segment
+static EXIF_HEADER: [u8; 6] = [0x45, 0x78, 0x69, 0x66, 0x00, 0x00];
 
 /// A representation of a JPEG component
 #[derive(Copy, Clone)]
@@ -334,6 +342,32 @@ impl Default for PixelDensity {
     }
 }
 
+/// Errors that can occur when encoding a JPEG image
+#[derive(Debug, Copy, Clone)]
+enum EncoderError {
+    /// JPEG does not support this size
+    InvalidSize(u32, u32),
+}
+
+impl fmt::Display for EncoderError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            EncoderError::InvalidSize(w, h) => f.write_fmt(format_args!(
+                "Invalid image size ({w} x {h}) to encode as JPEG: \
+                 width and height must be >= 1 and <= 65535"
+            )),
+        }
+    }
+}
+
+impl From<EncoderError> for ImageError {
+    fn from(e: EncoderError) -> ImageError {
+        ImageError::Encoding(EncodingError::new(ImageFormat::Jpeg.into(), e))
+    }
+}
+
+impl error::Error for EncoderError {}
+
 /// The representation of a JPEG encoder
 pub struct JpegEncoder<W> {
     writer: BitWriter<W>,
@@ -349,6 +383,7 @@ pub struct JpegEncoder<W> {
     pixel_density: PixelDensity,
 
     icc_profile: Vec<u8>,
+    exif: Vec<u8>,
 }
 
 impl<W: Write> JpegEncoder<W> {
@@ -400,11 +435,11 @@ impl<W: Write> JpegEncoder<W> {
         };
 
         let mut tables = vec![STD_LUMA_QTABLE, STD_CHROMA_QTABLE];
-        tables.iter_mut().for_each(|t| {
+        for t in tables.iter_mut() {
             for v in t.iter_mut() {
                 *v = clamp((u32::from(*v) * scale + 50) / 100, 1, u32::from(u8::MAX)) as u8;
             }
-        });
+        }
 
         JpegEncoder {
             writer: BitWriter::new(w),
@@ -420,6 +455,7 @@ impl<W: Write> JpegEncoder<W> {
             pixel_density: PixelDensity::default(),
 
             icc_profile: Vec::new(),
+            exif: Vec::new(),
         }
     }
 
@@ -475,6 +511,16 @@ impl<W: Write> JpegEncoder<W> {
         }
     }
 
+    fn write_exif(&mut self) -> ImageResult<()> {
+        if !self.exif.is_empty() {
+            let mut formatted = EXIF_HEADER.to_vec();
+            formatted.extend_from_slice(&self.exif);
+            self.writer.write_segment(APP1, &formatted)?;
+        }
+
+        Ok(())
+    }
+
     /// Encodes the given image.
     ///
     /// As a special feature this does not require the whole image to be present in memory at the
@@ -492,12 +538,18 @@ impl<W: Write> JpegEncoder<W> {
         let color_type = I::Pixel::COLOR_TYPE;
         let num_components = if n == 1 || n == 2 { 1 } else { 3 };
 
+        let (width, height) = match (u16::try_from(image.width()), u16::try_from(image.height())) {
+            (Ok(w @ 1..), Ok(h @ 1..)) => (w, h),
+            _ => return Err(EncoderError::InvalidSize(image.width(), image.height()).into()),
+        };
+
         self.writer.write_marker(SOI)?;
 
         let mut buf = Vec::new();
 
         build_jfif_header(&mut buf, self.pixel_density);
         self.writer.write_segment(APP0, &buf)?;
+        self.write_exif()?;
 
         // Write ICC profile chunks if present
         self.write_icc_profile_chunks()?;
@@ -505,18 +557,8 @@ impl<W: Write> JpegEncoder<W> {
         build_frame_header(
             &mut buf,
             8,
-            // TODO: not idiomatic yet. Should be an EncodingError and mention jpg. Further it
-            // should check dimensions prior to writing.
-            u16::try_from(image.width()).map_err(|_| {
-                ImageError::Parameter(ParameterError::from_kind(
-                    ParameterErrorKind::DimensionMismatch,
-                ))
-            })?,
-            u16::try_from(image.height()).map_err(|_| {
-                ImageError::Parameter(ParameterError::from_kind(
-                    ParameterErrorKind::DimensionMismatch,
-                ))
-            })?,
+            width,
+            height,
             &self.components[..num_components],
         );
         self.writer.write_segment(SOF0, &buf)?;
@@ -710,6 +752,24 @@ impl<W: Write> ImageEncoder for JpegEncoder<W> {
     fn set_icc_profile(&mut self, icc_profile: Vec<u8>) -> Result<(), UnsupportedError> {
         self.icc_profile = icc_profile;
         Ok(())
+    }
+
+    fn set_exif_metadata(&mut self, exif: Vec<u8>) -> Result<(), UnsupportedError> {
+        self.exif = exif;
+        Ok(())
+    }
+
+    fn make_compatible_img(
+        &self,
+        _: crate::io::encoder::MethodSealedToImage,
+        img: &DynamicImage,
+    ) -> Option<DynamicImage> {
+        use ColorType::*;
+        match img.color() {
+            L8 | Rgb8 => None,
+            La8 | L16 | La16 => Some(img.to_luma8().into()),
+            Rgba8 | Rgb16 | Rgb32F | Rgba16 | Rgba32F => Some(img.to_rgb8().into()),
+        }
     }
 }
 
@@ -906,9 +966,8 @@ mod tests {
     #[cfg(feature = "benchmarks")]
     use test::Bencher;
 
-    use crate::error::ParameterErrorKind::DimensionMismatch;
-    use crate::image::ImageDecoder;
-    use crate::{ExtendedColorType, ImageEncoder, ImageError};
+    use crate::{ColorType, DynamicImage, ExtendedColorType, ImageEncoder, ImageError};
+    use crate::{ImageDecoder as _, ImageFormat};
 
     use super::super::JpegDecoder;
     use super::{
@@ -1014,17 +1073,11 @@ mod tests {
         let mut encoded = Vec::new();
         let encoder = JpegEncoder::new_with_quality(&mut encoded, 100);
         let result = encoder.write_image(&img, 65_536, 1, ExtendedColorType::L8);
-        match result {
-            Err(ImageError::Parameter(err)) => {
-                assert_eq!(err.kind(), DimensionMismatch);
-            }
-            other => {
-                panic!(
-                    "Encoding an image that is too large should return a DimensionError \
-                                it returned {:?} instead",
-                    other
-                )
-            }
+        if !matches!(result, Err(ImageError::Encoding(_))) {
+            panic!(
+                "Encoding an image that is too large should return an \
+                EncodingError; it returned {result:?} instead"
+            )
         }
     }
 
@@ -1126,12 +1179,50 @@ mod tests {
         assert_eq!(buf, expected);
     }
 
+    #[test]
+    fn check_color_types() {
+        const ALL: &[ColorType] = &[
+            ColorType::L8,
+            ColorType::L16,
+            ColorType::La8,
+            ColorType::Rgb8,
+            ColorType::Rgba8,
+            ColorType::La16,
+            ColorType::Rgb16,
+            ColorType::Rgba16,
+            ColorType::Rgb32F,
+            ColorType::Rgba32F,
+        ];
+
+        for color in ALL {
+            let image = DynamicImage::new(1, 1, *color);
+
+            image
+                .write_to(&mut Cursor::new(vec![]), ImageFormat::Jpeg)
+                .expect("supported or converted");
+        }
+    }
+
     #[cfg(feature = "benchmarks")]
     #[bench]
     fn bench_jpeg_encoder_new(b: &mut Bencher) {
         b.iter(|| {
             let mut y = vec![];
             let _x = JpegEncoder::new(&mut y);
-        })
+        });
     }
+}
+
+// Tests regressions of `encode_image` against #1412, confusion about the subimage's position vs.
+// dimensions. (We no longer have a position, four `u32` returns was confusing).
+#[test]
+fn sub_image_encoder_regression_1412() {
+    let image = DynamicImage::new_rgb8(1280, 720);
+    let subimg = crate::imageops::crop_imm(&image, 0, 358, 425, 361);
+
+    let mut encoded_crop = vec![];
+    let mut encoder = JpegEncoder::new(&mut encoded_crop);
+
+    let result = encoder.encode_image(&*subimg);
+    assert!(result.is_ok(), "Failed to encode subimage: {result:?}");
 }

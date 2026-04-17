@@ -1,9 +1,8 @@
 //! Functions for performing affine transformations.
 
 use crate::error::{ImageError, ParameterError, ParameterErrorKind};
-use crate::image::{GenericImage, GenericImageView};
 use crate::traits::Pixel;
-use crate::ImageBuffer;
+use crate::{GenericImage, GenericImageView, ImageBuffer};
 
 /// Rotate an image 90 degrees clockwise.
 pub fn rotate90<I: GenericImageView>(
@@ -13,7 +12,7 @@ where
     I::Pixel: 'static,
 {
     let (width, height) = image.dimensions();
-    let mut out = ImageBuffer::new(height, width);
+    let mut out = image.buffer_with_dimensions(height, width);
     let _ = rotate90_in(image, &mut out);
     out
 }
@@ -26,7 +25,7 @@ where
     I::Pixel: 'static,
 {
     let (width, height) = image.dimensions();
-    let mut out = ImageBuffer::new(width, height);
+    let mut out = image.buffer_with_dimensions(width, height);
     let _ = rotate180_in(image, &mut out);
     out
 }
@@ -39,7 +38,7 @@ where
     I::Pixel: 'static,
 {
     let (width, height) = image.dimensions();
-    let mut out = ImageBuffer::new(height, width);
+    let mut out = image.buffer_with_dimensions(height, width);
     let _ = rotate270_in(image, &mut out);
     out
 }
@@ -129,8 +128,7 @@ pub fn flip_horizontal<I: GenericImageView>(
 where
     I::Pixel: 'static,
 {
-    let (width, height) = image.dimensions();
-    let mut out = ImageBuffer::new(width, height);
+    let mut out = image.buffer_like();
     let _ = flip_horizontal_in(image, &mut out);
     out
 }
@@ -142,8 +140,7 @@ pub fn flip_vertical<I: GenericImageView>(
 where
     I::Pixel: 'static,
 {
-    let (width, height) = image.dimensions();
-    let mut out = ImageBuffer::new(width, height);
+    let mut out = image.buffer_like();
     let _ = flip_vertical_in(image, &mut out);
     out
 }
@@ -267,9 +264,9 @@ mod test {
         flip_horizontal, flip_horizontal_in_place, flip_vertical, flip_vertical_in_place,
         rotate180, rotate180_in_place, rotate270, rotate90,
     };
-    use crate::image::GenericImage;
+
     use crate::traits::Pixel;
-    use crate::{GrayImage, ImageBuffer};
+    use crate::{GenericImage, GrayImage, ImageBuffer};
 
     macro_rules! assert_pixels_eq {
         ($actual:expr, $expected:expr) => {{

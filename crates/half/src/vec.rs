@@ -1,4 +1,4 @@
-//! Contains utility functions and traits to convert between vectors of [`u16`] bits and [`f16`] or
+//! Contains utility functions and traits to convert between vectors of [`u16`] bits and [`struct@f16`] or
 //! [`bf16`] vectors.
 //!
 //! The utility [`HalfBitsVecExt`] sealed extension trait is implemented for [`Vec<u16>`] vectors,
@@ -11,14 +11,15 @@
 
 use super::{bf16, f16, slice::HalfFloatSliceExt};
 #[cfg(feature = "alloc")]
-use alloc::vec::Vec;
+#[allow(unused_imports)]
+use alloc::{vec, vec::Vec};
 use core::mem;
 
 /// Extensions to [`Vec<f16>`] and [`Vec<bf16>`] to support reinterpret operations.
 ///
 /// This trait is sealed and cannot be implemented outside of this crate.
 pub trait HalfFloatVecExt: private::SealedHalfFloatVec {
-    /// Reinterprets a vector of [`f16`]or [`bf16`] numbers as a vector of [`u16`] bits.
+    /// Reinterprets a vector of [`struct@f16`]or [`bf16`] numbers as a vector of [`u16`] bits.
     ///
     /// This is a zero-copy operation. The reinterpreted vector has the same memory location as
     /// `self`.
@@ -35,7 +36,7 @@ pub trait HalfFloatVecExt: private::SealedHalfFloatVec {
     #[must_use]
     fn reinterpret_into(self) -> Vec<u16>;
 
-    /// Converts all of the elements of a `[f32]` slice into a new [`f16`] or [`bf16`] vector.
+    /// Converts all of the elements of a `[f32]` slice into a new [`struct@f16`] or [`bf16`] vector.
     ///
     /// The conversion operation is vectorized over the slice, meaning the conversion may be more
     /// efficient than converting individual elements on some hardware that supports SIMD
@@ -53,7 +54,7 @@ pub trait HalfFloatVecExt: private::SealedHalfFloatVec {
     #[must_use]
     fn from_f32_slice(slice: &[f32]) -> Self;
 
-    /// Converts all of the elements of a `[f64]` slice into a new [`f16`] or [`bf16`] vector.
+    /// Converts all of the elements of a `[f64]` slice into a new [`struct@f16`] or [`bf16`] vector.
     ///
     /// The conversion operation is vectorized over the slice, meaning the conversion may be more
     /// efficient than converting individual elements on some hardware that supports SIMD
@@ -76,9 +77,9 @@ pub trait HalfFloatVecExt: private::SealedHalfFloatVec {
 ///
 /// This trait is sealed and cannot be implemented outside of this crate.
 pub trait HalfBitsVecExt: private::SealedHalfBitsVec {
-    /// Reinterprets a vector of [`u16`] bits as a vector of [`f16`] or [`bf16`] numbers.
+    /// Reinterprets a vector of [`u16`] bits as a vector of [`struct@f16`] or [`bf16`] numbers.
     ///
-    /// `H` is the type to cast to, and must be either the [`f16`] or [`bf16`] type.
+    /// `H` is the type to cast to, and must be either the [`struct@f16`] or [`bf16`] type.
     ///
     /// This is a zero-copy operation. The reinterpreted vector has the same memory location as
     /// `self`.
@@ -101,6 +102,7 @@ pub trait HalfBitsVecExt: private::SealedHalfBitsVec {
 mod private {
     use crate::{bf16, f16};
     #[cfg(feature = "alloc")]
+    #[allow(unused_imports)]
     use alloc::vec::Vec;
 
     pub trait SealedHalfFloatVec {}
@@ -134,22 +136,14 @@ impl HalfFloatVecExt for Vec<f16> {
 
     #[allow(clippy::uninit_vec)]
     fn from_f32_slice(slice: &[f32]) -> Self {
-        let mut vec = Vec::with_capacity(slice.len());
-        // SAFETY: convert will initialize every value in the vector without reading them,
-        // so this is safe to do instead of double initialize from resize, and we're setting it to
-        // same value as capacity.
-        unsafe { vec.set_len(slice.len()) };
+        let mut vec = vec![f16::from_bits(0); slice.len()];
         vec.convert_from_f32_slice(slice);
         vec
     }
 
     #[allow(clippy::uninit_vec)]
     fn from_f64_slice(slice: &[f64]) -> Self {
-        let mut vec = Vec::with_capacity(slice.len());
-        // SAFETY: convert will initialize every value in the vector without reading them,
-        // so this is safe to do instead of double initialize from resize, and we're setting it to
-        // same value as capacity.
-        unsafe { vec.set_len(slice.len()) };
+        let mut vec = vec![f16::from_bits(0); slice.len()];
         vec.convert_from_f64_slice(slice);
         vec
     }
@@ -178,22 +172,14 @@ impl HalfFloatVecExt for Vec<bf16> {
 
     #[allow(clippy::uninit_vec)]
     fn from_f32_slice(slice: &[f32]) -> Self {
-        let mut vec = Vec::with_capacity(slice.len());
-        // SAFETY: convert will initialize every value in the vector without reading them,
-        // so this is safe to do instead of double initialize from resize, and we're setting it to
-        // same value as capacity.
-        unsafe { vec.set_len(slice.len()) };
+        let mut vec = vec![bf16::from_bits(0); slice.len()];
         vec.convert_from_f32_slice(slice);
         vec
     }
 
     #[allow(clippy::uninit_vec)]
     fn from_f64_slice(slice: &[f64]) -> Self {
-        let mut vec = Vec::with_capacity(slice.len());
-        // SAFETY: convert will initialize every value in the vector without reading them,
-        // so this is safe to do instead of double initialize from resize, and we're setting it to
-        // same value as capacity.
-        unsafe { vec.set_len(slice.len()) };
+        let mut vec = vec![bf16::from_bits(0); slice.len()];
         vec.convert_from_f64_slice(slice);
         vec
     }

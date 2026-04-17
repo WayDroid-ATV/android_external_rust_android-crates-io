@@ -2,10 +2,14 @@ use std::ops::{Index, IndexMut};
 
 use num_traits::{NumCast, ToPrimitive, Zero};
 
-use crate::traits::{Enlargeable, Pixel, Primitive};
+use crate::{
+    error::TryFromExtendedColorError,
+    traits::{Enlargeable, Pixel, Primitive},
+};
 
 /// An enumeration over supported color types and bit depths
 #[derive(Copy, PartialEq, Eq, Debug, Clone, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[non_exhaustive]
 pub enum ColorType {
     /// Pixel is 8-bit luminance
@@ -92,6 +96,7 @@ impl ColorType {
 /// Another purpose is to advise users of a rough estimate of the accuracy and effort of the
 /// decoding from and encoding to such an image format.
 #[derive(Copy, PartialEq, Eq, Debug, Clone, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[non_exhaustive]
 pub enum ExtendedColorType {
     /// Pixel is 8-bit alpha
@@ -120,6 +125,8 @@ pub enum ExtendedColorType {
     Rgb4,
     /// Pixel is 4-bit RGB with an alpha channel
     Rgba4,
+    /// Pixel contains 5-bit R, G and B channels packed into 2 bytes
+    Rgb5x1,
     /// Pixel is 8-bit luminance
     L8,
     /// Pixel is 8-bit luminance with an alpha channel
@@ -149,6 +156,8 @@ pub enum ExtendedColorType {
 
     /// Pixel is 8-bit CMYK
     Cmyk8,
+    /// Pixel is 16-bit CMYK
+    Cmyk16,
 
     /// Pixel is of unknown color type with the specified bits per pixel. This can apply to pixels
     /// which are associated with an external palette. In that case, the pixel value is an index
@@ -179,6 +188,7 @@ impl ExtendedColorType {
             ExtendedColorType::Rgb1
             | ExtendedColorType::Rgb2
             | ExtendedColorType::Rgb4
+            | ExtendedColorType::Rgb5x1
             | ExtendedColorType::Rgb8
             | ExtendedColorType::Rgb16
             | ExtendedColorType::Rgb32F
@@ -190,7 +200,8 @@ impl ExtendedColorType {
             | ExtendedColorType::Rgba16
             | ExtendedColorType::Rgba32F
             | ExtendedColorType::Bgra8
-            | ExtendedColorType::Cmyk8 => 4,
+            | ExtendedColorType::Cmyk8
+            | ExtendedColorType::Cmyk16 => 4,
         }
     }
 
@@ -211,6 +222,7 @@ impl ExtendedColorType {
             ExtendedColorType::La4 => 8,
             ExtendedColorType::Rgb4 => 12,
             ExtendedColorType::Rgba4 => 16,
+            ExtendedColorType::Rgb5x1 => 16,
             ExtendedColorType::L8 => 8,
             ExtendedColorType::La8 => 16,
             ExtendedColorType::Rgb8 => 24,
@@ -224,17 +236,58 @@ impl ExtendedColorType {
             ExtendedColorType::Bgr8 => 24,
             ExtendedColorType::Bgra8 => 32,
             ExtendedColorType::Cmyk8 => 32,
+            ExtendedColorType::Cmyk16 => 64,
             ExtendedColorType::Unknown(bpp) => bpp as u16,
+        }
+    }
+
+    /// Returns the ColorType that is equivalent to this ExtendedColorType.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use image::{ColorType, ExtendedColorType};
+    ///
+    /// assert_eq!(Some(ColorType::L8), ExtendedColorType::L8.color_type());
+    /// assert_eq!(None, ExtendedColorType::L1.color_type());
+    /// ```
+    ///
+    /// The method is equivalent to converting via the `TryFrom`/`TryInto` traits except for the
+    /// error path. Choose the more ergonomic option in your usage.
+    ///
+    /// ```
+    /// use image::{ColorType, ExtendedColorType, ImageError};
+    ///
+    /// fn handle_errors() -> Result<(), ImageError> {
+    ///     let color: ColorType = ExtendedColorType::L8.try_into()?;
+    ///     assert_eq!(color, ColorType::L8);
+    ///     # Ok(())
+    /// }
+    /// ```
+    pub fn color_type(&self) -> Option<ColorType> {
+        match *self {
+            ExtendedColorType::L8 => Some(ColorType::L8),
+            ExtendedColorType::La8 => Some(ColorType::La8),
+            ExtendedColorType::Rgb8 => Some(ColorType::Rgb8),
+            ExtendedColorType::Rgba8 => Some(ColorType::Rgba8),
+            ExtendedColorType::L16 => Some(ColorType::L16),
+            ExtendedColorType::La16 => Some(ColorType::La16),
+            ExtendedColorType::Rgb16 => Some(ColorType::Rgb16),
+            ExtendedColorType::Rgba16 => Some(ColorType::Rgba16),
+            ExtendedColorType::Rgb32F => Some(ColorType::Rgb32F),
+            ExtendedColorType::Rgba32F => Some(ColorType::Rgba32F),
+            _ => None,
         }
     }
 
     /// Returns the number of bytes required to hold a width x height image of this color type.
     pub(crate) fn buffer_size(self, width: u32, height: u32) -> u64 {
         let bpp = self.bits_per_pixel() as u64;
-        let row_pitch = (width as u64 * bpp + 7) / 8;
+        let row_pitch = (width as u64 * bpp).div_ceil(8);
         row_pitch.saturating_mul(height as u64)
     }
 }
+
 impl From<ColorType> for ExtendedColorType {
     fn from(c: ColorType) -> Self {
         match c {
@@ -249,6 +302,16 @@ impl From<ColorType> for ExtendedColorType {
             ColorType::Rgb32F => ExtendedColorType::Rgb32F,
             ColorType::Rgba32F => ExtendedColorType::Rgba32F,
         }
+    }
+}
+
+impl TryFrom<ExtendedColorType> for ColorType {
+    type Error = TryFromExtendedColorError;
+
+    fn try_from(value: ExtendedColorType) -> Result<ColorType, Self::Error> {
+        value
+            .color_type()
+            .ok_or(TryFromExtendedColorError { was: value })
     }
 }
 
@@ -283,6 +346,18 @@ impl<T: $($bound+)*> Pixel for $ident<T> {
     }
 
     const COLOR_MODEL: &'static str = $interpretation;
+
+    const HAS_ALPHA: bool = $alphas > 0;
+
+    #[inline]
+    fn alpha(&self) -> Self::Subpixel {
+        if Self::HAS_ALPHA {
+            // all our types have alpha channel at the end: RgbA, LumaA
+            *self.channels().last().unwrap()
+        } else {
+            Self::Subpixel::DEFAULT_MAX_VALUE
+        }
+    }
 
     fn channels4(&self) -> (T, T, T, T) {
         const CHANNELS: usize = $channels;
