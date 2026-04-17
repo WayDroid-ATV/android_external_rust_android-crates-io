@@ -1,0 +1,12 @@
+    target: {
+        android: {
+            rustlibs: ["liblibc"],
+        },
+        host_linux: {
+            rustlibs: ["liblibc"],
+        },
+        windows: {
+            enabled: true,
+            rustlibs: ["libwindows_sys"],
+       },
+    }

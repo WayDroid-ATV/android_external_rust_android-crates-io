@@ -7,12 +7,7 @@
       "path": "external/rust/android-crates-io/crates/tokio"
     }
   ],
-  "presubmit": [
-    {
-      "name": "mio_test_src_lib"
-    }
-  ],
-  "presubmit-rust": [
+  "postsubmit": [
     {
       "name": "mio_test_src_lib"
     }
