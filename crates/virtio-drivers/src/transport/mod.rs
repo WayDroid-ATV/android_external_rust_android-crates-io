@@ -8,8 +8,8 @@ mod some;
 #[cfg(target_arch = "x86_64")]
 pub mod x86_64;
 
-use crate::{PhysAddr, Result, PAGE_SIZE};
-use bitflags::{bitflags, Flags};
+use crate::{PAGE_SIZE, PhysAddr, Result};
+use bitflags::{Flags, bitflags};
 use core::{
     fmt::{self, Debug, Formatter},
     ops::BitAnd,
@@ -69,7 +69,7 @@ pub trait Transport {
     /// Acknowledges an interrupt.
     ///
     /// Returns true on success.
-    fn ack_interrupt(&mut self) -> bool;
+    fn ack_interrupt(&mut self) -> InterruptStatus;
 
     /// Begins initializing the device.
     ///
@@ -83,9 +83,22 @@ pub trait Transport {
         self.set_status(DeviceStatus::empty());
         self.set_status(DeviceStatus::ACKNOWLEDGE | DeviceStatus::DRIVER);
 
-        let device_features = F::from_bits_truncate(self.read_device_features());
+        let device_feature_bits = self.read_device_features();
+        let device_features = F::from_bits_truncate(device_feature_bits);
         debug!("Device features: {:?}", device_features);
         let negotiated_features = device_features & supported_features;
+        if cfg!(debug_assertions) {
+            use crate::device::common::Feature;
+
+            if device_feature_bits & Feature::VERSION_1.bits() > 0 {
+                // > 6.1 Driver Requirements: Reserved Feature Bits
+                // > A driver MUST accept VIRTIO_F_VERSION_1 if it is offered.
+                debug_assert!(
+                    negotiated_features.bits() & Feature::VERSION_1.bits() > 0,
+                    "Driver must accept VIRTIO_F_VERSION_1 in supported features because it is offered by the device."
+                );
+            }
+        }
         self.write_driver_features(negotiated_features.bits());
 
         self.set_status(
@@ -175,9 +188,25 @@ bitflags! {
     }
 }
 
+/// The set of interrupts which were pending
+///
+/// Ref: 4.1.4.5 ISR status capability
+#[derive(Copy, Clone, Default, Eq, FromBytes, PartialEq)]
+pub struct InterruptStatus(u32);
+
+bitflags! {
+    impl InterruptStatus: u32 {
+        /// Indicates that a virtqueue buffer was used
+        const QUEUE_INTERRUPT = 1 << 0;
+
+        /// Indicates that a virtio device changed its configuration state
+        const DEVICE_CONFIGURATION_INTERRUPT = 1 << 1;
+    }
+}
+
 /// Types of virtio devices.
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[allow(missing_docs)]
 pub enum DeviceType {
     Network = 1,

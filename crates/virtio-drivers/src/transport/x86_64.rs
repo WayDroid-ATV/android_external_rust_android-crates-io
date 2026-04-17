@@ -4,16 +4,16 @@ mod cam;
 mod hypercalls;
 
 use super::{
-    pci::{
-        bus::{ConfigurationAccess, DeviceFunction, PciRoot, PCI_CAP_ID_VNDR},
-        device_type, CommonCfg, VirtioCapabilityInfo, VirtioPciError, CAP_BAR_OFFSET,
-        CAP_BAR_OFFSET_OFFSET, CAP_LENGTH_OFFSET, CAP_NOTIFY_OFF_MULTIPLIER_OFFSET,
-        VIRTIO_PCI_CAP_COMMON_CFG, VIRTIO_PCI_CAP_DEVICE_CFG, VIRTIO_PCI_CAP_ISR_CFG,
-        VIRTIO_PCI_CAP_NOTIFY_CFG, VIRTIO_VENDOR_ID,
-    },
     DeviceStatus, DeviceType, Transport,
+    pci::{
+        CAP_BAR_OFFSET, CAP_BAR_OFFSET_OFFSET, CAP_LENGTH_OFFSET, CAP_NOTIFY_OFF_MULTIPLIER_OFFSET,
+        CommonCfg, VIRTIO_PCI_CAP_COMMON_CFG, VIRTIO_PCI_CAP_DEVICE_CFG, VIRTIO_PCI_CAP_ISR_CFG,
+        VIRTIO_PCI_CAP_NOTIFY_CFG, VIRTIO_VENDOR_ID, VirtioCapabilityInfo, VirtioPciError,
+        bus::{ConfigurationAccess, DeviceFunction, PCI_CAP_ID_VNDR, PciRoot},
+        device_type,
+    },
 };
-use crate::{hal::PhysAddr, Error};
+use crate::{Error, hal::PhysAddr, transport::InterruptStatus};
 pub use cam::HypCam;
 use hypercalls::HypIoRegion;
 use zerocopy::{FromBytes, Immutable, IntoBytes};
@@ -220,9 +220,9 @@ impl Transport for HypPciTransport {
     ) {
         configwrite!(self.common_cfg, queue_select, queue);
         configwrite!(self.common_cfg, queue_size, size as u16);
-        configwrite!(self.common_cfg, queue_desc, descriptors as u64);
-        configwrite!(self.common_cfg, queue_driver, driver_area as u64);
-        configwrite!(self.common_cfg, queue_device, device_area as u64);
+        configwrite!(self.common_cfg, queue_desc, descriptors);
+        configwrite!(self.common_cfg, queue_driver, driver_area);
+        configwrite!(self.common_cfg, queue_device, device_area);
         configwrite!(self.common_cfg, queue_enable, 1u16);
     }
 
@@ -237,13 +237,10 @@ impl Transport for HypPciTransport {
         queue_enable == 1
     }
 
-    fn ack_interrupt(&mut self) -> bool {
-        // Safe because the common config pointer is valid and we checked in get_bar_region that it
-        // was aligned.
+    fn ack_interrupt(&mut self) -> InterruptStatus {
         // Reading the ISR status resets it to 0 and causes the device to de-assert the interrupt.
         let isr_status: u8 = self.isr_status.read(0);
-        // TODO: Distinguish between queue interrupt and device configuration interrupt.
-        isr_status & 0x3 != 0
+        InterruptStatus::from_bits_truncate(isr_status.into())
     }
 
     fn read_config_generation(&self) -> u32 {
@@ -251,9 +248,11 @@ impl Transport for HypPciTransport {
     }
 
     fn read_config_space<T: FromBytes>(&self, offset: usize) -> Result<T, Error> {
-        assert!(align_of::<T>() <= 4,
+        assert!(
+            align_of::<T>() <= 4,
             "Driver expected config space alignment of {} bytes, but VirtIO only guarantees 4 byte alignment.",
-            align_of::<T>());
+            align_of::<T>()
+        );
         assert_eq!(offset % align_of::<T>(), 0);
 
         let config_space = self.config_space.ok_or(Error::ConfigSpaceMissing)?;
@@ -269,9 +268,11 @@ impl Transport for HypPciTransport {
         offset: usize,
         value: T,
     ) -> Result<(), Error> {
-        assert!(align_of::<T>() <= 4,
+        assert!(
+            align_of::<T>() <= 4,
             "Driver expected config space alignment of {} bytes, but VirtIO only guarantees 4 byte alignment.",
-            align_of::<T>());
+            align_of::<T>()
+        );
         assert_eq!(offset % align_of::<T>(), 0);
 
         let config_space = self.config_space.ok_or(Error::ConfigSpaceMissing)?;
@@ -304,9 +305,9 @@ fn get_bar_region<T, C: ConfigurationAccess>(
         return Err(VirtioPciError::BarOffsetOutOfRange);
     }
     let paddr = bar_address as PhysAddr + struct_info.offset as PhysAddr;
-    if paddr % align_of::<T>() != 0 {
+    if !paddr.is_multiple_of(align_of::<T>() as u64) {
         return Err(VirtioPciError::Misaligned {
-            address: paddr,
+            address: paddr as usize,
             alignment: align_of::<T>(),
         });
     }

@@ -1,16 +1,15 @@
 //! Driver for VirtIO socket devices.
-#![deny(unsafe_op_in_unsafe_fn)]
 
+use super::DEFAULT_RX_BUFFER_SIZE;
 use super::error::SocketError;
 use super::protocol::{
     Feature, StreamShutdown, VirtioVsockConfig, VirtioVsockHdr, VirtioVsockOp, VsockAddr,
 };
-use super::DEFAULT_RX_BUFFER_SIZE;
+use crate::Result;
 use crate::config::read_config;
 use crate::hal::Hal;
-use crate::queue::{owning::OwningQueue, VirtQueue};
+use crate::queue::{OwningQueue, VirtQueue};
 use crate::transport::Transport;
-use crate::Result;
 use core::mem::size_of;
 use log::debug;
 use zerocopy::{FromBytes, IntoBytes};
@@ -20,7 +19,9 @@ pub(crate) const TX_QUEUE_IDX: u16 = 1;
 const EVENT_QUEUE_IDX: u16 = 2;
 
 pub(crate) const QUEUE_SIZE: usize = 8;
-const SUPPORTED_FEATURES: Feature = Feature::RING_EVENT_IDX.union(Feature::RING_INDIRECT_DESC);
+const SUPPORTED_FEATURES: Feature = Feature::RING_EVENT_IDX
+    .union(Feature::RING_INDIRECT_DESC)
+    .union(Feature::VERSION_1);
 
 /// Information about a particular vsock connection.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -465,8 +466,8 @@ mod tests {
         config::ReadOnly,
         hal::fake::FakeHal,
         transport::{
-            fake::{FakeTransport, QueueStatus, State},
             DeviceType,
+            fake::{FakeTransport, QueueStatus, State},
         },
     };
     use alloc::{sync::Arc, vec};

@@ -20,6 +20,7 @@ VirtIO guest drivers in Rust. For **no_std** environment.
 | Socket  | ✅        |
 | Sound   | ✅        |
 | RNG     | ✅        |
+| 9P      | ✅        |
 | ...     | ❌        |
 
 ### Transports
@@ -64,6 +65,13 @@ make qemu
 
 ```bash
 cd examples/riscv
+make qemu
+```
+
+### [hexagon](./examples/hexagon)
+
+```bash
+cd examples/hexagon
 make qemu
 ```
 

@@ -1,7 +1,10 @@
 //! MMIO transport for VirtIO.
 
 use super::{DeviceStatus, DeviceType, DeviceTypeError, Transport};
-use crate::{align_up, queue::Descriptor, Error, PhysAddr, PAGE_SIZE};
+use crate::{
+    Error, PAGE_SIZE, PAGE_SIZE_PHYS, PhysAddr, align_up_phys, queue::Descriptor,
+    transport::InterruptStatus,
+};
 use core::{
     convert::{TryFrom, TryInto},
     mem::{align_of, size_of},
@@ -9,9 +12,8 @@ use core::{
     ptr::NonNull,
 };
 use safe_mmio::{
-    field, field_shared,
+    UniqueMmioPointer, field, field_shared,
     fields::{ReadPure, ReadPureWrite, WriteOnly},
-    UniqueMmioPointer,
 };
 use zerocopy::{FromBytes, Immutable, IntoBytes};
 
@@ -286,16 +288,19 @@ impl<'a> MmioTransport<'a> {
             return Err(MmioError::MmioRegionTooSmall);
         };
         let config_space = NonNull::slice_from_raw_parts(
-            header.cast::<u8>().byte_add(CONFIG_SPACE_OFFSET),
+            // SAFETY: CONFIG_SPACE_OFFSET is well within the range of `isize`. The memory range
+            // must be within the bounds of the allocation, because our caller promised that
+            // `header` was a valid VirtIO MMIO region including the config space after the header.
+            unsafe { header.cast::<u8>().byte_add(CONFIG_SPACE_OFFSET) },
             config_space_size,
         );
         // SAFETY: The caller promises that the config space following the header is an MMIO region
         // valid for `'a`.
         let config_space = unsafe { UniqueMmioPointer::new(config_space) };
 
-        // SAFETY: The caller promises that `header` is a properly aligned MMIO region  valid for
+        // SAFETY: The caller promises that `header` is a properly aligned MMIO region valid for
         // `'a`.
-        let header = UniqueMmioPointer::new(header);
+        let header = unsafe { UniqueMmioPointer::new(header) };
 
         Self::new_from_unique(header, config_space)
     }
@@ -403,18 +408,18 @@ impl Transport for MmioTransport<'_> {
             MmioVersion::Legacy => {
                 assert_eq!(
                     driver_area - descriptors,
-                    size_of::<Descriptor>() * size as usize
+                    size_of::<Descriptor>() as u64 * u64::from(size)
                 );
                 assert_eq!(
                     device_area - descriptors,
-                    align_up(
-                        size_of::<Descriptor>() * size as usize
-                            + size_of::<u16>() * (size as usize + 3)
+                    align_up_phys(
+                        size_of::<Descriptor>() as u64 * u64::from(size)
+                            + size_of::<u16>() as u64 * (u64::from(size) + 3)
                     )
                 );
                 let align = PAGE_SIZE as u32;
-                let pfn = (descriptors / PAGE_SIZE) as u32;
-                assert_eq!(pfn as usize * PAGE_SIZE, descriptors);
+                let pfn = (descriptors / PAGE_SIZE_PHYS).try_into().unwrap();
+                assert_eq!(u64::from(pfn) * PAGE_SIZE_PHYS, descriptors);
                 field!(self.header, queue_sel).write(queue.into());
                 field!(self.header, queue_num).write(size);
                 field!(self.header, legacy_queue_align).write(align);
@@ -469,13 +474,13 @@ impl Transport for MmioTransport<'_> {
         }
     }
 
-    fn ack_interrupt(&mut self) -> bool {
+    fn ack_interrupt(&mut self) -> InterruptStatus {
         let interrupt = field_shared!(self.header, interrupt_status).read();
         if interrupt != 0 {
             field!(self.header, interrupt_ack).write(interrupt);
-            true
+            InterruptStatus::from_bits_truncate(interrupt)
         } else {
-            false
+            InterruptStatus::empty()
         }
     }
 
@@ -484,10 +489,12 @@ impl Transport for MmioTransport<'_> {
     }
 
     fn read_config_space<T: FromBytes + IntoBytes>(&self, offset: usize) -> Result<T, Error> {
-        assert!(align_of::<T>() <= 4,
+        assert!(
+            align_of::<T>() <= 4,
             "Driver expected config space alignment of {} bytes, but VirtIO only guarantees 4 byte alignment.",
-            align_of::<T>());
-        assert!(offset % align_of::<T>() == 0);
+            align_of::<T>()
+        );
+        assert!(offset.is_multiple_of(align_of::<T>()));
 
         if self.config_space.len() < offset + size_of::<T>() {
             Err(Error::ConfigSpaceTooSmall)
@@ -512,10 +519,12 @@ impl Transport for MmioTransport<'_> {
         offset: usize,
         value: T,
     ) -> Result<(), Error> {
-        assert!(align_of::<T>() <= 4,
+        assert!(
+            align_of::<T>() <= 4,
             "Driver expected config space alignment of {} bytes, but VirtIO only guarantees 4 byte alignment.",
-            align_of::<T>());
-        assert!(offset % align_of::<T>() == 0);
+            align_of::<T>()
+        );
+        assert!(offset.is_multiple_of(align_of::<T>()));
 
         if self.config_space.len() < offset + size_of::<T>() {
             Err(Error::ConfigSpaceTooSmall)

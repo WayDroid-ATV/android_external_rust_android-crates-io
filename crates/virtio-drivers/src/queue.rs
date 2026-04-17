@@ -1,11 +1,17 @@
-#![deny(unsafe_op_in_unsafe_fn)]
+//! Support for virt queues, the main mechanism for data transport on VirtIO devices.
+//!
+//! Types from this module are used to implement VirtIO device drivers. If you just want to use the
+//! drivers provided (rather than implementing drivers for other devices) then you shouldn't need to
+//! use anything from this module.
 
 #[cfg(feature = "alloc")]
-pub mod owning;
+mod owning;
 
+#[cfg(feature = "alloc")]
+pub use self::owning::OwningQueue;
 use crate::hal::{BufferDirection, Dma, Hal, PhysAddr};
 use crate::transport::Transport;
-use crate::{align_up, pages, Error, Result, PAGE_SIZE};
+use crate::{Error, PAGE_SIZE, Result, align_up, pages};
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
 use bitflags::bitflags;
@@ -17,7 +23,7 @@ use core::mem::{size_of, take};
 #[cfg(test)]
 use core::ptr;
 use core::ptr::NonNull;
-use core::sync::atomic::{fence, AtomicU16, Ordering};
+use core::sync::atomic::{AtomicU16, Ordering, fence};
 use zerocopy::{FromBytes, FromZeros, Immutable, IntoBytes, KnownLayout};
 
 /// The mechanism for bulk data transport on virtio devices.
@@ -345,7 +351,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
     /// Returns whether the driver should notify the device after adding a new buffer to the
     /// virtqueue.
     ///
-    /// This will be false if the device has supressed notifications.
+    /// This will be false if the device has suppressed notifications.
     pub fn should_notify(&self) -> bool {
         if self.event_idx {
             // SAFETY: `self.used` points to a valid, aligned, initialised, dereferenceable, readable
@@ -443,7 +449,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
                 // `indirect_list` is owned by this function and is not accessed from any other threads.
                 unsafe {
                     H::unshare(
-                        paddr as usize,
+                        paddr,
                         indirect_list.as_mut_bytes().into(),
                         BufferDirection::DriverToDevice,
                     );
@@ -459,7 +465,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
                     unsafe {
                         // Unshare the buffer (and perhaps copy its contents back to the original
                         // buffer).
-                        H::unshare(indirect_list[i].addr as usize, buffer, direction);
+                        H::unshare(indirect_list[i].addr, buffer, direction);
                     }
                 }
                 drop(indirect_list);
@@ -487,7 +493,7 @@ impl<H: Hal, const SIZE: usize> VirtQueue<H, SIZE> {
                 // from which we got `paddr`.
                 unsafe {
                     // Unshare the buffer (and perhaps copy its contents back to the original buffer).
-                    H::unshare(paddr as usize, buffer, direction);
+                    H::unshare(paddr, buffer, direction);
                 }
             }
 
@@ -640,12 +646,12 @@ impl<H: Hal> VirtQueueLayout<H> {
         match self {
             Self::Legacy {
                 dma, avail_offset, ..
-            } => dma.paddr() + avail_offset,
+            } => dma.paddr() + *avail_offset as u64,
             Self::Modern {
                 driver_to_device_dma,
                 avail_offset,
                 ..
-            } => driver_to_device_dma.paddr() + avail_offset,
+            } => driver_to_device_dma.paddr() + *avail_offset as u64,
         }
     }
 
@@ -668,7 +674,7 @@ impl<H: Hal> VirtQueueLayout<H> {
         match self {
             Self::Legacy {
                 used_offset, dma, ..
-            } => dma.paddr() + used_offset,
+            } => dma.paddr() + *used_offset as u64,
             Self::Modern {
                 device_to_driver_dma,
                 ..
@@ -699,7 +705,7 @@ fn queue_part_sizes(queue_size: u16) -> (usize, usize, usize) {
         queue_size.is_power_of_two(),
         "queue size should be a power of 2"
     );
-    let queue_size = queue_size as usize;
+    let queue_size = usize::from(queue_size);
     let desc = size_of::<Descriptor>() * queue_size;
     let avail = size_of::<u16>() * (3 + queue_size);
     let used = size_of::<u16>() * 3 + size_of::<UsedElem>() * queue_size;
@@ -729,7 +735,7 @@ impl Descriptor {
     ) {
         // SAFETY: Our caller promises that the buffer is valid.
         unsafe {
-            self.addr = H::share(buf, direction) as u64;
+            self.addr = H::share(buf, direction);
         }
         self.len = buf.len().try_into().unwrap();
         self.flags = extra_flags
@@ -993,9 +999,9 @@ mod tests {
         device::common::Feature,
         hal::fake::FakeHal,
         transport::{
-            fake::{FakeTransport, QueueStatus, State},
-            mmio::{MmioTransport, VirtIOHeader, MODERN_VERSION},
             DeviceType,
+            fake::{FakeTransport, QueueStatus, State},
+            mmio::{MODERN_VERSION, MmioTransport, VirtIOHeader},
         },
     };
     use safe_mmio::UniqueMmioPointer;
