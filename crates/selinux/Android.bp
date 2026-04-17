@@ -13,16 +13,17 @@ license {
     license_text: ["LICENSE"],
 }
 
-rust_library {
+rust_library_rlib {
     name: "libselinux_rust",
     host_supported: true,
     crate_name: "selinux",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.5.0",
+    cargo_pkg_version: "0.6.1",
     crate_root: "src/lib.rs",
-    edition: "2021",
+    edition: "2024",
     rustlibs: [
         "libbitflags",
+        "liberrno",
         "liblibc",
         "libonce_cell",
         "libparking_lot",

@@ -28,7 +28,7 @@ fn main() {
     let include_path = find_and_output_include_dir(&compiler_search_paths.include_paths);
     find_and_output_lib_dir(&compiler_search_paths.link_paths, &target, explicit_static);
 
-    generate_bindings(&target, sysroot.as_deref(), &out_dir, &include_path)
+    generate_bindings(&target, sysroot.as_deref(), &out_dir, &include_path);
 }
 
 fn path_to_str(path: &Path) -> &str {
@@ -82,7 +82,7 @@ impl CompilerSearchPaths {
         include_dir: Option<PathBuf>,
         link_dir: Option<PathBuf>,
     ) -> Self {
-        env::set_var("LANG", "C");
+        unsafe { env::set_var("LANG", "C") };
 
         let include_paths = Self::get_compiler_include_paths(sysroot, include_dir)
             .expect("selinux-sys: Failed to discover default compiler search paths");
@@ -128,8 +128,7 @@ impl CompilerSearchPaths {
         let output = child.wait_with_output()?;
 
         if !output.status.success() {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 "Compiler failed to print search directories",
             ));
         }
@@ -183,8 +182,7 @@ impl CompilerSearchPaths {
         let output = child.wait_with_output()?;
 
         if !output.status.success() {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 "Compiler failed to print search directories",
             ));
         }
@@ -197,10 +195,7 @@ impl CompilerSearchPaths {
             .map(str::trim)
             .map(|line| line.trim_start_matches('='))
             .ok_or_else(|| {
-                io::Error::new(
-                    io::ErrorKind::Other,
-                    "Compiler search directories format is unrecognized",
-                )
+                io::Error::other("Compiler search directories format is unrecognized")
             })?;
 
         let mut paths = Vec::with_capacity(8);
@@ -305,11 +300,11 @@ fn find_and_output_lib_dir(link_paths: &[PathBuf], target: &str, explicit_static
 
             for &lib_dir in &[link_path, &link_path.join(target), &link_path.join(triplet)] {
                 let lib_path = lib_dir.join(&file_name);
-                if let Ok(md) = lib_path.metadata() {
-                    if md.is_file() {
-                        output_lib_dir(lib_dir, &lib_path, static_lib);
-                        return;
-                    }
+                if let Ok(md) = lib_path.metadata()
+                    && md.is_file()
+                {
+                    output_lib_dir(lib_dir, &lib_path, static_lib);
+                    return;
                 }
             }
         }
@@ -317,7 +312,7 @@ fn find_and_output_lib_dir(link_paths: &[PathBuf], target: &str, explicit_static
 }
 
 // See: https://github.com/rust-lang/rust-bindgen/issues/2136
-fn translate_rustc_target_to_clang(rustc_target: &str) -> Cow<str> {
+fn translate_rustc_target_to_clang(rustc_target: &str) -> Cow<'_, str> {
     if let Some(suffix) = rustc_target.strip_prefix("riscv32") {
         let suffix = suffix.trim_start_matches(|c| c != '-');
         Cow::Owned(format!("riscv32{suffix}"))
@@ -346,7 +341,7 @@ fn generate_bindings(target: &str, sysroot: Option<&Path>, out_dir: &Path, inclu
         .derive_eq(true)
         .derive_ord(true)
         .impl_debug(true)
-        .layout_tests(false)
+        .no_partialeq("^avc_([_a-zA-Z0-9]+)_callback$")
         .clang_arg(format!("--target={clang_target}"))
         .clang_args(&["-I", path_to_str(include_path)]);
 
@@ -399,12 +394,12 @@ fn generate_bindings(target: &str, sysroot: Option<&Path>, out_dir: &Path, inclu
     // Define macros to include headers that actually exist.
     for &optional_header in &["restorecon.h", "get_context_list.h", "get_default_type.h"] {
         let path = include_path.join("selinux").join(optional_header);
-        if let Ok(md) = path.metadata() {
-            if md.file_type().is_file() {
-                let mut def = format!("SELINUX_SYS_{}", optional_header.replace('.', "_"));
-                def.make_ascii_uppercase();
-                builder = builder.clang_args(&["-D", &def]);
-            }
+        if let Ok(md) = path.metadata()
+            && md.file_type().is_file()
+        {
+            let mut def = format!("SELINUX_SYS_{}", optional_header.replace('.', "_"));
+            def.make_ascii_uppercase();
+            builder = builder.clang_args(&["-D", &def]);
         }
     }
 
@@ -414,15 +409,15 @@ fn generate_bindings(target: &str, sysroot: Option<&Path>, out_dir: &Path, inclu
 
     bindings
         .write_to_file(out_dir.join("selinux-sys.rs"))
-        .expect("selinux-sys: Failed to write 'selinux-sys.rs'")
+        .expect("selinux-sys: Failed to write 'selinux-sys.rs'");
 }
 
 fn find_file_in_dirs(path_suffix: &str, dirs: &[PathBuf]) -> io::Result<PathBuf> {
     for dir in dirs {
-        if let Ok(md) = dir.join(path_suffix).metadata() {
-            if md.file_type().is_file() {
-                return Ok(dir.clone());
-            }
+        if let Ok(md) = dir.join(path_suffix).metadata()
+            && md.file_type().is_file()
+        {
+            return Ok(dir.clone());
         }
     }
 

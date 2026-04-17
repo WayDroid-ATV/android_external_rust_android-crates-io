@@ -194,6 +194,9 @@ pub(crate) struct OptionalNativeFunctions {
     /// Since version 3.5
     pub(crate) getpidprevcon_raw:
         unsafe extern "C" fn(pid: selinux_sys::pid_t, con: *mut *mut c_char) -> c_int,
+
+    /// Since version 3.10
+    pub(crate) selinux_restorecon_get_relabeled_files: unsafe extern "C" fn() -> c_ulong,
 }
 
 /// Addresses of optionally-implemented functions by libselinux.
@@ -214,6 +217,8 @@ impl Default for OptionalNativeFunctions {
                 Self::not_impl_selinux_restorecon_get_skipped_errors,
             getpidprevcon: Self::not_impl_getpidprevcon,
             getpidprevcon_raw: Self::not_impl_getpidprevcon,
+            selinux_restorecon_get_relabeled_files:
+                Self::not_impl_selinux_restorecon_get_relabeled_files,
         }
     }
 }
@@ -307,10 +312,16 @@ impl OptionalNativeFunctions {
         if !f.is_null() {
             self.getpidprevcon_raw = unsafe { mem::transmute(f) };
         }
+
+        let c_name = c"selinux_restorecon_get_relabeled_files";
+        let f = unsafe { libc::dlsym(lib_handle, c_name.as_ptr()) };
+        if !f.is_null() {
+            self.selinux_restorecon_get_relabeled_files = unsafe { mem::transmute(f) };
+        }
     }
 
     unsafe extern "C" fn not_impl_security_reject_unknown() -> c_int {
-        Error::set_errno(libc::ENOSYS);
+        errno::set_errno(errno::Errno(libc::ENOSYS));
         -1_i32
     }
 
@@ -321,7 +332,7 @@ impl OptionalNativeFunctions {
         _xattr_digest: *mut *mut u8,
         _digest_len: *mut usize,
     ) -> bool {
-        Error::set_errno(libc::ENOSYS);
+        errno::set_errno(errno::Errno(libc::ENOSYS));
         false
     }
 
@@ -330,7 +341,7 @@ impl OptionalNativeFunctions {
         _key: *const c_char,
         _digest: *mut u8,
     ) -> bool {
-        Error::set_errno(libc::ENOSYS);
+        errno::set_errno(errno::Errno(libc::ENOSYS));
         false
     }
 
@@ -340,12 +351,12 @@ impl OptionalNativeFunctions {
         _tclass: selinux_sys::security_class_t,
         _newcon: *const c_char,
     ) -> c_int {
-        Error::set_errno(libc::ENOSYS);
+        errno::set_errno(errno::Errno(libc::ENOSYS));
         -1_i32
     }
 
     unsafe extern "C" fn not_impl_selinux_flush_class_cache() {
-        Error::set_errno(libc::ENOSYS);
+        errno::set_errno(errno::Errno(libc::ENOSYS));
     }
 
     unsafe extern "C" fn not_impl_selinux_restorecon_parallel(
@@ -353,7 +364,7 @@ impl OptionalNativeFunctions {
         _restorecon_flags: c_uint,
         _nthreads: usize,
     ) -> c_int {
-        Error::set_errno(libc::ENOSYS);
+        errno::set_errno(errno::Errno(libc::ENOSYS));
         -1_i32
     }
 
@@ -365,7 +376,12 @@ impl OptionalNativeFunctions {
         _pid: selinux_sys::pid_t,
         _con: *mut *mut c_char,
     ) -> c_int {
-        Error::set_errno(libc::ENOSYS);
+        errno::set_errno(errno::Errno(libc::ENOSYS));
         -1_i32
+    }
+
+    unsafe extern "C" fn not_impl_selinux_restorecon_get_relabeled_files() -> c_ulong {
+        errno::set_errno(errno::Errno(libc::ENOSYS));
+        0
     }
 }

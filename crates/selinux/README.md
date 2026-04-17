@@ -6,13 +6,13 @@
 
 SELinux is a flexible Mandatory Access Control for Linux.
 
-This crate supports `libselinux` from version `2.8` to `3.8`.
+This crate supports `libselinux` from version `2.8` to `3.10`.
 Later versions might still be compatible.
 This crate exposes neither *deprecated* nor *undocumented* SELinux API functions
 and types.
 
-⚠️ This crate is Linux-specific. Building it for non-Linux platforms, or for
-the Linux kernel, results in an empty crate.
+⚠️ This crate is specific to Android and some Linux distributions. Building it for
+other platforms, or for the Linux kernel, results in an empty crate.
 
 This documentation is too brief to cover SELinux.
 Please refer to the [official SELinux documentation], the manual pages of
@@ -118,4 +118,4 @@ crate in the recent past.
 [Fedora]: https://getfedora.org/
 [CentOS]: https://www.centos.org/
 [RockyLinux]: https://rockylinux.org/
-[change log]: https://github.com/koutheir/selinux/blob/master/CHANGELOG.md
+[change log]: https://codeberg.org/koutheir/selinux/src/branch/main/CHANGELOG.md

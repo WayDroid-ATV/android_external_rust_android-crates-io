@@ -46,18 +46,15 @@ fn access_vector_cache_initialize() {
         }
     }
 
-    if let Ok(avc0) = super::AccessVectorCache::initialize(options) {
-        if let Ok(avc1) = super::AccessVectorCache::initialize(options) {
-            if let Ok(avc2) = super::AccessVectorCache::initialize(&[(
-                selinux_sys::AVC_OPT_SETENFORCE,
-                ptr::null(),
-            )]) {
-                assert_eq!(avc0, avc1);
-                assert_eq!(avc0, avc2);
+    if let Ok(avc0) = super::AccessVectorCache::initialize(options)
+        && let Ok(avc1) = super::AccessVectorCache::initialize(options)
+        && let Ok(avc2) =
+            super::AccessVectorCache::initialize(&[(selinux_sys::AVC_OPT_SETENFORCE, ptr::null())])
+    {
+        assert_eq!(*avc0, *avc1);
+        assert_eq!(*avc0, *avc2);
 
-                super::AccessVectorCache::initialize(&[]).unwrap_err();
-            }
-        }
+        super::AccessVectorCache::initialize(&[]).unwrap_err();
     }
 }
 

@@ -9,8 +9,8 @@ SELinux is a flexible Mandatory Access Control (MAC) for Linux.
 This crate exposes neither *deprecated* nor *undocumented* SELinux API functions
 and types.
 
-This crate is Linux-specific. Building it for non-Linux platforms, or for
-the Linux kernel, results in an empty crate.
+This crate is specific to Android and some Linux distributions. Building it for
+other platforms, or for the Linux kernel, results in an empty crate.
 
 ## Supported environment variables
 

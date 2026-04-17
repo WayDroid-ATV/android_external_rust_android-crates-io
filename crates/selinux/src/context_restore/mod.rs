@@ -11,8 +11,8 @@ use std::path::Path;
 use crate::errors::{Error, Result};
 use crate::label::Labeler;
 use crate::utils::{
-    c_str_ptr_to_path, c_str_ptr_to_str, os_str_to_c_string, ret_val_to_result,
-    OptionalNativeFunctions,
+    OptionalNativeFunctions, c_str_ptr_to_path, c_str_ptr_to_str, os_str_to_c_string,
+    ret_val_to_result,
 };
 
 bitflags! {
@@ -136,6 +136,20 @@ bitflags! {
         ///
         /// This flag requires `libselinux` version `3.4` or later.
         const COUNT_ERRORS = 0x20000;
+
+        /// In addition to the type component also change the user and
+        /// role component of security contexts.
+        ///
+        /// This flag requires `libselinux` version `3.9` or later.
+        const SET_USER_ROLE = 0x40000;
+
+        /// Count the number of relabeled files (or would be relabeled if
+        /// the [`NO_CHANGE`] flag was not set).
+        ///
+        /// This flag requires `libselinux` version `3.10` or later.
+        ///
+        /// [`NO_CHANGE`]: Self::NO_CHANGE
+        const COUNT_RELABELED = 0x80000;
     }
 }
 
@@ -239,21 +253,22 @@ where
     ///   cores present.
     /// - Otherwise, this operation will run in one thread.
     ///
-    /// When this method succeeds:
-    /// - If `flags` includes [`RestoreFlags::COUNT_ERRORS`], then this returns `Ok(Some(N))`
-    ///   where `N` is the number of errors that were ignored while walking the file system tree
-    ///   specified by `path`.
-    /// - Otherwise, `Ok(None)` is returned.
+    /// If this method succeeds, then it returns some statistics about the result of the operation.
+    /// The information returned depends on the `libselinux` version, and on the specified `flags`.
+    /// See the fields of [`FileSystemEntryContextRestoreResult`], in order to find out
+    /// which [`RestoreFlags`] enable which statistics.
     ///
-    /// See: `selinux_restorecon()`, `selinux_restorecon_parallel()`.
+    /// See: `selinux_restorecon()`, `selinux_restorecon_parallel()`,
+    /// `selinux_restorecon_get_skipped_errors()`, `selinux_restorecon_get_relabeled_files()`.
     #[doc(alias = "selinux_restorecon")]
     #[doc(alias = "selinux_restorecon_parallel")]
+    #[allow(clippy::useless_conversion)]
     pub fn restore_context_of_file_system_entry(
         self,
         path: impl AsRef<Path>,
         threads_count: usize,
         flags: RestoreFlags,
-    ) -> Result<Option<u64>> {
+    ) -> Result<FileSystemEntryContextRestoreResult> {
         if let Some(labeler) = self.labeler.map(Labeler::as_mut_ptr) {
             unsafe { selinux_sys::selinux_restorecon_set_sehandle(labeler) };
         }
@@ -301,12 +316,29 @@ where
             }
         }
 
-        Ok(flags.contains(RestoreFlags::COUNT_ERRORS).then(|| {
-            #[allow(clippy::useless_conversion)]
-            u64::from(unsafe {
-                (OptionalNativeFunctions::get().selinux_restorecon_get_skipped_errors)()
-            })
-        }))
+        let skipped_errors = flags.contains(RestoreFlags::COUNT_ERRORS).then(|| {
+            let r =
+                unsafe { (OptionalNativeFunctions::get().selinux_restorecon_get_skipped_errors)() };
+            u64::from(r)
+        });
+
+        let relabeled_files = if flags.contains(RestoreFlags::COUNT_RELABELED) {
+            Error::clear_errno();
+
+            let r = unsafe {
+                (OptionalNativeFunctions::get().selinux_restorecon_get_relabeled_files)()
+            };
+
+            (r != 0 || io::Error::last_os_error().raw_os_error() != Some(libc::ENOSYS))
+                .then_some(u64::from(r))
+        } else {
+            None
+        };
+
+        Ok(FileSystemEntryContextRestoreResult {
+            relabeled_files,
+            skipped_errors,
+        })
     }
 
     /// Manage default `security.sehash` extended attribute entries added by
@@ -324,7 +356,7 @@ where
             selinux_sys::selinux_restorecon_xattr(
                 c_dir_path.as_ptr(),
                 flags.bits(),
-                &mut xattr_list_ptr,
+                &raw mut xattr_list_ptr,
             )
         };
 
@@ -346,6 +378,29 @@ where
             Ok(DirectoryXAttributesIter(xattr_list))
         }
     }
+}
+
+/// Statistics of a successful [`ContextRestore::restore_context_of_file_system_entry`] operation.
+///
+/// The information contained here depends on the `libselinux` version,
+/// and on the specified `flags`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct FileSystemEntryContextRestoreResult {
+    /// Number of files that were successfully relabeled.
+    ///
+    /// If `flags` included [`RestoreFlags::NO_CHANGE`], then this is the number of files
+    /// that would be relabeled.
+    ///
+    /// This information will only be available when supported, and when `flags` included
+    /// [`RestoreFlags::COUNT_RELABELED`].
+    pub relabeled_files: Option<u64>,
+
+    /// Number of errors ignored during the file tree walk.
+    ///
+    /// This information will only be available when supported, and when `flags` included
+    /// [`RestoreFlags::COUNT_ERRORS`].
+    pub skipped_errors: Option<u64>,
 }
 
 /// Status of a [`DirectoryXAttributes`].

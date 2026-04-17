@@ -2,13 +2,44 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-04-07
+
+### Removed
+
+- Removed the implementation of `PartialEq`, `Eq`, `PartialOrd` and `Ord` traits for
+  the following structures:
+  `avc_memory_callback`, `avc_log_callback`, `avc_thread_callback`, `avc_lock_callback`.
+
+  This avoids undefined behavior and implementation-defined behavior that can occur when
+  comparing function pointers stored inside these structures.
+
+  > ⚠️ **This is a breaking change**.
+
+## [0.6.15] - 2025-06-18
+
+### Added
+
+- Support for Android.
+
+Thank you very much, *ejcaruso*.
+
+### Changed
+
+- Updated dependencies.
+
+## [0.6.14] - 2025-02-21
+
+### Changed
+
+- Migrated from 2021 edition to 2024.
+
 ## [0.6.13] - 2024-11-23
 
 ### Changed
 
 - Translated some target triplets from `rustc` to `clang` formats.
 
-  See: https://github.com/rust-lang/rust-bindgen/issues/2136
+  See: <https://github.com/rust-lang/rust-bindgen/issues/2136>
 
 Thank you very much, *NoisyCoil*.
 
