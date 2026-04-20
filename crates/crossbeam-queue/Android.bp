@@ -79,7 +79,7 @@ rust_library {
     rustlibs: ["libcrossbeam_utils"],
     apex_available: [
         "//apex_available:platform",
-        "com.android.virt",
+        "//apex_available:anyapex",
     ],
     product_available: true,
     vendor_available: true,
