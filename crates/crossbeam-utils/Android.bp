@@ -185,7 +185,7 @@ rust_library {
     ],
     apex_available: [
         "//apex_available:platform",
-        "com.android.virt",
+        "//apex_available:anyapex",
     ],
     product_available: true,
     vendor_available: true,
