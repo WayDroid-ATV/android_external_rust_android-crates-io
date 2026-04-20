@@ -17,7 +17,7 @@ rust_library_host {
     name: "libvhost_user_backend",
     crate_name: "vhost_user_backend",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.17.0",
+    cargo_pkg_version: "0.20.0",
     crate_root: "src/lib.rs",
     edition: "2021",
     rustlibs: [

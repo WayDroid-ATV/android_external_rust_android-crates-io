@@ -25,6 +25,7 @@ use std::sync::{Arc, Mutex, RwLock};
 
 use vhost::vhost_user::message::{
     VhostTransferStateDirection, VhostTransferStatePhase, VhostUserProtocolFeatures,
+    VhostUserSharedMsg,
 };
 use vhost::vhost_user::Backend;
 use vm_memory::bitmap::Bitmap;
@@ -91,6 +92,20 @@ pub trait VhostUserBackend: Send + Sync {
     /// A default implementation is provided as we cannot expect all backends to implement this
     /// function.
     fn set_backend_req_fd(&self, _backend: Backend) {}
+
+    /// This method retrieves a file descriptor for a shared object, identified by a unique UUID,
+    /// which can be used by the front-end for DMA. If the shared object is found, it must return
+    /// a File that the frontend can use. If the shared object does not exist the function returns
+    /// `None` (indicating no file descriptor is available).
+    ///
+    /// This function returns a `Result`, returning an error if the backend does not implement this
+    /// function.
+    fn get_shared_object(&self, _uuid: VhostUserSharedMsg) -> Result<File> {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::Unsupported,
+            "back end does not support get shared object",
+        ))
+    }
 
     /// Set handler for communicating with the frontend by the gpu specific backend communication
     /// channel.
@@ -220,6 +235,20 @@ pub trait VhostUserBackendMut: Send + Sync {
     /// function.
     fn set_backend_req_fd(&mut self, _backend: Backend) {}
 
+    /// This method retrieves a file descriptor for a shared object, identified by a unique UUID,
+    /// which can be used by the front-end for DMA. If the shared object is found, it must return
+    /// a File that the frontend can use. If the shared object does not exist the function returns
+    /// `None` (indicating no file descriptor is available).
+    ///
+    /// This function returns a `Result`, returning an error if the backend does not implement this
+    /// function.
+    fn get_shared_object(&mut self, _uuid: VhostUserSharedMsg) -> Result<File> {
+        Err(std::io::Error::new(
+            std::io::ErrorKind::Unsupported,
+            "back end does not support get shared object",
+        ))
+    }
+
     /// Set handler for communicating with the frontend by the gpu specific backend communication
     /// channel.
     ///
@@ -341,6 +370,10 @@ impl<T: VhostUserBackend> VhostUserBackend for Arc<T> {
         self.deref().set_backend_req_fd(backend)
     }
 
+    fn get_shared_object(&self, uuid: VhostUserSharedMsg) -> Result<File> {
+        self.deref().get_shared_object(uuid)
+    }
+
     fn set_gpu_socket(&self, gpu_backend: GpuBackend) -> Result<()> {
         self.deref().set_gpu_socket(gpu_backend)
     }
@@ -424,6 +457,10 @@ impl<T: VhostUserBackendMut> VhostUserBackend for Mutex<T> {
 
     fn set_backend_req_fd(&self, backend: Backend) {
         self.lock().unwrap().set_backend_req_fd(backend)
+    }
+
+    fn get_shared_object(&self, uuid: VhostUserSharedMsg) -> Result<File> {
+        self.lock().unwrap().get_shared_object(uuid)
     }
 
     fn set_gpu_socket(&self, gpu_backend: GpuBackend) -> Result<()> {
@@ -514,6 +551,10 @@ impl<T: VhostUserBackendMut> VhostUserBackend for RwLock<T> {
         self.write().unwrap().set_backend_req_fd(backend)
     }
 
+    fn get_shared_object(&self, uuid: VhostUserSharedMsg) -> Result<File> {
+        self.write().unwrap().get_shared_object(uuid)
+    }
+
     fn set_gpu_socket(&self, gpu_backend: GpuBackend) -> Result<()> {
         self.write().unwrap().set_gpu_socket(gpu_backend)
     }
@@ -560,6 +601,7 @@ pub mod tests {
     use crate::VringRwLock;
     use libc::EFD_NONBLOCK;
     use std::sync::Mutex;
+    use uuid::Uuid;
     use vm_memory::{GuestAddress, GuestMemoryAtomic, GuestMemoryMmap};
 
     pub struct MockVhostBackend {
@@ -644,6 +686,11 @@ pub mod tests {
 
         fn set_backend_req_fd(&mut self, _backend: Backend) {}
 
+        fn get_shared_object(&mut self, _uuid: VhostUserSharedMsg) -> Result<File> {
+            let file = tempfile::tempfile().unwrap();
+            Ok(file)
+        }
+
         fn queues_per_thread(&self) -> Vec<u64> {
             vec![1, 1]
         }
@@ -694,6 +741,11 @@ pub mod tests {
 
         let _ = backend.exit_event(0).unwrap();
 
+        let uuid = VhostUserSharedMsg {
+            uuid: Uuid::new_v4(),
+        };
+        backend.get_shared_object(uuid).unwrap();
+
         let mem = GuestMemoryAtomic::new(
             GuestMemoryMmap::<()>::from_ranges(&[(GuestAddress(0x100000), 0x10000)]).unwrap(),
         );
@@ -733,6 +785,11 @@ pub mod tests {
             GuestMemoryMmap::<()>::from_ranges(&[(GuestAddress(0x100000), 0x10000)]).unwrap(),
         );
         backend.update_memory(mem.clone()).unwrap();
+
+        let uuid = VhostUserSharedMsg {
+            uuid: Uuid::new_v4(),
+        };
+        backend.get_shared_object(uuid).unwrap();
 
         let vring = VringRwLock::new(mem, 0x1000).unwrap();
         backend

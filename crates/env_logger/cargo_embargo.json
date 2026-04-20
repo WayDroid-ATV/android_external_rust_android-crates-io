@@ -13,6 +13,7 @@
     {
       "module_name_overrides": {
         "libenv_logger": "libenv_logger_max_level_info",
+        "libenv_filter": "libenv_filter_max_level_info",
         "liblog": "liblog_rust_max_level_info"
       },
       "tests": false
