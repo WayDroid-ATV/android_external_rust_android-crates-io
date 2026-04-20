@@ -1159,14 +1159,14 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
 name = "automotive_diag"
-version = "0.1.27"
+version = "0.1.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1834dcf20a6031f6da9066539e37201265c9af7668125824dd6103c8188bf89e"
+checksum = "49d65f6140eed99422512ae3e4fa0515e639ae363d33f648ea2a6efddc8b055c"
 dependencies = [
  "bin-proto",
  "displaydoc",
  "serde",
- "strum 0.27.2",
+ "strum 0.28.0",
 ]
 
 [[package]]

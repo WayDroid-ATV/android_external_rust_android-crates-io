@@ -1,13 +1,9 @@
 use crate::utils::{enum_wrapper, python_test};
 
-enum_wrapper!(kwp2000, RoutineExitStatus, RoutineExitStatusByte);
-python_test!(
-    kwp2000,
-    RoutineExitStatus,
-    NormalExitWithResults,
-    AbnormalExitWithoutResults
-);
+enum_wrapper!(uds, DtcSettingType, DtcSettingTypeByte);
+python_test!(uds, DtcSettingType, On, Off);
 
+/// [`UdsCommand::ControlDTCSetting`](crate::uds::UdsCommand::ControlDTCSetting) sub-function definitions
 #[repr(u8)]
 #[derive(strum::FromRepr, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[cfg_attr(feature = "bin-proto", derive(bin_proto::BitEncode))]
@@ -16,12 +12,10 @@ python_test!(
 #[cfg_attr(feature = "iter", derive(strum::EnumIter))]
 #[cfg_attr(feature = "pyo3", pyo3::pyclass(eq, eq_int, from_py_object))]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[allow(clippy::enum_variant_names)]
-pub enum RoutineExitStatus {
-    /// Normal exit with results available
-    NormalExitWithResults = 0x61,
-    /// Normal exit, the routine does not return any result data
-    NormalExitWithoutResults = 0x62,
-    /// Abnormal or premature exit. No results available.
-    AbnormalExitWithoutResults = 0x64,
+pub enum DtcSettingType {
+    /// Resumes the updating of DTC status bits according to normal operating conditions
+    On = 0x01,
+
+    /// Stops the updating of DTC status bits in the server
+    Off = 0x02,
 }

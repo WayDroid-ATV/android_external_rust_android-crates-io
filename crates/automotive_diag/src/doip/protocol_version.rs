@@ -17,13 +17,11 @@ python_test!(doip, ProtocolVersion, V2010, V2012);
 #[cfg_attr(feature = "bin-proto", derive(bin_proto::BitDecode))]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[cfg_attr(feature = "display", derive(displaydoc::Display))]
+#[cfg_attr(feature = "display", ignore_extra_doc_attributes)]
 #[cfg_attr(feature = "iter", derive(strum::EnumIter))]
-#[cfg_attr(feature = "pyo3", pyo3::pyclass(eq, eq_int))]
+#[cfg_attr(feature = "pyo3", pyo3::pyclass(eq, eq_int, from_py_object))]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ProtocolVersion {
-    // TODO: needed? This seems like a placeholder that shouldn't be used in Rust
-    // /// Reserved Version
-    // ReservedVer = 0x00,
     /// `DoIP` Payload Version: ISO-13400 2010 Version
     V2010 = 0x01,
 
@@ -35,9 +33,6 @@ pub enum ProtocolVersion {
 
     /// `DoIP` Payload Version: ISO-13400 `2019_AMD1` Version
     V2019amd1 = 0x04,
-    // TODO: needed? This seems like a placeholder that shouldn't be used in Rust
-    // /// `DoIP` Payload Version: Default Version
-    // DefaultValue = 0xFF,
 }
 
 #[cfg(all(test, feature = "serde"))]

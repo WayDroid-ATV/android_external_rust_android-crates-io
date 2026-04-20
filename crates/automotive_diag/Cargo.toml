@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.84"
 name = "automotive_diag"
-version = "0.1.27"
+version = "0.1.28"
 authors = [
     "Yuri Astrakhan <YuriAstrakhan@gmail.com>",
     "Ashcon Mohseninia <ashconm@outlook.com>",
@@ -98,7 +98,7 @@ optional = true
 default-features = false
 
 [dependencies.pyo3]
-version = "0.27.2"
+version = "0.28.2"
 optional = true
 
 [dependencies.serde]
@@ -108,7 +108,7 @@ optional = true
 default-features = false
 
 [dependencies.strum]
-version = "0.27.2"
+version = "0.28.0"
 features = ["derive"]
 default-features = false
 
