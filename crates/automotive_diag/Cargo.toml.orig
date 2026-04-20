@@ -1,6 +1,6 @@
 [package]
 name = "automotive_diag"
-version = "0.1.27"
+version = "0.1.28"
 description = "Unified Diagnostic Services/UDS (ISO-14229-1), KWP2000 (ISO-142330), OBD-II (ISO-9141), and DoIP (ISO-13400) definitions to communicate with the road vehicle ECUs in Rust."
 authors = [
     "Yuri Astrakhan <YuriAstrakhan@gmail.com>",
@@ -56,9 +56,9 @@ with-uds = ["uds"]
 bin-proto = { version = "0.12.6", optional = true, default-features = false, features = ["derive"] }
 defmt = { version = "1.0.1", optional = true }
 displaydoc = { version = "0.2", optional = true, default-features = false }
-pyo3 = { version = "0.27.2", optional = true }
+pyo3 = { version = "0.28.2", optional = true }
 serde = { version = "1", optional = true, default-features = false, features = ["derive"] }
-strum = { version = "0.27.0", default-features = false, features = ["derive"] }
+strum = { version = "0.28.0", default-features = false, features = ["derive"] }
 
 [dev-dependencies]
 insta = "1.43.1"
