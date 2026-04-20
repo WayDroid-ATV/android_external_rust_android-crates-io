@@ -18,7 +18,7 @@ rust_test {
     host_supported: true,
     crate_name: "env_logger",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.10.2",
+    cargo_pkg_version: "0.11.0",
     crate_root: "src/lib.rs",
     test_suites: ["general-tests"],
     auto_gen_config: true,
@@ -26,7 +26,10 @@ rust_test {
         unit_test: true,
     },
     edition: "2021",
-    rustlibs: ["liblog_rust"],
+    rustlibs: [
+        "libenv_filter",
+        "liblog_rust",
+    ],
     target: {
         windows: {
             enabled: true,
@@ -39,10 +42,13 @@ rust_library {
     host_supported: true,
     crate_name: "env_logger",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.10.2",
+    cargo_pkg_version: "0.11.0",
     crate_root: "src/lib.rs",
     edition: "2021",
-    rustlibs: ["liblog_rust"],
+    rustlibs: [
+        "libenv_filter",
+        "liblog_rust",
+    ],
     target: {
         windows: {
             enabled: true,
@@ -63,10 +69,13 @@ rust_library {
     host_supported: true,
     crate_name: "env_logger",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.10.2",
+    cargo_pkg_version: "0.11.0",
     crate_root: "src/lib.rs",
     edition: "2021",
-    rustlibs: ["liblog_rust_max_level_info"],
+    rustlibs: [
+        "libenv_filter_max_level_info",
+        "liblog_rust_max_level_info",
+    ],
     target: {
         windows: {
             enabled: true,

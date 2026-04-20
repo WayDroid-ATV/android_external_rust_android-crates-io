@@ -18,8 +18,9 @@ use crate::bitmap::{BitmapReplace, MemRegionBitmap, MmapLogReg};
 use userfaultfd::{Uffd, UffdBuilder};
 use vhost::vhost_user::message::{
     VhostTransferStateDirection, VhostTransferStatePhase, VhostUserConfigFlags, VhostUserLog,
-    VhostUserMemoryRegion, VhostUserProtocolFeatures, VhostUserSingleMemoryRegion,
-    VhostUserVirtioFeatures, VhostUserVringAddrFlags, VhostUserVringState,
+    VhostUserMemoryRegion, VhostUserProtocolFeatures, VhostUserSharedMsg,
+    VhostUserSingleMemoryRegion, VhostUserVirtioFeatures, VhostUserVringAddrFlags,
+    VhostUserVringState,
 };
 use vhost::vhost_user::GpuBackend;
 use vhost::vhost_user::{
@@ -29,10 +30,7 @@ use vhost::vhost_user::{
 use virtio_bindings::bindings::virtio_ring::VIRTIO_RING_F_EVENT_IDX;
 use virtio_queue::{Error as VirtQueError, QueueT};
 use vm_memory::mmap::NewBitmap;
-use vm_memory::{
-    GuestAddress, GuestAddressSpace, GuestMemory, GuestMemoryMmap, GuestMemoryRegion,
-    GuestRegionMmap,
-};
+use vm_memory::{GuestAddress, GuestAddressSpace, GuestMemory, GuestMemoryMmap, GuestRegionMmap};
 use vmm_sys_util::epoll::EventSet;
 
 use super::backend::VhostUserBackend;
@@ -355,7 +353,7 @@ where
         let vring = self
             .vrings
             .get(index as usize)
-            .ok_or_else(|| VhostUserError::InvalidParam)?;
+            .ok_or(VhostUserError::InvalidParam)?;
 
         if num == 0 || num as usize > self.max_queue_size {
             return Err(VhostUserError::InvalidParam);
@@ -376,7 +374,7 @@ where
         let vring = self
             .vrings
             .get(index as usize)
-            .ok_or_else(|| VhostUserError::InvalidParam)?;
+            .ok_or(VhostUserError::InvalidParam)?;
 
         if !self.mappings.is_empty() {
             let desc_table = self.vmm_va_to_gpa(descriptor).map_err(|e| {
@@ -417,7 +415,7 @@ where
         let vring = self
             .vrings
             .get(index as usize)
-            .ok_or_else(|| VhostUserError::InvalidParam)?;
+            .ok_or(VhostUserError::InvalidParam)?;
 
         vring.set_queue_next_avail(base as u16);
 
@@ -428,7 +426,7 @@ where
         let vring = self
             .vrings
             .get(index as usize)
-            .ok_or_else(|| VhostUserError::InvalidParam)?;
+            .ok_or(VhostUserError::InvalidParam)?;
 
         // Quote from vhost-user specification:
         // Client must start ring upon receiving a kick (that is, detecting
@@ -462,7 +460,7 @@ where
         let vring = self
             .vrings
             .get(index as usize)
-            .ok_or_else(|| VhostUserError::InvalidParam)?;
+            .ok_or(VhostUserError::InvalidParam)?;
 
         // SAFETY: EventFd requires that it has sole ownership of its fd. So
         // does File, so this is safe.
@@ -481,7 +479,7 @@ where
         let vring = self
             .vrings
             .get(index as usize)
-            .ok_or_else(|| VhostUserError::InvalidParam)?;
+            .ok_or(VhostUserError::InvalidParam)?;
 
         vring.set_call(file);
 
@@ -496,7 +494,7 @@ where
         let vring = self
             .vrings
             .get(index as usize)
-            .ok_or_else(|| VhostUserError::InvalidParam)?;
+            .ok_or(VhostUserError::InvalidParam)?;
 
         vring.set_err(file);
 
@@ -527,7 +525,7 @@ where
         let vring = self
             .vrings
             .get(index as usize)
-            .ok_or_else(|| VhostUserError::InvalidParam)?;
+            .ok_or(VhostUserError::InvalidParam)?;
 
         // Backend must not pass data to/from the backend until ring is
         // enabled by VHOST_USER_SET_VRING_ENABLE with parameter 1,
@@ -572,6 +570,16 @@ where
         self.backend
             .set_gpu_socket(gpu_backend)
             .map_err(VhostUserError::ReqHandlerError)
+    }
+
+    fn get_shared_object(&mut self, uuid: VhostUserSharedMsg) -> VhostUserResult<File> {
+        match self.backend.get_shared_object(uuid) {
+            Ok(shared_file) => Ok(shared_file),
+            Err(e) => Err(VhostUserError::ReqHandlerError(io::Error::new(
+                io::ErrorKind::Other,
+                e,
+            ))),
+        }
     }
 
     fn get_inflight_fd(
@@ -777,7 +785,7 @@ where
         }
 
         for (region, bitmap) in bitmaps {
-            region.bitmap().replace(bitmap);
+            (*region).bitmap().replace(bitmap);
         }
 
         Ok(())

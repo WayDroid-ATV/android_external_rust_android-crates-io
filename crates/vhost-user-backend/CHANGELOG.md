@@ -1,13 +1,29 @@
 # Changelog
+
 ## [Unreleased]
 
 ### Added
+### Changed
+### Deprecated
+### Fixed
+
+## v0.20.0
 
 ### Changed
+- [[306]](https://github.com/rust-vmm/vhost/pull/306) Updated virtio-queue to v0.16.0 and virtio-bindings to v0.2.6
 
-### Deprecated
+## v0.19.0
 
-### Fixed
+### Changed
+- [[299]](https://github.com/rust-vmm/vhost/pull/299) Updated virtio-queue to v0.15.0 and virtio-bindings to v0.2.5
+
+## v0.18.0
+
+### Added
+- [[#268]](https://github.com/rust-vmm/vhost/pull/268) Add support for `VHOST_USER_GET_SHARED_OBJECT`
+
+### Changed
+- [[#295]](https://github.com/rust-vmm/vhost/pull/295) Updated vm-memory to 0.16.2 and vmm-sys-util to 0.14.0
 
 ## v0.17.0
 
@@ -20,7 +36,7 @@
 ## v0.16.1
 
 ### Fixed
-- [[#267](https://github.com/rust-vmm/vhost/pull/267)] Fix feature unification issues with gpu-socket feature.
+- [[#267]](https://github.com/rust-vmm/vhost/pull/267) Fix feature unification issues with gpu-socket feature.
 
 ## v0.16.0 - yanked
 
@@ -63,13 +79,13 @@ Starting with the next version (v0.16.1), the `gpu_socket` feature was removed.
 ## v0.12.0
 
 ### Fixed
-- [[#210](https://github.com/rust-vmm/vhost/pull/210)] Enable all vrings upon receipt of `VHOST_USER_SET_FEATURES`
+- [[#210]](https://github.com/rust-vmm/vhost/pull/210) Enable all vrings upon receipt of `VHOST_USER_SET_FEATURES`
   message.
-- [[#212](https://github.com/rust-vmm/vhost/pull/212)] Validate queue index in `VhostUserHandler::set_vring_base`
+- [[#212]](https://github.com/rust-vmm/vhost/pull/212) Validate queue index in `VhostUserHandler::set_vring_base`
   to avoid potential out-of-bounds panic.
 
 ### Changed
-- [[#214](https://github.com/rust-vmm/vhost/pull/214)] Avoid indexing the same Vec multiple times by locally caching the
+- [[#214]](https://github.com/rust-vmm/vhost/pull/214) Avoid indexing the same Vec multiple times by locally caching the
   result of `Vec:get`.
 - [[#219]](https://github.com/rust-vmm/vhost/pull/219) Update vmm-sys-util dependency to 0.12.1 and vm-memory dependency to 0.14.0.
 
