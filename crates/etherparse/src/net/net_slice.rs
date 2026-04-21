@@ -6,7 +6,7 @@ use crate::*;
     since = "0.14.0",
     note = "Deprecated use crate::NetSlice or crate::IpSlice instead"
 )]
-pub use NetSlice as InternetSlice;
+pub use self::NetSlice as InternetSlice;
 
 /// Slice containing the network headers & payloads (e.g. IPv4, IPv6, ARP).
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -70,7 +70,7 @@ impl<'a> NetSlice<'a> {
 
     /// Returns references to the ARP packet slice if the slice contains an ARP values.
     #[inline]
-    pub fn arp_ref(&self) -> Option<&ArpPacketSlice> {
+    pub fn arp_ref(&self) -> Option<&ArpPacketSlice<'_>> {
         if let NetSlice::Arp(arp) = self {
             Some(arp)
         } else {

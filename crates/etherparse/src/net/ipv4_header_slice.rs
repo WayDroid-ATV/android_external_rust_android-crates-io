@@ -89,7 +89,7 @@ impl<'a> Ipv4HeaderSlice<'a> {
     /// It must ensured that the slice exactly contains the IPv4 header
     /// and the ihl (intra header length) & total length must be consistent.
     #[inline]
-    pub(crate) unsafe fn from_slice_unchecked(slice: &[u8]) -> Ipv4HeaderSlice {
+    pub(crate) unsafe fn from_slice_unchecked(slice: &[u8]) -> Ipv4HeaderSlice<'_> {
         Ipv4HeaderSlice { slice }
     }
 
@@ -293,7 +293,7 @@ impl<'a> Ipv4HeaderSlice<'a> {
         Ipv4Addr::from(self.source())
     }
 
-    /// Returns a slice containing the ipv4 source address.
+    /// Returns a slice containing the ipv4 destination address.
     #[inline]
     pub fn destination(&self) -> [u8; 4] {
         // SAFETY:

@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.83.0"
 name = "etherparse"
-version = "0.19.0"
+version = "0.20.1"
 authors = ["Julian Schmid <info@julianschmid.name>"]
 build = false
 exclude = [
@@ -55,8 +55,12 @@ rustdoc-args = [
 ]
 
 [features]
+alloc = []
 default = ["std"]
-std = ["arrayvec/std"]
+std = [
+    "alloc",
+    "arrayvec/std",
+]
 
 [lib]
 name = "etherparse"
