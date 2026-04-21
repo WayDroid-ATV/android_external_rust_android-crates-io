@@ -21,9 +21,12 @@ fn phantom_default_inits(generics: &Generics) -> Vec<TokenStream> {
     generics.params
     .iter()
     .enumerate()
-    .map(|(count, _param)| {
+    .filter_map(|(count, param)| {
         let phident = format_ident!("_t{count}");
-        quote!(#phident: ::std::marker::PhantomData)
+        match param {
+            GenericParam::Const(_cp) => None,
+            _ => Some(quote!(#phident: ::std::marker::PhantomData)),
+        }
     }).collect()
 }
 
@@ -42,20 +45,16 @@ fn phantom_fields(generics: &Generics) -> Vec<TokenStream> {
                 }
                 let lifetime = &l.lifetime;
                 Some(
-                quote!(#phident: ::std::marker::PhantomData<&#lifetime ()>)
+                    quote!(#phident: ::std::marker::PhantomData<&#lifetime ()>)
                 )
             },
             syn::GenericParam::Type(tp) => {
                 let ty = &tp.ident;
                 Some(
-                quote!(#phident: ::std::marker::PhantomData<#ty>)
+                    quote!(#phident: ::std::marker::PhantomData<#ty>)
                 )
             },
-            syn::GenericParam::Const(_) => {
-                compile_error(param.span(),
-                    "#automock does not yet support generic constants");
-                None
-            }
+            syn::GenericParam::Const(_) => None
         }
     }).collect()
 }

@@ -143,13 +143,27 @@ fn send_syncify(wc: &mut Option<WhereClause>, bounded_ty: Type) {
         paren_token: None,
         modifier: TraitBoundModifier::None,
         lifetimes: None,
-        path: Path::from(format_ident!("Send"))
+        path: Path {
+            leading_colon: Some(<Token![::]>::default()),
+            segments: [
+                PathSegment::from(format_ident!("std")),
+                PathSegment::from(format_ident!("marker")),
+                PathSegment::from(format_ident!("Send")),
+            ].into_iter().collect(),
+        }
     }));
     bounds.push(TypeParamBound::Trait(TraitBound {
         paren_token: None,
         modifier: TraitBoundModifier::None,
         lifetimes: None,
-        path: Path::from(format_ident!("Sync"))
+        path: Path {
+            leading_colon: Some(<Token![::]>::default()),
+            segments: [
+                PathSegment::from(format_ident!("std")),
+                PathSegment::from(format_ident!("marker")),
+                PathSegment::from(format_ident!("Sync")),
+            ].into_iter().collect(),
+        }
     }));
     if wc.is_none() {
         *wc = Some(WhereClause {
@@ -266,6 +280,7 @@ impl<'a> Builder<'a> {
         let mut return_ref = false;
         let mut return_refmut = false;
         if let Type::Reference(ref tr) = &output {
+            #[allow(clippy::unnecessary_map_or)]
             if tr.lifetime.as_ref().map_or(true, |lt| lt.ident != "static")
             {
                 if tr.mutability.is_none() {
@@ -482,9 +497,6 @@ impl MockFunction {
         }.split_for_impl();
         let tbf = tg.as_turbofish();
         let name = self.name();
-        let desc = self.desc();
-        let no_match_msg = quote!(std::format!(
-            "{}: No matching expectation found", #desc));
         let sig = &self.sig;
         let (vis, dead_code) = if self.trait_.is_some() {
             (&Visibility::Inherited, quote!())
@@ -543,20 +555,22 @@ impl MockFunction {
                 #dead_code
                 #no_mangle
                 #vis #sig {
-                    use ::mockall::{ViaDebug, ViaNothing};
-                    let no_match_msg = #no_match_msg;
                     #deref {
                         let __mockall_guard = #outer_mod_path::get_expectations()
                             .lock().unwrap();
-                        /*
-                         * TODO: catch panics, then gracefully release the mutex
-                         * so it won't be poisoned.  This requires bounding any
-                         * generic parameters with UnwindSafe
-                         */
-                        /* std::panic::catch_unwind(|| */
-                        __mockall_guard.#call #tbf(#(#call_exprs,)*)
-                        /*)*/
-                    }.expect(&no_match_msg)
+                        std::panic::catch_unwind(std::panic::AssertUnwindSafe(move ||  {
+                            __mockall_guard.#call #tbf(#(#call_exprs,)*)
+                        })).unwrap_or_else(|__mockall_e| {
+                            #outer_mod_path::get_expectations().clear_poison();
+                            // Drain all expectations so other tests can run with a
+                            // blank slate.  But ignore errors so we don't
+                            // double-panic.
+                            let _ = #outer_mod_path::get_expectations()
+                                .lock()
+                                .map(|mut g| g.checkpoint().collect::<Vec<_>>());
+                            ::std::panic::resume_unwind(__mockall_e);
+                        })
+                    }
                 }
             )
         } else {
@@ -566,10 +580,7 @@ impl MockFunction {
                 #dead_code
                 #no_mangle
                 #vis #sig {
-                    use ::mockall::{ViaDebug, ViaNothing};
-                    let no_match_msg = #no_match_msg;
                     #deref self.#substruct_obj #name.#call #tbf(#(#call_exprs,)*)
-                    .expect(&no_match_msg)
                 }
 
             )
@@ -627,17 +638,25 @@ impl MockFunction {
         )
     }
 
-    /// Generate a code fragment that will print a description of the invocation
-    fn desc(&self) -> impl ToTokens {
+    /// Generate a code fragment that will print a description of the
+    /// invocation.
+    ///
+    /// # Returns
+    ///
+    /// A tuple consisting of a format string and a code fragment suitable for
+    /// passing to `format!`.  For example: `("MyType::MyMethod(\"{:?}\",
+    /// \"{:?}\")", x, y)`.
+    fn desc(&self) -> (impl ToTokens, impl ToTokens) {
         let argnames = &self.argnames;
         let name = if let Some(s) = &self.struct_ {
             format!("{}::{}", s, self.sig.ident)
         } else {
             format!("{}::{}", self.mod_ident, self.sig.ident)
         };
+        #[allow(clippy::literal_string_with_formatting_args)]
         let fields = vec!["{:?}"; argnames.len()].join(", ");
         let fstr = format!("{name}({fields})");
-        quote!(std::format!(#fstr, #((&&::mockall::ArgPrinter(&#argnames)).debug_string()),*))
+        (quote!(#fstr), quote!(#((&&::mockall::ArgPrinter(&#argnames)).debug_string()),*)) 
     }
 
     /// Generate code for the expect_ method
@@ -784,7 +803,7 @@ impl MockFunction {
 
     fn is_expectation_generic(&self) -> bool {
         self.egenerics.params.iter().any(|p| {
-            matches!(p, GenericParam::Type(_))
+            matches!(p, GenericParam::Type(_) | GenericParam::Const(_))
         }) || self.egenerics.where_clause.is_some()
     }
 
@@ -792,7 +811,7 @@ impl MockFunction {
     /// generic mock struct)?
     pub fn is_method_generic(&self) -> bool {
         self.call_generics.params.iter().any(|p| {
-            matches!(p, GenericParam::Type(_))
+            matches!(p, GenericParam::Type(_) | GenericParam::Const(_))
         }) || self.call_generics.where_clause.is_some()
     }
 
@@ -907,7 +926,7 @@ impl ToTokens for Common<'_> {
         let with_generics = with_generics_idents.iter()
             .zip(self.f.predty.iter())
             .map(|(id, mt)|
-                quote!(#id: #hrtb ::mockall::Predicate<#mt> + Send + 'static, )
+                quote!(#id: #hrtb ::mockall::Predicate<#mt> + ::std::marker::Send + 'static, )
             ).collect::<TokenStream>();
         let with_args = self.f.argnames.iter()
             .zip(with_generics_idents.iter())
@@ -951,7 +970,7 @@ impl ToTokens for Common<'_> {
             }
 
             impl #ig Common #tg #wc {
-                fn call(&self, desc: &str) {
+                fn call<F: Fn() -> ::std::string::String>(&self, desc: F) {
                     self.times.call()
                         .unwrap_or_else(|m| {
                             let desc = std::format!(
@@ -960,22 +979,27 @@ impl ToTokens for Common<'_> {
                                 m);
                         });
                     self.verify_sequence(desc);
-                    if ::mockall::ExpectedCalls::TooFew != self.times.is_satisfied() {
+                    if ::mockall::ExpectedCalls::TooFew 
+                        != self.times.is_satisfied() {
                         self.satisfy_sequence()
+                    } else {
+                        self.called_sequence()
                     }
                 }
 
-                fn in_sequence(&mut self, __mockall_seq: &mut ::mockall::Sequence)
+                fn in_sequence(
+                    &mut self,
+                    __mockall_seq: &mut ::mockall::Sequence)
                     -> &mut Self
                 {
-                    assert!(self.times.is_exact(),
-                        "Only Expectations with an exact call count have sequences");
-                    self.seq_handle = Some(__mockall_seq.next_handle());
+                    self.seq_handle = Some(__mockall_seq.next_handle(
+                        ::mockall::times_to_minimum_call_count(&self.times)
+                    ));
                     self
                 }
 
                 fn is_done(&self) -> bool {
-                    self.times.is_done()
+                    self.times.is_done() | self.is_history_sequence()
                 }
 
                 #[allow(clippy::ptr_arg)]
@@ -995,6 +1019,20 @@ impl ToTokens for Common<'_> {
                     }
                 }
 
+                fn called_sequence(&self) {
+                    if let Some(__mockall_handle) = &self.seq_handle {
+                        __mockall_handle.called()
+                    }
+                }
+
+                fn is_history_sequence(&self) -> bool {
+                    if let Some(__mockall_handle) = &self.seq_handle {
+                        __mockall_handle.is_history()
+                    } else {
+                        false
+                    }
+                }
+
                 /// Expect this expectation to be called any number of times
                 /// contained with the given range.
                 fn times<MockallR>(&mut self, __mockall_r: MockallR)
@@ -1007,7 +1045,7 @@ impl ToTokens for Common<'_> {
 
                 fn withf<MockallF>(&mut self, __mockall_f: MockallF)
                     where MockallF: #hrtb Fn(#( #refpredty, )*)
-                                    -> bool + Send + 'static
+                                    -> bool + ::std::marker::Send + 'static
                 {
                     let mut __mockall_guard = self.matcher.lock().unwrap();
                     *__mockall_guard.deref_mut() =
@@ -1025,7 +1063,7 @@ impl ToTokens for Common<'_> {
                         );
                 }
 
-                fn verify_sequence(&self, desc: &str) {
+                fn verify_sequence<F: Fn() -> ::std::string::String>(&self, desc: F) {
                     if let Some(__mockall_handle) = &self.seq_handle {
                         __mockall_handle.verify(desc)
                     }
@@ -1078,7 +1116,7 @@ impl ToTokens for CommonExpectationMethods<'_> {
         let with_generics = with_generics_idents.iter()
             .zip(self.f.predty.iter())
             .map(|(id, mt)|
-                quote!(#id: #hrtb ::mockall::Predicate<#mt> + Send + 'static, )
+                quote!(#id: #hrtb ::mockall::Predicate<#mt> + ::std::marker::Send + 'static, )
             ).collect::<TokenStream>();
         let with_args = self.f.argnames.iter()
             .zip(with_generics_idents.iter())
@@ -1167,7 +1205,7 @@ impl ToTokens for CommonExpectationMethods<'_> {
             /// function argument, like `with(predicate::function(f))`.
             #v fn withf<MockallF>(&mut self, __mockall_f: MockallF) -> &mut Self
                 where MockallF: #hrtb Fn(#(&#predty, )*)
-                                -> bool + Send + 'static
+                                -> bool + ::std::marker::Send + 'static
             {
                 self.common.withf(__mockall_f);
                 self
@@ -1222,6 +1260,7 @@ impl ToTokens for CommonExpectationsMethods<'_> {
                     Self(Vec::new())
                 }
             }
+            #[allow(single_use_lifetimes)]
             impl #ig Default for Expectations #tg #wc
             {
                 fn default() -> Self {
@@ -1266,7 +1305,7 @@ impl ToTokens for ExpectationGuardCommonMethods<'_> {
         let with_generics = with_generics_idents.iter()
             .zip(self.f.predty.iter())
             .map(|(id, mt)|
-                quote!(#id: #hrtb ::mockall::Predicate<#mt> + Send + 'static, )
+                quote!(#id: #hrtb ::mockall::Predicate<#mt> + ::std::marker::Send + 'static, )
             ).collect::<TokenStream>();
         let with_args = self.f.argnames.iter()
             .zip(with_generics_idents.iter())
@@ -1313,7 +1352,7 @@ impl ToTokens for ExpectationGuardCommonMethods<'_> {
             #v fn return_const<MockallOutput>
             (&mut self, __mockall_c: MockallOutput)
                 -> &mut Expectation #tg
-                where MockallOutput: Clone + Into<#output> + Send + 'static
+                where MockallOutput: Clone + Into<#output> + ::std::marker::Send + 'static
             {
                 #expectations.0[self.i].return_const(__mockall_c)
             }
@@ -1333,7 +1372,7 @@ impl ToTokens for ExpectationGuardCommonMethods<'_> {
             #v fn returning<MockallF>(&mut self, __mockall_f: MockallF)
                 -> &mut Expectation #tg
                 where MockallF: #hrtb FnMut(#(#argty, )*)
-                    -> #output + Send + 'static
+                    -> #output + ::std::marker::Send + 'static
             {
                 #expectations.0[self.i].returning(__mockall_f)
             }
@@ -1343,7 +1382,7 @@ impl ToTokens for ExpectationGuardCommonMethods<'_> {
             #v fn return_once<MockallF>(&mut self, __mockall_f: MockallF)
                 -> &mut Expectation #tg
                 where MockallF: #hrtb FnOnce(#(#argty, )*)
-                                -> #output + Send + 'static
+                                -> #output + ::std::marker::Send + 'static
             {
                 #expectations.0[self.i].return_once(__mockall_f)
             }
@@ -1385,7 +1424,7 @@ impl ToTokens for ExpectationGuardCommonMethods<'_> {
             #v fn withf<MockallF>(&mut self, __mockall_f: MockallF)
                 -> &mut Expectation #tg
                 where MockallF: #hrtb Fn(#(&#predty, )*)
-                                -> bool + Send + 'static
+                                -> bool + ::std::marker::Send + 'static
             {
                 #expectations.0[self.i].withf(__mockall_f)
             }
@@ -1580,14 +1619,6 @@ impl ToTokens for Context<'_> {
         #[cfg(feature = "nightly_derive")]
         let must_use = quote!();
 
-        #[cfg(not(feature = "nightly_derive"))]
-        let clear_poison = quote!();
-        #[cfg(feature = "nightly_derive")]
-        let clear_poison = quote!(
-            #[allow(clippy::incompatible_msrv)]
-            get_expectations().clear_poison();
-        );
-
         quote!(
             /// Manages the context for expectations of static methods.
             ///
@@ -1601,7 +1632,7 @@ impl ToTokens for Context<'_> {
                 // Surprisingly, PhantomData<Fn(generics)> is Send even if
                 // generics are not, unlike PhantomData<generics>
                 _phantom: ::std::marker::PhantomData<
-                    Box<dyn Fn(#ctx_fn_params) + Send>
+                    Box<dyn Fn(#ctx_fn_params) + ::std::marker::Send>
                 >
             }
             impl #ty_ig Context #ty_tg #ty_wc {
@@ -1634,17 +1665,7 @@ impl ToTokens for Context<'_> {
             }
             impl #ty_ig Drop for Context #ty_tg #ty_wc {
                 fn drop(&mut self) {
-                    if ::std::thread::panicking() {
-                        // Clear poison since we're about to clear the Mutex's
-                        // contents anyway.
-                        #clear_poison
-                        // Drain all expectations so other tests can run with a
-                        // blank slate.  But ignore errors so we don't
-                        // double-panic.
-                        let _ = get_expectations()
-                            .lock()
-                            .map(|mut g| g.checkpoint().collect::<Vec<_>>());
-                    } else {
+                    if ! ::std::thread::panicking() {
                         // Verify expectations are satisfied
                         Self::do_checkpoint();
                     }
@@ -1687,7 +1708,7 @@ impl ToTokens for Matcher<'_> {
             quote!(())
         } else {
             self.f.predty.iter()
-            .map(|t| quote!(Box<dyn #hrtb ::mockall::Predicate<#t> + Send>,))
+            .map(|t| quote!(Box<dyn #hrtb ::mockall::Predicate<#t> + ::std::marker::Send>,))
             .collect::<TokenStream>()
         };
         let predty = &self.f.predty;
@@ -1710,14 +1731,14 @@ impl ToTokens for Matcher<'_> {
         quote!(
             enum Matcher #ig #wc {
                 Always,
-                Func(Box<dyn #hrtb Fn(#( #refpredty, )*) -> bool + Send>),
+                Func(Box<dyn #hrtb Fn(#( #refpredty, )*) -> bool + ::std::marker::Send>),
                 // Version of Matcher::Func for closures that aren't Send
                 FuncSt(::mockall::Fragile<Box<dyn #hrtb Fn(#( #refpredty, )*) -> bool>>),
                 Pred(Box<(#preds)>),
                 // Prevent "unused type parameter" errors
                 // Surprisingly, PhantomData<Fn(generics)> is Send even if
                 // generics are not, unlike PhantomData<generics>
-                _Phantom(Box<dyn Fn(#(#fn_params,)*) + Send>)
+                _Phantom(Box<dyn Fn(#(#fn_params,)*) + ::std::marker::Send>)
             }
             impl #ig Matcher #tg #wc {
                 #[allow(clippy::ptr_arg)]
@@ -1784,7 +1805,7 @@ impl ToTokens for RefRfunc<'_> {
                 // Prevent "unused type parameter" errors Surprisingly,
                 // PhantomData<Fn(generics)> is Send even if generics are not,
                 // unlike PhantomData<generics>
-                _Phantom(Mutex<Box<dyn Fn(#(#fn_params,)*) + Send>>)
+                _Phantom(Mutex<Box<dyn Fn(#(#fn_params,)*) + ::std::marker::Send>>)
             }
 
             impl #ig  Rfunc #tg #wc {
@@ -1806,6 +1827,7 @@ impl ToTokens for RefRfunc<'_> {
                 }
             }
 
+            #[allow(single_use_lifetimes)]
             impl #ig std::default::Default for Rfunc #tg #wc
             {
                 fn default() -> Self {
@@ -1843,7 +1865,7 @@ impl ToTokens for RefMutRfunc<'_> {
             #[allow(clippy::unused_unit)]
             enum Rfunc #ig #wc {
                 Default(Option<#owned_output>),
-                Mut((Box<dyn FnMut(#(#argty, )*) -> #owned_output + Send + Sync>),
+                Mut((Box<dyn FnMut(#(#argty, )*) -> #owned_output + ::std::marker::Send + ::std::marker::Sync>),
                     Option<#owned_output>),
                 // Version of Rfunc::Mut for closures that aren't Send
                 MutSt((::mockall::Fragile<
@@ -1854,7 +1876,7 @@ impl ToTokens for RefMutRfunc<'_> {
                 // Prevent "unused type parameter" errors Surprisingly,
                 // PhantomData<Fn(generics)> is Send even if generics are not,
                 // unlike PhantomData<generics>
-                _Phantom(Mutex<Box<dyn Fn(#(#fn_params,)*) + Send>>)
+                _Phantom(Mutex<Box<dyn Fn(#(#fn_params,)*) + ::std::marker::Send>>)
             }
 
             impl #ig  Rfunc #tg #wc {
@@ -1896,6 +1918,7 @@ impl ToTokens for RefMutRfunc<'_> {
                 }
             }
 
+            #[allow(single_use_lifetimes)]
             impl #ig std::default::Default for Rfunc #tg #wc
             {
                 fn default() -> Self {
@@ -1928,12 +1951,12 @@ impl ToTokens for StaticRfunc<'_> {
                 // Indicates that a `return_once` expectation has already
                 // returned
                 Expired,
-                Mut(Box<dyn #hrtb FnMut(#(#argty, )*) -> #output + Send>),
+                Mut(Box<dyn #hrtb FnMut(#(#argty, )*) -> #output + ::std::marker::Send>),
                 // Version of Rfunc::Mut for closures that aren't Send
                 MutSt(::mockall::Fragile<
                     Box<dyn #hrtb FnMut(#(#argty, )*) -> #output >>
                 ),
-                Once(Box<dyn #hrtb FnOnce(#(#argty, )*) -> #output + Send>),
+                Once(Box<dyn #hrtb FnOnce(#(#argty, )*) -> #output + ::std::marker::Send>),
                 // Version of Rfunc::Once for closure that aren't Send
                 OnceSt(::mockall::Fragile<
                     Box<dyn #hrtb FnOnce(#(#argty, )*) -> #output>>
@@ -1941,7 +1964,7 @@ impl ToTokens for StaticRfunc<'_> {
                 // Prevent "unused type parameter" errors Surprisingly,
                 // PhantomData<Fn(generics)> is Send even if generics are not,
                 // unlike PhantomData<generics>
-                _Phantom(Box<dyn Fn(#(#fn_params,)*) + Send>)
+                _Phantom(Box<dyn Fn(#(#fn_params,)*) + ::std::marker::Send>)
             }
 
             impl #ig  Rfunc #tg #wc {
@@ -1984,6 +2007,7 @@ impl ToTokens for StaticRfunc<'_> {
                 }
             }
 
+            #[allow(single_use_lifetimes)]
             impl #ig std::default::Default for Rfunc #tg #wc
             {
                 fn default() -> Self {
@@ -2004,7 +2028,7 @@ impl ToTokens for RefExpectation<'_> {
         let argnames = &self.f.argnames;
         let argty = &self.f.argty;
         let common_methods = CommonExpectationMethods{f: self.f};
-        let desc = self.f.desc();
+        let (desc_fmt, desc_args) = self.f.desc();
         let funcname = self.f.funcname();
         let (ig, tg, wc) = self.f.egenerics.split_for_impl();
 
@@ -2028,7 +2052,7 @@ impl ToTokens for RefExpectation<'_> {
                 #v fn call #lg (&self, #(#argnames: #argty, )*) -> #output
                 {
                     use ::mockall::{ViaDebug, ViaNothing};
-                    self.common.call(&#desc);
+                    self.common.call(|| std::format!(#desc_fmt, #desc_args));
                     self.rfunc.call().unwrap_or_else(|m| {
                         let desc = std::format!(
                             "{}", self.common.matcher.lock().unwrap());
@@ -2047,6 +2071,7 @@ impl ToTokens for RefExpectation<'_> {
 
                 #common_methods
             }
+            #[allow(single_use_lifetimes)]
             impl #ig Default for Expectation #tg #wc
             {
                 fn default() -> Self {
@@ -2070,7 +2095,7 @@ impl ToTokens for RefMutExpectation<'_> {
         let common_methods = CommonExpectationMethods{f: self.f};
         let argnames = &self.f.argnames;
         let argty = &self.f.argty;
-        let desc = self.f.desc();
+        let (desc_fmt, desc_args) = self.f.desc();
         let funcname = self.f.funcname();
         let (ig, tg, wc) = self.f.egenerics.split_for_impl();
         let (_, common_tg, _) = self.f.cgenerics.split_for_impl();
@@ -2093,7 +2118,7 @@ impl ToTokens for RefMutExpectation<'_> {
                     -> &mut #owned_output
                 {
                     use ::mockall::{ViaDebug, ViaNothing};
-                    self.common.call(&#desc);
+                    self.common.call(|| std::format!(#desc_fmt, #desc_args));
                     let desc = std::format!(
                         "{}", self.common.matcher.lock().unwrap());
                     self.rfunc.call_mut(#(#argnames, )*).unwrap_or_else(|m| {
@@ -2116,7 +2141,7 @@ impl ToTokens for RefMutExpectation<'_> {
                 /// reference.
                 #v fn returning<MockallF>(&mut self, __mockall_f: MockallF)
                     -> &mut Self
-                    where MockallF: FnMut(#(#argty, )*) -> #owned_output + Send + Sync + 'static
+                    where MockallF: FnMut(#(#argty, )*) -> #owned_output + ::std::marker::Send + ::std::marker::Sync + 'static
                 {
                     self.rfunc = Rfunc::Mut(Box::new(__mockall_f), None);
                     self
@@ -2135,6 +2160,7 @@ impl ToTokens for RefMutExpectation<'_> {
 
                 #common_methods
             }
+            #[allow(single_use_lifetimes)]
             impl #ig Default for Expectation #tg #wc
             {
                 fn default() -> Self {
@@ -2158,7 +2184,7 @@ impl ToTokens for StaticExpectation<'_> {
         let common_methods = CommonExpectationMethods{f: self.f};
         let argnames = &self.f.argnames;
         let argty = &self.f.argty;
-        let desc = self.f.desc();
+        let (desc_fmt, desc_args) = self.f.desc();
         let hrtb = self.f.hrtb();
         let funcname = self.f.funcname();
         let (ig, tg, wc) = self.f.egenerics.split_for_impl();
@@ -2182,7 +2208,7 @@ impl ToTokens for StaticExpectation<'_> {
                 #v fn call #lg (&self, #(#argnames: #argty, )* ) -> #output
                 {
                     use ::mockall::{ViaDebug, ViaNothing};
-                    self.common.call(&#desc);
+                    self.common.call(|| std::format!(#desc_fmt, #desc_args));
                     self.rfunc.lock().unwrap().call_mut(#(#argnames, )*)
                         .unwrap_or_else(|message| {
                             let desc = std::format!(
@@ -2205,7 +2231,7 @@ impl ToTokens for StaticExpectation<'_> {
                 #v fn return_const<MockallOutput>(&mut self,
                     __mockall_c: MockallOutput)
                     -> &mut Self
-                    where MockallOutput: Clone + Into<#output> + Send + 'static
+                    where MockallOutput: Clone + Into<#output> + ::std::marker::Send + 'static
                 {
                     self.returning(move |#(#argnames, )*| __mockall_c.clone().into())
                 }
@@ -2241,7 +2267,7 @@ impl ToTokens for StaticExpectation<'_> {
                 #v fn return_once<MockallF>(&mut self, __mockall_f: MockallF)
                     -> &mut Self
                     where MockallF: #hrtb FnOnce(#(#argty, )*)
-                                    -> #output + Send + 'static
+                                    -> #output + ::std::marker::Send + 'static
                 {
                     {
                         let mut __mockall_guard = self.rfunc.lock().unwrap();
@@ -2278,7 +2304,7 @@ impl ToTokens for StaticExpectation<'_> {
                 #v fn returning<MockallF>(&mut self, __mockall_f: MockallF)
                     -> &mut Self
                     where MockallF: #hrtb FnMut(#(#argty, )*)
-                                    -> #output + Send + 'static
+                                    -> #output + ::std::marker::Send + 'static
                 {
                     {
                         let mut __mockall_guard = self.rfunc.lock().unwrap();
@@ -2309,6 +2335,7 @@ impl ToTokens for StaticExpectation<'_> {
 
                 #common_methods
             }
+            #[allow(single_use_lifetimes)]
             impl #ig Default for Expectation #tg #wc
             {
                 fn default() -> Self {
@@ -2337,6 +2364,9 @@ impl ToTokens for RefExpectations<'_> {
         let output = &self.f.output;
         let predexprs = &self.f.predexprs;
         let v = &self.f.privmod_vis;
+        let (desc_fmt, desc_args) = self.f.desc();
+        let no_match_msg = quote!(
+            concat!(#desc_fmt, ": No matching expectation found"), #desc_args);
         quote!(
             #common_methods
             impl #ig Expectations #tg #wc {
@@ -2344,15 +2374,15 @@ impl ToTokens for RefExpectations<'_> {
                 /// will be checked in FIFO order and the first one with
                 /// matching arguments will be used.
                 #v fn call #lg (&self, #(#argnames: #argty, )* )
-                    -> Option<#output>
+                    -> #output
                 {
-                    self.0.iter()
+                    use ::mockall::{ViaDebug, ViaNothing};
+                    let __mockall_e = self.0.iter()
                         .find(|__mockall_e|
                               __mockall_e.matches(#(#predexprs, )*) &&
                               (!__mockall_e.is_done() || self.0.len() == 1))
-                        .map(move |__mockall_e|
-                             __mockall_e.call(#(#argnames),*)
-                        )
+                        .unwrap_or_else(|| panic!(#no_match_msg));
+                    __mockall_e.call(#(#argnames),*)
                 }
 
             }
@@ -2375,6 +2405,9 @@ impl ToTokens for RefMutExpectations<'_> {
         let output = &self.f.output;
         let predexprs = &self.f.predexprs;
         let v = &self.f.privmod_vis;
+        let (desc_fmt, desc_args) = self.f.desc();
+        let no_match_msg = quote!(
+            concat!(#desc_fmt, ": No matching expectation found"), #desc_args);
         quote!(
             #common_methods
             impl #ig Expectations #tg #wc {
@@ -2382,16 +2415,16 @@ impl ToTokens for RefMutExpectations<'_> {
                 /// will be checked in FIFO order and the first one with
                 /// matching arguments will be used.
                 #v fn call_mut #lg (&mut self, #(#argnames: #argty, )* )
-                    -> Option<#output>
+                    -> #output
                 {
+                    use ::mockall::{ViaDebug, ViaNothing};
                     let __mockall_n = self.0.len();
-                    self.0.iter_mut()
+                    let __mockall_e = self.0.iter_mut()
                         .find(|__mockall_e|
                               __mockall_e.matches(#(#predexprs, )*) &&
                               (!__mockall_e.is_done() || __mockall_n == 1))
-                        .map(move |__mockall_e|
-                             __mockall_e.call_mut(#(#argnames, )*)
-                        )
+                        .unwrap_or_else(|| panic!(#no_match_msg));
+                    __mockall_e.call_mut(#(#argnames, )*)
                 }
 
             }
@@ -2414,6 +2447,9 @@ impl ToTokens for StaticExpectations<'_> {
         let output = &self.f.output;
         let predexprs = &self.f.predexprs;
         let v = &self.f.privmod_vis;
+        let (desc_fmt, desc_args) = self.f.desc();
+        let no_match_msg = quote!(
+            concat!(#desc_fmt, ": No matching expectation found"), #desc_args);
         quote!(
             #common_methods
             impl #ig Expectations #tg #wc {
@@ -2421,15 +2457,15 @@ impl ToTokens for StaticExpectations<'_> {
                 /// will be checked in FIFO order and the first one with
                 /// matching arguments will be used.
                 #v fn call #lg (&self, #(#argnames: #argty, )* )
-                    -> Option<#output>
+                    -> #output
                 {
-                    self.0.iter()
+                    use ::mockall::{ViaDebug, ViaNothing};
+                    let __mockall_e = self.0.iter()
                         .find(|__mockall_e|
                               __mockall_e.matches(#(#predexprs, )*) &&
                               (!__mockall_e.is_done() || self.0.len() == 1))
-                        .map(move |__mockall_e|
-                             __mockall_e.call(#(#argnames, )*)
-                        )
+                        .unwrap_or_else(|| panic!(#no_match_msg));
+                    __mockall_e.call(#(#argnames, )*)
                 }
 
             }
@@ -2513,19 +2549,22 @@ impl ToTokens for StaticGenericExpectations<'_> {
              quote!(&self),
              format_ident!("downcast_ref"))
         };
+        let (desc_fmt, desc_args) = self.f.desc();
+        let no_match_msg = quote!(
+            concat!(#desc_fmt, ": No matching expectation found"), #desc_args);
         quote!(
             impl #ig ::mockall::AnyExpectations for Expectations #tg #any_wc {}
             impl GenericExpectations {
                 /// Simulating calling the real method.
                 #v fn #call #ig (#self_, #(#argnames: #argty, )* )
-                    -> Option<#output> #wc
+                    -> #output #wc
                 {
-                    self.store.#get(&::mockall::Key::new::#keyid())
-                        .map(|__mockall_e| {
-                            __mockall_e.#downcast::<Expectations #tg>()
-                            .unwrap()
-                            .#call(#(#argnames, )*)
-                        }).flatten()
+                    use ::mockall::{ViaDebug, ViaNothing};
+                    let __mockall_e = self.store.#get(&::mockall::Key::new::#keyid())
+                        .unwrap_or_else(|| panic!(#no_match_msg));
+                    __mockall_e.#downcast::<Expectations #tg>()
+                    .unwrap()
+                    .#call(#(#argnames, )*)
                 }
 
                 /// Create a new Expectation.

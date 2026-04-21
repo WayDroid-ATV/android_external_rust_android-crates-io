@@ -12,7 +12,7 @@
 [package]
 edition = "2021"
 name = "mockall_derive"
-version = "0.13.1"
+version = "0.14.0"
 authors = ["Alan Somers <asomers@gmail.com>"]
 build = "build.rs"
 autolib = false
@@ -35,8 +35,11 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/asomers/mockall"
 
 [package.metadata.release]
-push = false
 tag = false
+push = false
+
+[features]
+nightly_derive = ["proc-macro2/nightly"]
 
 [lib]
 name = "mockall_derive"
@@ -47,13 +50,13 @@ proc-macro = true
 version = "1.0"
 
 [dependencies.proc-macro2]
-version = "1.0.60"
+version = "1.0.75"
 
 [dependencies.quote]
-version = "1.0"
+version = "1.0.35"
 
 [dependencies.syn]
-version = "2.0.9"
+version = "2.0.52"
 features = [
     "extra-traits",
     "full",
@@ -61,6 +64,3 @@ features = [
 
 [dev-dependencies.pretty_assertions]
 version = "1.3"
-
-[features]
-nightly_derive = ["proc-macro2/nightly"]

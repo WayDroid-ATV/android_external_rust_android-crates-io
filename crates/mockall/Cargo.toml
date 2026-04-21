@@ -11,11 +11,11 @@
 
 [package]
 edition = "2021"
-rust-version = "1.71"
+rust-version = "1.77.0"
 name = "mockall"
-version = "0.13.1"
+version = "0.14.0"
 authors = ["Alan Somers <asomers@gmail.com>"]
-build = false
+build = "build.rs"
 exclude = [
     "examples/*",
     "tests/*",
@@ -48,18 +48,24 @@ tag-prefix = ""
 
 [[package.metadata.release.pre-release-replacements]]
 file = "../README.md"
-replace = 'mockall = "{{version}}"'
 search = 'mockall = "[a-z0-9\.-]+"'
+replace = 'mockall = "{{version}}"'
 
 [[package.metadata.release.pre-release-replacements]]
 file = "../CHANGELOG.md"
-replace = "{{version}}"
 search = "Unreleased"
+replace = "{{version}}"
 
 [[package.metadata.release.pre-release-replacements]]
 file = "../CHANGELOG.md"
-replace = "{{date}}"
 search = "ReleaseDate"
+replace = "{{date}}"
+
+[features]
+nightly = [
+    "mockall_derive/nightly_derive",
+    "downcast/nightly",
+]
 
 [lib]
 name = "mockall"
@@ -75,7 +81,7 @@ version = "0.11"
 version = "2.0"
 
 [dependencies.mockall_derive]
-version = "=0.13.1"
+version = "=0.14.0"
 
 [dependencies.predicates]
 version = "3.0.0"
@@ -105,11 +111,11 @@ version = "1.0.113"
 [dev-dependencies.serde_json]
 version = "1.0"
 
+[dev-dependencies.static_assertions]
+version = "1.1.0"
+
 [dev-dependencies.tracing]
 version = "0.1.35"
 
-[features]
-nightly = [
-    "mockall_derive/nightly_derive",
-    "downcast/nightly",
-]
+[dev-dependencies.trait-variant]
+version = "0.1.2"

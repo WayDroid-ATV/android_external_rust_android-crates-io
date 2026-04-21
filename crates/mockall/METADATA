@@ -1,17 +1,17 @@
 name: "mockall"
 description: "A powerful mock object library for Rust."
 third_party {
-  version: "0.13.1"
+  version: "0.14.0"
   license_type: NOTICE
   last_upgrade_date {
-    year: 2025
-    month: 1
-    day: 14
+    year: 2026
+    month: 4
+    day: 20
   }
   homepage: "https://crates.io/crates/mockall"
   identifier {
     type: "crates.io"
     value: "mockall"
-    version: "0.13.1"
+    version: "0.14.0"
   }
 }
