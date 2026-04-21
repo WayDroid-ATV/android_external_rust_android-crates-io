@@ -7,6 +7,9 @@
 
 #![cfg_attr(feature = "nightly_derive", feature(proc_macro_diagnostic))]
 #![cfg_attr(test, deny(warnings))]
+// This lint is unhelpful.  See
+// https://github.com/rust-lang/rust-clippy/discussions/14256
+#![allow(clippy::doc_overindented_list_items)]
 
 use cfg_if::cfg_if;
 use proc_macro2::{Span, TokenStream};
@@ -770,9 +773,30 @@ fn find_lifetimes(ty: &Type) -> HashSet<Lifetime> {
     }
 }
 
+/// If the mocked signature contains any variadic parts, they need a pattern.
+/// The pattern is required for the signature of the mock function, a Rust
+/// function, even though it's not required in the signature of the foreign
+/// function.
+fn fix_elipses(sig: &mut Signature) {
+    if let Some(variadic) = &mut sig.variadic {
+        if variadic.pat.is_none() {
+            let pat = PatIdent {
+                attrs: vec![],
+                by_ref: None,
+                mutability: None,
+                ident: format_ident!("_"),
+                subpat: None
+            };
+            let colon = Token![:](variadic.span());
+            variadic.pat = Some((Box::new(Pat::Ident(pat)), colon));
+        }
+    }
+}
+
 struct AttrFormatter<'a>{
     attrs: &'a [Attribute],
     async_trait: bool,
+    trait_variant: bool,
     doc: bool,
     must_use: bool,
 }
@@ -782,6 +806,7 @@ impl<'a> AttrFormatter<'a> {
         Self {
             attrs,
             async_trait: true,
+            trait_variant: false,
             doc: true,
             must_use: false,
         }
@@ -789,6 +814,11 @@ impl<'a> AttrFormatter<'a> {
 
     fn async_trait(&mut self, allowed: bool) -> &mut Self {
         self.async_trait = allowed;
+        self
+    }
+
+    fn trait_variant(&mut self, allowed: bool) -> &mut Self {
+        self.trait_variant = allowed;
         self
     }
 
@@ -822,6 +852,8 @@ impl<'a> AttrFormatter<'a> {
                     self.doc
                 } else if *i.as_ref().unwrap() == "async_trait" {
                     self.async_trait
+                } else if *i.as_ref().unwrap() == "make" {
+                    self.trait_variant
                 } else if *i.as_ref().unwrap() == "expect" {
                     // This probably means that there's a lint that needs to be
                     // surpressed for the real code, but not for the mock code.
@@ -891,7 +923,7 @@ fn supersuperfy_path(path: &mut Path, levels: usize) -> usize {
                     *input = supersuperfy(input, levels);
                 }
                 if let ReturnType::Type(_, ref mut ty) = pga.output {
-                    *ty = Box::new(supersuperfy(ty, levels));
+                    **ty = supersuperfy(ty, levels);
                 }
             },
         }
@@ -1018,7 +1050,7 @@ fn supersuperfy_bounds(
 fn gen_keyid(g: &Generics) -> impl ToTokens {
     match g.params.len() {
         0 => quote!(<()>),
-        1 => {
+        1 if matches!(g.params.first(), Some(GenericParam::Type(_))) => {
             let (_, tg, _) = g.split_for_impl();
             quote!(#tg)
         },
@@ -1214,8 +1246,7 @@ fn split_lifetimes(
                 // Probably a lifetime parameter from the impl block that isn't
                 // used by this particular method
             },
-            GenericParam::Type(_) => tv.push(p),
-            _ => (),
+            GenericParam::Type(_) | GenericParam::Const(_) => tv.push(p),
         }
     }
 
@@ -1813,6 +1844,33 @@ mod declosurefy {
             quote!(fn foo<F>(f: F) where F: Fn(u32) -> u32 + Send),
             &[quote!(f: Box<dyn Fn(u32) -> u32 + Send>)],
             &[quote!(Box::new(f))]
+        );
+    }
+}
+
+mod fix_elipses {
+    use super::*;
+
+    fn check_fix_elipses(orig_ts: TokenStream, expected_ts: TokenStream) {
+        let mut orig: Signature = parse2(orig_ts).unwrap();
+        let expected: Signature = parse2(expected_ts).unwrap();
+        fix_elipses(&mut orig);
+        assert_eq!(quote!(#orig).to_string(), quote!(#expected).to_string());
+    }
+
+    #[test]
+    fn nopat() {
+        check_fix_elipses(
+            quote!(fn foo(x: i32, ...) -> i32),
+            quote!(fn foo(x: i32, _: ...) -> i32)
+        );
+    }
+
+    #[test]
+    fn pat() {
+        check_fix_elipses(
+            quote!(fn foo(x: i32, y: ...) -> i32),
+            quote!(fn foo(x: i32, y: ...) -> i32)
         );
     }
 }
