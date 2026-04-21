@@ -140,6 +140,7 @@ elf
 encoding_rs
 enum-as-inner
 enum-primitive-derive
+enum_dispatch
 enumn
 env_filter
 env_logger
