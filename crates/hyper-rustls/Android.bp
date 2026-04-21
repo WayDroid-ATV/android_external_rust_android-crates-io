@@ -18,7 +18,7 @@ rust_library {
     host_supported: true,
     crate_name: "hyper_rustls",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.27.7",
+    cargo_pkg_version: "0.27.9",
     crate_root: "src/lib.rs",
     edition: "2021",
     features: [
@@ -38,12 +38,10 @@ rust_library {
         "liblog_rust",
         "librustls",
         "librustls_native_certs",
-        "librustls_pki_types",
         "libtokio",
         "libtokio_rustls",
         "libtower_service",
     ],
-    aliases: ["rustls_pki_types:pki_types"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
