@@ -261,6 +261,7 @@ dependencies = [
  "encoding_rs",
  "enum-as-inner 0.7.0",
  "enum-primitive-derive",
+ "enum_dispatch",
  "enumn",
  "env_filter 1.0.1",
  "env_logger 0.11.0",
@@ -2903,6 +2904,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba7795da175654fe16979af73f81f26a8ea27638d8d9823d317016888a63dc4c"
 dependencies = [
  "num-traits",
+ "quote 1.0.45",
+ "syn 2.0.117",
+]
+
+[[package]]
+name = "enum_dispatch"
+version = "0.3.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa18ce2bc66555b3218614519ac839ddb759a7d6720732f979ef8d13be147ecd"
+dependencies = [
+ "once_cell",
+ "proc-macro2 1.0.106",
  "quote 1.0.45",
  "syn 2.0.117",
 ]
