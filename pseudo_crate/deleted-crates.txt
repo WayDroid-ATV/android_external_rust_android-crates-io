@@ -1,6 +1,7 @@
 autocfg
 bitreader
 caps
+dyn-clone
 gl_common
 icu_provider_baked
 icu_provider_macros
