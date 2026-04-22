@@ -1,74 +1,75 @@
-use crate::finder::Checker;
-use std::fs;
+use crate::sys::Sys;
+use crate::sys::SysMetadata;
+use crate::{NonFatalError, NonFatalErrorHandler};
 use std::path::Path;
 
-pub struct ExecutableChecker;
-
-impl ExecutableChecker {
-    pub fn new() -> ExecutableChecker {
-        ExecutableChecker
-    }
+pub fn is_valid<F: NonFatalErrorHandler>(
+    sys: impl Sys,
+    path: &Path,
+    nonfatal_error_handler: &mut F,
+) -> bool {
+    exists(&sys, path, nonfatal_error_handler) && is_executable(&sys, path, nonfatal_error_handler)
 }
 
-impl Checker for ExecutableChecker {
-    #[cfg(any(unix, target_os = "wasi"))]
-    fn is_valid(&self, path: &Path) -> bool {
-        use rustix::fs as rfs;
-        rfs::access(path, rfs::Access::EXEC_OK).is_ok()
-    }
-
-    #[cfg(windows)]
-    fn is_valid(&self, _path: &Path) -> bool {
+fn is_executable<F: NonFatalErrorHandler>(
+    sys: impl Sys,
+    path: &Path,
+    nonfatal_error_handler: &mut F,
+) -> bool {
+    if sys.is_windows() && path.extension().is_some() {
         true
+    } else {
+        let ret = sys
+            .is_valid_executable(path)
+            .map_err(|e| nonfatal_error_handler.handle(NonFatalError::Io(e)))
+            .unwrap_or(false);
+        #[cfg(feature = "tracing")]
+        tracing::trace!("{} EXEC_OK = {ret}", path.display());
+        ret
     }
 }
 
-pub struct ExistedChecker;
-
-impl ExistedChecker {
-    pub fn new() -> ExistedChecker {
-        ExistedChecker
-    }
-}
-
-impl Checker for ExistedChecker {
-    #[cfg(target_os = "windows")]
-    fn is_valid(&self, path: &Path) -> bool {
-        fs::symlink_metadata(path)
-            .map(|metadata| {
-                let file_type = metadata.file_type();
-                file_type.is_file() || file_type.is_symlink()
-            })
-            .unwrap_or(false)
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    fn is_valid(&self, path: &Path) -> bool {
-        fs::metadata(path)
-            .map(|metadata| metadata.is_file())
-            .unwrap_or(false)
-    }
-}
-
-pub struct CompositeChecker {
-    checkers: Vec<Box<dyn Checker>>,
-}
-
-impl CompositeChecker {
-    pub fn new() -> CompositeChecker {
-        CompositeChecker {
-            checkers: Vec::new(),
+fn exists<F: NonFatalErrorHandler>(
+    sys: impl Sys,
+    path: &Path,
+    nonfatal_error_handler: &mut F,
+) -> bool {
+    {
+        if sys.is_windows() {
+            let ret = sys
+                .symlink_metadata(path)
+                .map(|metadata| {
+                    #[cfg(feature = "tracing")]
+                    tracing::trace!(
+                        "{} is_file() = {}, is_symlink() = {}",
+                        path.display(),
+                        metadata.is_file(),
+                        metadata.is_symlink()
+                    );
+                    metadata.is_file() || metadata.is_symlink()
+                })
+                .map_err(|e| {
+                    nonfatal_error_handler.handle(NonFatalError::Io(e));
+                })
+                .unwrap_or(false);
+            #[cfg(feature = "tracing")]
+            tracing::trace!(
+                "{} has_extension = {}, checker::exists() = {ret}",
+                path.display(),
+                path.extension().is_some()
+            );
+            ret
+        } else {
+            let ret = sys.metadata(path).map(|metadata| metadata.is_file());
+            #[cfg(feature = "tracing")]
+            tracing::trace!("{} is_file() = {ret:?}", path.display());
+            match ret {
+                Ok(ret) => ret,
+                Err(e) => {
+                    nonfatal_error_handler.handle(NonFatalError::Io(e));
+                    false
+                }
+            }
         }
-    }
-
-    pub fn add_checker(mut self, checker: Box<dyn Checker>) -> CompositeChecker {
-        self.checkers.push(checker);
-        self
-    }
-}
-
-impl Checker for CompositeChecker {
-    fn is_valid(&self, path: &Path) -> bool {
-        self.checkers.iter().all(|checker| checker.is_valid(path))
     }
 }

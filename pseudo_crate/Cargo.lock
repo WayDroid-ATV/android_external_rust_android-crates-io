@@ -706,7 +706,7 @@ dependencies = [
  "walkdir",
  "want",
  "weak-table",
- "which",
+ "which 8.0.2",
  "windows-link 0.2.1",
  "windows-sys 0.61.2",
  "windows-targets 0.53.5",
@@ -1390,7 +1390,7 @@ dependencies = [
  "regex",
  "rustc-hash 1.1.0",
  "shlex",
- "which",
+ "which 4.4.2",
 ]
 
 [[package]]
@@ -7174,7 +7174,7 @@ dependencies = [
  "protobuf-support",
  "tempfile",
  "thiserror 1.0.49",
- "which",
+ "which 4.4.2",
 ]
 
 [[package]]
@@ -10547,6 +10547,15 @@ dependencies = [
  "home",
  "once_cell",
  "rustix 0.38.31",
+]
+
+[[package]]
+name = "which"
+version = "8.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81995fafaaaf6ae47a7d0cc83c67caf92aeb7e5331650ae6ff856f7c0c60c459"
+dependencies = [
+ "libc 0.2.185",
 ]
 
 [[package]]

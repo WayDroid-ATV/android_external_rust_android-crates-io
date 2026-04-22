@@ -1,4 +1,4 @@
 {
-  "features": [],
+  "features": ["real-sys"],
   "min_sdk_version": "29"
 }
