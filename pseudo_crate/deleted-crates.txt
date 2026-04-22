@@ -5,6 +5,8 @@ gl_common
 icu_provider_baked
 icu_provider_macros
 instant
+miette
+miette-derive
 moveit
 oneshot-uniffi
 syn-mid

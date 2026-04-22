@@ -424,8 +424,6 @@ dependencies = [
  "memoffset",
  "merge",
  "merge_derive",
- "miette",
- "miette-derive",
  "mime",
  "minimal-lexical",
  "miniz_oxide 0.9.1",
@@ -5687,28 +5685,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c8f8ce6efff81cbc83caf4af0905c46e58cb46892f63ad3835e81b47eaf7968"
 dependencies = [
  "proc-macro-error2",
- "proc-macro2 1.0.106",
- "quote 1.0.45",
- "syn 2.0.117",
-]
-
-[[package]]
-name = "miette"
-version = "7.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f98efec8807c63c752b5bd61f862c165c115b0a35685bdcfd9238c7aeb592b7"
-dependencies = [
- "cfg-if",
- "miette-derive",
- "unicode-width 0.1.11",
-]
-
-[[package]]
-name = "miette-derive"
-version = "7.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db5b29714e950dbb20d5e6f74f9dcec4edbcc1067bb7f8ed198c097b8c1a818b"
-dependencies = [
  "proc-macro2 1.0.106",
  "quote 1.0.45",
  "syn 2.0.117",
