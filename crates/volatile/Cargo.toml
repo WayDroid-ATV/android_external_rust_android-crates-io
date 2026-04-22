@@ -10,33 +10,57 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
+edition = "2021"
 name = "volatile"
-version = "0.4.6"
+version = "0.6.1"
 authors = ["Philipp Oppermann <dev@phil-opp.com>"]
-description = "A simple volatile wrapper type"
+build = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Volatile wrapper types for raw pointers"
 documentation = "https://docs.rs/volatile"
 readme = "README.md"
 keywords = ["volatile"]
+categories = [
+    "no-std",
+    "no-std::no-alloc",
+]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/rust-osdev/volatile"
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
+]
+
 [package.metadata.release]
-dev-version = false
 pre-release-commit-message = "Release version {{version}}"
 
 [[package.metadata.release.pre-release-replacements]]
+exactly = 1
 file = "Changelog.md"
-search = "# Unreleased"
 replace = """
 # Unreleased
 
 # {{version}} – {{date}}"""
-exactly = 1
+search = "# Unreleased"
 
-[package.metadata.docs.rs]
-features = ["unstable"]
+[lib]
+name = "volatile"
+path = "src/lib.rs"
 
-[dependencies]
+[dependencies.volatile-macro]
+version = "=0.6.0"
+optional = true
+
+[dev-dependencies.rand]
+version = "0.8.3"
 
 [features]
+derive = ["dep:volatile-macro"]
 unstable = []
+very_unstable = ["unstable"]
