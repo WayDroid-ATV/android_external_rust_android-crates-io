@@ -562,6 +562,7 @@ uefi
 uefi-macros
 uefi-raw
 uguid
+uncased
 unicode-bidi
 unicode-ident
 unicode-normalization

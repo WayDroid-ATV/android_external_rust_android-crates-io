@@ -672,6 +672,7 @@ dependencies = [
  "uefi-macros",
  "uefi-raw",
  "uguid",
+ "uncased",
  "unicode-bidi",
  "unicode-ident",
  "unicode-normalization",
@@ -9793,6 +9794,15 @@ name = "uguid"
 version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c8352f8c05e47892e7eaf13b34abd76a7f4aeaf817b716e88789381927f199c"
+
+[[package]]
+name = "uncased"
+version = "0.9.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1b88fcfe09e89d3866a5c11019378088af2d24c3fbd4f0543f96b479ec90697"
+dependencies = [
+ "version_check",
+]
 
 [[package]]
 name = "unescaper"
