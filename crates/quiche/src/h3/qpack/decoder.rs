@@ -92,7 +92,7 @@ impl Decoder {
         let req_insert_count = decode_int(&mut b, 8)?;
         let base = decode_int(&mut b, 7)?;
 
-        trace!("Header count={} base={}", req_insert_count, base);
+        trace!("Header count={req_insert_count} base={base}");
 
         while b.cap() > 0 {
             let first = b.peek_u8()?;
@@ -104,7 +104,7 @@ impl Decoder {
                     let s = first & STATIC == STATIC;
                     let index = decode_int(&mut b, 6)?;
 
-                    trace!("Indexed index={} static={}", index, s);
+                    trace!("Indexed index={index} static={s}");
 
                     if !s {
                         // TODO: implement dynamic table
@@ -124,7 +124,7 @@ impl Decoder {
                 Representation::IndexedWithPostBase => {
                     let index = decode_int(&mut b, 4)?;
 
-                    trace!("Indexed With Post Base index={}", index);
+                    trace!("Indexed With Post Base index={index}");
 
                     // TODO: implement dynamic table
                     return Err(Error::InvalidHeaderValue);
@@ -137,7 +137,7 @@ impl Decoder {
                     let mut name = b.get_bytes(name_len)?;
 
                     let name = if name_huff {
-                        super::huffman::decode(&mut name)?
+                        name.get_huffman_decoded()?
                     } else {
                         name.to_vec()
                     };
@@ -146,9 +146,7 @@ impl Decoder {
                     let value = decode_str(&mut b)?;
 
                     trace!(
-                        "Literal Without Name Reference name={:?} value={:?}",
-                        name,
-                        value,
+                        "Literal Without Name Reference name={name:?} value={value:?}",
                     );
 
                     left = left
@@ -169,10 +167,7 @@ impl Decoder {
                     let value = decode_str(&mut b)?;
 
                     trace!(
-                        "Literal name_idx={} static={} value={:?}",
-                        name_idx,
-                        s,
-                        value
+                        "Literal name_idx={name_idx} static={s} value={value:?}"
                     );
 
                     if !s {
@@ -207,11 +202,11 @@ impl Decoder {
 }
 
 fn lookup_static(idx: u64) -> Result<(&'static [u8], &'static [u8])> {
-    if idx >= super::static_table::STATIC_TABLE.len() as u64 {
+    if idx >= super::static_table::STATIC_DECODE_TABLE.len() as u64 {
         return Err(Error::InvalidStaticTableIndex);
     }
 
-    Ok(super::static_table::STATIC_TABLE[idx as usize])
+    Ok(super::static_table::STATIC_DECODE_TABLE[idx as usize])
 }
 
 fn decode_int(b: &mut octets::Octets, prefix: usize) -> Result<u64> {
@@ -255,7 +250,7 @@ fn decode_str(b: &mut octets::Octets) -> Result<Vec<u8>> {
     let mut val = b.get_bytes(len)?;
 
     let val = if huff {
-        super::huffman::decode(&mut val)?
+        val.get_huffman_decoded()?
     } else {
         val.to_vec()
     };
@@ -269,24 +264,24 @@ mod tests {
 
     #[test]
     fn decode_int1() {
-        let mut encoded = [0b01010, 0x02];
-        let mut b = octets::Octets::with_slice(&mut encoded);
+        let encoded = [0b01010, 0x02];
+        let mut b = octets::Octets::with_slice(&encoded);
 
         assert_eq!(decode_int(&mut b, 5), Ok(10));
     }
 
     #[test]
     fn decode_int2() {
-        let mut encoded = [0b11111, 0b10011010, 0b00001010];
-        let mut b = octets::Octets::with_slice(&mut encoded);
+        let encoded = [0b11111, 0b10011010, 0b00001010];
+        let mut b = octets::Octets::with_slice(&encoded);
 
         assert_eq!(decode_int(&mut b, 5), Ok(1337));
     }
 
     #[test]
     fn decode_int3() {
-        let mut encoded = [0b101010];
-        let mut b = octets::Octets::with_slice(&mut encoded);
+        let encoded = [0b101010];
+        let mut b = octets::Octets::with_slice(&encoded);
 
         assert_eq!(decode_int(&mut b, 8), Ok(42));
     }

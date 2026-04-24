@@ -30,8 +30,8 @@ use crate::Error;
 use crate::Result;
 
 use crate::packet;
+use crate::range_buf::RangeBuf;
 use crate::ranges;
-use crate::stream;
 
 #[cfg(feature = "qlog")]
 use qlog::events::quic::AckedRanges;
@@ -60,7 +60,14 @@ pub enum Frame {
         len: usize,
     },
 
-    Ping,
+    Ping {
+        // Attach metadata to the Ping frame. This doesn't appear on the wire,
+        // but does tell us if this frame was part of a PMTUD probe and how
+        // large the probe was. This will only show up on sent frames and be
+        // None otherwise. This is the total size of the QUIC packet in the
+        // probe.
+        mtu_probe: Option<usize>,
+    },
 
     ACK {
         ack_delay: u64,
@@ -80,7 +87,7 @@ pub enum Frame {
     },
 
     Crypto {
-        data: stream::RangeBuf,
+        data: RangeBuf,
     },
 
     CryptoHeader {
@@ -94,7 +101,7 @@ pub enum Frame {
 
     Stream {
         stream_id: u64,
-        data: stream::RangeBuf,
+        data: RangeBuf,
     },
 
     StreamHeader {
@@ -198,7 +205,7 @@ impl Frame {
                 Frame::Padding { len }
             },
 
-            0x01 => Frame::Ping,
+            0x01 => Frame::Ping { mtu_probe: None },
 
             0x02..=0x03 => parse_ack_frame(frame_type, b)?,
 
@@ -216,13 +223,20 @@ impl Frame {
             0x06 => {
                 let offset = b.get_varint()?;
                 let data = b.get_bytes_with_varint_length()?;
-                let data = stream::RangeBuf::from(data.as_ref(), offset, false);
+                let data = <RangeBuf>::from(data.as_ref(), offset, false);
 
                 Frame::Crypto { data }
             },
 
-            0x07 => Frame::NewToken {
-                token: b.get_bytes_with_varint_length()?.to_vec(),
+            0x07 => {
+                let len = b.get_varint()?;
+                if len == 0 {
+                    return Err(Error::InvalidFrame);
+                }
+
+                Frame::NewToken {
+                    token: b.get_bytes(len as usize)?.to_vec(),
+                }
             },
 
             0x08..=0x0f => parse_stream_frame(frame_type, b)?,
@@ -261,15 +275,25 @@ impl Frame {
                 limit: b.get_varint()?,
             },
 
-            0x18 => Frame::NewConnectionId {
-                seq_num: b.get_varint()?,
-                retire_prior_to: b.get_varint()?,
-                conn_id: b.get_bytes_with_u8_length()?.to_vec(),
-                reset_token: b
-                    .get_bytes(16)?
-                    .buf()
-                    .try_into()
-                    .map_err(|_| Error::BufferTooShort)?,
+            0x18 => {
+                let seq_num = b.get_varint()?;
+                let retire_prior_to = b.get_varint()?;
+                let conn_id_len = b.get_u8()?;
+
+                if !(1..=packet::MAX_CID_LEN).contains(&conn_id_len) {
+                    return Err(Error::InvalidFrame);
+                }
+
+                Frame::NewConnectionId {
+                    seq_num,
+                    retire_prior_to,
+                    conn_id: b.get_bytes(conn_id_len as usize)?.to_vec(),
+                    reset_token: b
+                        .get_bytes(16)?
+                        .buf()
+                        .try_into()
+                        .map_err(|_| Error::BufferTooShort)?,
+                }
             },
 
             0x19 => Frame::RetireConnectionId {
@@ -359,7 +383,7 @@ impl Frame {
                 }
             },
 
-            Frame::Ping => {
+            Frame::Ping { .. } => {
                 b.put_varint(0x01)?;
             },
 
@@ -578,7 +602,7 @@ impl Frame {
         match self {
             Frame::Padding { len } => *len,
 
-            Frame::Ping => 1,
+            Frame::Ping { .. } => 1,
 
             Frame::ACK {
                 ack_delay,
@@ -811,9 +835,15 @@ impl Frame {
     #[cfg(feature = "qlog")]
     pub fn to_qlog(&self) -> QuicFrame {
         match self {
-            Frame::Padding { .. } => QuicFrame::Padding,
+            Frame::Padding { len } => QuicFrame::Padding {
+                length: None,
+                payload_length: *len as u32,
+            },
 
-            Frame::Ping { .. } => QuicFrame::Ping,
+            Frame::Ping { .. } => QuicFrame::Ping {
+                length: None,
+                payload_length: None,
+            },
 
             Frame::ACK {
                 ack_delay,
@@ -840,6 +870,8 @@ impl Frame {
                     ect1,
                     ect0,
                     ce,
+                    length: None,
+                    payload_length: None,
                 }
             },
 
@@ -851,6 +883,8 @@ impl Frame {
                 stream_id: *stream_id,
                 error_code: *error_code,
                 final_size: *final_size,
+                length: None,
+                payload_length: None,
             },
 
             Frame::StopSending {
@@ -859,6 +893,8 @@ impl Frame {
             } => QuicFrame::StopSending {
                 stream_id: *stream_id,
                 error_code: *error_code,
+                length: None,
+                payload_length: None,
             },
 
             Frame::Crypto { data } => QuicFrame::Crypto {
@@ -976,14 +1012,15 @@ impl Frame {
                 trigger_frame_type: None, // don't know trigger type
             },
 
-            Frame::ApplicationClose { error_code, reason } =>
+            Frame::ApplicationClose { error_code, reason } => {
                 QuicFrame::ConnectionClose {
                     error_space: Some(ErrorSpace::ApplicationError),
                     error_code: Some(*error_code),
                     error_code_value: None, // raw error is no different for us
                     reason: Some(String::from_utf8_lossy(reason).into_owned()),
                     trigger_frame_type: None, // don't know trigger type
-                },
+                }
+            },
 
             Frame::HandshakeDone => QuicFrame::HandshakeDone,
 
@@ -1007,8 +1044,8 @@ impl std::fmt::Debug for Frame {
                 write!(f, "PADDING len={len}")?;
             },
 
-            Frame::Ping => {
-                write!(f, "PING")?;
+            Frame::Ping { mtu_probe } => {
+                write!(f, "PING mtu_probe={mtu_probe:?}")?;
             },
 
             Frame::ACK {
@@ -1048,8 +1085,8 @@ impl std::fmt::Debug for Frame {
                 write!(f, "CRYPTO off={offset} len={length}")?;
             },
 
-            Frame::NewToken { .. } => {
-                write!(f, "NEW_TOKEN (TODO)")?;
+            Frame::NewToken { token } => {
+                write!(f, "NEW_TOKEN len={}", token.len())?;
             },
 
             Frame::Stream { stream_id, data } => {
@@ -1303,7 +1340,7 @@ fn parse_stream_frame(ty: u64, b: &mut octets::Octets) -> Result<Frame> {
     let fin = first & 0x01 != 0;
 
     let data = b.get_bytes(len)?;
-    let data = stream::RangeBuf::from(data.as_ref(), offset, fin);
+    let data = <RangeBuf>::from(data.as_ref(), offset, fin);
 
     Ok(Frame::Stream { stream_id, data })
 }
@@ -1358,7 +1395,7 @@ mod tests {
     fn ping() {
         let mut d = [42; 128];
 
-        let frame = Frame::Ping;
+        let frame = Frame::Ping { mtu_probe: None };
 
         let wire_len = {
             let mut b = octets::OctetsMut::with_slice(&mut d);
@@ -1525,7 +1562,7 @@ mod tests {
         let data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
         let frame = Frame::Crypto {
-            data: stream::RangeBuf::from(&data, 1230976, false),
+            data: <RangeBuf>::from(&data, 1230976, false),
         };
 
         let wire_len = {
@@ -1584,7 +1621,7 @@ mod tests {
 
         let frame = Frame::Stream {
             stream_id: 32,
-            data: stream::RangeBuf::from(&data, 1230976, true),
+            data: <RangeBuf>::from(&data, 1230976, true),
         };
 
         let wire_len = {
@@ -1615,7 +1652,7 @@ mod tests {
 
         let frame = Frame::Stream {
             stream_id: 32,
-            data: stream::RangeBuf::from(&data, MAX_STREAM_SIZE - 11, true),
+            data: <RangeBuf>::from(&data, MAX_STREAM_SIZE - 11, true),
         };
 
         let wire_len = {
@@ -2059,19 +2096,19 @@ mod tests {
 
         assert_eq!(wire_len, 15);
 
-        let mut b = octets::Octets::with_slice(&mut d);
+        let mut b = octets::Octets::with_slice(&d);
         assert_eq!(
             Frame::from_bytes(&mut b, packet::Type::Short),
             Ok(frame.clone())
         );
 
-        let mut b = octets::Octets::with_slice(&mut d);
+        let mut b = octets::Octets::with_slice(&d);
         assert!(Frame::from_bytes(&mut b, packet::Type::Initial).is_err());
 
-        let mut b = octets::Octets::with_slice(&mut d);
+        let mut b = octets::Octets::with_slice(&d);
         assert!(Frame::from_bytes(&mut b, packet::Type::ZeroRTT).is_ok());
 
-        let mut b = octets::Octets::with_slice(&mut d);
+        let mut b = octets::Octets::with_slice(&d);
         assert!(Frame::from_bytes(&mut b, packet::Type::Handshake).is_err());
 
         let frame_data = match &frame {

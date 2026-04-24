@@ -27,8 +27,6 @@
 #[macro_use]
 extern crate log;
 
-use std::net::ToSocketAddrs;
-
 use ring::rand::*;
 
 const MAX_DATAGRAM_SIZE: usize = 1350;
@@ -56,7 +54,7 @@ fn main() {
     let mut events = mio::Events::with_capacity(1024);
 
     // Resolve server address.
-    let peer_addr = url.to_socket_addrs().unwrap().next().unwrap();
+    let peer_addr = url.socket_addrs(|| None).unwrap()[0];
 
     // Bind to INADDR_ANY or IN6ADDR_ANY depending on the IP family of the
     // server address. This is needed on macOS and BSD variants that don't
@@ -129,10 +127,10 @@ fn main() {
             continue;
         }
 
-        panic!("send() failed: {:?}", e);
+        panic!("send() failed: {e:?}");
     }
 
-    debug!("written {}", write);
+    debug!("written {write}");
 
     let req_start = std::time::Instant::now();
 
@@ -165,11 +163,11 @@ fn main() {
                         break 'read;
                     }
 
-                    panic!("recv() failed: {:?}", e);
+                    panic!("recv() failed: {e:?}");
                 },
             };
 
-            debug!("got {} bytes", len);
+            debug!("got {len} bytes");
 
             let recv_info = quiche::RecvInfo {
                 to: socket.local_addr().unwrap(),
@@ -181,12 +179,12 @@ fn main() {
                 Ok(v) => v,
 
                 Err(e) => {
-                    error!("recv failed: {:?}", e);
+                    error!("recv failed: {e:?}");
                     continue 'read;
                 },
             };
 
-            debug!("processed {} bytes", read);
+            debug!("processed {read} bytes");
         }
 
         debug!("done reading");
@@ -210,7 +208,7 @@ fn main() {
         // Process all readable streams.
         for s in conn.readable() {
             while let Ok((read, fin)) = conn.stream_recv(s, &mut buf) {
-                debug!("received {} bytes", read);
+                debug!("received {read} bytes");
 
                 let stream_buf = &buf[..read];
 
@@ -250,7 +248,7 @@ fn main() {
                 },
 
                 Err(e) => {
-                    error!("send failed: {:?}", e);
+                    error!("send failed: {e:?}");
 
                     conn.close(false, 0x1, b"fail").ok();
                     break;
@@ -263,10 +261,10 @@ fn main() {
                     break;
                 }
 
-                panic!("send() failed: {:?}", e);
+                panic!("send() failed: {e:?}");
             }
 
-            debug!("written {}", write);
+            debug!("written {write}");
         }
 
         if conn.is_closed() {

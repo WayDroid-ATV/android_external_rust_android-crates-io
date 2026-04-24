@@ -40,7 +40,7 @@ fn get_boringssl_platform_output_path() -> String {
         let deb_info = match &debug_env_var[..] {
             "false" => false,
             "true" => true,
-            unknown => panic!("Unknown DEBUG={} env var.", unknown),
+            unknown => panic!("Unknown DEBUG={unknown} env var."),
         };
 
         let opt_env_var = std::env::var("OPT_LEVEL")
@@ -55,7 +55,7 @@ fn get_boringssl_platform_output_path() -> String {
                     "Release"
                 },
             "s" | "z" => "MinSizeRel",
-            unknown => panic!("Unknown OPT_LEVEL={} env var.", unknown),
+            unknown => panic!("Unknown OPT_LEVEL={unknown} env var."),
         };
 
         subdir.to_string()
@@ -217,7 +217,8 @@ fn target_dir_path() -> std::path::PathBuf {
 
 fn main() {
     if cfg!(feature = "boringssl-vendored") &&
-        !cfg!(feature = "boringssl-boring-crate")
+        !cfg!(feature = "boringssl-boring-crate") &&
+        !cfg!(feature = "openssl")
     {
         let bssl_dir = std::env::var("QUICHE_BSSL_PATH").unwrap_or_else(|_| {
             let mut cfg = get_boringssl_cmake_config();
@@ -225,11 +226,15 @@ fn main() {
             if cfg!(feature = "fuzzing") {
                 cfg.cxxflag("-DBORINGSSL_UNSAFE_DETERMINISTIC_MODE")
                     .cxxflag("-DBORINGSSL_UNSAFE_FUZZER_MODE");
+                cfg.cflag("-DBORINGSSL_UNSAFE_DETERMINISTIC_MODE")
+                    .cflag("-DBORINGSSL_UNSAFE_FUZZER_MODE");
             }
 
             cfg.build_target("ssl").build();
             cfg.build_target("crypto").build().display().to_string()
         });
+
+        println!("cargo:rustc-link-arg=-Wl,-rpath,{bssl_dir}");
 
         let build_path = get_boringssl_platform_output_path();
         let mut build_dir = format!("{bssl_dir}/build/{build_path}");
@@ -258,7 +263,25 @@ fn main() {
         println!("cargo:rustc-cdylib-link-arg=-Wl,-undefined,dynamic_lookup");
     }
 
+    #[cfg(feature = "openssl")]
+    {
+        let pkgcfg = pkg_config::Config::new();
+
+        if pkgcfg.probe("libcrypto").is_err() {
+            panic!("no libcrypto found");
+        }
+
+        if pkgcfg.probe("libssl").is_err() {
+            panic!("no libssl found");
+        }
+    }
+
     if cfg!(feature = "pkg-config-meta") {
         write_pkg_config();
+    }
+
+    #[cfg(feature = "ffi")]
+    if target_os != "windows" {
+        cdylib_link_lines::metabuild();
     }
 }

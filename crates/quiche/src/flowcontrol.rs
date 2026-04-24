@@ -77,6 +77,12 @@ impl FlowControl {
         self.max_data
     }
 
+    /// Returns the consumed bytes by the receiver.
+    #[cfg(test)]
+    pub fn consumed(&self) -> u64 {
+        self.consumed
+    }
+
     /// Update consumed bytes.
     pub fn add_consumed(&mut self, consumed: u64) {
         self.consumed += consumed;
@@ -104,7 +110,7 @@ impl FlowControl {
     }
 
     /// Autotune the window size. When there is an another update
-    /// within RTT x 2, bump the window x 1.5, capped by
+    /// within RTT x 2, bump the window x 2, capped by
     /// max_window.
     pub fn autotune_window(&mut self, now: Instant, rtt: Duration) {
         if let Some(last_update) = self.last_update {
@@ -142,10 +148,10 @@ mod tests {
         let mut fc = FlowControl::new(100, 20, 100);
 
         fc.add_consumed(85);
-        assert_eq!(fc.should_update_max_data(), false);
+        assert!(!fc.should_update_max_data());
 
         fc.add_consumed(10);
-        assert_eq!(fc.should_update_max_data(), true);
+        assert!(fc.should_update_max_data());
     }
 
     #[test]
@@ -155,7 +161,7 @@ mod tests {
         let consumed = 95;
 
         fc.add_consumed(consumed);
-        assert_eq!(fc.should_update_max_data(), true);
+        assert!(fc.should_update_max_data());
         assert_eq!(fc.max_data_next(), consumed + 20);
     }
 
@@ -166,7 +172,7 @@ mod tests {
         let consumed = 95;
 
         fc.add_consumed(consumed);
-        assert_eq!(fc.should_update_max_data(), true);
+        assert!(fc.should_update_max_data());
 
         let max_data_next = fc.max_data_next();
         assert_eq!(fc.max_data_next(), consumed + 20);
@@ -183,7 +189,7 @@ mod tests {
         let consumed = 95;
 
         fc.add_consumed(consumed);
-        assert_eq!(fc.should_update_max_data(), true);
+        assert!(fc.should_update_max_data());
 
         let max_data_next = fc.max_data_next();
         assert_eq!(max_data_next, consumed + w);
@@ -198,7 +204,7 @@ mod tests {
         let consumed_inc = 15;
 
         fc.add_consumed(consumed_inc);
-        assert_eq!(fc.should_update_max_data(), true);
+        assert!(fc.should_update_max_data());
 
         let max_data_next = fc.max_data_next();
         assert_eq!(max_data_next, consumed + consumed_inc + w);

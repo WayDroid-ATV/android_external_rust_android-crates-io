@@ -10,10 +10,10 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2018"
-rust-version = "1.66"
+edition = "2021"
+rust-version = "1.85"
 name = "quiche"
-version = "0.17.1"
+version = "0.24.8"
 authors = ["Alessandro Ghedini <alessandro@ghedini.me>"]
 build = "src/build.rs"
 include = [
@@ -31,6 +31,11 @@ include = [
     "/quiche.svg",
     "/src",
 ]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "🥧 Savoury implementation of the QUIC transport protocol and HTTP/3"
 readme = "README.md"
 keywords = [
@@ -40,6 +45,9 @@ keywords = [
 categories = ["network-programming"]
 license = "BSD-2-Clause"
 repository = "https://github.com/cloudflare/quiche"
+
+[package.metadata.release]
+tag-prefix = ""
 
 [package.metadata.docs.rs]
 no-default-features = true
@@ -52,43 +60,89 @@ rustdoc-args = [
     "docsrs",
 ]
 
+[features]
+boringssl-boring-crate = [
+    "boring",
+    "foreign-types-shared",
+]
+boringssl-vendored = []
+default = ["boringssl-vendored"]
+ffi = ["dep:cdylib-link-lines"]
+fuzzing = []
+gcongestion = []
+internal = []
+openssl = ["pkg-config"]
+pkg-config-meta = []
+
 [lib]
+name = "quiche"
 crate-type = [
     "lib",
     "staticlib",
     "cdylib",
 ]
+path = "src/lib.rs"
+
+[[example]]
+name = "client"
+path = "examples/client.rs"
+
+[[example]]
+name = "http3-client"
+path = "examples/http3-client.rs"
+
+[[example]]
+name = "http3-server"
+path = "examples/http3-server.rs"
+
+[[example]]
+name = "qpack-decode"
+path = "examples/qpack-decode.rs"
+
+[[example]]
+name = "qpack-encode"
+path = "examples/qpack-encode.rs"
+
+[[example]]
+name = "server"
+path = "examples/server.rs"
 
 [dependencies.boring]
-version = "2.0.0"
+version = "4.3"
 optional = true
+
+[dependencies.either]
+version = "1.8"
+default-features = false
+
+[dependencies.enum_dispatch]
+version = "0.3"
 
 [dependencies.foreign-types-shared]
 version = "0.3.0"
 optional = true
 
-[dependencies.lazy_static]
-version = "1"
+[dependencies.intrusive-collections]
+version = "0.9.5"
 
 [dependencies.libc]
-version = "0.2"
+version = "0.2.76"
+default-features = false
 
 [dependencies.libm]
 version = "0.2"
 
 [dependencies.log]
-version = "0.4"
+version = "0.4.20"
 features = ["std"]
 
 [dependencies.octets]
-version = "0.2"
+version = "0.3.4"
+features = ["huffman_hpack"]
 
 [dependencies.qlog]
-version = "0.9"
+version = "0.15.2"
 optional = true
-
-[dependencies.ring]
-version = "0.16"
 
 [dependencies.sfv]
 version = "0.9"
@@ -99,40 +153,39 @@ version = "0.4"
 
 [dependencies.smallvec]
 version = "1.10"
-features = [
-    "serde",
-    "union",
-]
+features = ["union"]
+default-features = false
 
 [dev-dependencies.mio]
-version = "0.8"
+version = "1"
 features = [
     "net",
     "os-poll",
 ]
 
+[dev-dependencies.ring]
+version = "0.17.8"
+
+[dev-dependencies.rstest]
+version = "0.26.1"
+
 [dev-dependencies.url]
-version = "1"
+version = "2"
+
+[build-dependencies.cdylib-link-lines]
+version = "0.1"
+optional = true
 
 [build-dependencies.cmake]
 version = "0.1"
 
-[features]
-boringssl-boring-crate = [
-    "boring",
-    "foreign-types-shared",
-]
-boringssl-vendored = []
-default = ["boringssl-vendored"]
-ffi = []
-fuzzing = []
-pkg-config-meta = []
-
-[target."cfg(windows)".dependencies.winapi]
+[build-dependencies.pkg-config]
 version = "0.3"
+optional = true
+
+[target."cfg(windows)".dependencies.windows-sys]
+version = "0.59"
 features = [
-    "wincrypt",
-    "ws2def",
-    "ws2ipdef",
-    "ws2tcpip",
+    "Win32_Networking_WinSock",
+    "Win32_Security_Cryptography",
 ]

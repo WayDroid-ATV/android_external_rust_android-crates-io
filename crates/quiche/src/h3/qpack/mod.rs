@@ -26,10 +26,13 @@
 
 //! HTTP/3 header compression (QPACK).
 
-const INDEXED: u8 = 0b1000_0000;
-const INDEXED_WITH_POST_BASE: u8 = 0b0001_0000;
-const LITERAL: u8 = 0b0010_0000;
-const LITERAL_WITH_NAME_REF: u8 = 0b0100_0000;
+pub use encoder::encode_int;
+pub use encoder::encode_str;
+
+pub const INDEXED: u8 = 0b1000_0000;
+pub const INDEXED_WITH_POST_BASE: u8 = 0b0001_0000;
+pub const LITERAL: u8 = 0b0010_0000;
+pub const LITERAL_WITH_NAME_REF: u8 = 0b0100_0000;
 
 /// A specialized [`Result`] type for quiche QPACK operations.
 ///
@@ -44,9 +47,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     /// The provided buffer is too short.
     BufferTooShort,
-
-    /// The provided string would be larger after huffman encoding.
-    InflatedHuffmanEncoding,
 
     /// The QPACK header block's huffman encoding is invalid.
     InvalidHuffmanEncoding,
@@ -73,7 +73,7 @@ impl std::error::Error for Error {
     }
 }
 
-impl std::convert::From<octets::BufferTooShortError> for Error {
+impl From<octets::BufferTooShortError> for Error {
     fn from(_err: octets::BufferTooShortError) -> Self {
         Error::BufferTooShort
     }
@@ -105,7 +105,7 @@ mod tests {
         assert_eq!(enc.encode(&headers, &mut encoded), Ok(240));
 
         let mut dec = Decoder::new();
-        assert_eq!(dec.decode(&mut encoded, u64::MAX), Ok(headers));
+        assert_eq!(dec.decode(&encoded, u64::MAX), Ok(headers));
     }
 
     #[test]
@@ -113,44 +113,44 @@ mod tests {
         let mut encoded = [0u8; 35];
 
         let headers_expected = vec![
-            crate::h3::Header::new(b":status", b"200"),
-            crate::h3::Header::new(b":path", b"/HeLlO"),
-            crate::h3::Header::new(b"woot", b"woot"),
-            crate::h3::Header::new(b"hello", b"WorlD"),
-            crate::h3::Header::new(b"foo", b"BaR"),
+            h3::Header::new(b":status", b"200"),
+            h3::Header::new(b":path", b"/HeLlO"),
+            h3::Header::new(b"woot", b"woot"),
+            h3::Header::new(b"hello", b"WorlD"),
+            h3::Header::new(b"foo", b"BaR"),
         ];
 
         // Header.
         let headers_in = vec![
-            crate::h3::Header::new(b":StAtUs", b"200"),
-            crate::h3::Header::new(b":PaTh", b"/HeLlO"),
-            crate::h3::Header::new(b"WooT", b"woot"),
-            crate::h3::Header::new(b"hello", b"WorlD"),
-            crate::h3::Header::new(b"fOo", b"BaR"),
+            h3::Header::new(b":StAtUs", b"200"),
+            h3::Header::new(b":PaTh", b"/HeLlO"),
+            h3::Header::new(b"WooT", b"woot"),
+            h3::Header::new(b"hello", b"WorlD"),
+            h3::Header::new(b"fOo", b"BaR"),
         ];
 
         let mut enc = Encoder::new();
         assert_eq!(enc.encode(&headers_in, &mut encoded), Ok(35));
 
         let mut dec = Decoder::new();
-        let headers_out = dec.decode(&mut encoded, u64::MAX).unwrap();
+        let headers_out = dec.decode(&encoded, u64::MAX).unwrap();
 
         assert_eq!(headers_expected, headers_out);
 
         // HeaderRef.
         let headers_in = vec![
-            crate::h3::HeaderRef::new(b":StAtUs", b"200"),
-            crate::h3::HeaderRef::new(b":PaTh", b"/HeLlO"),
-            crate::h3::HeaderRef::new(b"WooT", b"woot"),
-            crate::h3::HeaderRef::new(b"hello", b"WorlD"),
-            crate::h3::HeaderRef::new(b"fOo", b"BaR"),
+            h3::HeaderRef::new(b":StAtUs", b"200"),
+            h3::HeaderRef::new(b":PaTh", b"/HeLlO"),
+            h3::HeaderRef::new(b"WooT", b"woot"),
+            h3::HeaderRef::new(b"hello", b"WorlD"),
+            h3::HeaderRef::new(b"fOo", b"BaR"),
         ];
 
         let mut enc = Encoder::new();
         assert_eq!(enc.encode(&headers_in, &mut encoded), Ok(35));
 
         let mut dec = Decoder::new();
-        let headers_out = dec.decode(&mut encoded, u64::MAX).unwrap();
+        let headers_out = dec.decode(&encoded, u64::MAX).unwrap();
 
         assert_eq!(headers_expected, headers_out);
     }
@@ -161,14 +161,14 @@ mod tests {
         let mut enc = Encoder::new();
 
         // Indexed name with literal value
-        let headers1 = vec![crate::h3::Header::new(b"location", b"															")];
+        let headers1 = vec![h3::Header::new(b"location", b"															")];
         assert_eq!(enc.encode(&headers1, &mut encoded), Ok(19));
 
         // Literal name and value
-        let headers2 = vec![crate::h3::Header::new(b"a", b"")];
+        let headers2 = vec![h3::Header::new(b"a", b"")];
         assert_eq!(enc.encode(&headers2, &mut encoded), Ok(20));
 
-        let headers3 = vec![crate::h3::Header::new(b"															", b"hello")];
+        let headers3 = vec![h3::Header::new(b"															", b"hello")];
         assert_eq!(enc.encode(&headers3, &mut encoded), Ok(24));
     }
 
@@ -181,15 +181,15 @@ mod tests {
         let value = "£££££££££££££££";
 
         // Indexed name with literal value
-        let headers1 = vec![crate::h3::Header::new(name, value.as_bytes())];
+        let headers1 = vec![h3::Header::new(name, value.as_bytes())];
         assert_eq!(enc.encode(&headers1, &mut encoded), Ok(34));
 
         // Literal name and value
         let value = "ððððððððððððððð";
-        let headers2 = vec![crate::h3::Header::new(b"a", value.as_bytes())];
+        let headers2 = vec![h3::Header::new(b"a", value.as_bytes())];
         assert_eq!(enc.encode(&headers2, &mut encoded), Ok(35));
 
-        let headers3 = vec![crate::h3::Header::new(value.as_bytes(), b"hello")];
+        let headers3 = vec![h3::Header::new(value.as_bytes(), b"hello")];
         assert_eq!(enc.encode(&headers3, &mut encoded), Ok(39));
     }
 }
@@ -199,5 +199,4 @@ pub use encoder::Encoder;
 
 mod decoder;
 mod encoder;
-mod huffman;
 mod static_table;

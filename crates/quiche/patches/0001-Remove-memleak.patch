@@ -1,8 +1,8 @@
 diff --git a/src/h3/mod.rs b/src/h3/mod.rs
-index f5203d129..4eb325c75 100644
+index 748a047f6..1b0c54bb9 100644
 --- a/src/h3/mod.rs
 +++ b/src/h3/mod.rs
-@@ -1688,6 +1688,10 @@ impl Connection {
+@@ -2027,6 +2027,10 @@ impl Connection {
              return Ok((finished, Event::Finished));
          }
  
@@ -10,14 +10,22 @@ index f5203d129..4eb325c75 100644
 +            self.streams.remove(&stream_id);
 +        }
 +
-         // Process queued DATAGRAMs if the poll threshold allows it.
-         match self.process_dgrams(conn) {
-             Ok(v) => return Ok(v),
-diff --git a/src/stream.rs b/src/stream.rs
-index 6e978bbc7..1e45c6bd6 100644
---- a/src/stream.rs
-+++ b/src/stream.rs
-@@ -105,6 +105,10 @@ pub struct StreamMap {
+         // Process HTTP/3 data from readable streams.
+         for s in conn.readable() {
+             trace!("{} stream id {} is readable", conn.trace_id(), s);
+diff --git a/src/stream/mod.rs b/src/stream/mod.rs
+index d48bde31c..66b1290a5 100644
+--- a/src/stream/mod.rs
++++ b/src/stream/mod.rs
+@@ -31,6 +31,7 @@ use std::sync::Arc;
+ use std::collections::hash_map;
+ use std::collections::HashMap;
+ use std::collections::HashSet;
++use std::collections::VecDeque;
+ 
+ use intrusive_collections::intrusive_adapter;
+ use intrusive_collections::KeyAdapter;
+@@ -119,6 +120,10 @@ pub struct StreamMap<F: BufFactory = DefaultBufFactory> {
      /// created streams, to prevent peers from re-creating them.
      collected: StreamIdHashSet,
  
@@ -28,17 +36,15 @@ index 6e978bbc7..1e45c6bd6 100644
      /// Peer's maximum bidirectional stream count limit.
      peer_max_streams_bidi: u64,
  
-@@ -548,7 +552,9 @@ impl StreamMap {
-         self.mark_writable(stream_id, false);
+@@ -578,6 +583,7 @@ impl<F: BufFactory> StreamMap<F> {
+         self.remove_flushable(&s.priority_key);
  
-         self.streams.remove(&stream_id);
-+
          self.collected.insert(stream_id);
 +        self.pending_collected.push_front(stream_id);
      }
  
      /// Creates an iterator over streams that have outstanding data to read.
-@@ -638,6 +644,11 @@ impl StreamMap {
+@@ -673,6 +679,11 @@ impl<F: BufFactory> StreamMap<F> {
      pub fn len(&self) -> usize {
          self.streams.len()
      }
