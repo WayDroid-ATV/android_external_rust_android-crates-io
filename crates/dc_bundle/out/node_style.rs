@@ -119,6 +119,8 @@ pub struct NodeStyle {
     pub shader_data: ::protobuf::MessageField<super::shader::ShaderData>,
     // @@protoc_insertion_point(field:designcompose.definition.view.NodeStyle.scalable_data)
     pub scalable_data: ::protobuf::MessageField<super::scalable::ScalableUIData>,
+    // @@protoc_insertion_point(field:designcompose.definition.view.NodeStyle.animation_override)
+    pub animation_override: ::protobuf::MessageField<super::animationspec::AnimationOverride>,
     // special fields
     // @@protoc_insertion_point(special_field:designcompose.definition.view.NodeStyle.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -280,6 +282,9 @@ impl ::protobuf::Message for NodeStyle {
                 },
                 354 => {
                     ::protobuf::rt::read_singular_message_into_field(is, &mut self.scalable_data)?;
+                },
+                370 => {
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.animation_override)?;
                 },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
@@ -449,6 +454,10 @@ impl ::protobuf::Message for NodeStyle {
             let len = v.compute_size();
             my_size += 2 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
         }
+        if let Some(v) = self.animation_override.as_ref() {
+            let len = v.compute_size();
+            my_size += 2 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
         my_size
@@ -590,6 +599,9 @@ impl ::protobuf::Message for NodeStyle {
         if let Some(v) = self.scalable_data.as_ref() {
             ::protobuf::rt::write_message_field_with_cached_size(44, v, os)?;
         }
+        if let Some(v) = self.animation_override.as_ref() {
+            ::protobuf::rt::write_message_field_with_cached_size(46, v, os)?;
+        }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -652,6 +664,7 @@ impl ::protobuf::Message for NodeStyle {
         self.hyperlink.clear();
         self.shader_data.clear();
         self.scalable_data.clear();
+        self.animation_override.clear();
         self.special_fields.clear();
     }
 
@@ -702,6 +715,7 @@ impl ::protobuf::Message for NodeStyle {
             hyperlink: ::protobuf::MessageField::none(),
             shader_data: ::protobuf::MessageField::none(),
             scalable_data: ::protobuf::MessageField::none(),
+            animation_override: ::protobuf::MessageField::none(),
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
