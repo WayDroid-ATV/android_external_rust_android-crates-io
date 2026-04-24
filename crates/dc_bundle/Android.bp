@@ -19,6 +19,7 @@ genrule {
     cmd: "cp $(in) $(genDir)",
     out: [
         "android_interface.rs",
+        "animationspec.rs",
         "background.rs",
         "blend.rs",
         "color.rs",
@@ -57,7 +58,7 @@ rust_library {
     host_supported: true,
     crate_name: "dc_bundle",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.38.4",
+    cargo_pkg_version: "0.39.1",
     crate_root: "src/lib.rs",
     srcs: [":copy_dc_bundle_build_out"],
     edition: "2021",

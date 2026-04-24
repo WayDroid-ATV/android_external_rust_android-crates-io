@@ -1,6 +1,7 @@
 // @generated
 
 pub mod android_interface;
+pub mod animationspec;
 pub mod background;
 pub mod blend;
 pub mod color;
