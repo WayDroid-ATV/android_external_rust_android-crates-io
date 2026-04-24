@@ -230,10 +230,10 @@ dependencies = [
  "dashmap",
  "dasp_sample",
  "data-encoding",
- "dc_bundle 0.39.1",
- "dc_figma_import 0.39.1",
+ "dc_bundle",
+ "dc_figma_import",
  "dc_jni",
- "dc_layout 0.39.1",
+ "dc_layout",
  "debug_tree",
  "der",
  "der_derive",
@@ -2375,20 +2375,6 @@ checksum = "d7a1e2f27636f116493b8b860f5546edb47c8d8f8ea73e1d2a20be88e28d1fea"
 
 [[package]]
 name = "dc_bundle"
-version = "0.38.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdfcf7950b862b2b9b659d28cda2656b70bed2b198f40f914d1f8f73b338d352"
-dependencies = [
- "log",
- "protobuf 3.7.2",
- "protobuf-codegen",
- "serde",
- "serde_bytes",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "dc_bundle"
 version = "0.39.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e16cde5ddf28d5af84688bf1b568ca18f089677e9efa3f31a74316b6d1cebc59"
@@ -2403,37 +2389,13 @@ dependencies = [
 
 [[package]]
 name = "dc_figma_import"
-version = "0.38.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0624569e65986583008b4815cc0c19654eed33c7b79d10fe9b6432dae3c4aaf"
-dependencies = [
- "anyhow",
- "dc_bundle 0.38.4",
- "dc_layout 0.38.4",
- "image 0.25.10",
- "log",
- "protobuf 3.7.2",
- "reqwest 0.12.28",
- "serde",
- "serde_bytes",
- "serde_json",
- "serde_path_to_error",
- "svgtypes",
- "taffy 0.6.3",
- "thiserror 2.0.18",
- "unicode-segmentation",
- "vergen",
-]
-
-[[package]]
-name = "dc_figma_import"
 version = "0.39.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0a4364887145d08786ffac3ff854d5bd4d9792d58241bc192239d0eb051e3b3a"
 dependencies = [
  "anyhow",
- "dc_bundle 0.39.1",
- "dc_layout 0.39.1",
+ "dc_bundle",
+ "dc_layout",
  "env_logger 0.10.2",
  "image 0.25.10",
  "log",
@@ -2452,16 +2414,16 @@ dependencies = [
 
 [[package]]
 name = "dc_jni"
-version = "0.38.4"
+version = "0.39.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85fe78305d97399b81c2c51e57c443889a2f7336c24a8def3ee3e77672c4edaa"
+checksum = "a097ea082126fd1ee03f004e264d1e2f5fb88c51a64e584900b9b35c07e79984"
 dependencies = [
  "android_logger 0.13.3",
  "bytes",
- "dc_bundle 0.38.4",
- "dc_figma_import 0.38.4",
- "dc_layout 0.38.4",
- "jni 0.21.1",
+ "dc_bundle",
+ "dc_figma_import",
+ "dc_layout",
+ "jni 0.22.4",
  "log",
  "protobuf 3.7.2",
  "reqwest 0.12.28",
@@ -2473,27 +2435,12 @@ dependencies = [
 
 [[package]]
 name = "dc_layout"
-version = "0.38.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1aa7f36d6480c564fbe2e28888462bf419ad6c4abd95f827ac965a5bf285c81a"
-dependencies = [
- "android_logger 0.13.3",
- "dc_bundle 0.38.4",
- "log",
- "protobuf 3.7.2",
- "serde",
- "taffy 0.6.3",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "dc_layout"
 version = "0.39.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "afddb99a564e48f095f53a98f8a6d705933d22a6526a2f0d2d4fb61d911727bb"
 dependencies = [
  "android_logger 0.13.3",
- "dc_bundle 0.39.1",
+ "dc_bundle",
  "log",
  "protobuf 3.7.2",
  "serde",
