@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.80"
 name = "dc_figma_import"
-version = "0.38.4"
+version = "0.39.1"
 authors = ["DesignCompose Team <aae-design-compose@google.com>"]
 build = false
 autolib = false
@@ -54,6 +54,10 @@ path = "src/bin/fetch_layout.rs"
 required-features = ["fetch_layout"]
 
 [[test]]
+name = "animation_tests"
+path = "tests/animation_tests.rs"
+
+[[test]]
 name = "layout_tests"
 path = "tests/layout_tests.rs"
 
@@ -70,10 +74,13 @@ features = [
 optional = true
 
 [dependencies.dc_bundle]
-version = "0.38.4"
+version = "0.39.1"
 
 [dependencies.dc_layout]
-version = "0.38.4"
+version = "0.39.1"
+
+[dependencies.env_logger]
+version = "0.10.0"
 
 [dependencies.image]
 version = "0.25"
