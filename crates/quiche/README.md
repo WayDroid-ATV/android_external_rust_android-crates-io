@@ -34,11 +34,6 @@ Android's DNS resolver uses quiche to [implement DNS over HTTP/3][android-http3]
 
 quiche can be [integrated into curl][curl-http3] to provide support for HTTP/3.
 
-### NGINX (unofficial)
-
-quiche can be [integrated into NGINX](nginx/) using an unofficial patch to
-provide support for HTTP/3.
-
 [cloudflare-http3]: https://blog.cloudflare.com/http3-the-past-present-and-future/
 [android-http3]: https://security.googleblog.com/2022/07/dns-over-http3-in-android.html
 [curl-http3]: https://github.com/curl/curl/blob/master/docs/HTTP3.md#quiche-version
@@ -49,7 +44,9 @@ Getting Started
 ### Command-line apps
 
 Before diving into the quiche API, here are a few examples on how to use the
-quiche tools provided as part of the [quiche-apps](apps/) crate.
+quiche tools provided as part of the [quiche-apps](apps/) crate. These are not
+suitable for production environments; see [disclaimers and
+notes](#disclaimers-and-notes).
 
 After cloning the project according to the command mentioned in the [building](#building) section, the client can be run as follows:
 
@@ -103,7 +100,7 @@ to set these to something else to satisfy their needs using the following:
 
 [`Config`] also holds TLS configuration. This can be changed by mutators on
 the an existing object, or by constructing a TLS context manually and
-creating a configuration using [`with_boring_ssl_ctx()`].
+creating a configuration using [`with_boring_ssl_ctx_builder()`].
 
 A configuration object can be shared among multiple connections.
 
@@ -270,7 +267,7 @@ receiving HTTP requests and responses on top of the QUIC transport protocol.
 [`set_initial_max_stream_data_bidi_local()`]: https://docs.rs/quiche/latest/quiche/struct.Config.html#method.set_initial_max_stream_data_bidi_local
 [`set_initial_max_stream_data_bidi_remote()`]: https://docs.rs/quiche/latest/quiche/struct.Config.html#method.set_initial_max_stream_data_bidi_remote
 [`set_initial_max_stream_data_uni()`]: https://docs.rs/quiche/latest/quiche/struct.Config.html#method.set_initial_max_stream_data_uni
-[`with_boring_ssl_ctx()`]: https://docs.quic.tech/quiche/struct.Config.html#method.with_boring_ssl_ctx
+[`with_boring_ssl_ctx_builder()`]: https://docs.quic.tech/quiche/struct.Config.html#method.with_boring_ssl_ctx_builder
 [`connect()`]: https://docs.quic.tech/quiche/fn.connect.html
 [`accept()`]: https://docs.quic.tech/quiche/fn.accept.html
 [`recv()`]: https://docs.quic.tech/quiche/struct.Connection.html#method.recv
@@ -308,7 +305,7 @@ is disabled by default), by passing ``--features ffi`` to ``cargo``.
 Building
 --------
 
-quiche requires Rust 1.66 or later to build. The latest stable Rust release can
+quiche requires Rust 1.85 or later to build. The latest stable Rust release can
 be installed using [rustup](https://rustup.rs/).
 
 Once the Rust build environment is setup, the quiche source code can be fetched
@@ -345,7 +342,13 @@ the BoringSSL directory with the ``QUICHE_BSSL_PATH`` environment variable:
  $ QUICHE_BSSL_PATH="/path/to/boringssl" cargo build --examples
 ```
 
+Alternatively you can use [OpenSSL/quictls]. To enable quiche to use this vendor
+the ``openssl`` feature can be added to the ``--feature`` list. Be aware that
+``0-RTT`` is not supported if this vendor is used.
+
 [BoringSSL]: https://boringssl.googlesource.com/boringssl/
+
+[OpenSSL/quictls]: https://github.com/quictls/openssl
 
 ### Building for Android
 
@@ -447,6 +450,15 @@ Provides a server and client installed in /usr/local/bin.
 **cloudflare/quiche-qns**
 
 Provides the script to test quiche within the [quic-interop-runner](https://github.com/marten-seemann/quic-interop-runner).
+
+Disclaimers and Notes
+---------
+
+⚠️ This repository includes a number of client and server example
+applications that are provided to demonstrate simple usage of the quiche library
+API. They are not intended to be used in production environments; no
+performance, security or reliability guarantees are provided.
+
 
 Copyright
 ---------

@@ -34,8 +34,7 @@ use std::cmp;
 use std::time::Duration;
 use std::time::Instant;
 
-use crate::packet;
-use crate::recovery;
+use super::Acked;
 
 /// Constants from I-D.
 const MIN_RTT_THRESH: Duration = Duration::from_millis(4);
@@ -96,10 +95,6 @@ impl Hystart {
         }
     }
 
-    pub fn reset(&mut self) {
-        *self = Self::new(self.enabled);
-    }
-
     pub fn enabled(&self) -> bool {
         self.enabled
     }
@@ -108,10 +103,8 @@ impl Hystart {
         self.css_start_time
     }
 
-    pub fn in_css(&self, epoch: packet::Epoch) -> bool {
-        self.enabled &&
-            epoch == packet::Epoch::Application &&
-            self.css_start_time().is_some()
+    pub fn in_css(&self) -> bool {
+        self.enabled && self.css_start_time().is_some()
     }
 
     pub fn start_round(&mut self, pkt_num: u64) {
@@ -128,10 +121,9 @@ impl Hystart {
 
     // On receiving ACK. Returns true if need to enter Congestion Avoidance.
     pub fn on_packet_acked(
-        &mut self, epoch: packet::Epoch, packet: &recovery::Acked, rtt: Duration,
-        now: Instant,
+        &mut self, packet: &Acked, rtt: Duration, now: Instant,
     ) -> bool {
-        if !(self.enabled && epoch == packet::Epoch::Application) {
+        if !self.enabled {
             return false;
         }
 

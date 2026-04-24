@@ -34,7 +34,7 @@ pub const HEADERS_FRAME_TYPE_ID: u64 = 0x1;
 pub const CANCEL_PUSH_FRAME_TYPE_ID: u64 = 0x3;
 pub const SETTINGS_FRAME_TYPE_ID: u64 = 0x4;
 pub const PUSH_PROMISE_FRAME_TYPE_ID: u64 = 0x5;
-pub const GOAWAY_FRAME_TYPE_ID: u64 = 0x6;
+pub const GOAWAY_FRAME_TYPE_ID: u64 = 0x7;
 pub const MAX_PUSH_FRAME_TYPE_ID: u64 = 0xD;
 pub const PRIORITY_UPDATE_FRAME_REQUEST_TYPE_ID: u64 = 0xF0700;
 pub const PRIORITY_UPDATE_FRAME_PUSH_TYPE_ID: u64 = 0xF0701;
@@ -43,7 +43,8 @@ pub const SETTINGS_QPACK_MAX_TABLE_CAPACITY: u64 = 0x1;
 pub const SETTINGS_MAX_FIELD_SECTION_SIZE: u64 = 0x6;
 pub const SETTINGS_QPACK_BLOCKED_STREAMS: u64 = 0x7;
 pub const SETTINGS_ENABLE_CONNECT_PROTOCOL: u64 = 0x8;
-pub const SETTINGS_H3_DATAGRAM: u64 = 0x276;
+pub const SETTINGS_H3_DATAGRAM_00: u64 = 0x276;
+pub const SETTINGS_H3_DATAGRAM: u64 = 0x33;
 
 // Permit between 16 maximally-encoded and 128 minimally-encoded SETTINGS.
 const MAX_SETTINGS_PAYLOAD_SIZE: usize = 256;
@@ -69,6 +70,7 @@ pub enum Frame {
         connect_protocol_enabled: Option<u64>,
         h3_datagram: Option<u64>,
         grease: Option<(u64, u64)>,
+        additional_settings: Option<Vec<(u64, u64)>>,
         raw: Option<Vec<(u64, u64)>>,
     },
 
@@ -97,7 +99,7 @@ pub enum Frame {
 
     Unknown {
         raw_type: u64,
-        payload_length: u64,
+        payload: Vec<u8>,
     },
 }
 
@@ -141,7 +143,7 @@ impl Frame {
 
             _ => Frame::Unknown {
                 raw_type: frame_type,
-                payload_length,
+                payload: b.get_bytes(payload_length as usize)?.to_vec(),
             },
         };
 
@@ -180,6 +182,7 @@ impl Frame {
                 connect_protocol_enabled,
                 h3_datagram,
                 grease,
+                additional_settings,
                 ..
             } => {
                 let mut len = 0;
@@ -205,6 +208,8 @@ impl Frame {
                 }
 
                 if let Some(val) = h3_datagram {
+                    len += octets::varint_len(SETTINGS_H3_DATAGRAM_00);
+                    len += octets::varint_len(*val);
                     len += octets::varint_len(SETTINGS_H3_DATAGRAM);
                     len += octets::varint_len(*val);
                 }
@@ -212,6 +217,13 @@ impl Frame {
                 if let Some(val) = grease {
                     len += octets::varint_len(val.0);
                     len += octets::varint_len(val.1);
+                }
+
+                if let Some(vals) = additional_settings {
+                    for val in vals {
+                        len += octets::varint_len(val.0);
+                        len += octets::varint_len(val.1);
+                    }
                 }
 
                 b.put_varint(SETTINGS_FRAME_TYPE_ID)?;
@@ -238,6 +250,8 @@ impl Frame {
                 }
 
                 if let Some(val) = h3_datagram {
+                    b.put_varint(SETTINGS_H3_DATAGRAM_00)?;
+                    b.put_varint(*val)?;
                     b.put_varint(SETTINGS_H3_DATAGRAM)?;
                     b.put_varint(*val)?;
                 }
@@ -245,6 +259,13 @@ impl Frame {
                 if let Some(val) = grease {
                     b.put_varint(val.0)?;
                     b.put_varint(val.1)?;
+                }
+
+                if let Some(vals) = additional_settings {
+                    for val in vals {
+                        b.put_varint(val.0)?;
+                        b.put_varint(val.1)?;
+                    }
                 }
             },
 
@@ -302,7 +323,12 @@ impl Frame {
                 b.put_bytes(priority_field_value)?;
             },
 
-            Frame::Unknown { .. } => unreachable!(),
+            Frame::Unknown { raw_type, payload } => {
+                b.put_varint(*raw_type)?;
+                b.put_varint(payload.len() as u64)?;
+
+                b.put_bytes(payload.as_ref())?;
+            },
         }
 
         Ok(before - b.cap())
@@ -330,6 +356,7 @@ impl Frame {
                 connect_protocol_enabled,
                 h3_datagram,
                 grease,
+                additional_settings,
                 ..
             } => {
                 let mut settings = vec![];
@@ -376,7 +403,16 @@ impl Frame {
                     });
                 }
 
-                qlog::events::h3::Http3Frame::Settings { settings }
+                if let Some(additional_settings) = additional_settings {
+                    for (k, v) in additional_settings {
+                        settings.push(qlog::events::h3::Setting {
+                            name: k.to_string(),
+                            value: *v,
+                        });
+                    }
+                }
+
+                Http3Frame::Settings { settings }
             },
 
             // Qlog expects the `headers` to be represented as an array of
@@ -418,14 +454,11 @@ impl Frame {
                 .into_owned(),
             },
 
-            Frame::Unknown {
-                raw_type,
-                payload_length,
-            } => Http3Frame::Unknown {
+            Frame::Unknown { raw_type, payload } => Http3Frame::Unknown {
                 frame_type_value: *raw_type,
                 raw: Some(RawInfo {
                     data: None,
-                    payload_length: Some(*payload_length),
+                    payload_length: Some(payload.len() as u64),
                     length: None,
                 }),
             },
@@ -452,10 +485,11 @@ impl std::fmt::Debug for Frame {
                 max_field_section_size,
                 qpack_max_table_capacity,
                 qpack_blocked_streams,
+                additional_settings,
                 raw,
                 ..
             } => {
-                write!(f, "SETTINGS max_field_section={max_field_section_size:?}, qpack_max_table={qpack_max_table_capacity:?}, qpack_blocked={qpack_blocked_streams:?} raw={raw:?}")?;
+                write!(f, "SETTINGS max_field_section={max_field_section_size:?}, qpack_max_table={qpack_max_table_capacity:?}, qpack_blocked={qpack_blocked_streams:?} raw={raw:?}, additional_settings={additional_settings:?}")?;
             },
 
             Frame::PushPromise {
@@ -520,6 +554,7 @@ fn parse_settings_frame(
     let mut connect_protocol_enabled = None;
     let mut h3_datagram = None;
     let mut raw = Vec::new();
+    let mut additional_settings: Option<Vec<(u64, u64)>> = None;
 
     // Reject SETTINGS frames that are too long.
     if settings_length > MAX_SETTINGS_PAYLOAD_SIZE {
@@ -555,7 +590,7 @@ fn parse_settings_frame(
                 connect_protocol_enabled = Some(value);
             },
 
-            SETTINGS_H3_DATAGRAM => {
+            SETTINGS_H3_DATAGRAM_00 | SETTINGS_H3_DATAGRAM => {
                 if value > 1 {
                     return Err(super::Error::SettingsError);
                 }
@@ -567,8 +602,12 @@ fn parse_settings_frame(
             0x0 | 0x2 | 0x3 | 0x4 | 0x5 =>
                 return Err(super::Error::SettingsError),
 
-            // Unknown Settings parameters must be ignored.
-            _ => (),
+            // Unknown Settings parameters go into additional_settings.
+            _ => {
+                let s: &mut Vec<(u64, u64)> =
+                    additional_settings.get_or_insert(vec![]);
+                s.push((identifier, value));
+            },
         }
     }
 
@@ -580,6 +619,7 @@ fn parse_settings_frame(
         h3_datagram,
         grease: None,
         raw: Some(raw),
+        additional_settings,
     })
 }
 
@@ -717,6 +757,7 @@ mod tests {
             (SETTINGS_QPACK_MAX_TABLE_CAPACITY, 0),
             (SETTINGS_QPACK_BLOCKED_STREAMS, 0),
             (SETTINGS_ENABLE_CONNECT_PROTOCOL, 0),
+            (SETTINGS_H3_DATAGRAM_00, 0),
             (SETTINGS_H3_DATAGRAM, 0),
         ];
 
@@ -728,9 +769,10 @@ mod tests {
             h3_datagram: Some(0),
             grease: None,
             raw: Some(raw_settings),
+            additional_settings: None,
         };
 
-        let frame_payload_len = 11;
+        let frame_payload_len = 13;
         let frame_header_len = 2;
 
         let wire_len = {
@@ -763,6 +805,7 @@ mod tests {
             h3_datagram: Some(0),
             grease: Some((33, 33)),
             raw: Default::default(),
+            additional_settings: None,
         };
 
         let raw_settings = vec![
@@ -770,6 +813,7 @@ mod tests {
             (SETTINGS_QPACK_MAX_TABLE_CAPACITY, 0),
             (SETTINGS_QPACK_BLOCKED_STREAMS, 0),
             (SETTINGS_ENABLE_CONNECT_PROTOCOL, 0),
+            (SETTINGS_H3_DATAGRAM_00, 0),
             (SETTINGS_H3_DATAGRAM, 0),
             (33, 33),
         ];
@@ -784,9 +828,10 @@ mod tests {
             h3_datagram: Some(0),
             grease: None,
             raw: Some(raw_settings),
+            additional_settings: Some(vec![(33, 33)]),
         };
 
-        let frame_payload_len = 13;
+        let frame_payload_len = 15;
         let frame_header_len = 2;
 
         let wire_len = {
@@ -821,6 +866,7 @@ mod tests {
             h3_datagram: None,
             grease: None,
             raw: Some(raw_settings),
+            additional_settings: None,
         };
 
         let frame_payload_len = 3;
@@ -858,6 +904,7 @@ mod tests {
             h3_datagram: None,
             grease: None,
             raw: Some(raw_settings),
+            additional_settings: None,
         };
 
         let frame_payload_len = 2;
@@ -895,6 +942,7 @@ mod tests {
             h3_datagram: None,
             grease: None,
             raw: Some(raw_settings),
+            additional_settings: None,
         };
 
         let frame_payload_len = 2;
@@ -921,7 +969,8 @@ mod tests {
     fn settings_h3_dgram_only() {
         let mut d = [42; 128];
 
-        let raw_settings = vec![(SETTINGS_H3_DATAGRAM, 1)];
+        let raw_settings =
+            vec![(SETTINGS_H3_DATAGRAM_00, 1), (SETTINGS_H3_DATAGRAM, 1)];
 
         let frame = Frame::Settings {
             max_field_section_size: None,
@@ -931,9 +980,10 @@ mod tests {
             h3_datagram: Some(1),
             grease: None,
             raw: Some(raw_settings),
+            additional_settings: None,
         };
 
-        let frame_payload_len = 3;
+        let frame_payload_len = 5;
         let frame_header_len = 2;
 
         let wire_len = {
@@ -966,9 +1016,10 @@ mod tests {
             h3_datagram: Some(5),
             grease: None,
             raw: Default::default(),
+            additional_settings: None,
         };
 
-        let frame_payload_len = 3;
+        let frame_payload_len = 5;
         let frame_header_len = 2;
 
         let wire_len = {
@@ -1005,6 +1056,7 @@ mod tests {
             h3_datagram: None,
             grease: None,
             raw: Some(raw_settings),
+            additional_settings: None,
         };
 
         let frame_payload_len = 4;
@@ -1275,10 +1327,10 @@ mod tests {
         let d = [42; 12];
 
         assert_eq!(
-            Frame::from_bytes(255, 12345, &d[..]),
+            Frame::from_bytes(255, 12, &d[..]),
             Ok(Frame::Unknown {
                 raw_type: 255,
-                payload_length: 12345
+                payload: vec![42; 12]
             })
         );
     }

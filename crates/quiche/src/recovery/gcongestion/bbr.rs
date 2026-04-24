@@ -1,4 +1,8 @@
-// Copyright (C) 2022, Cloudflare, Inc.
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Copyright (C) 2023, Cloudflare, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,20 +28,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use crate::recovery::Recovery;
+mod bandwidth_sampler;
+mod windowed_filter;
 
-// BBR Transmit Packet Pacing Functions
-//
+pub use bandwidth_sampler::BandwidthSampler;
+pub use bandwidth_sampler::SendTimeState;
 
-// 4.2.1. Pacing Rate
-pub fn bbr_set_pacing_rate_with_gain(r: &mut Recovery, pacing_gain: f64) {
-    let rate = (pacing_gain * r.bbr_state.btlbw as f64) as u64;
-
-    if r.bbr_state.filled_pipe || rate > r.bbr_state.pacing_rate {
-        r.bbr_state.pacing_rate = rate;
-    }
-}
-
-pub fn bbr_set_pacing_rate(r: &mut Recovery) {
-    bbr_set_pacing_rate_with_gain(r, r.bbr_state.pacing_gain);
-}
+use super::Acked;
