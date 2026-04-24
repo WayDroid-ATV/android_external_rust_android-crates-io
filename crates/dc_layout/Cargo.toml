@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.80"
 name = "dc_layout"
-version = "0.38.4"
+version = "0.39.1"
 authors = ["DesignCompose Team <aae-design-compose@google.com>"]
 build = false
 autolib = false
@@ -36,7 +36,7 @@ path = "src/lib.rs"
 version = "0.13.1"
 
 [dependencies.dc_bundle]
-version = "0.38.4"
+version = "0.39.1"
 
 [dependencies.log]
 version = "0.4"

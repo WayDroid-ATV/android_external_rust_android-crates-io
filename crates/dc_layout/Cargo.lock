@@ -61,9 +61,9 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
 name = "dc_bundle"
-version = "0.38.4"
+version = "0.39.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdfcf7950b862b2b9b659d28cda2656b70bed2b198f40f914d1f8f73b338d352"
+checksum = "e16cde5ddf28d5af84688bf1b568ca18f089677e9efa3f31a74316b6d1cebc59"
 dependencies = [
  "log",
  "protobuf",
@@ -75,7 +75,7 @@ dependencies = [
 
 [[package]]
 name = "dc_layout"
-version = "0.38.4"
+version = "0.39.1"
 dependencies = [
  "android_logger",
  "dc_bundle",
