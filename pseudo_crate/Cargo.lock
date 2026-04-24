@@ -231,7 +231,7 @@ dependencies = [
  "dasp_sample",
  "data-encoding",
  "dc_bundle 0.39.1",
- "dc_figma_import",
+ "dc_figma_import 0.39.1",
  "dc_jni",
  "dc_layout 0.39.1",
  "debug_tree",
@@ -2426,6 +2426,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "dc_figma_import"
+version = "0.39.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a4364887145d08786ffac3ff854d5bd4d9792d58241bc192239d0eb051e3b3a"
+dependencies = [
+ "anyhow",
+ "dc_bundle 0.39.1",
+ "dc_layout 0.39.1",
+ "env_logger 0.10.2",
+ "image 0.25.10",
+ "log",
+ "protobuf 3.7.2",
+ "reqwest 0.12.28",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_path_to_error",
+ "svgtypes",
+ "taffy 0.6.3",
+ "thiserror 2.0.18",
+ "unicode-segmentation",
+ "vergen",
+]
+
+[[package]]
 name = "dc_jni"
 version = "0.38.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2434,7 +2459,7 @@ dependencies = [
  "android_logger 0.13.3",
  "bytes",
  "dc_bundle 0.38.4",
- "dc_figma_import",
+ "dc_figma_import 0.38.4",
  "dc_layout 0.38.4",
  "jni 0.21.1",
  "log",
