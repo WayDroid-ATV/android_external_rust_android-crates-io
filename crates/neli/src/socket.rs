@@ -130,7 +130,7 @@ impl NlSocket {
             libc::bind(
                 self.fd,
                 &nladdr as *const _ as *const libc::sockaddr,
-                size_of::<libc::sockaddr_nl>() as u32,
+                size_of::<libc::sockaddr_nl>() as libc::socklen_t,
             )
         } {
             i if i >= 0 => (),
