@@ -703,7 +703,6 @@ dependencies = [
  "vulkano",
  "walkdir",
  "want",
- "weak-table",
  "which 8.0.2",
  "windows-link 0.2.1",
  "windows-sys 0.61.2",
@@ -10451,12 +10450,6 @@ dependencies = [
  "memoffset",
  "pkg-config",
 ]
-
-[[package]]
-name = "weak-table"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "323f4da9523e9a669e1eaf9c6e763892769b1d38c623913647bfdc1532fe4549"
 
 [[package]]
 name = "web-sys"
