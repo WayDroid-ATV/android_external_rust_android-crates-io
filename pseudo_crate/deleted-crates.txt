@@ -16,4 +16,5 @@ uniffi_checksum_derive
 uniffi_core
 uniffi_macros
 uniffi_meta
+weak-table
 webpki
