@@ -443,7 +443,7 @@ dependencies = [
  "netlink-packet-utils",
  "netlink-proto",
  "netlink-sys",
- "nix 0.29.0",
+ "nix 0.31.2",
  "no-panic",
  "nom 7.1.3",
  "normpath",

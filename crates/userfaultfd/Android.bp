@@ -26,7 +26,7 @@ rust_library {
         "libbitflags",
         "libcfg_if",
         "liblibc",
-        "libnix",
+        "libnix_0_29_0",
         "libthiserror",
         "libuserfaultfd_sys",
     ],
