@@ -23,7 +23,7 @@ rust_library {
     edition: "2018",
     features: ["default"],
     rustlibs: [
-        "libnix",
+        "libnix_0_29_0",
         "libthiserror",
     ],
     apex_available: [

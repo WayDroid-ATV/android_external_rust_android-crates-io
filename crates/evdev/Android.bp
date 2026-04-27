@@ -25,7 +25,7 @@ rust_library {
         "libbitvec",
         "libcfg_if",
         "liblibc",
-        "libnix",
+        "libnix_0_29_0",
     ],
     apex_available: [
         "//apex_available:platform",

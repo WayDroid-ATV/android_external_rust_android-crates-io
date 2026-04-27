@@ -24,7 +24,7 @@ rust_library {
     rustlibs: [
         "libbitflags",
         "libcfg_if",
-        "libnix",
+        "libnix_0_29_0",
         "libscopeguard",
     ],
     apex_available: [

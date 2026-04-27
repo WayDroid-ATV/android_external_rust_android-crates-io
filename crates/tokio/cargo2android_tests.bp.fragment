@@ -28,7 +28,7 @@ rust_defaults {
         "liblibc",
         "libmemchr",
         "libmio",
-        "libnix",
+        "libnix_0_29_0",
         "libnum_cpus",
         "libpin_project_lite",
         "librand",
