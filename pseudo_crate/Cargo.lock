@@ -1930,12 +1930,12 @@ dependencies = [
 
 [[package]]
 name = "command-fds"
-version = "0.3.0"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bb11bd1378bf3731b182997b40cefe00aba6a6cc74042c8318c1b271d3badf7"
+checksum = "1b60b5124979fccd9addd89d8b97a1d6eebb4950694520c75ddd722535ea443f"
 dependencies = [
- "nix 0.27.1",
- "thiserror 1.0.49",
+ "nix 0.31.2",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

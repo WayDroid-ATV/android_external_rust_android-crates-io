@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! A library for passing arbitrary file descriptors when spawning child processes.
+//! A library for passing arbitrary file descriptors when spawning child processes, and safely
+//! taking ownership of passed file descriptors within such a child process.
 //!
 //! # Example
 //!
-//! ```rust
+//! In the parent process:
+//!
+//! ```
 //! use command_fds::{CommandFdExt, FdMapping};
 //! use std::fs::File;
 //! use std::io::stdin;
@@ -49,15 +52,38 @@
 //! let mut child = command.spawn().unwrap();
 //! child.wait().unwrap();
 //! ```
+//!
+//! In the child process:
+//!
+//! ```no_run
+//! use command_fds::inherited::{init_inherited_fds, take_fd_ownership};
+//!
+//! fn main() {
+//!     // SAFETY: This is called before anything else in the program.
+//!     unsafe {
+//!         init_inherited_fds();
+//!     }
+//!
+//!     // Get an OwnedFd for the file that was passed as FD 3 by the parent.
+//!     let inherited_file = take_fd_ownership(3).unwrap();
+//!
+//!     // Trying to take the same file descriptor again will return an error.
+//!     take_fd_ownership(3).expect_err("Can't take the same FD twice");
+//!
+//!     // Trying to take a file descriptor which wasn't passed will also return an error.
+//!     take_fd_ownership(4).expect_err("Can't take an FD which wasn't inherited");
+//! }
+//! ```
 
+pub mod inherited;
 #[cfg(feature = "tokio")]
 pub mod tokio;
 
-use nix::fcntl::{fcntl, FcntlArg, FdFlag};
-use nix::unistd::dup2;
+use nix::fcntl::{FcntlArg, FdFlag, fcntl};
+use nix::unistd::dup2_raw;
 use std::cmp::max;
 use std::io;
-use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
+use std::os::fd::{AsRawFd, FromRawFd, IntoRawFd, OwnedFd};
 use std::os::unix::io::RawFd;
 use std::os::unix::process::CommandExt;
 use std::process::Command;
@@ -163,10 +189,7 @@ fn map_fds(mappings: &mut [FdMapping], child_fds: &[RawFd]) -> io::Result<()> {
         if child_fds.contains(&mapping.parent_fd.as_raw_fd())
             && mapping.parent_fd.as_raw_fd() != mapping.child_fd
         {
-            let parent_fd = fcntl(
-                mapping.parent_fd.as_raw_fd(),
-                FcntlArg::F_DUPFD_CLOEXEC(first_safe_fd),
-            )?;
+            let parent_fd = fcntl(&mapping.parent_fd, FcntlArg::F_DUPFD_CLOEXEC(first_safe_fd))?;
             // SAFETY: We just created `parent_fd` so we can take ownership of it.
             unsafe {
                 mapping.parent_fd = OwnedFd::from_raw_fd(parent_fd);
@@ -179,14 +202,16 @@ fn map_fds(mappings: &mut [FdMapping], child_fds: &[RawFd]) -> io::Result<()> {
         if mapping.child_fd == mapping.parent_fd.as_raw_fd() {
             // Remove the FD_CLOEXEC flag, so the FD will be kept open when exec is called for the
             // child.
-            fcntl(
-                mapping.parent_fd.as_raw_fd(),
-                FcntlArg::F_SETFD(FdFlag::empty()),
-            )?;
+            fcntl(&mapping.parent_fd, FcntlArg::F_SETFD(FdFlag::empty()))?;
         } else {
             // This closes child_fd if it is already open as something else, and clears the
             // FD_CLOEXEC flag on child_fd.
-            dup2(mapping.parent_fd.as_raw_fd(), mapping.child_fd)?;
+            // SAFETY: `dup2_raw` returns an `OwnedFd` which takes ownership of the child FD and
+            // would close it when it is dropped. We avoid this by calling `into_raw_fd` to give up
+            // ownership again.
+            unsafe {
+                let _ = dup2_raw(&mapping.parent_fd, mapping.child_fd)?.into_raw_fd();
+            }
         }
     }
 
@@ -197,7 +222,7 @@ fn preserve_fds(fds: &[OwnedFd]) -> io::Result<()> {
     for fd in fds {
         // Remove the FD_CLOEXEC flag, so the FD will be kept open when exec is called for the
         // child.
-        fcntl(fd.as_raw_fd(), FcntlArg::F_SETFD(FdFlag::empty()))?;
+        fcntl(fd, FcntlArg::F_SETFD(FdFlag::empty()))?;
     }
 
     Ok(())
@@ -208,7 +233,7 @@ mod tests {
     use super::*;
     use nix::unistd::close;
     use std::collections::HashSet;
-    use std::fs::{read_dir, File};
+    use std::fs::{File, read_dir};
     use std::os::unix::io::AsRawFd;
     use std::process::Output;
     use std::str;
@@ -226,18 +251,20 @@ mod tests {
         let file2 = File::open("testdata/file2.txt").unwrap();
 
         // Mapping two different FDs to the same FD isn't allowed.
-        assert!(command
-            .fd_mappings(vec![
-                FdMapping {
-                    child_fd: 4,
-                    parent_fd: file1.into(),
-                },
-                FdMapping {
-                    child_fd: 4,
-                    parent_fd: file2.into(),
-                },
-            ])
-            .is_err());
+        assert!(
+            command
+                .fd_mappings(vec![
+                    FdMapping {
+                        child_fd: 4,
+                        parent_fd: file1.into(),
+                    },
+                    FdMapping {
+                        child_fd: 4,
+                        parent_fd: file2.into(),
+                    },
+                ])
+                .is_err()
+        );
     }
 
     #[test]
@@ -275,12 +302,14 @@ mod tests {
 
         let file = File::open("testdata/file1.txt").unwrap();
         // Map the file an otherwise unused FD.
-        assert!(command
-            .fd_mappings(vec![FdMapping {
-                parent_fd: file.into(),
-                child_fd: 5,
-            },])
-            .is_ok());
+        assert!(
+            command
+                .fd_mappings(vec![FdMapping {
+                    parent_fd: file.into(),
+                    child_fd: 5,
+                },])
+                .is_ok()
+        );
 
         let output = command.output().unwrap();
         expect_fds(&output, &[0, 1, 2, 3, 5], 0);
@@ -318,18 +347,20 @@ mod tests {
         let fd1_raw = fd1.as_raw_fd();
         let fd2_raw = fd2.as_raw_fd();
         // Map files to each other's FDs, to ensure that the temporary FD logic works.
-        assert!(command
-            .fd_mappings(vec![
-                FdMapping {
-                    parent_fd: fd1,
-                    child_fd: fd2_raw,
-                },
-                FdMapping {
-                    parent_fd: fd2,
-                    child_fd: fd1_raw,
-                },
-            ])
-            .is_ok(),);
+        assert!(
+            command
+                .fd_mappings(vec![
+                    FdMapping {
+                        parent_fd: fd1,
+                        child_fd: fd2_raw,
+                    },
+                    FdMapping {
+                        parent_fd: fd2,
+                        child_fd: fd1_raw,
+                    },
+                ])
+                .is_ok(),
+        );
 
         let output = command.output().unwrap();
         // Expect one more Fd for the /proc/self/fd directory. We can't predict what number it will
@@ -349,12 +380,14 @@ mod tests {
         let fd1: OwnedFd = file1.into();
         let fd1_raw = fd1.as_raw_fd();
         // Map file1 to the same FD it currently has, to ensure the special case for that works.
-        assert!(command
-            .fd_mappings(vec![FdMapping {
-                parent_fd: fd1,
-                child_fd: fd1_raw,
-            }])
-            .is_ok());
+        assert!(
+            command
+                .fd_mappings(vec![FdMapping {
+                    parent_fd: fd1,
+                    child_fd: fd1_raw,
+                }])
+                .is_ok()
+        );
 
         let output = command.output().unwrap();
         // Expect one more Fd for the /proc/self/fd directory. We can't predict what number it will
@@ -373,12 +406,14 @@ mod tests {
 
         let file = File::open("testdata/file1.txt").unwrap();
         // Map the file to stdin.
-        assert!(command
-            .fd_mappings(vec![FdMapping {
-                parent_fd: file.into(),
-                child_fd: 0,
-            },])
-            .is_ok());
+        assert!(
+            command
+                .fd_mappings(vec![FdMapping {
+                    parent_fd: file.into(),
+                    child_fd: 0,
+                },])
+                .is_ok()
+        );
 
         let output = command.output().unwrap();
         assert!(output.status.success());
