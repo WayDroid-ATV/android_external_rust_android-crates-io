@@ -18,12 +18,12 @@ rust_library {
     host_supported: true,
     crate_name: "command_fds",
     cargo_env_compat: true,
-    cargo_pkg_version: "0.3.0",
+    cargo_pkg_version: "0.3.3",
     crate_root: "src/lib.rs",
-    edition: "2018",
+    edition: "2024",
     features: ["default"],
     rustlibs: [
-        "libnix_0_29_0",
+        "libnix",
         "libthiserror",
     ],
     apex_available: [
