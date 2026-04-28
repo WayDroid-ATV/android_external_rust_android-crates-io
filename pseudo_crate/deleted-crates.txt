@@ -6,6 +6,8 @@ gl_common
 icu_provider_baked
 icu_provider_macros
 instant
+merge
+merge_derive
 miette
 miette-derive
 moveit
