@@ -15,7 +15,6 @@ license {
 
 rust_library {
     name: "libandroid_log_sys",
-    host_supported: true,
     crate_name: "android_log_sys",
     cargo_env_compat: true,
     cargo_pkg_version: "0.3.2",
@@ -29,15 +28,4 @@ rust_library {
     recovery_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-    target: {
-        linux_glibc: {
-            // liblog is not added as a dependency for linux_glibc target
-            enabled: false,
-        },
-        linux_musl: {
-            // liblog is not added as a dependency for linux_musl target
-            enabled: false,
-        },
-    },
-
 }
