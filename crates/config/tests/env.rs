@@ -464,6 +464,113 @@ fn test_parse_string_and_list() {
 }
 
 #[test]
+fn test_parse_string_and_list_ignore_list_parse_key_case() {
+    // using a struct in an enum here to make serde use `deserialize_any`
+    #[derive(Deserialize, Debug)]
+    #[serde(tag = "tag")]
+    enum TestStringEnum {
+        String(TestString),
+    }
+
+    #[derive(Deserialize, Debug)]
+    struct TestString {
+        string_val: String,
+        string_list: Vec<String>,
+    }
+
+    temp_env::with_vars(
+        vec![
+            ("LIST_STRING_LIST", Some("test,string")),
+            ("LIST_STRING_VAL", Some("test,string")),
+        ],
+        || {
+            let environment = Environment::default()
+                .prefix("LIST")
+                .list_separator(",")
+                .with_list_parse_key("STRING_LIST")
+                .try_parsing(true);
+
+            let config = Config::builder()
+                .set_default("tag", "String")
+                .unwrap()
+                .add_source(environment)
+                .build()
+                .unwrap();
+
+            let config: TestStringEnum = config.try_deserialize().unwrap();
+
+            match config {
+                TestStringEnum::String(TestString {
+                    string_val,
+                    string_list,
+                }) => {
+                    assert_eq!(String::from("test,string"), string_val);
+                    assert_eq!(
+                        vec![String::from("test"), String::from("string")],
+                        string_list
+                    );
+                }
+            }
+        },
+    )
+}
+
+#[test]
+fn test_parse_nested_kebab() {
+    use config::Case;
+
+    #[derive(Deserialize, Debug)]
+    #[serde(rename_all = "kebab-case")]
+    struct TestConfig {
+        single: String,
+        plain: SimpleInner,
+        value_with_multipart_name: String,
+        inner_config: ComplexInner,
+    }
+
+    #[derive(Deserialize, Debug)]
+    #[serde(rename_all = "kebab-case")]
+    struct SimpleInner {
+        val: String,
+    }
+
+    #[derive(Deserialize, Debug)]
+    #[serde(rename_all = "kebab-case")]
+    struct ComplexInner {
+        another_multipart_name: String,
+    }
+
+    temp_env::with_vars(
+        vec![
+            ("PREFIX__SINGLE", Some("test")),
+            ("PREFIX__PLAIN__VAL", Some("simple")),
+            ("PREFIX__VALUE_WITH_MULTIPART_NAME", Some("value1")),
+            (
+                "PREFIX__INNER_CONFIG__ANOTHER_MULTIPART_NAME",
+                Some("value2"),
+            ),
+        ],
+        || {
+            let environment = Environment::default()
+                .prefix("PREFIX")
+                .convert_case(Case::Kebab)
+                .separator("__");
+
+            let config = Config::builder().add_source(environment).build().unwrap();
+
+            println!("{:#?}", config);
+
+            let config: TestConfig = config.try_deserialize().unwrap();
+
+            assert_eq!(config.single, "test");
+            assert_eq!(config.plain.val, "simple");
+            assert_eq!(config.value_with_multipart_name, "value1");
+            assert_eq!(config.inner_config.another_multipart_name, "value2");
+        },
+    )
+}
+
+#[test]
 fn test_parse_string() {
     // using a struct in an enum here to make serde use `deserialize_any`
     #[derive(Deserialize, Debug)]

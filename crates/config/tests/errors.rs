@@ -19,16 +19,11 @@ fn test_error_parse() {
         .add_source(File::new("tests/Settings-invalid", FileFormat::Toml))
         .build();
 
-    let path: PathBuf = ["tests", "Settings-invalid.toml"].iter().collect();
-
     assert!(res.is_err());
-    assert_eq!(
-        res.unwrap_err().to_string(),
-        format!(
-            "invalid TOML value, did you mean to use a quoted string? at line 2 column 9 in {}",
-            path.display()
-        )
-    );
+    assert!(res
+        .unwrap_err()
+        .to_string()
+        .contains("TOML parse error at line 2, column 9"));
 }
 
 #[test]
@@ -50,6 +45,28 @@ fn test_error_type() {
 }
 
 #[test]
+fn test_error_deser_whole() {
+    #[derive(Deserialize, Debug)]
+    struct Place {
+        #[allow(dead_code)]
+        name: usize, // is actually s string
+    }
+
+    #[derive(Deserialize, Debug)]
+    struct Output {
+        #[allow(dead_code)]
+        place: Place,
+    }
+
+    let c = make();
+    let err = c.try_deserialize::<Output>().unwrap_err().to_string();
+    assert_eq!(
+        err,
+        "invalid type: string \"Torre di Pisa\", expected an integer for key `place.name` in tests/Settings.toml",
+    );
+}
+
+#[test]
 fn test_error_type_detached() {
     let c = make();
 
@@ -64,8 +81,62 @@ fn test_error_type_detached() {
 }
 
 #[test]
+fn test_error_type_get_bool() {
+    let c = make();
+
+    let res = c.get_bool("boolean_s_parse");
+
+    let path: PathBuf = ["tests", "Settings.toml"].iter().collect();
+
+    assert!(res.is_err());
+    assert_eq!(
+        res.unwrap_err().to_string(),
+        format!(
+            "invalid type: string \"fals\", expected a boolean for key `boolean_s_parse` in {}",
+            path.display()
+        )
+    );
+}
+
+#[test]
+fn test_error_type_get_table() {
+    let c = make();
+
+    let res = c.get_table("debug");
+
+    let path: PathBuf = ["tests", "Settings.toml"].iter().collect();
+
+    assert!(res.is_err());
+    assert_eq!(
+        res.unwrap_err().to_string(),
+        format!(
+            "invalid type: boolean `true`, expected a map for key `debug` in {}",
+            path.display()
+        )
+    );
+}
+
+#[test]
+fn test_error_type_get_array() {
+    let c = make();
+
+    let res = c.get_array("debug");
+
+    let path: PathBuf = ["tests", "Settings.toml"].iter().collect();
+
+    assert!(res.is_err());
+    assert_eq!(
+        res.unwrap_err().to_string(),
+        format!(
+            "invalid type: boolean `true`, expected an array for key `debug` in {}",
+            path.display()
+        )
+    );
+}
+
+#[test]
 fn test_error_enum_de() {
-    #[derive(Debug, Deserialize, PartialEq)]
+    #[derive(Debug, Deserialize, PartialEq, Eq)]
     enum Diode {
         Off,
         Brightness(i32),

@@ -33,12 +33,22 @@ mod ser;
 mod source;
 mod value;
 
-pub use crate::builder::{AsyncConfigBuilder, ConfigBuilder};
+pub use crate::builder::ConfigBuilder;
 pub use crate::config::Config;
 pub use crate::env::Environment;
 pub use crate::error::ConfigError;
+pub use crate::file::source::FileSource;
 pub use crate::file::{File, FileFormat, FileSourceFile, FileSourceString, FileStoredFormat};
 pub use crate::format::Format;
 pub use crate::map::Map;
-pub use crate::source::{AsyncSource, Source};
+#[cfg(feature = "async")]
+pub use crate::source::AsyncSource;
+pub use crate::source::Source;
 pub use crate::value::{Value, ValueKind};
+
+#[allow(deprecated)]
+pub use crate::builder::AsyncConfigBuilder;
+
+// Re-export
+#[cfg(feature = "convert-case")]
+pub use convert_case::Case;

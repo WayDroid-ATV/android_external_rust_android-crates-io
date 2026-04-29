@@ -120,7 +120,7 @@ impl Expression {
         match *self {
             Self::Identifier(ref id) => match root.kind {
                 ValueKind::Table(ref mut map) => Some(
-                    map.entry(id.clone())
+                    map.entry(id.to_lowercase())
                         .or_insert_with(|| Value::new(None, ValueKind::Nil)),
                 ),
 
@@ -131,7 +131,7 @@ impl Expression {
                 Some(value) => {
                     if let ValueKind::Table(ref mut map) = value.kind {
                         Some(
-                            map.entry(key.clone())
+                            map.entry(key.to_lowercase())
                                 .or_insert_with(|| Value::new(None, ValueKind::Nil)),
                         )
                     } else {
@@ -139,7 +139,7 @@ impl Expression {
 
                         if let ValueKind::Table(ref mut map) = value.kind {
                             Some(
-                                map.entry(key.clone())
+                                map.entry(key.to_lowercase())
                                     .or_insert_with(|| Value::new(None, ValueKind::Nil)),
                             )
                         } else {
@@ -163,8 +163,7 @@ impl Expression {
                             let index = sindex_to_uindex(index, array.len());
 
                             if index >= array.len() {
-                                array
-                                    .resize((index + 1) as usize, Value::new(None, ValueKind::Nil));
+                                array.resize(index + 1, Value::new(None, ValueKind::Nil));
                             }
 
                             Some(&mut array[index])
@@ -194,7 +193,7 @@ impl Expression {
                     ValueKind::Table(ref incoming_map) => {
                         // Pull out another table
                         let target = if let ValueKind::Table(ref mut map) = root.kind {
-                            map.entry(id.clone())
+                            map.entry(id.to_lowercase())
                                 .or_insert_with(|| Map::<String, Value>::new().into())
                         } else {
                             unreachable!();
@@ -202,17 +201,17 @@ impl Expression {
 
                         // Continue the deep merge
                         for (key, val) in incoming_map {
-                            Self::Identifier(key.clone()).set(target, val.clone());
+                            Self::Identifier(key.to_lowercase()).set(target, val.clone());
                         }
                     }
 
                     _ => {
                         if let ValueKind::Table(ref mut map) = root.kind {
                             // Just do a simple set
-                            if let Some(existing) = map.get_mut(id) {
+                            if let Some(existing) = map.get_mut(&id.to_lowercase()) {
                                 *existing = value;
                             } else {
-                                map.insert(id.clone(), value);
+                                map.insert(id.to_lowercase(), value);
                             }
                         }
                     }
@@ -225,7 +224,7 @@ impl Expression {
                         // Didn't find a table. Oh well. Make a table and do this anyway
                         *parent = Map::<String, Value>::new().into();
                     }
-                    Self::Identifier(key.clone()).set(parent, value);
+                    Self::Identifier(key.to_lowercase()).set(parent, value);
                 }
             }
 
@@ -238,7 +237,7 @@ impl Expression {
                     if let ValueKind::Array(ref mut array) = parent.kind {
                         let uindex = sindex_to_uindex(index, array.len());
                         if uindex >= array.len() {
-                            array.resize((uindex + 1) as usize, Value::new(None, ValueKind::Nil));
+                            array.resize(uindex + 1, Value::new(None, ValueKind::Nil));
                         }
 
                         array[uindex] = value;

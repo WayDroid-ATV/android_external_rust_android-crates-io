@@ -23,14 +23,16 @@
 [RON]: https://github.com/ron-rs/ron
 [JSON5]: https://github.com/callum-oakley/json5-rs
 
-Please note that this library can not be used to write changed configuration
-values back to the configuration file(s)!
+Please note this library
+
+ - can not be used to write changed configuration values back to the configuration file(s)!
+ - Is case insensitive and all the keys are converted to lowercase internally
 
 ## Usage
 
 ```toml
 [dependencies]
-config = "0.13.1"
+config = "0.14.0"
 ```
 
 ### Feature flags
@@ -46,7 +48,7 @@ config = "0.13.1"
 
 Library provides out of the box support for most renowned data formats such as JSON or Yaml. Nonetheless, it contains an extensibility point - a `Format` trait that, once implemented, allows seamless integration with library's APIs using custom, less popular or proprietary data formats.
 
-See [custom_format](https://github.com/mehcode/config-rs/tree/master/examples/custom_format) example for more information.
+See [custom_file_format](https://github.com/mehcode/config-rs/tree/master/examples/custom_file_format) example for more information.
 
 ### More
 
@@ -56,7 +58,7 @@ more usage information.
 
 ## MSRV
 
-We currently support Rust 1.56.0 and newer.
+We currently support Rust 1.70.0 and newer.
 
 
 ## License
