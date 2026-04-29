@@ -9,7 +9,7 @@
   ],
   "package": {
     "mio": {
-      "add_module_block": "cargo_embargo_extra.bp.fragment"
+      "target_windows": true
     }
   },
   "min_sdk_version": "29",

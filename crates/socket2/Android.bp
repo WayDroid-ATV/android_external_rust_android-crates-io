@@ -22,7 +22,18 @@ rust_library {
     crate_root: "src/lib.rs",
     edition: "2021",
     features: ["all"],
-    rustlibs: ["liblibc"],
+    target: {
+        android: {
+            rustlibs: ["liblibc"],
+        },
+        host_linux: {
+            rustlibs: ["liblibc"],
+        },
+        windows: {
+            rustlibs: ["libwindows_sys"],
+            enabled: true,
+        },
+    },
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -30,11 +41,4 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-    target: {
-        windows: {
-            enabled: true,
-            rustlibs: ["libwindows_sys"],
-        },
-    },
-
 }

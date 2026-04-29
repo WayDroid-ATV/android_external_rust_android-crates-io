@@ -4,8 +4,8 @@
   ],
   "package": {
     "socket2": {
-      "add_module_block": "cargo_embargo_target_windows_enabled.bp.fragment"
-      }
+      "target_windows": true
+    }
   },
   "min_sdk_version": "29",
   "run_cargo": false

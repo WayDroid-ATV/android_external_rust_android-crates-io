@@ -26,14 +26,6 @@ rust_library {
         "os-ext",
         "os-poll",
     ],
-    apex_available: [
-        "//apex_available:platform",
-        "//apex_available:anyapex",
-    ],
-    product_available: true,
-    recovery_available: true,
-    vendor_available: true,
-    min_sdk_version: "29",
     target: {
         android: {
             rustlibs: ["liblibc"],
@@ -42,11 +34,18 @@ rust_library {
             rustlibs: ["liblibc"],
         },
         windows: {
-            enabled: true,
             rustlibs: ["libwindows_sys"],
+            enabled: true,
         },
     },
-
+    apex_available: [
+        "//apex_available:platform",
+        "//apex_available:anyapex",
+    ],
+    product_available: true,
+    recovery_available: true,
+    vendor_available: true,
+    min_sdk_version: "29",
 }
 
 rust_test {
@@ -79,9 +78,8 @@ rust_test {
             rustlibs: ["liblibc"],
         },
         windows: {
-            enabled: true,
             rustlibs: ["libwindows_sys"],
+            enabled: true,
         },
     },
-
 }

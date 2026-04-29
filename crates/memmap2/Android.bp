@@ -21,8 +21,13 @@ rust_library {
     cargo_pkg_version: "0.9.10",
     crate_root: "src/lib.rs",
     edition: "2021",
-    rustlibs: ["liblibc"],
     target: {
+        android: {
+            rustlibs: ["liblibc"],
+        },
+        host_linux: {
+            rustlibs: ["liblibc"],
+        },
         windows: {
             enabled: true,
         },
@@ -49,11 +54,14 @@ rust_test {
         unit_test: true,
     },
     edition: "2021",
-    rustlibs: [
-        "liblibc",
-        "libtempfile",
-    ],
+    rustlibs: ["libtempfile"],
     target: {
+        android: {
+            rustlibs: ["liblibc"],
+        },
+        host_linux: {
+            rustlibs: ["liblibc"],
+        },
         windows: {
             enabled: true,
         },
