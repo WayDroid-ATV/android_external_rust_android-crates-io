@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.71"
 name = "env_logger"
-version = "0.11.0"
+version = "0.11.2"
 include = [
     "build.rs",
     "src/**/*",
@@ -104,7 +104,7 @@ optional = true
 default-features = false
 
 [dependencies.anstyle]
-version = "1.0.4"
+version = "1.0.6"
 optional = true
 
 [dependencies.env_filter]
