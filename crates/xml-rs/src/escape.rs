@@ -1,6 +1,8 @@
 //! Contains functions for performing XML special characters escaping.
 
-use std::{borrow::Cow, marker::PhantomData, fmt::{Display, Result, Formatter}};
+use std::borrow::Cow;
+use std::fmt::{Display, Formatter, Result};
+use std::marker::PhantomData;
 
 pub(crate) trait Escapes {
     fn escape(c: u8) -> Option<&'static str>;
@@ -33,17 +35,14 @@ impl<'a, E: Escapes> Display for Escaped<'a, E> {
         let mut total_remaining = self.to_escape;
 
         // find the next occurence
-        while let Some(n) = total_remaining
-            .bytes()
-            .position(E::byte_needs_escaping)
-        {
+        while let Some(n) = total_remaining.bytes().position(E::byte_needs_escaping) {
             let (start, remaining) = total_remaining.split_at(n);
 
             f.write_str(start)?;
 
             // unwrap is safe because we checked is_some for position n earlier
             let next_byte = remaining.bytes().next().unwrap();
-            let replacement = E::escape(next_byte).unwrap();
+            let replacement = E::escape(next_byte).unwrap_or("unexpected token");
             f.write_str(replacement)?;
 
             total_remaining = &remaining[1..];
@@ -55,7 +54,7 @@ impl<'a, E: Escapes> Display for Escaped<'a, E> {
 
 fn escape_str<E: Escapes>(s: &str) -> Cow<'_, str> {
     if E::str_needs_escaping(s) {
-        Cow::Owned(format!("{}", Escaped::<E>::new(s)))
+        Cow::Owned(Escaped::<E>::new(s).to_string())
     } else {
         Cow::Borrowed(s)
     }
@@ -93,6 +92,7 @@ escapes!(
 escapes!(
     PcDataEscapes,
     b'<' => "&lt;",
+    b'>' => "&gt;",
     b'&' => "&amp;",
 );
 
@@ -150,7 +150,7 @@ mod tests {
 
     #[test]
     fn test_escape_str_pcdata() {
-        assert_eq!(escape_str_pcdata("<&"), "&lt;&amp;");
+        assert_eq!(escape_str_pcdata("<>&"), "&lt;&gt;&amp;");
         assert_eq!(escape_str_pcdata("no_escapes"), "no_escapes");
     }
 

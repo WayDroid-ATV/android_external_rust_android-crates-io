@@ -1,21 +1,23 @@
-use crate::Encoding;
 use crate::reader::lexer::Token;
+use crate::Encoding;
 
 use std::borrow::Cow;
-use std::error;
 use std::error::Error as _;
-use std::fmt;
-use std::io;
-use std::str;
+use std::{error, fmt, io, str};
 
 use crate::common::{Position, TextPosition};
 use crate::util;
 
+/// Failure reason
 #[derive(Debug)]
 pub enum ErrorKind {
+    /// This is an ill-formed XML document
     Syntax(Cow<'static, str>),
+    /// Reader/writer reported an error
     Io(io::Error),
+    /// The document contains bytes that are not allowed in UTF-8 strings
     Utf8(str::Utf8Error),
+    /// The document ended while they were elements/comments/etc. still open
     UnexpectedEof,
 }
 
@@ -70,7 +72,7 @@ pub(crate) enum SyntaxError {
 }
 
 impl fmt::Display for SyntaxError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.to_cow().fmt(f)
     }
 }
@@ -93,7 +95,7 @@ impl SyntaxError {
             Self::CannotUndefinePrefix(ref ln) => format!("Cannot undefine prefix '{ln}'").into(),
             Self::ConflictingEncoding(a, b) => format!("Declared encoding {a}, but uses {b}").into(),
             Self::InvalidCharacterEntity(num) => format!("Invalid character U+{num:04X}").into(),
-            Self::InvalidDefaultNamespace(ref name) => format!( "Namespace '{name}' cannot be default").into(),
+            Self::InvalidDefaultNamespace(ref name) => format!("Namespace '{name}' cannot be default").into(),
             Self::InvalidNamePrefix(ref prefix) => format!("'{prefix}' cannot be an element name prefix").into(),
             Self::InvalidNumericEntity(ref v) => format!("Invalid numeric entity: {v}").into(),
             Self::InvalidQualifiedName(ref e) => format!("Qualified name is invalid: {e}").into(),
@@ -156,7 +158,8 @@ impl Error {
     #[cold]
     #[doc(hidden)]
     #[allow(deprecated)]
-    #[must_use] pub fn msg(&self) -> &str {
+    #[must_use]
+    pub fn msg(&self) -> &str {
         use self::ErrorKind::{Io, Syntax, UnexpectedEof, Utf8};
         match &self.kind {
             Io(io_error) => io_error.description(),
@@ -166,6 +169,7 @@ impl Error {
         }
     }
 
+    /// Failure reason
     #[must_use]
     #[inline]
     pub fn kind(&self) -> &ErrorKind {

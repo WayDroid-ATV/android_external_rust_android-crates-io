@@ -20,6 +20,7 @@ macro_rules! gen_takes(
         impl MarkupData {
             #[inline]
             #[allow(clippy::mem_replace_option_with_none)]
+            #[allow(clippy::mem_replace_with_default)]
             fn $method(&mut self) -> $t {
                 std::mem::replace(&mut self.$field, $def)
             }
@@ -260,7 +261,7 @@ pub enum DeclarationSubstate {
     AfterStandaloneDeclValue,
 }
 
-#[derive(PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 enum QualifiedNameTarget {
     AttributeNameTarget,
     OpeningTagNameTarget,
@@ -274,11 +275,15 @@ enum QuoteToken {
 }
 
 impl QuoteToken {
-    fn from_token(t: &Token) -> QuoteToken {
-        match *t {
-            Token::SingleQuote => QuoteToken::SingleQuoteToken,
-            Token::DoubleQuote => QuoteToken::DoubleQuoteToken,
-            _ => panic!("Unexpected token: {t}"),
+    #[inline]
+    fn from_token(t: Token) -> Option<QuoteToken> {
+        match t {
+            Token::SingleQuote => Some(QuoteToken::SingleQuoteToken),
+            Token::DoubleQuote => Some(QuoteToken::DoubleQuoteToken),
+            _ => {
+                debug_assert!(false);
+                None
+            },
         }
     }
 
@@ -333,14 +338,14 @@ impl PullParser {
             match self.lexer.next_token(r) {
                 Ok(Some(token)) => {
                     match self.dispatch_token(token) {
-                        None => {} // continue
+                        None => {}, // continue
                         Some(Ok(xml_event)) => {
                             self.next_pos();
-                            return Ok(xml_event)
+                            return Ok(xml_event);
                         },
                         Some(Err(xml_error)) => {
                             self.next_pos();
-                            return self.set_final_result(Err(xml_error))
+                            return self.set_final_result(Err(xml_error));
                         },
                     }
                 },
@@ -485,7 +490,7 @@ impl PullParser {
             let name = this.take_buf();
             match name.parse() {
                 Ok(name) => on_name(this, t, name),
-                Err(_) => Some(this.error(SyntaxError::InvalidQualifiedName(name.into()))),
+                Err(()) => Some(this.error(SyntaxError::InvalidQualifiedName(name.into()))),
             }
         };
 
@@ -495,7 +500,7 @@ impl PullParser {
                 self.buf.push(':');
                 self.read_prefix_separator = true;
                 None
-            }
+            },
 
             Token::Character(c) if c != ':' && (self.buf.is_empty() && is_name_start_char(c) ||
                                           self.buf_has_data() && is_name_char(c)) => {
@@ -531,14 +536,14 @@ impl PullParser {
 
             Token::DoubleQuote | Token::SingleQuote => match self.data.quote {
                 None => {  // Entered attribute value
-                    self.data.quote = Some(QuoteToken::from_token(&t));
+                    self.data.quote = QuoteToken::from_token(t);
                     None
-                }
+                },
                 Some(q) if q.as_token() == t => {
                     self.data.quote = None;
                     let value = self.take_buf();
                     on_value(self, value)
-                }
+                },
                 _ => {
                     if let Token::Character(c) = t {
                         if !self.is_valid_xml_char_not_restricted(c) {
@@ -550,7 +555,7 @@ impl PullParser {
                     }
                     t.push_to_string(&mut self.buf);
                     None
-                }
+                },
             },
 
             Token::ReferenceStart if self.data.quote.is_some() => {
@@ -571,7 +576,7 @@ impl PullParser {
                 }
                 t.push_to_string(&mut self.buf);
                 None
-            }
+            },
 
             _ => Some(self.error(SyntaxError::UnexpectedToken(t))),
         }
@@ -585,7 +590,7 @@ impl PullParser {
         match self.nst.get(name.borrow().prefix_repr()) {
             Some("") => name.namespace = None, // default namespace
             Some(ns) => name.namespace = Some(ns.into()),
-            None => return Some(self.error(SyntaxError::UnboundElementPrefix(name.to_string().into())))
+            None => return Some(self.error(SyntaxError::UnboundElementPrefix(name.to_string().into()))),
         }
 
         // check and fix accumulated attributes prefixes
@@ -594,7 +599,7 @@ impl PullParser {
                 let new_ns = match self.nst.get(pfx) {
                     Some("") => None, // default namespace
                     Some(ns) => Some(ns.into()),
-                    None => return Some(self.error(SyntaxError::UnboundAttribute(attr.name.to_string().into())))
+                    None => return Some(self.error(SyntaxError::UnboundAttribute(attr.name.to_string().into()))),
                 };
                 attr.name.namespace = new_ns;
             }
@@ -623,7 +628,7 @@ impl PullParser {
         match self.nst.get(name.borrow().prefix_repr()) {
             Some("") => name.namespace = None, // default namespace
             Some(ns) => name.namespace = Some(ns.into()),
-            None => return Some(self.error(SyntaxError::UnboundElementPrefix(name.to_string().into())))
+            None => return Some(self.error(SyntaxError::UnboundElementPrefix(name.to_string().into()))),
         }
 
         let op_name = self.est.pop()?;
@@ -657,13 +662,13 @@ impl PullParser {
 
 #[cfg(test)]
 mod tests {
-    use std::io::BufReader;
     use crate::attribute::OwnedAttribute;
     use crate::common::TextPosition;
     use crate::name::OwnedName;
     use crate::reader::events::XmlEvent;
     use crate::reader::parser::PullParser;
     use crate::reader::ParserConfig;
+    use std::io::BufReader;
 
     fn new_parser() -> PullParser {
         PullParser::new(ParserConfig::new())
@@ -712,9 +717,9 @@ mod tests {
 
     #[test]
     fn issue_140_entity_reference_inside_tag() {
-        let (mut r, mut p) = test_data!(r#"
+        let (mut r, mut p) = test_data!(r"
             <bla>&#9835;</bla>
-        "#);
+        ");
 
         expect_event!(r, p, Ok(XmlEvent::StartDocument { .. }));
         expect_event!(r, p, Ok(XmlEvent::StartElement { ref name, .. }) => *name == OwnedName::local("bla"));
@@ -725,18 +730,18 @@ mod tests {
 
     #[test]
     fn issue_220_comment() {
-        let (mut r, mut p) = test_data!(r#"<x><!-- <!--></x>"#);
+        let (mut r, mut p) = test_data!(r"<x><!-- <!--></x>");
         expect_event!(r, p, Ok(XmlEvent::StartDocument { .. }));
         expect_event!(r, p, Ok(XmlEvent::StartElement { .. }));
         expect_event!(r, p, Ok(XmlEvent::EndElement { .. }));
         expect_event!(r, p, Ok(XmlEvent::EndDocument));
 
-        let (mut r, mut p) = test_data!(r#"<x><!-- <!---></x>"#);
+        let (mut r, mut p) = test_data!(r"<x><!-- <!---></x>");
         expect_event!(r, p, Ok(XmlEvent::StartDocument { .. }));
         expect_event!(r, p, Ok(XmlEvent::StartElement { .. }));
         expect_event!(r, p, Err(_)); // ---> is forbidden in comments
 
-        let (mut r, mut p) = test_data!(r#"<x><!--<text&x;> <!--></x>"#);
+        let (mut r, mut p) = test_data!(r"<x><!--<text&x;> <!--></x>");
         p.config.c.ignore_comments = false;
         expect_event!(r, p, Ok(XmlEvent::StartDocument { .. }));
         expect_event!(r, p, Ok(XmlEvent::StartElement { .. }));
@@ -782,9 +787,9 @@ mod tests {
 
     #[test]
     fn reference_err() {
-        let (mut r, mut p) = test_data!(r#"
+        let (mut r, mut p) = test_data!(r"
             <a>&&amp;</a>
-        "#);
+        ");
 
         expect_event!(r, p, Ok(XmlEvent::StartDocument { .. }));
         expect_event!(r, p, Ok(XmlEvent::StartElement { .. }));
