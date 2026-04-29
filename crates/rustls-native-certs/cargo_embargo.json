@@ -1,9 +1,4 @@
 {
   "run_cargo": false,
-  "min_sdk_version": "29",
-  "package": {
-    "rustls-native-certs": {
-      "add_module_block": "cargo2android_target.bp.fragment"
-    }
-  }
+  "min_sdk_version": "29"
 }

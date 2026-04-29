@@ -20,12 +20,13 @@ rust_library_host {
     cargo_pkg_version: "0.15.0",
     crate_root: "src/lib.rs",
     edition: "2021",
-    rustlibs: ["liblibc"],
     target: {
+        host_linux: {
+            rustlibs: ["liblibc"],
+        },
         windows: {
-            enabled: true,
             rustlibs: ["libwindows_sys"],
+            enabled: true,
         },
     },
-
 }

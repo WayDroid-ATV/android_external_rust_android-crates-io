@@ -23,6 +23,11 @@ rust_library {
     edition: "2021",
     rustlibs: ["librustls_pki_types"],
     aliases: ["rustls_pki_types:pki_types"],
+    target: {
+        host_linux: {
+            rustlibs: ["libopenssl_probe"],
+        },
+    },
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -30,25 +35,4 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "29",
-    target: {
-        linux_glibc: {
-            rustlibs: [
-                "libopenssl_probe",
-                "librustls_pki_types",
-            ],
-        },
-        linux_musl: {
-            rustlibs: [
-                "libopenssl_probe",
-                "librustls_pki_types",
-            ],
-        },
-        darwin: {
-            enabled: false,
-        },
-        windows: {
-            enabled: false,
-        },
-    },
-
 }
