@@ -13,7 +13,7 @@
 edition = "2018"
 rust-version = "1.88"
 name = "gherkin"
-version = "0.15.0"
+version = "0.16.0"
 authors = ["Brendan Molloy <brendan@bbqsrc.net>"]
 build = "build.rs"
 include = [
@@ -91,7 +91,7 @@ version = "0.23"
 optional = true
 
 [dev-dependencies.cucumber]
-version = "0.21"
+version = "0.22"
 
 [dev-dependencies.futures]
 version = "0.3.5"
