@@ -20,6 +20,7 @@ pub use self::source::string::FileSourceString;
 ///
 /// It supports optional automatic file format discovery.
 #[derive(Clone, Debug)]
+#[must_use]
 pub struct File<T, F> {
     source: T,
 
@@ -101,13 +102,12 @@ where
     F: FileStoredFormat + 'static,
     T: FileSource<F>,
 {
-    #[must_use]
     pub fn format(mut self, format: F) -> Self {
         self.format = Some(format);
         self
     }
 
-    #[must_use]
+    /// Set required to false to make a file optional when building the config.
     pub fn required(mut self, required: bool) -> Self {
         self.required = required;
         self
@@ -128,7 +128,7 @@ where
         let (uri, contents, format) = match self
             .source
             .resolve(self.format.clone())
-            .map_err(|err| ConfigError::Foreign(err))
+            .map_err(ConfigError::Foreign)
         {
             Ok(result) => (result.uri, result.content, result.format),
 

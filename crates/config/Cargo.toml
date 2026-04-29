@@ -11,9 +11,8 @@
 
 [package]
 edition = "2018"
-rust-version = "1.56.0"
 name = "config"
-version = "0.13.4"
+version = "0.14.0"
 authors = ["Ryan Leckey <leckey.ryan@gmail.com>"]
 description = "Layered configuration system for Rust applications."
 homepage = "https://github.com/mehcode/config-rs"
@@ -26,15 +25,20 @@ keywords = [
     "environment",
 ]
 categories = ["config"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/mehcode/config-rs"
 
 [dependencies.async-trait]
-version = "0.1.2"
+version = "0.1.50"
+optional = true
+
+[dependencies.convert_case]
+version = "0.6"
+optional = true
 
 [dependencies.indexmap]
-version = "1.7.0"
-features = ["serde-1"]
+version = "2.0.0"
+features = ["serde"]
 optional = true
 
 [dependencies.json5_rs]
@@ -43,7 +47,7 @@ optional = true
 package = "json5"
 
 [dependencies.lazy_static]
-version = "1.4"
+version = "1.0"
 
 [dependencies.nom]
 version = "7"
@@ -52,22 +56,22 @@ version = "7"
 version = "0.2"
 
 [dependencies.ron]
-version = "0.7"
+version = "0.8"
 optional = true
 
 [dependencies.rust-ini]
-version = "0.18"
+version = "0.19"
 optional = true
 
 [dependencies.serde]
-version = "1.0.99"
+version = "1.0.8"
 
 [dependencies.serde_json]
-version = "1.0.0"
+version = "1.0.2"
 optional = true
 
 [dependencies.toml]
-version = "0.5"
+version = "0.8"
 optional = true
 
 [dependencies.yaml-rust]
@@ -75,41 +79,56 @@ version = "0.4"
 optional = true
 
 [dev-dependencies.chrono]
-version = "0.4.23"
+version = "0.4"
 features = ["serde"]
 
 [dev-dependencies.float-cmp]
 version = "0.9"
 
 [dev-dependencies.futures]
-version = "0.3"
+version = "0.3.15"
 
 [dev-dependencies.glob]
 version = "0.3"
 
+[dev-dependencies.lazy_static]
+version = "1"
+
+[dev-dependencies.log]
+version = "0.4"
+features = ["serde"]
+
 [dev-dependencies.notify]
-version = "4.0.0"
+version = "^6.0.0"
 
 [dev-dependencies.reqwest]
-version = "0.11"
+version = "0.11.10"
+
+[dev-dependencies.serde]
+version = "1.0"
 
 [dev-dependencies.serde_derive]
-version = "1.0.99"
+version = "1.0.8"
 
 [dev-dependencies.temp-env]
-version = "0.2.0"
+version = "0.3.0"
 
 [dev-dependencies.tokio]
-version = "1.13"
+version = "1"
 features = [
     "rt-multi-thread",
     "macros",
+    "fs",
+    "io-util",
+    "time",
 ]
 
 [dev-dependencies.warp]
-version = "=0.3.5"
+version = "=0.3.6"
 
 [features]
+async = ["async-trait"]
+convert-case = ["convert_case"]
 default = [
     "toml",
     "json",
@@ -117,15 +136,20 @@ default = [
     "ini",
     "ron",
     "json5",
+    "convert-case",
+    "async",
 ]
 ini = ["rust-ini"]
 json = ["serde_json"]
-json5 = ["json5_rs"]
+json5 = [
+    "json5_rs",
+    "serde/derive",
+]
 preserve_order = [
     "indexmap",
-    "toml/preserve_order",
-    "serde_json/preserve_order",
-    "ron/indexmap",
+    "toml?/preserve_order",
+    "serde_json?/preserve_order",
+    "ron?/indexmap",
 ]
 yaml = ["yaml-rust"]
 

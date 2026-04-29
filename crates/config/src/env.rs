@@ -5,6 +5,13 @@ use crate::map::Map;
 use crate::source::Source;
 use crate::value::{Value, ValueKind};
 
+#[cfg(feature = "convert-case")]
+use convert_case::{Case, Casing};
+
+/// An environment source collects a dictionary of environment variables values into a hierarchical
+/// config Value type. We have to be aware how the config tree is created from the environment
+/// dictionary, therefore we are mindful about prefixes for the environment keys, level separators,
+/// encoding form (kebab, snake case) etc.
 #[must_use]
 #[derive(Clone, Debug, Default)]
 pub struct Environment {
@@ -25,10 +32,16 @@ pub struct Environment {
     /// an environment key of `REDIS_PASSWORD` to match.
     separator: Option<String>,
 
+    /// Optional directive to translate collected keys into a form that matches what serializers
+    /// that the configuration would expect. For example if you have the `kebab-case` attribute
+    /// for your serde config types, you may want to pass Case::Kebab here.
+    #[cfg(feature = "convert-case")]
+    convert_case: Option<convert_case::Case>,
+
     /// Optional character sequence that separates each env value into a vector. only works when try_parsing is set to true
     /// Once set, you cannot have type String on the same environment, unless you set list_parse_keys.
     list_separator: Option<String>,
-    /// A list of keys which should always be parsed as a list. If not set you can have only Vec<String> or String (not both) in one environment.
+    /// A list of keys which should always be parsed as a list. If not set you can have only `Vec<String>` or `String` (not both) in one environment.
     list_parse_keys: Option<Vec<String>>,
 
     /// Ignore empty env values (treat as unset).
@@ -83,6 +96,13 @@ impl Environment {
         Self::default()
     }
 
+    /// Optional prefix that will limit access to the environment to only keys that
+    /// begin with the defined prefix.
+    ///
+    /// A prefix with a separator of `_` is tested to be present on each key before its considered
+    /// to be part of the source environment.
+    ///
+    /// For example, the key `CONFIG_DEBUG` would become `DEBUG` with a prefix of `config`.
     pub fn with_prefix(s: &str) -> Self {
         Self {
             prefix: Some(s.into()),
@@ -90,23 +110,41 @@ impl Environment {
         }
     }
 
+    /// See [Environment::with_prefix]
     pub fn prefix(mut self, s: &str) -> Self {
         self.prefix = Some(s.into());
         self
     }
 
+    #[cfg(feature = "convert-case")]
+    pub fn with_convert_case(tt: Case) -> Self {
+        Self::default().convert_case(tt)
+    }
+
+    #[cfg(feature = "convert-case")]
+    pub fn convert_case(mut self, tt: Case) -> Self {
+        self.convert_case = Some(tt);
+        self
+    }
+
+    /// Optional character sequence that separates the prefix from the rest of the key
     pub fn prefix_separator(mut self, s: &str) -> Self {
         self.prefix_separator = Some(s.into());
         self
     }
 
+    /// Optional character sequence that separates each key segment in an environment key pattern.
+    /// Consider a nested configuration such as `redis.password`, a separator of `_` would allow
+    /// an environment key of `REDIS_PASSWORD` to match.
     pub fn separator(mut self, s: &str) -> Self {
         self.separator = Some(s.into());
         self
     }
 
     /// When set and try_parsing is true, then all environment variables will be parsed as [`Vec<String>`] instead of [`String`].
-    /// See [`with_list_parse_key`] when you want to use [`Vec<String>`] in combination with [`String`].
+    /// See
+    /// [`with_list_parse_key`](Self::with_list_parse_key)
+    /// when you want to use [`Vec<String>`] in combination with [`String`].
     pub fn list_separator(mut self, s: &str) -> Self {
         self.list_separator = Some(s.into());
         self
@@ -116,17 +154,18 @@ impl Environment {
     /// Once list_separator is set, the type for string is [`Vec<String>`].
     /// To switch the default type back to type Strings you need to provide the keys which should be [`Vec<String>`] using this function.
     pub fn with_list_parse_key(mut self, key: &str) -> Self {
-        if self.list_parse_keys == None {
-            self.list_parse_keys = Some(vec![key.into()])
+        if self.list_parse_keys.is_none() {
+            self.list_parse_keys = Some(vec![key.to_lowercase()])
         } else {
             self.list_parse_keys = self.list_parse_keys.map(|mut keys| {
-                keys.push(key.into());
+                keys.push(key.to_lowercase());
                 keys
             });
         }
         self
     }
 
+    /// Ignore empty env values (treat as unset).
     pub fn ignore_empty(mut self, ignore: bool) -> Self {
         self.ignore_empty = ignore;
         self
@@ -139,11 +178,46 @@ impl Environment {
         self
     }
 
+    // Preserve the prefix while parsing
     pub fn keep_prefix(mut self, keep: bool) -> Self {
         self.keep_prefix = keep;
         self
     }
 
+    /// Alternate source for the environment. This can be used when you want to test your own code
+    /// using this source, without the need to change the actual system environment variables.
+    ///
+    /// ## Example
+    ///
+    /// ```rust
+    /// # use config::{Environment, Config};
+    /// # use serde::Deserialize;
+    /// # use std::collections::HashMap;
+    /// # use std::convert::TryInto;
+    /// #
+    /// #[test]
+    /// fn test_config() -> Result<(), config::ConfigError> {
+    ///   #[derive(Clone, Debug, Deserialize)]
+    ///   struct MyConfig {
+    ///     pub my_string: String,
+    ///   }
+    ///
+    ///   let source = Environment::default()
+    ///     .source(Some({
+    ///       let mut env = HashMap::new();
+    ///       env.insert("MY_STRING".into(), "my-value".into());
+    ///       env
+    ///   }));
+    ///
+    ///   let config: MyConfig = Config::builder()
+    ///     .add_source(source)
+    ///     .build()?
+    ///     .try_into()?;
+    ///   assert_eq!(config.my_string, "my-value");
+    ///
+    ///   Ok(())
+    /// }
+    /// ```
     pub fn source(mut self, source: Option<Map<String, String>>) -> Self {
         self.source = source;
         self
@@ -160,6 +234,8 @@ impl Source for Environment {
         let uri: String = "the environment".into();
 
         let separator = self.separator.as_deref().unwrap_or("");
+        #[cfg(feature = "convert-case")]
+        let convert_case = &self.convert_case;
         let prefix_separator = match (self.prefix_separator.as_deref(), self.separator.as_deref()) {
             (Some(pre), _) => pre,
             (None, Some(sep)) => sep,
@@ -198,6 +274,11 @@ impl Source for Environment {
                 key = key.replace(separator, ".");
             }
 
+            #[cfg(feature = "convert-case")]
+            if let Some(convert_case) = convert_case {
+                key = key.to_case(*convert_case);
+            }
+
             let value = if self.try_parsing {
                 // convert to lowercase because bool parsing expects all lowercase
                 if let Ok(parsed) = value.to_lowercase().parse::<bool>() {
@@ -208,6 +289,9 @@ impl Source for Environment {
                     ValueKind::Float(parsed)
                 } else if let Some(separator) = &self.list_separator {
                     if let Some(keys) = &self.list_parse_keys {
+                        #[cfg(feature = "convert-case")]
+                        let key = key.to_lowercase();
+
                         if keys.contains(&key) {
                             let v: Vec<Value> = value
                                 .split(separator)

@@ -2,8 +2,6 @@
 
 use serde_derive::Deserialize;
 
-use std::path::PathBuf;
-
 use config::{Config, File, FileFormat, Map, Value};
 use float_cmp::ApproxEqUlps;
 
@@ -20,10 +18,10 @@ struct Place {
     rating: Option<f32>,
 }
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
 struct PlaceNumber(u8);
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
 struct AsciiCode(i8);
 
 #[derive(Debug, Deserialize)]
@@ -90,14 +88,113 @@ fn test_error_parse() {
         .add_source(File::new("tests/Settings-invalid", FileFormat::Toml))
         .build();
 
-    let path_with_extension: PathBuf = ["tests", "Settings-invalid.toml"].iter().collect();
-
     assert!(res.is_err());
+    assert!(res
+        .unwrap_err()
+        .to_string()
+        .contains("TOML parse error at line 2, column 9"));
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+enum EnumSettings {
+    Bar(String),
+}
+#[derive(Debug, Deserialize, PartialEq)]
+struct StructSettings {
+    foo: String,
+    bar: String,
+}
+#[derive(Debug, Deserialize, PartialEq)]
+#[allow(non_snake_case)]
+struct CapSettings {
+    FOO: String,
+}
+
+#[test]
+fn test_override_uppercase_value_for_struct() {
+    std::env::set_var("APP_FOO", "I HAVE BEEN OVERRIDDEN_WITH_UPPER_CASE");
+
+    let cfg = Config::builder()
+        .add_source(File::new("tests/Settings.toml", FileFormat::Toml))
+        .add_source(config::Environment::with_prefix("APP").separator("_"))
+        .build()
+        .unwrap();
+
+    let cap_settings = cfg.clone().try_deserialize::<CapSettings>();
+    let lower_settings = cfg.try_deserialize::<StructSettings>().unwrap();
+
+    match cap_settings {
+        Ok(v) => {
+            // this assertion will ensure that the map has only lowercase keys
+            assert_ne!(v.FOO, "FOO should be overridden");
+            assert_eq!(
+                lower_settings.foo,
+                "I HAVE BEEN OVERRIDDEN_WITH_UPPER_CASE".to_string()
+            );
+        }
+        Err(e) => {
+            if e.to_string().contains("missing field `FOO`") {
+                assert_eq!(
+                    lower_settings.foo,
+                    "I HAVE BEEN OVERRIDDEN_WITH_UPPER_CASE".to_string()
+                );
+            } else {
+                panic!("{}", e);
+            }
+        }
+    }
+}
+
+#[test]
+fn test_override_lowercase_value_for_struct() {
+    std::env::set_var("config_bar", "I have been overridden_with_lower_case");
+
+    let cfg = Config::builder()
+        .add_source(File::new("tests/Settings.toml", FileFormat::Toml))
+        .add_source(config::Environment::with_prefix("config").separator("_"))
+        .build()
+        .unwrap();
+
+    let values: StructSettings = cfg.try_deserialize().unwrap();
     assert_eq!(
-        res.unwrap_err().to_string(),
-        format!(
-            "invalid TOML value, did you mean to use a quoted string? at line 2 column 9 in {}",
-            path_with_extension.display()
-        )
+        values.bar,
+        "I have been overridden_with_lower_case".to_string()
+    );
+    assert_ne!(values.bar, "I am bar".to_string());
+}
+
+#[test]
+fn test_override_uppercase_value_for_enums() {
+    std::env::set_var("APPS_BAR", "I HAVE BEEN OVERRIDDEN_WITH_UPPER_CASE");
+
+    let cfg = Config::builder()
+        .add_source(File::new("tests/Settings-enum-test.toml", FileFormat::Toml))
+        .add_source(config::Environment::with_prefix("APPS").separator("_"))
+        .build()
+        .unwrap();
+
+    let values: EnumSettings = cfg.try_deserialize().unwrap();
+
+    assert_eq!(
+        values,
+        EnumSettings::Bar("I HAVE BEEN OVERRIDDEN_WITH_UPPER_CASE".to_string())
+    );
+}
+
+#[test]
+fn test_override_lowercase_value_for_enums() {
+    std::env::set_var("test_bar", "I have been overridden_with_lower_case");
+
+    let cfg = Config::builder()
+        .add_source(File::new("tests/Settings-enum-test.toml", FileFormat::Toml))
+        .add_source(config::Environment::with_prefix("test").separator("_"))
+        .build()
+        .unwrap();
+
+    let values: EnumSettings = cfg.try_deserialize().unwrap();
+
+    assert_eq!(
+        values,
+        EnumSettings::Bar("I have been overridden_with_lower_case".to_string())
     );
 }
