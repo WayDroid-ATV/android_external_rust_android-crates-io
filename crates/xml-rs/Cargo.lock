@@ -4,4 +4,4 @@ version = 3
 
 [[package]]
 name = "xml-rs"
-version = "0.8.19"
+version = "0.8.20"
