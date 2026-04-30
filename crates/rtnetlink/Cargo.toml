@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.66.1"
 name = "rtnetlink"
-version = "0.20.0"
+version = "0.21.0"
 authors = ["Corentin Henry <corentinhenry@gmail.com>"]
 build = false
 autolib = false
@@ -129,6 +129,10 @@ name = "create_vrf"
 path = "examples/create_vrf.rs"
 
 [[example]]
+name = "create_vxcan"
+path = "examples/create_vxcan.rs"
+
+[[example]]
 name = "create_vxlan"
 path = "examples/create_vxlan.rs"
 
@@ -241,7 +245,7 @@ version = "0.4.8"
 version = "0.8"
 
 [dependencies.netlink-packet-route]
-version = "0.29"
+version = "0.30"
 
 [dependencies.netlink-proto]
 version = "0.12.0"

@@ -1,7 +1,7 @@
 [package]
 authors = ["Corentin Henry <corentinhenry@gmail.com>"]
 name = "netlink-packet-route"
-version = "0.29.0"
+version = "0.30.0"
 edition = "2021"
 rust-version = "1.77"
 homepage = "https://github.com/rust-netlink/netlink-packet-route"
@@ -22,4 +22,4 @@ name = "dump_packet_links"
 
 [dev-dependencies]
 netlink-sys = { version = "0.8.5" }
-pretty_assertions = "0.7.2"
+pretty_assertions = "1.4.1"
