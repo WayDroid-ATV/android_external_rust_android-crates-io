@@ -33,7 +33,15 @@ index 252adea..ca806d4 100644
  fn get_or_try_init() {
      let cell: OnceCell<String> = OnceCell::new();
      assert!(cell.get().is_none());
-@@ -178,6 +179,7 @@ fn debug_impl() {
+@@ -114,6 +115,7 @@ fn wait() {
+ }
+ 
+ #[cfg(feature = "std")]
++#[cfg(not(target_os = "android"))]
+ #[test]
+ fn wait_panic() {
+     let cell: OnceCell<String> = OnceCell::new();
+@@ -178,6 +180,7 @@ fn debug_impl() {
  #[test]
  #[cfg_attr(miri, ignore)] // miri doesn't support processes
  #[cfg(feature = "std")]
