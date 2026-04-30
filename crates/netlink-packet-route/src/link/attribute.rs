@@ -23,6 +23,7 @@ use super::proto_info::VecLinkProtoInfoBridge;
 use super::{
     af_spec::VecAfSpecUnspec,
     buffer_tool::expand_buffer_if_small,
+    devlink_port::DevlinkPort,
     ext_mask::VecLinkExtentMask,
     link_info::VecLinkInfo,
     proto_info::VecLinkProtoInfoInet6,
@@ -94,8 +95,6 @@ const IFLA_MAX_MTU: u16 = 51;
 const IFLA_PROP_LIST: u16 = 52;
 const IFLA_PERM_ADDRESS: u16 = 54;
 const IFLA_PROTO_DOWN_REASON: u16 = 55;
-
-/* TODO:(Gris Ge)
 const IFLA_PARENT_DEV_NAME: u16 = 56;
 const IFLA_PARENT_DEV_BUS_NAME: u16 = 57;
 const IFLA_GRO_MAX_SIZE: u16 = 58;
@@ -103,7 +102,13 @@ const IFLA_TSO_MAX_SIZE: u16 = 59;
 const IFLA_TSO_MAX_SEGS: u16 = 60;
 const IFLA_ALLMULTI: u16 = 61;
 const IFLA_DEVLINK_PORT: u16 = 62;
-*/
+const IFLA_GSO_IPV4_MAX_SIZE: u16 = 63;
+const IFLA_GRO_IPV4_MAX_SIZE: u16 = 64;
+// const IFLA_DPLL_PIN: u16 = 65;
+// const IFLA_MAX_PACING_OFFLOAD_HORIZON: u16 = 66;
+const IFLA_NETNS_IMMUTABLE: u16 = 67;
+// const IFLA_HEADROOM: u16 = 68;
+// const IFLA_TAILROOM: u16 = 69;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[non_exhaustive]
@@ -168,6 +173,16 @@ pub enum LinkAttribute {
     AfSpecUnspec(Vec<AfSpecUnspec>),
     AfSpecBridge(Vec<AfSpecBridge>),
     AfSpecUnknown(Vec<u8>),
+    ParentDevName(String),
+    ParentDevBusName(String),
+    GroMaxSize(u32),
+    TsoMaxSize(u32),
+    TsoMaxSegs(u32),
+    AllMulticast(u32),
+    GsoIpv4MaxSize(u32),
+    GroIpv4MaxSize(u32),
+    NetnsImmutable(bool),
+    DevlinkPort(Vec<DevlinkPort>),
     Other(DefaultNla),
 }
 
@@ -192,10 +207,14 @@ impl Nla for LinkAttribute {
             Self::IfName(string)
             | Self::Qdisc(string)
             | Self::IfAlias(string)
-            | Self::PhysPortName(string) => string.len() + 1,
+            | Self::PhysPortName(string)
+            | Self::ParentDevName(string)
+            | Self::ParentDevBusName(string) => string.len() + 1,
 
             Self::Mode(_) => 1,
             Self::Carrier(_) | Self::ProtoDown(_) => 1,
+
+            Self::NetnsImmutable(_) => 1,
 
             Self::Mtu(_)
             | Self::NewNetnsId(_)
@@ -219,7 +238,13 @@ impl Nla for LinkAttribute {
             | Self::CarrierUpCount(_)
             | Self::CarrierDownCount(_)
             | Self::NewIfIndex(_)
-            | Self::MaxMtu(_) => 4,
+            | Self::MaxMtu(_)
+            | Self::GroMaxSize(_)
+            | Self::TsoMaxSize(_)
+            | Self::TsoMaxSegs(_)
+            | Self::AllMulticast(_)
+            | Self::GsoIpv4MaxSize(_)
+            | Self::GroIpv4MaxSize(_) => 4,
 
             Self::OperState(_) => 1,
             Self::Stats(_) => LINK_STATS_LEN,
@@ -230,6 +255,7 @@ impl Nla for LinkAttribute {
             Self::PropList(nlas) => nlas.as_slice().buffer_len(),
             Self::AfSpecUnspec(nlas) => nlas.as_slice().buffer_len(),
             Self::AfSpecBridge(nlas) => nlas.as_slice().buffer_len(),
+            Self::DevlinkPort(nlas) => nlas.as_slice().buffer_len(),
             Self::ProtoInfoUnknown(attr) => attr.value_len(),
             Self::Wireless(v) => v.buffer_len(),
             Self::Other(attr) => attr.value_len(),
@@ -257,13 +283,17 @@ impl Nla for LinkAttribute {
             Self::IfName(string)
             | Self::Qdisc(string)
             | Self::IfAlias(string)
-            | Self::PhysPortName(string) => {
+            | Self::PhysPortName(string)
+            | Self::ParentDevName(string)
+            | Self::ParentDevBusName(string) => {
                 buffer[..string.len()].copy_from_slice(string.as_bytes());
                 buffer[string.len()] = 0;
             }
             Self::Mode(v) => buffer[0] = (*v).into(),
 
             Self::Carrier(val) | Self::ProtoDown(val) => buffer[0] = *val,
+
+            Self::NetnsImmutable(val) => buffer[0] = u8::from(*val),
 
             Self::Mtu(value)
             | Self::Link(value)
@@ -281,7 +311,13 @@ impl Nla for LinkAttribute {
             | Self::GsoMaxSegs(value)
             | Self::GsoMaxSize(value)
             | Self::MinMtu(value)
-            | Self::MaxMtu(value) => emit_u32(buffer, *value).unwrap(),
+            | Self::MaxMtu(value)
+            | Self::GroMaxSize(value)
+            | Self::TsoMaxSize(value)
+            | Self::TsoMaxSegs(value)
+            | Self::AllMulticast(value)
+            | Self::GsoIpv4MaxSize(value)
+            | Self::GroIpv4MaxSize(value) => emit_u32(buffer, *value).unwrap(),
 
             Self::ExtMask(value) => {
                 emit_u32(buffer, u32::from(&VecLinkExtentMask(value.to_vec())))
@@ -302,6 +338,7 @@ impl Nla for LinkAttribute {
             Self::PropList(nlas) => nlas.as_slice().emit(buffer),
             Self::AfSpecUnspec(nlas) => nlas.as_slice().emit(buffer),
             Self::AfSpecBridge(nlas) => nlas.as_slice().emit(buffer),
+            Self::DevlinkPort(nlas) => nlas.as_slice().emit(buffer),
             Self::Wireless(v) => v.emit(buffer),
             Self::ProtoInfoUnknown(attr) | Self::Other(attr) => {
                 attr.emit_value(buffer)
@@ -364,6 +401,16 @@ impl Nla for LinkAttribute {
             | Self::AfSpecBridge(_)
             | Self::AfSpecUnknown(_) => IFLA_AF_SPEC,
             Self::Wireless(_) => IFLA_WIRELESS,
+            Self::ParentDevName(_) => IFLA_PARENT_DEV_NAME,
+            Self::ParentDevBusName(_) => IFLA_PARENT_DEV_BUS_NAME,
+            Self::GroMaxSize(_) => IFLA_GRO_MAX_SIZE,
+            Self::TsoMaxSize(_) => IFLA_TSO_MAX_SIZE,
+            Self::TsoMaxSegs(_) => IFLA_TSO_MAX_SEGS,
+            Self::AllMulticast(_) => IFLA_ALLMULTI,
+            Self::GsoIpv4MaxSize(_) => IFLA_GSO_IPV4_MAX_SIZE,
+            Self::GroIpv4MaxSize(_) => IFLA_GRO_IPV4_MAX_SIZE,
+            Self::NetnsImmutable(_) => IFLA_NETNS_IMMUTABLE,
+            Self::DevlinkPort(_) => IFLA_DEVLINK_PORT | NLA_F_NESTED,
             Self::Other(attr) => attr.kind(),
         }
     }
@@ -688,6 +735,52 @@ impl<'a, T: AsRef<[u8]> + ?Sized>
                 WirelessEvent::parse(payload)
                     .context("invalid IFLA_WIRELESS value")?,
             ),
+            IFLA_PARENT_DEV_NAME => Self::ParentDevName(
+                parse_string(payload)
+                    .context("invalid IFLA_PARENT_DEV_NAME value")?,
+            ),
+            IFLA_PARENT_DEV_BUS_NAME => Self::ParentDevBusName(
+                parse_string(payload)
+                    .context("invalid IFLA_PARENT_DEV_BUS_NAME value")?,
+            ),
+            IFLA_GRO_MAX_SIZE => Self::GroMaxSize(
+                parse_u32(payload)
+                    .context("invalid IFLA_GRO_MAX_SIZE value")?,
+            ),
+            IFLA_TSO_MAX_SIZE => Self::TsoMaxSize(
+                parse_u32(payload)
+                    .context("invalid IFLA_TSO_MAX_SIZE value")?,
+            ),
+            IFLA_TSO_MAX_SEGS => Self::TsoMaxSegs(
+                parse_u32(payload)
+                    .context("invalid IFLA_TSO_MAX_SEGS value")?,
+            ),
+            IFLA_ALLMULTI => Self::AllMulticast(
+                parse_u32(payload).context("invalid IFLA_ALLMULTI value")?,
+            ),
+            IFLA_GSO_IPV4_MAX_SIZE => Self::GsoIpv4MaxSize(
+                parse_u32(payload)
+                    .context("invalid IFLA_GSO_IPV4_MAX_SIZE value")?,
+            ),
+            IFLA_GRO_IPV4_MAX_SIZE => Self::GroIpv4MaxSize(
+                parse_u32(payload)
+                    .context("invalid IFLA_GRO_IPV4_MAX_SIZE value")?,
+            ),
+            IFLA_NETNS_IMMUTABLE => Self::NetnsImmutable(
+                parse_u8(payload)
+                    .context("invalid IFLA_NETNS_IMMUTABLE value")?
+                    != 0,
+            ),
+            IFLA_DEVLINK_PORT => {
+                let err = "invalid IFLA_DEVLINK_PORT value";
+                let mut nlas = vec![];
+                for nla in NlasIterator::new(payload) {
+                    let nla = &nla.context(err)?;
+                    let parsed = DevlinkPort::parse(nla).context(err)?;
+                    nlas.push(parsed);
+                }
+                Self::DevlinkPort(nlas)
+            }
             kind => Self::Other(
                 DefaultNla::parse(buf)
                     .context(format!("unknown NLA type {kind}"))?,

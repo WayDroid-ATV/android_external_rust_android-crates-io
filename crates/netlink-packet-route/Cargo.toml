@@ -13,7 +13,7 @@
 edition = "2021"
 rust-version = "1.77"
 name = "netlink-packet-route"
-version = "0.29.0"
+version = "0.30.0"
 authors = ["Corentin Henry <corentinhenry@gmail.com>"]
 build = false
 autolib = false
@@ -80,4 +80,4 @@ version = "0.8.0"
 version = "0.8.5"
 
 [dev-dependencies.pretty_assertions]
-version = "0.7.2"
+version = "1.4.1"
