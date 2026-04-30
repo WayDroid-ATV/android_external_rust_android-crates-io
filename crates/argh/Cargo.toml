@@ -12,7 +12,7 @@
 [package]
 edition = "2018"
 name = "argh"
-version = "0.1.14"
+version = "0.1.19"
 authors = [
     "Taylor Cramer <cramertj@google.com>",
     "Benjamin Brittain <bwb@google.com>",
@@ -50,6 +50,14 @@ name = "argh"
 path = "src/lib.rs"
 
 [[example]]
+name = "completion_example"
+path = "examples/completion_example.rs"
+
+[[example]]
+name = "goup"
+path = "examples/goup.rs"
+
+[[example]]
 name = "simple_example"
 path = "examples/simple_example.rs"
 
@@ -74,14 +82,17 @@ name = "subcommand_short_help"
 path = "tests/subcommand_short_help.rs"
 
 [dependencies.argh_derive]
-version = "0.1.14"
+version = "0.1.19"
 
 [dependencies.argh_shared]
-version = "0.1.14"
+version = "0.1.19"
 
 [dependencies.rust-fuzzy-search]
 version = "0.1.1"
 optional = true
+
+[dev-dependencies.argh_complete]
+version = "0.1.0"
 
 [dev-dependencies.trybuild]
 version = "1.0.63"

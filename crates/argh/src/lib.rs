@@ -317,6 +317,64 @@
 //! }
 //! ```
 //!
+//! You can define a complex help output that includes an **Examples** section.
+//! Use a `{command_name}` placeholder.
+//!
+//! ```rust
+//! # use argh::FromArgs;
+//! #[derive(FromArgs, PartialEq, Debug)]
+//! #[argh(
+//!     description = "{command_name} is a tool to reach new heights.\n\n\
+//!     Start exploring new heights:\n\n\
+//!     \u{00A0} {command_name} --height 5 jump\n\
+//!     ",
+//!     example = "\
+//!     {command_name} --height 5\n\
+//!     {command_name} --height 5 j\n\
+//!     {command_name} --height 5 --pilot-nickname Wes jump"
+//! )]
+//! struct CliArgs {
+//!     /// how high to go
+//!     #[argh(option)]
+//!     height: usize,
+//!     /// an optional nickname for the pilot
+//!     #[argh(option)]
+//!     pilot_nickname: Option<String>,
+//!     /// command to execute
+//!     #[argh(subcommand)]
+//!     command: Command,
+//! }
+//!
+//! # #[derive(FromArgs, PartialEq, Debug)]
+//! # #[argh(subcommand)]
+//! # enum Command {}
+//! ```
+//!
+//! Output:
+//!
+//! ```text
+//! Usage: goup --height <height> [--pilot-nickname <pilot-nickname>] <command> [<args>]
+//!
+//! goup is a tool to reach new heights.
+//!
+//! Start exploring new heights:
+//!
+//!   goup --height 5 jump
+//!
+//! Options:
+//!   --height          how high to go
+//!   --pilot-nickname  an optional nickname for the pilot
+//!   --help, help      display usage information
+//!
+//! Commands:
+//!   jump  j           whether or not to jump
+//!
+//! Examples:
+//!   goup --height 5
+//!   goup --height 5 j
+//!   goup --height 5 --pilot-nickname Wes jump
+//! ```
+//!
 //! Programs that are run from an environment such as cargo may find it
 //! useful to have positional arguments present in the structure but
 //! omitted from the usage output. This can be accomplished by adding
@@ -631,6 +689,16 @@ pub trait FromArgs: Sized {
     }
 }
 
+impl<T: FromArgs> FromArgs for Box<T> {
+    fn from_args(command_name: &[&str], args: &[&str]) -> Result<Self, EarlyExit> {
+        T::from_args(command_name, args).map(Box::new)
+    }
+
+    fn redact_arg_values(command_name: &[&str], args: &[&str]) -> Result<Vec<String>, EarlyExit> {
+        T::redact_arg_values(command_name, args)
+    }
+}
+
 /// A top-level `FromArgs` implementation that is not a subcommand.
 pub trait TopLevelCommand: FromArgs {}
 
@@ -645,14 +713,18 @@ pub trait SubCommands: FromArgs {
     }
 }
 
+impl<T: SubCommand> SubCommands for T {
+    const COMMANDS: &'static [&'static CommandInfo] = &[T::COMMAND];
+}
+
 /// A `FromArgs` implementation that represents a single subcommand.
 pub trait SubCommand: FromArgs {
     /// Information about the subcommand.
     const COMMAND: &'static CommandInfo;
 }
 
-impl<T: SubCommand> SubCommands for T {
-    const COMMANDS: &'static [&'static CommandInfo] = &[T::COMMAND];
+impl<T: SubCommand> SubCommand for Box<T> {
+    const COMMAND: &'static CommandInfo = T::COMMAND;
 }
 
 /// Trait implemented by values returned from a dynamic subcommand handler.
