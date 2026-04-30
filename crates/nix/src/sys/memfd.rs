@@ -112,7 +112,8 @@ pub fn memfd_create<P: NixPath + ?Sized>(
                 any(
                     target_os = "freebsd",
                     // If the OS is Linux, gnu/musl/ohos expose a memfd_create symbol but not uclibc
-                    target_env = "gnu",
+                    // ANDROID: Our glibc is too old to have memfd_create.
+                    // target_env = "gnu",
                     target_env = "musl",
                     target_env = "ohos"
                 )))]
