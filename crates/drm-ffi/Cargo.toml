@@ -11,19 +11,30 @@
 
 [package]
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.70"
 name = "drm-ffi"
-version = "0.8.0"
+version = "0.9.1"
 authors = ["Tyler Slabinski <tslabinski@slabity.net>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "Safe, low-level bindings to the Direct Rendering Manager API"
+readme = false
 license = "MIT"
 repository = "https://github.com/Smithay/drm-rs"
 
-[dependencies.drm-sys]
-version = "0.7.0"
-
-[dependencies.rustix]
-version = "0.38.22"
-
 [features]
 use_bindgen = ["drm-sys/use_bindgen"]
+
+[lib]
+name = "drm_ffi"
+path = "src/lib.rs"
+
+[dependencies.drm-sys]
+version = "0.8"
+
+[dependencies.rustix]
+version = "^1"
